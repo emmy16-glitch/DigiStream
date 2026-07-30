@@ -1,5 +1,4 @@
 import type {
-  FastifyError,
   FastifyInstance,
   FastifyReply,
   FastifyRequest,
@@ -49,8 +48,16 @@ export function createApiErrorPayload(
   };
 }
 
-function safeClientStatusCode(error: FastifyError): number | null {
-  const statusCode = error.statusCode;
+function safeClientStatusCode(error: unknown): number | null {
+  if (
+    typeof error !== 'object' ||
+    error === null ||
+    !('statusCode' in error)
+  ) {
+    return null;
+  }
+
+  const statusCode = (error as { statusCode?: unknown }).statusCode;
 
   if (
     typeof statusCode === 'number' &&
