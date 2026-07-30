@@ -58,6 +58,15 @@ test('GET /api/v1/status declares creator, listener and backstage capabilities',
   assert.ok(
     response.json().capabilities.includes('public-call-in-requests'),
   );
+  assert.ok(
+    response.json().capabilities.includes('listener-request-to-speak-controls'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('private-call-in-status-tokens'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('call-in-rate-limiting'),
+  );
 
   await app.close();
 });
