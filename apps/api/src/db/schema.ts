@@ -17,6 +17,11 @@ export const userStatusEnum = pgEnum('user_status', [
   'deleted',
 ]);
 
+export const platformCapabilityEnum = pgEnum('platform_capability', [
+  'broadcaster',
+  'platform_admin',
+]);
+
 export const membershipRoleEnum = pgEnum('membership_role', [
   'owner',
   'admin',
@@ -59,6 +64,68 @@ export const users = pgTable(
       .notNull(),
   },
   (table) => [uniqueIndex('users_email_unique').on(table.email)],
+);
+
+export const userProfiles = pgTable(
+  'user_profiles',
+  {
+    userId: uuid('user_id')
+      .primaryKey()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    username: varchar('username', { length: 30 }).notNull(),
+    biography: varchar('biography', { length: 500 }),
+    isDiscoverable: boolean('is_discoverable').default(true).notNull(),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('user_profiles_username_unique').on(table.username),
+    index('user_profiles_discoverable_username_idx').on(table.username),
+  ],
+);
+
+export const userPlatformCapabilities = pgTable(
+  'user_platform_capabilities',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    capability: platformCapabilityEnum('capability').notNull(),
+    grantedByUserId: uuid('granted_by_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    grantedAt: timestamp('granted_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+    revokedAt: timestamp('revoked_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
+  },
+  (table) => [
+    uniqueIndex('user_platform_capabilities_user_capability_unique').on(
+      table.userId,
+      table.capability,
+    ),
+    index('user_platform_capabilities_active_idx').on(
+      table.capability,
+      table.userId,
+    ),
+  ],
 );
 
 export const authSessions = pgTable(
@@ -254,6 +321,12 @@ export const broadcasts = pgTable(
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+export type UserProfile = typeof userProfiles.$inferSelect;
+export type NewUserProfile = typeof userProfiles.$inferInsert;
+export type UserPlatformCapability =
+  typeof userPlatformCapabilities.$inferSelect;
+export type NewUserPlatformCapability =
+  typeof userPlatformCapabilities.$inferInsert;
 export type AuthSession = typeof authSessions.$inferSelect;
 export type NewAuthSession = typeof authSessions.$inferInsert;
 export type Organisation = typeof organisations.$inferSelect;
