@@ -29,7 +29,7 @@ test('GET /api/v1/status declares all responsive targets', async () => {
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().stage, 'broadcast-lifecycle');
+  assert.equal(response.json().stage, 'ovenmediaengine-delivery-adapter');
   assert.deepEqual(response.json().responsiveTargets, [
     'mobile',
     'tablet',
