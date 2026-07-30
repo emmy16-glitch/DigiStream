@@ -47,6 +47,12 @@ test('GET /api/v1/status declares creator, listener and backstage capabilities',
     response.json().capabilities.includes('single-use-guest-invitations'),
   );
   assert.ok(
+    response.json().capabilities.includes('external-guest-browser-waiting-room'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('creator-backstage-web-workspace'),
+  );
+  assert.ok(
     response.json().capabilities.includes('livekit-guest-mute-and-remove'),
   );
   assert.ok(

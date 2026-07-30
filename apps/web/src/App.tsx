@@ -1,6 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { PlatformStatus } from '@digistream/contracts';
 import { CreatorBroadcastStudio } from './features/broadcasting/CreatorBroadcastStudio';
+import { CreatorBackstageWorkspace } from './features/guests/CreatorBackstageWorkspace';
+import { GuestJoinPage } from './features/guests/GuestJoinPage';
+import { parseGuestRoute } from './features/guests/guest-route';
 import { ListenerBroadcastPage } from './features/listening/ListenerBroadcastPage';
 import { ListenerDiscoveryPage } from './features/listening/ListenerDiscoveryPage';
 import { parseListenerRoute } from './features/listening/listener-route';
@@ -60,6 +63,7 @@ function CreatorDashboard() {
   const [activeNav, setActiveNav] = useState('Overview');
   const [status, setStatus] = useState<PlatformStatus | null>(null);
   const [studioOpen, setStudioOpen] = useState(false);
+  const [backstageOpen, setBackstageOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -79,6 +83,7 @@ function CreatorDashboard() {
   function selectNavigation(label: string) {
     setActiveNav(label);
     if (label === 'Broadcasts') setStudioOpen(true);
+    if (label === 'Audience') setBackstageOpen(true);
   }
 
   return (
@@ -117,6 +122,7 @@ function CreatorDashboard() {
             <h1>{activeNav}</h1>
           </div>
           <div className="topbar-actions">
+            <button className="listen-link" onClick={() => setBackstageOpen(true)} type="button">Backstage</button>
             <a className="listen-link" href="/listen">Listen</a>
             <button className="icon-button" type="button" aria-label="Open notifications">⌁</button>
             <button className="avatar-button" type="button" aria-label="Open account menu">EO</button>
@@ -133,6 +139,7 @@ function CreatorDashboard() {
             </p>
             <div className="hero-actions">
               <button className="primary-button" onClick={() => setStudioOpen(true)} type="button">Start a broadcast</button>
+              <button className="secondary-button" onClick={() => setBackstageOpen(true)} type="button">Manage guests</button>
               <a className="secondary-button" href="/listen">Open listener app</a>
             </div>
           </div>
@@ -151,7 +158,7 @@ function CreatorDashboard() {
         </section>
 
         <div className="content-grid">
-          <Panel title="Upcoming broadcasts" action="View calendar">
+          <Panel title="Upcoming broadcasts" action="Manage backstage" onAction={() => setBackstageOpen(true)}>
             <div className="broadcast-list">
               {broadcasts.map((broadcast) => (
                 <article className="broadcast-row" key={broadcast.title}>
@@ -204,11 +211,18 @@ function CreatorDashboard() {
         onClose={() => setStudioOpen(false)}
         open={studioOpen}
       />
+      <CreatorBackstageWorkspace
+        onClose={() => setBackstageOpen(false)}
+        open={backstageOpen}
+      />
     </div>
   );
 }
 
 export function App() {
+  const guestRoute = parseGuestRoute(window.location.pathname);
+  if (guestRoute) return <GuestJoinPage route={guestRoute} />;
+
   const listenerRoute = parseListenerRoute(window.location.pathname);
   if (listenerRoute?.kind === 'discovery') return <ListenerDiscoveryPage />;
   if (
