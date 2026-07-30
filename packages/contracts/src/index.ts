@@ -13,9 +13,32 @@ export type ServiceHealth = {
 
 export type PlatformStatus = {
   product: 'DigiStream';
-  stage: 'foundation' | 'backend-data-foundation';
+  stage:
+    | 'foundation'
+    | 'backend-data-foundation'
+    | 'authentication-foundation';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
+};
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  displayName: string;
+  status: 'active' | 'suspended' | 'deleted';
+  emailVerifiedAt: string | null;
+  createdAt: string;
+};
+
+export type AuthUserResponse = {
+  user: AuthUser;
+};
+
+export type ApiErrorResponse = {
+  error: {
+    code: string;
+    message: string;
+  };
 };
 
 export type BroadcastState =
