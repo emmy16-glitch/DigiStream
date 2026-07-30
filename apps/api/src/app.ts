@@ -7,6 +7,7 @@ import {
   type DatabaseContext,
 } from './db/client.js';
 import { registerHttpErrorHandling } from './http/errors.js';
+import { registerOrganisationRoutes } from './modules/organisations/organisations.routes.js';
 import { registerProfileRoutes } from './modules/profiles/profiles.routes.js';
 
 export type BuildAppOptions = {
@@ -37,6 +38,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   registerAuthRoutes(app, database);
   registerProfileRoutes(app, database);
+  registerOrganisationRoutes(app, database);
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
     if (!database) {
@@ -79,12 +81,14 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get<{ Reply: PlatformStatus }>('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'profiles-capabilities',
+    stage: 'organisation-tenancy',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'creator-dashboard',
       'listener-experience',
       'organisation-workspaces',
+      'organisation-tenant-isolation',
+      'organisation-owner-admin-permissions',
       'postgresql-data-model',
       'versioned-database-migrations',
       'cookie-session-authentication',

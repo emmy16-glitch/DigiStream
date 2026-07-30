@@ -38,13 +38,18 @@
 
 ## Phase 3 — Organisations and tenant authorization
 
-- [ ] Organisation creation and personal creator workspaces
-- [ ] Membership invitations and acceptance
-- [ ] Owner, admin, broadcaster, moderator and analyst permissions
-- [ ] Prevention of removing the final owner
-- [ ] Role, ownership, tenant, status and visibility authorization helpers
-- [ ] Tenant-isolation and permission-matrix integration tests
-- [ ] Organisation audit events
+- [x] Create organisations with an atomic owner membership
+- [x] Restrict organisation creation to broadcaster or platform-admin capability
+- [x] List and read organisations only through membership
+- [x] Allow owner and admin organisation updates
+- [x] Return private not-found responses for cross-tenant access
+- [x] Add tenant-isolation integration tests for create, list, read and update
+- [ ] Add personal creator workspace automation
+- [ ] Add membership invitations and acceptance
+- [ ] Add role-change and member-removal endpoints
+- [ ] Prevent removal or demotion of the final owner
+- [ ] Complete the owner, admin, broadcaster, moderator and analyst permission matrix
+- [ ] Add organisation audit events
 
 ## Phase 4 — Channels, profiles and discovery foundation
 
