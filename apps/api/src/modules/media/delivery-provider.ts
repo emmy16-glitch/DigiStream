@@ -1,3 +1,5 @@
+import type { MediaRelayProtocol } from './media-relay-provider.js';
+
 export type DeliveryProtocol = 'webrtc' | 'llhls';
 
 export type DeliveryEnsureRequest = {
@@ -5,6 +7,12 @@ export type DeliveryEnsureRequest = {
   streamName: string;
   contributionRoomName: string;
   sourceUrl?: string;
+};
+
+export type DeliveryIngestTarget = {
+  protocol: MediaRelayProtocol;
+  url: string;
+  host: string;
 };
 
 export type DeliveryHealth = {
@@ -27,6 +35,7 @@ export type DeliveryPlayback = {
 
 export interface DeliveryProvider {
   readonly provider: 'ovenmediaengine';
+  getIngestTarget(streamName: string): DeliveryIngestTarget | null;
   ensureDelivery(request: DeliveryEnsureRequest): Promise<DeliveryHealth>;
   inspectDelivery(streamName: string): Promise<DeliveryHealth>;
   stopDelivery(streamName: string): Promise<void>;
