@@ -6,11 +6,11 @@ import { buildApp } from '../src/app.js';
 import { createDatabase } from '../src/db/client.js';
 import { runMigrations } from '../src/db/migrate.js';
 import {
-  broadcasts,
   organisationMemberships,
   organisations,
   users,
 } from '../src/db/schema.js';
+import { broadcastRecords } from '../src/modules/broadcasts/broadcasts.schema.js';
 import { channelRecords } from '../src/modules/channels/channels.schema.js';
 import type { ContributionProvider } from '../src/modules/media/contribution-provider.js';
 
@@ -134,7 +134,7 @@ test(
       assert.ok(channel);
 
       const [broadcast] = await database.db
-        .insert(broadcasts)
+        .insert(broadcastRecords)
         .values({
           organisationId,
           channelId: channel.id,
@@ -210,9 +210,9 @@ test(
       assert.equal(roomRequests[0], roomRequests[1]);
 
       await database.db
-        .update(broadcasts)
+        .update(broadcastRecords)
         .set({ status: 'starting', lifecycleVersion: 1 })
-        .where(eq(broadcasts.id, broadcast.id));
+        .where(eq(broadcastRecords.id, broadcast.id));
 
       const readyEndpoint = `/api/v1/organisations/${organisationId}/broadcasts/${broadcast.id}/contribution/ready`;
       const notPublished = await app.inject({
@@ -264,9 +264,9 @@ test(
       );
 
       await database.db
-        .update(broadcasts)
+        .update(broadcastRecords)
         .set({ status: 'completed', endedAt: new Date() })
-        .where(eq(broadcasts.id, broadcast.id));
+        .where(eq(broadcastRecords.id, broadcast.id));
 
       const completedDenied = await app.inject({
         method: 'POST',
