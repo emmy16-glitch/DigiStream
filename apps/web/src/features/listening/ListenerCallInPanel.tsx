@@ -227,7 +227,6 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
     }
   }
 
-  const tracked = Boolean(statusToken && status);
   const launcherText = status
     ? status.status === 'pending'
       ? 'Call-in pending'
