@@ -29,7 +29,7 @@ test('GET /api/v1/status declares all responsive targets', async () => {
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().stage, 'ovenmediaengine-delivery-adapter');
+  assert.equal(response.json().stage, 'livekit-ome-egress-bridge');
   assert.deepEqual(response.json().responsiveTargets, [
     'mobile',
     'tablet',

@@ -5,6 +5,11 @@ import type {
   DeliveryPlayback,
   DeliveryProvider,
 } from '../media/delivery-provider.js';
+import {
+  MediaRelayProviderError,
+  type MediaRelayJob,
+  type MediaRelayProvider,
+} from '../media/media-relay-provider.js';
 import { OvenMediaEngineError } from '../media/ovenmediaengine-provider.js';
 import { findOrganisationRole } from '../organisations/organisation-memberships.repository.js';
 import type { OrganisationRole } from '../organisations/organisations.types.js';
@@ -13,6 +18,12 @@ import {
   findBroadcastDeliveryBySlugs,
   type BroadcastDeliveryContext,
 } from './broadcast-delivery.repository.js';
+import {
+  findBroadcastMediaRelay,
+  saveBroadcastMediaRelay,
+  updateBroadcastMediaRelayJob,
+} from './broadcast-media-relays.repository.js';
+import type { BroadcastMediaRelay } from './broadcast-media-relays.schema.js';
 import { applyBroadcastMediaEvent } from './broadcasts.service.js';
 
 const DELIVERY_MANAGERS = new Set<OrganisationRole>([
@@ -84,12 +95,30 @@ function providerFailure(error: unknown): never {
       'Public stream delivery is temporarily unavailable.',
     );
   }
+  if (error instanceof MediaRelayProviderError) {
+    throw new ApiError(
+      error.code === 'invalid_configuration' ? 503 : 502,
+      'MEDIA_RELAY_PROVIDER_ERROR',
+      'The contribution-to-delivery relay is temporarily unavailable.',
+    );
+  }
   throw error;
+}
+
+function publicRelay(relay: BroadcastMediaRelay | null) {
+  return relay
+    ? {
+        provider: 'livekit_egress' as const,
+        protocol: relay.protocol,
+        status: relay.status,
+      }
+    : null;
 }
 
 function deliveryResult(
   context: BroadcastDeliveryContext,
   health: DeliveryHealth,
+  relay: BroadcastMediaRelay | null,
   status = context.status,
   lifecycleVersion = context.lifecycleVersion,
 ) {
@@ -97,6 +126,7 @@ function deliveryResult(
     provider: 'ovenmediaengine' as const,
     ready: health.ready,
     connections: health.connections,
+    relay: publicRelay(relay),
     broadcast: {
       id: context.id,
       status,
@@ -121,9 +151,80 @@ async function markDeliveryReady(
   });
 }
 
+async function startOrReuseRelay(
+  db: DigiStreamDatabase,
+  relayProvider: MediaRelayProvider,
+  context: BroadcastDeliveryContext,
+  target: NonNullable<ReturnType<NonNullable<DeliveryProvider['getIngestTarget']>>>,
+): Promise<BroadcastMediaRelay> {
+  const existing = await findBroadcastMediaRelay(db, context.id);
+  let job: MediaRelayJob;
+
+  if (
+    existing?.externalId &&
+    (existing.status === 'starting' ||
+      existing.status === 'active' ||
+      existing.status === 'stopping')
+  ) {
+    try {
+      job = await relayProvider.inspectRelay(existing.externalId);
+      return updateBroadcastMediaRelayJob(db, existing, job);
+    } catch (error) {
+      if (!(error instanceof MediaRelayProviderError) || error.code !== 'job_not_found') {
+        throw error;
+      }
+    }
+  }
+
+  job = await relayProvider.startAudioRelay({
+    broadcastId: context.id,
+    roomName: context.contributionRoomName,
+    targetUrl: target.url,
+    protocol: target.protocol,
+  });
+  return saveBroadcastMediaRelay(db, {
+    broadcastId: context.id,
+    protocol: target.protocol,
+    targetHost: target.host,
+    job,
+  });
+}
+
+async function ensureRelayHealthy(
+  db: DigiStreamDatabase,
+  relayProvider: MediaRelayProvider,
+  relay: BroadcastMediaRelay,
+): Promise<BroadcastMediaRelay> {
+  if (!relay.externalId) return relay;
+  const job = await relayProvider.inspectRelay(relay.externalId);
+  return updateBroadcastMediaRelayJob(db, relay, job);
+}
+
+async function failBroadcastForRelay(
+  db: DigiStreamDatabase,
+  context: BroadcastDeliveryContext,
+  relay: BroadcastMediaRelay,
+) {
+  if (
+    relay.status !== 'failed' ||
+    (context.status !== 'starting' &&
+      context.status !== 'live' &&
+      context.status !== 'reconnecting' &&
+      context.status !== 'ending')
+  ) {
+    return null;
+  }
+  return applyBroadcastMediaEvent(db, context.id, {
+    event: 'failed',
+    idempotencyKey: `relay-failed-${context.id}-${context.lifecycleVersion}`,
+    failureReason: relay.failureReason ?? 'LiveKit egress relay failed.',
+  });
+}
+
 export async function startBroadcastDelivery(
   db: DigiStreamDatabase,
   provider: DeliveryProvider,
+  relayProvider: MediaRelayProvider | null,
   organisationId: string,
   broadcastId: string,
   userId: string,
@@ -141,19 +242,45 @@ export async function startBroadcastDelivery(
   }
 
   try {
-    const health = await provider.ensureDelivery({
-      broadcastId: context.id,
-      streamName: context.deliveryStreamName,
-      contributionRoomName: context.contributionRoomName,
-    });
+    const target = provider.getIngestTarget?.(context.deliveryStreamName) ?? null;
+    let relay: BroadcastMediaRelay | null = null;
+    let health: DeliveryHealth;
+
+    if (target) {
+      if (!relayProvider) {
+        throw new ApiError(
+          503,
+          'MEDIA_RELAY_NOT_CONFIGURED',
+          'LiveKit Egress is required for push delivery.',
+        );
+      }
+      relay = await startOrReuseRelay(db, relayProvider, context, target);
+      if (relay.status === 'failed') {
+        await failBroadcastForRelay(db, context, relay);
+        throw new MediaRelayProviderError(
+          'request_failed',
+          relay.failureReason ?? 'LiveKit Egress failed to start.',
+        );
+      }
+      health = await provider.inspectDelivery(context.deliveryStreamName);
+    } else {
+      health = await provider.ensureDelivery({
+        broadcastId: context.id,
+        streamName: context.deliveryStreamName,
+        contributionRoomName: context.contributionRoomName,
+      });
+    }
+
     const updated = health.ready ? await markDeliveryReady(db, context) : null;
     return deliveryResult(
       context,
       health,
+      relay,
       updated?.status ?? context.status,
       updated?.lifecycleVersion ?? context.lifecycleVersion,
     );
   } catch (error) {
+    if (error instanceof ApiError) throw error;
     return providerFailure(error);
   }
 }
@@ -161,6 +288,7 @@ export async function startBroadcastDelivery(
 export async function refreshBroadcastDelivery(
   db: DigiStreamDatabase,
   provider: DeliveryProvider,
+  relayProvider: MediaRelayProvider | null,
   organisationId: string,
   broadcastId: string,
   userId: string,
@@ -171,12 +299,28 @@ export async function refreshBroadcastDelivery(
   if (!context) return notFound();
 
   try {
+    let relay = await findBroadcastMediaRelay(db, context.id);
+    if (relay && relayProvider && relay.externalId) {
+      relay = await ensureRelayHealthy(db, relayProvider, relay);
+      const failed = await failBroadcastForRelay(db, context, relay);
+      if (failed) {
+        return deliveryResult(
+          context,
+          { ready: false, connections: null },
+          relay,
+          failed.status,
+          failed.lifecycleVersion,
+        );
+      }
+    }
+
     const health = await provider.inspectDelivery(context.deliveryStreamName);
     if (health.ready) {
       const updated = await markDeliveryReady(db, context);
       return deliveryResult(
         context,
         health,
+        relay,
         updated?.status ?? context.status,
         updated?.lifecycleVersion ?? context.lifecycleVersion,
       );
@@ -190,11 +334,12 @@ export async function refreshBroadcastDelivery(
       return deliveryResult(
         context,
         health,
+        relay,
         updated.status,
         updated.lifecycleVersion,
       );
     }
-    return deliveryResult(context, health);
+    return deliveryResult(context, health, relay);
   } catch (error) {
     return providerFailure(error);
   }
@@ -203,6 +348,7 @@ export async function refreshBroadcastDelivery(
 export async function stopBroadcastDelivery(
   db: DigiStreamDatabase,
   provider: DeliveryProvider,
+  relayProvider: MediaRelayProvider | null,
   organisationId: string,
   broadcastId: string,
   userId: string,
@@ -220,6 +366,18 @@ export async function stopBroadcastDelivery(
   }
 
   try {
+    let relay = await findBroadcastMediaRelay(db, context.id);
+    if (
+      relay &&
+      relayProvider &&
+      relay.externalId &&
+      relay.status !== 'stopped' &&
+      relay.status !== 'failed'
+    ) {
+      const job = await relayProvider.stopRelay(relay.externalId);
+      relay = await updateBroadcastMediaRelayJob(db, relay, job);
+    }
+
     await provider.stopDelivery(context.deliveryStreamName);
     const health: DeliveryHealth = { ready: false, connections: null };
     const updated =
@@ -232,6 +390,7 @@ export async function stopBroadcastDelivery(
     return deliveryResult(
       context,
       health,
+      relay,
       updated?.status ?? context.status,
       updated?.lifecycleVersion ?? context.lifecycleVersion,
     );

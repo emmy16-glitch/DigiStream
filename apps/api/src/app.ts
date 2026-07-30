@@ -13,6 +13,8 @@ import { registerBroadcastRoutes } from './modules/broadcasts/broadcasts.routes.
 import { registerChannelRoutes } from './modules/channels/channels.routes.js';
 import type { ContributionProvider } from './modules/media/contribution-provider.js';
 import type { DeliveryProvider } from './modules/media/delivery-provider.js';
+import { createLiveKitEgressProviderFromEnv } from './modules/media/livekit-egress-provider.js';
+import type { MediaRelayProvider } from './modules/media/media-relay-provider.js';
 import { createLiveKitContributionProviderFromEnv } from './modules/media/livekit-provider.js';
 import { createOvenMediaEngineDeliveryProviderFromEnv } from './modules/media/ovenmediaengine-provider.js';
 import { registerOrganisationMembershipRoutes } from './modules/organisations/organisation-memberships.routes.js';
@@ -24,6 +26,7 @@ export type BuildAppOptions = {
   mediaControlSecret?: string;
   contributionProvider?: ContributionProvider | null;
   deliveryProvider?: DeliveryProvider | null;
+  mediaRelayProvider?: MediaRelayProvider | null;
 };
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
@@ -44,6 +47,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     options.deliveryProvider === undefined
       ? createOvenMediaEngineDeliveryProviderFromEnv()
       : options.deliveryProvider;
+  const mediaRelayProvider =
+    options.mediaRelayProvider === undefined
+      ? createLiveKitEgressProviderFromEnv()
+      : options.mediaRelayProvider;
 
   void app.register(cors, {
     origin: process.env.WEB_ORIGIN ?? true,
@@ -67,7 +74,12 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     options.mediaControlSecret ?? process.env.MEDIA_CONTROL_SECRET,
   );
   registerBroadcastContributionRoutes(app, database, contributionProvider);
-  registerBroadcastDeliveryRoutes(app, database, deliveryProvider);
+  registerBroadcastDeliveryRoutes(
+    app,
+    database,
+    deliveryProvider,
+    mediaRelayProvider,
+  );
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
     if (!database) {
@@ -110,7 +122,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'ovenmediaengine-delivery-adapter',
+    stage: 'livekit-ome-egress-bridge',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'creator-dashboard',
@@ -132,7 +144,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'livekit-room-provisioning',
       'short-lived-livekit-tokens',
       'microphone-only-contribution-permissions',
-      'ovenmediaengine-pull-delivery',
+      'livekit-audio-egress',
+      'persistent-media-relay-jobs',
+      'ovenmediaengine-rtmp-srt-ingest',
       'signed-webrtc-playback',
       'signed-llhls-playback',
       'private-playback-authorization',
