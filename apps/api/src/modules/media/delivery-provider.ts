@@ -35,7 +35,7 @@ export type DeliveryPlayback = {
 
 export interface DeliveryProvider {
   readonly provider: 'ovenmediaengine';
-  getIngestTarget(streamName: string): DeliveryIngestTarget | null;
+  getIngestTarget?(streamName: string): DeliveryIngestTarget | null;
   ensureDelivery(request: DeliveryEnsureRequest): Promise<DeliveryHealth>;
   inspectDelivery(streamName: string): Promise<DeliveryHealth>;
   stopDelivery(streamName: string): Promise<void>;
