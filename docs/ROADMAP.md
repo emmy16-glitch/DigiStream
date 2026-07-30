@@ -77,9 +77,12 @@
 
 ## Phase 6 — Live media foundation
 
-- [x] Define the provider-neutral media-event contract in the Fastify backend
-- [ ] Integrate LiveKit for creator publishing, guest participation, backstage rooms, host monitoring and call-ins
-- [ ] Generate short-lived, server-authorized LiveKit room tokens without exposing server secrets
+- [x] Define provider-neutral media-event and contribution-provider contracts in the Fastify backend
+- [x] Add idempotent LiveKit RoomService provisioning through the documented Twirp API
+- [x] Generate short-lived, server-authorized LiveKit host, guest and monitor tokens without exposing server secrets
+- [x] Restrict publisher credentials to microphone tracks and monitor credentials to subscribe-only access
+- [ ] Connect the web creator client to LiveKit microphone publishing and host monitoring
+- [ ] Add external guest invitations, backstage admission, participant removal and call-ins
 - [ ] Integrate OvenMediaEngine for public WebRTC and LL-HLS listener distribution
 - [ ] Define and implement the controlled relay from the LiveKit creator path into OvenMediaEngine delivery
 - [ ] Add microphone permission, input selection, audio level and clipping feedback
@@ -87,7 +90,7 @@
 - [x] Confirm contribution and delivery health before marking a broadcast live
 - [x] Define reconnection, source-loss and delivery-failure behaviour
 - [ ] Measure contribution latency, playback latency, bitrate, jitter, failures and listener capacity
-- [ ] Add real LiveKit and OvenMediaEngine adapter integration tests
+- [ ] Run integration tests against deployed LiveKit and OvenMediaEngine instances
 
 Icecast is not part of the DigiStream implementation plan. It remains only a technology used by the team handbook being compared against.
 
