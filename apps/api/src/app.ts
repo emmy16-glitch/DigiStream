@@ -6,6 +6,7 @@ import {
   createDatabase,
   type DatabaseContext,
 } from './db/client.js';
+import { registerHttpErrorHandling } from './http/errors.js';
 
 export type BuildAppOptions = {
   database?: DatabaseContext | null;
@@ -15,6 +16,8 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const app = Fastify({
     logger: process.env.NODE_ENV !== 'test',
   });
+
+  registerHttpErrorHandling(app);
 
   const database =
     options.database === undefined ? createDatabase() : options.database;
@@ -83,6 +86,8 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'postgresql-data-model',
       'versioned-database-migrations',
       'cookie-session-authentication',
+      'request-correlation',
+      'safe-api-errors',
       'live-audio-roadmap',
     ],
   }));
