@@ -142,13 +142,35 @@ function invalidCredentialsReply() {
   };
 }
 
+function accountExistsReply() {
+  return {
+    error: {
+      code: 'ACCOUNT_EXISTS',
+      message: 'An account with this email already exists.',
+    },
+  };
+}
+
 function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code?: unknown }).code === '23505'
-  );
+  let current: unknown = error;
+
+  for (let depth = 0; depth < 5; depth += 1) {
+    if (typeof current !== 'object' || current === null) {
+      return false;
+    }
+
+    if ('code' in current && (current as { code?: unknown }).code === '23505') {
+      return true;
+    }
+
+    if (!('cause' in current)) {
+      return false;
+    }
+
+    current = (current as { cause?: unknown }).cause;
+  }
+
+  return false;
 }
 
 export function registerAuthRoutes(
@@ -174,6 +196,16 @@ export function registerAuthRoutes(
             'Provide a valid email, a 2–100 character display name, and a 12–128 character password.',
         },
       });
+    }
+
+    const [existingUser] = await database.db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    if (existingUser) {
+      return reply.code(409).send(accountExistsReply());
     }
 
     const passwordHash = await hashPassword(password);
@@ -212,12 +244,7 @@ export function registerAuthRoutes(
       return reply.code(201).send({ user: publicUser(user) });
     } catch (error) {
       if (isUniqueViolation(error)) {
-        return reply.code(409).send({
-          error: {
-            code: 'ACCOUNT_EXISTS',
-            message: 'An account with this email already exists.',
-          },
-        });
+        return reply.code(409).send(accountExistsReply());
       }
 
       request.log.error({ error }, 'Failed to register user');
