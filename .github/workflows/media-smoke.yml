@@ -1,0 +1,50 @@
+name: Media stack smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: media-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-media:
+    name: LiveKit Egress to OME LL-HLS
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      OME_HOST_IP: 127.0.0.1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+
+      - name: Show container tools
+        run: |
+          docker version
+          docker compose version
+          node --version
+
+      - name: Start complete media stack
+        run: npm run media:up
+
+      - name: Run real media smoke test
+        run: npm run media:smoke
+
+      - name: Print service status and logs after failure
+        if: failure()
+        run: |
+          docker compose -f compose.media.yml ps --all || true
+          docker compose -f compose.media.yml logs --no-color --tail=400 || true
+
+      - name: Stop and remove media stack
+        if: always()
+        run: docker compose -f compose.media.yml down --volumes --remove-orphans
