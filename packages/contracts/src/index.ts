@@ -20,7 +20,8 @@ export type PlatformStatus = {
     | 'profiles-capabilities'
     | 'organisation-tenancy'
     | 'organisation-memberships'
-    | 'channel-foundation';
+    | 'channel-foundation'
+    | 'broadcast-lifecycle';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
 };
@@ -207,6 +208,82 @@ export type PublicChannelListResponse = {
   channels: PublicChannel[];
 };
 
+export type BroadcastState =
+  | 'draft'
+  | 'scheduled'
+  | 'starting'
+  | 'live'
+  | 'reconnecting'
+  | 'ending'
+  | 'completed'
+  | 'cancelled'
+  | 'failed';
+
+export type Broadcast = {
+  id: string;
+  organisationId: string;
+  channelId: string;
+  createdByUserId: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  status: BroadcastState;
+  scheduledStartAt: string | null;
+  startRequestedAt: string | null;
+  liveStartedAt: string | null;
+  endRequestedAt: string | null;
+  endedAt: string | null;
+  cancelledAt: string | null;
+  contributionRoomName: string;
+  deliveryStreamName: string;
+  contributionReadyAt: string | null;
+  deliveryReadyAt: string | null;
+  failureReason: string | null;
+  lifecycleVersion: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BroadcastResponse = {
+  broadcast: Broadcast;
+};
+
+export type BroadcastListResponse = {
+  broadcasts: Broadcast[];
+};
+
+export type PublicBroadcast = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  status: BroadcastState;
+  scheduledStartAt: string | null;
+  liveStartedAt: string | null;
+  endedAt: string | null;
+  organisation: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  channel: {
+    id: string;
+    name: string;
+    slug: string;
+    category: string | null;
+  };
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PublicBroadcastResponse = {
+  broadcast: PublicBroadcast;
+};
+
+export type PublicBroadcastListResponse = {
+  broadcasts: PublicBroadcast[];
+};
+
 export type ApiErrorResponse = {
   error: {
     code: string;
@@ -215,14 +292,3 @@ export type ApiErrorResponse = {
     details?: unknown;
   };
 };
-
-export type BroadcastState =
-  | 'draft'
-  | 'scheduled'
-  | 'preparing'
-  | 'live'
-  | 'reconnecting'
-  | 'ended'
-  | 'processing'
-  | 'published'
-  | 'failed';
