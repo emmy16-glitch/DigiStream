@@ -10,17 +10,19 @@ DigiStream is an audio-first live-streaming platform for creators, organisations
 - npm workspace monorepo
 - GitHub Actions validation
 - Termux-friendly development commands with no Docker requirement
+- GitHub Codespaces configuration with automatic dependency installation and port forwarding
 
 ## Repository structure
 
 ```text
 DigiStream/
+├── .devcontainer/    # Reproducible GitHub Codespaces environment
 ├── apps/
 │   ├── api/          # Fastify API
 │   └── web/          # React + Vite responsive web app
 ├── packages/
 │   └── contracts/    # Shared API contracts
-├── docs/             # Architecture and roadmap
+├── docs/             # Architecture, roadmap and development guides
 └── .github/workflows # Continuous integration
 ```
 
@@ -36,7 +38,7 @@ pkg update
 pkg install nodejs-lts git
 ```
 
-## Run locally
+## Run locally in Termux or desktop Linux
 
 ```bash
 git clone https://github.com/emmy16-glitch/DigiStream.git
@@ -45,25 +47,36 @@ npm install
 cp .env.example .env
 ```
 
-Start the API in one Termux session:
+Start the API in one terminal:
 
 ```bash
 npm run dev:api
 ```
 
-Start the web app in another Termux session:
+Start the web app in another terminal:
 
 ```bash
-npm run dev:web -- --host 0.0.0.0
+npm run dev:web
 ```
 
-Open `http://127.0.0.1:5173` on the phone. A computer on the same network can use the phone's local IP address instead of `127.0.0.1`.
+Open `http://127.0.0.1:5173` on the same device. A computer on the same local network can use the development device's local IP address instead of `127.0.0.1`.
+
+## Run in GitHub Codespaces
+
+Create a Codespace for the branch you want to inspect. The included development-container configuration uses Node.js 22, runs `npm install`, and forwards:
+
+- Port `3000` for the API
+- Port `5173` for the web application
+
+Then run `npm run dev:api` and `npm run dev:web` in separate terminals. See [`docs/CODESPACES.md`](docs/CODESPACES.md) for the complete phone workflow.
 
 ## Validation
 
 ```bash
 npm run check
 ```
+
+This runs TypeScript checks, API tests and production builds.
 
 ## Product direction
 
