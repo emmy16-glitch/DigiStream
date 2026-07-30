@@ -1,0 +1,185 @@
+name: digistream-local
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: digistream
+      POSTGRES_PASSWORD: digistream
+      POSTGRES_DB: digistream
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U digistream -d digistream"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks:
+      - media
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - ./infra/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks:
+      - media
+
+  livekit:
+    image: livekit/livekit-server:v1.13.4
+    restart: unless-stopped
+    command: ["--config", "/etc/livekit/livekit.yaml", "--bind", "0.0.0.0"]
+    volumes:
+      - ./infra/livekit/livekit.yaml:/etc/livekit/livekit.yaml:ro
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "50000-50020:50000-50020/udp"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:7880/"]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      retries: 20
+    networks:
+      - media
+
+  livekit-egress:
+    image: livekit/egress:v1.13.0
+    restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
+    shm_size: "1gb"
+    environment:
+      EGRESS_CONFIG_FILE: /etc/egress/egress.yaml
+    volumes:
+      - ./infra/livekit/egress.yaml:/etc/egress/egress.yaml:ro
+      - egress-data:/out
+    expose:
+      - "8080"
+      - "9090"
+    depends_on:
+      livekit:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/8080'"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 18
+    networks:
+      - media
+
+  ome:
+    image: ovenmedialabs/ovenmediaengine:0.20.5
+    restart: unless-stopped
+    environment:
+      OME_HOST_IP: ${OME_HOST_IP:-127.0.0.1}
+    volumes:
+      - ./infra/ome/Server.xml:/opt/ovenmediaengine/bin/origin_conf/Server.xml:ro
+      - ome-logs:/var/log/ovenmediaengine
+    ports:
+      - "8081:8081"
+      - "1935:1935"
+      - "9999:9999/udp"
+      - "3333:3333"
+      - "3478:3478"
+      - "10000-10005:10000-10005/udp"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/8081'"]
+      interval: 5s
+      timeout: 3s
+      start_period: 15s
+      retries: 20
+    networks:
+      - media
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    command:
+      - sh
+      - -c
+      - node apps/api/dist/db/migrate-cli.js && node apps/api/dist/server.js
+    environment:
+      NODE_ENV: development
+      API_HOST: 0.0.0.0
+      API_PORT: 3000
+      WEB_ORIGIN: http://localhost:5173
+      DATABASE_URL: postgresql://digistream:digistream@postgres:5432/digistream
+      DATABASE_POOL_MAX: 10
+      AUTH_SESSION_TTL_SECONDS: 2592000
+      AUTH_COOKIE_NAME: digistream_session
+      AUTH_COOKIE_SECURE: "false"
+      ORGANISATION_INVITATION_TTL_SECONDS: 604800
+      MEDIA_CONTROL_SECRET: local-media-control-secret-change-before-deployment
+      LIVEKIT_URL: ws://localhost:7880
+      LIVEKIT_API_URL: http://livekit:7880
+      LIVEKIT_API_KEY: devkey
+      LIVEKIT_API_SECRET: secret
+      LIVEKIT_TOKEN_TTL_SECONDS: 300
+      LIVEKIT_ROOM_EMPTY_TIMEOUT_SECONDS: 600
+      LIVEKIT_ROOM_DEPARTURE_TIMEOUT_SECONDS: 60
+      LIVEKIT_ROOM_MAX_PARTICIPANTS: 24
+      LIVEKIT_REQUEST_TIMEOUT_MS: 10000
+      OME_API_URL: http://ome:8081
+      OME_API_ACCESS_TOKEN: digistream-ome-access-token
+      OME_VHOST: default
+      OME_APP: live
+      OME_WEBRTC_BASE_URL: ws://localhost:3333
+      OME_LLHLS_BASE_URL: http://localhost:3333
+      OME_SIGNED_POLICY_SECRET: digistream-local-signed-policy
+      OME_PLAYBACK_TTL_SECONDS: 300
+      OME_INGEST_URL_TEMPLATE: rtmp://ome:1935/live/{streamName}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      livekit-egress:
+        condition: service_healthy
+      ome:
+        condition: service_healthy
+    networks:
+      - media
+
+  livekit-cli:
+    image: livekit/livekit-cli:v2.18.2
+    profiles: ["tools"]
+    entrypoint: ["lk"]
+    environment:
+      LIVEKIT_URL: ws://livekit:7880
+      LIVEKIT_API_KEY: devkey
+      LIVEKIT_API_SECRET: secret
+    depends_on:
+      livekit:
+        condition: service_healthy
+    networks:
+      - media
+
+networks:
+  media:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  egress-data:
+  ome-logs:
