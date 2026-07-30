@@ -28,7 +28,7 @@ export type OwnProfileDto = {
 
 export type SaveProfileInput = {
   username: string;
-  displayName?: string;
+  displayName?: string | undefined;
   biography: string | null;
   isDiscoverable: boolean;
 };
