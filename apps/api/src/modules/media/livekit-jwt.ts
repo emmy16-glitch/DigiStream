@@ -6,6 +6,7 @@ export type LiveKitVideoGrant = {
   roomList?: boolean;
   roomJoin?: boolean;
   roomAdmin?: boolean;
+  roomRecord?: boolean;
   canPublish?: boolean;
   canPublishData?: boolean;
   canPublishSources?: readonly string[];
