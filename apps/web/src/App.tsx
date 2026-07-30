@@ -5,6 +5,7 @@ import { CreatorBackstageWorkspace } from './features/guests/CreatorBackstageWor
 import { GuestJoinPage } from './features/guests/GuestJoinPage';
 import { parseGuestRoute } from './features/guests/guest-route';
 import { ListenerBroadcastPage } from './features/listening/ListenerBroadcastPage';
+import { ListenerCallInPanel } from './features/listening/ListenerCallInPanel';
 import { ListenerDiscoveryPage } from './features/listening/ListenerDiscoveryPage';
 import { parseListenerRoute } from './features/listening/listener-route';
 
@@ -225,10 +226,15 @@ export function App() {
 
   const listenerRoute = parseListenerRoute(window.location.pathname);
   if (listenerRoute?.kind === 'discovery') return <ListenerDiscoveryPage />;
-  if (
-    listenerRoute?.kind === 'public-broadcast' ||
-    listenerRoute?.kind === 'member-broadcast'
-  ) {
+  if (listenerRoute?.kind === 'public-broadcast') {
+    return (
+      <>
+        <ListenerBroadcastPage route={listenerRoute} />
+        <ListenerCallInPanel route={listenerRoute} />
+      </>
+    );
+  }
+  if (listenerRoute?.kind === 'member-broadcast') {
     return <ListenerBroadcastPage route={listenerRoute} />;
   }
   return <CreatorDashboard />;

@@ -8,7 +8,6 @@ import {
   acceptGuestInvitation,
   admitGuestInvitation,
   createGuestInvitation,
-  createPublicCallInRequest,
   decideCallInRequest,
   issueGuestContributionCredential,
   listBackstageParticipants,
@@ -18,13 +17,17 @@ import {
   removeBackstageGuest,
   revokeGuestInvitation,
   type AcceptGuestInvitationBody,
-  type CreateCallInBody,
   type CreateGuestInvitationBody,
 } from './broadcast-guests.service.js';
 import type {
   CallInRequestDto,
   GuestInvitationDto,
 } from './broadcast-guests.types.js';
+import {
+  createListenerCallInRequest,
+  getPublicListenerCallInStatus,
+  type CreateListenerCallInBody,
+} from './listener-call-ins.service.js';
 
 function requireDatabase(database: DatabaseContext | null): DatabaseContext {
   if (!database) {
@@ -96,6 +99,16 @@ function serializeCallIn(callIn: CallInRequestDto) {
 function noStore(reply: { header(name: string, value: string): unknown }): void {
   reply.header('cache-control', 'no-store');
   reply.header('pragma', 'no-cache');
+}
+
+function retryAfterFrom(error: ApiError): number | null {
+  if (error.statusCode !== 429 || typeof error.details !== 'object' || !error.details) {
+    return null;
+  }
+  const value = (error.details as { retryAfterSeconds?: unknown }).retryAfterSeconds;
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.max(1, Math.ceil(value))
+    : null;
 }
 
 export function registerBroadcastGuestRoutes(
@@ -301,19 +314,58 @@ export function registerBroadcastGuestRoutes(
       channelSlug: string;
       broadcastSlug: string;
     };
-    Body: CreateCallInBody;
+    Body: CreateListenerCallInBody;
   }>(
     '/api/v1/broadcasts/:organisationSlug/:channelSlug/:broadcastSlug/call-ins',
-    async (request) => {
+    async (request, reply) => {
       const context = requireDatabase(database);
-      const callIn = await createPublicCallInRequest(
-        context.db,
-        request.params.organisationSlug,
-        request.params.channelSlug,
-        request.params.broadcastSlug,
-        request.body ?? {},
+      try {
+        const result = await createListenerCallInRequest(
+          context,
+          request.params.organisationSlug,
+          request.params.channelSlug,
+          request.params.broadcastSlug,
+          request.body ?? {},
+          {
+            ipAddress: request.ip,
+            userAgent: request.headers['user-agent'] ?? '',
+          },
+        );
+        noStore(reply);
+        return {
+          callIn: serializeCallIn(result.callIn),
+          statusToken: result.statusToken,
+          statusExpiresAt: result.statusExpiresAt.toISOString(),
+        };
+      } catch (error) {
+        if (error instanceof ApiError) {
+          const retryAfter = retryAfterFrom(error);
+          if (retryAfter !== null) {
+            reply.header('retry-after', String(retryAfter));
+          }
+        }
+        throw error;
+      }
+    },
+  );
+
+  app.get<{ Params: { statusToken: string } }>(
+    '/api/v1/call-ins/:statusToken',
+    async (request, reply) => {
+      const context = requireDatabase(database);
+      const status = await getPublicListenerCallInStatus(
+        context,
+        request.params.statusToken,
       );
-      return { callIn: serializeCallIn(callIn) };
+      noStore(reply);
+      return {
+        callIn: {
+          ...status,
+          createdAt: status.createdAt.toISOString(),
+          decidedAt: status.decidedAt?.toISOString() ?? null,
+          statusExpiresAt: status.statusExpiresAt.toISOString(),
+        },
+      };
     },
   );
 
