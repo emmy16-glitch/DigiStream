@@ -26,10 +26,12 @@
 - [x] Document the team-handbook comparison and DigiStream adoption rules
 - [x] Define product roles, entities, traffic paths, visibility and lifecycles
 - [x] Standardize API error envelopes, request IDs and safe not-found handling
-- [ ] Refactor backend features into route/controller/service/repository modules
-- [ ] Add public user profiles and explicit public DTO projections
-- [ ] Add usernames, biography, avatar metadata and privacy preferences
-- [ ] Add platform broadcaster capability and platform-administrator authority
+- [ ] Refactor remaining backend features into route/controller/service/repository modules
+- [x] Add public user profiles and explicit public DTO projections
+- [x] Add unique usernames, biography and discoverability preferences
+- [ ] Add storage-backed avatar metadata and controlled public URLs
+- [x] Add platform broadcaster capability and platform-administrator authority
+- [ ] Add an operator CLI for the first platform-administrator bootstrap
 - [ ] Add login rate limiting, suspicious-attempt controls and audit events
 - [ ] Add email verification and password reset tokens
 - [ ] Add session listing and remote session revocation

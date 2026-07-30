@@ -7,6 +7,7 @@ import {
   type DatabaseContext,
 } from './db/client.js';
 import { registerHttpErrorHandling } from './http/errors.js';
+import { registerProfileRoutes } from './modules/profiles/profiles.routes.js';
 
 export type BuildAppOptions = {
   database?: DatabaseContext | null;
@@ -35,6 +36,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   }
 
   registerAuthRoutes(app, database);
+  registerProfileRoutes(app, database);
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
     if (!database) {
@@ -77,7 +79,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get<{ Reply: PlatformStatus }>('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'authentication-foundation',
+    stage: 'profiles-capabilities',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'creator-dashboard',
@@ -86,9 +88,12 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'postgresql-data-model',
       'versioned-database-migrations',
       'cookie-session-authentication',
+      'public-user-profiles',
+      'platform-capability-authorization',
       'request-correlation',
       'safe-api-errors',
-      'live-audio-roadmap',
+      'livekit-creator-path',
+      'ovenmediaengine-public-delivery',
     ],
   }));
 
