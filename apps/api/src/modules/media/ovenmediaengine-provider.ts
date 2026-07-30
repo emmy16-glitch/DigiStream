@@ -14,8 +14,8 @@ export type OvenMediaEngineConfig = {
   webrtcBaseUrl: string;
   llhlsBaseUrl: string;
   signedPolicySecret: string;
-  relayUrlTemplate?: string;
-  ingestUrlTemplate?: string;
+  relayUrlTemplate?: string | undefined;
+  ingestUrlTemplate?: string | undefined;
 };
 
 type FetchLike = typeof fetch;
