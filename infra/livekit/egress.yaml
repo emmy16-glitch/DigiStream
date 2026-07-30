@@ -1,0 +1,13 @@
+api_key: devkey
+api_secret: secret
+ws_url: ws://livekit:7880
+insecure: true
+
+redis:
+  address: redis:6379
+
+health_port: 8080
+prometheus_port: 9090
+log_level: info
+enable_chrome_sandbox: true
+backup_storage: /out

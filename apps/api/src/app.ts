@@ -122,7 +122,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'livekit-ome-egress-bridge',
+    stage: 'local-media-infrastructure',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'creator-dashboard',
@@ -151,6 +151,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'signed-llhls-playback',
       'private-playback-authorization',
       'delivery-health-reconciliation',
+      'local-media-compose',
+      'container-health-checks',
+      'live-media-smoke-test',
       'postgresql-data-model',
       'versioned-database-migrations',
       'cookie-session-authentication',

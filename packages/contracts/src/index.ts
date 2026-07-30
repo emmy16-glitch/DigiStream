@@ -21,7 +21,11 @@ export type PlatformStatus = {
     | 'organisation-tenancy'
     | 'organisation-memberships'
     | 'channel-foundation'
-    | 'broadcast-lifecycle';
+    | 'broadcast-lifecycle'
+    | 'livekit-contribution-adapter'
+    | 'ovenmediaengine-delivery-adapter'
+    | 'livekit-ome-egress-bridge'
+    | 'local-media-infrastructure';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
 };
