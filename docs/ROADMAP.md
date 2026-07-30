@@ -83,14 +83,16 @@
 - [x] Restrict publisher credentials to microphone tracks and monitor credentials to subscribe-only access
 - [ ] Connect the web creator client to LiveKit microphone publishing and host monitoring
 - [ ] Add external guest invitations, backstage admission, participant removal and call-ins
-- [ ] Integrate OvenMediaEngine for public WebRTC and LL-HLS listener distribution
-- [ ] Define and implement the controlled relay from the LiveKit creator path into OvenMediaEngine delivery
+- [x] Integrate OvenMediaEngine for public WebRTC and LL-HLS listener distribution
+- [x] Define and implement the controlled LiveKit Egress relay into OvenMediaEngine delivery
 - [ ] Add microphone permission, input selection, audio level and clipping feedback
-- [ ] Add authorized public, unlisted and private listener playback
+- [x] Add authorized public, unlisted and private listener playback
 - [x] Confirm contribution and delivery health before marking a broadcast live
 - [x] Define reconnection, source-loss and delivery-failure behaviour
+- [x] Add Docker Compose infrastructure for PostgreSQL, Redis, LiveKit, Egress, OME and the API
+- [x] Add a real room-to-Egress-to-OME-to-LL-HLS smoke-test workflow
 - [ ] Measure contribution latency, playback latency, bitrate, jitter, failures and listener capacity
-- [ ] Run integration tests against deployed LiveKit and OvenMediaEngine instances
+- [ ] Run and record the full smoke test against production-like deployed LiveKit and OvenMediaEngine instances
 
 Icecast is not part of the DigiStream implementation plan. It remains only a technology used by the team handbook being compared against.
 
