@@ -66,18 +66,21 @@
 - [ ] Add stream-session records and reconnection state
 - [ ] Add lifecycle authorization, idempotency and concurrency tests
 
-## Phase 6 — Live audio proof of concept
+## Phase 6 — Live media foundation
 
-- [ ] Define a media-adapter interface
-- [ ] Evaluate Icecast as the simplest audio-only MVP transport
-- [ ] Add microphone permission and input selection
-- [ ] Add audio level meter and clipping warning
-- [ ] Add creator publishing credentials without exposing source secrets
-- [ ] Add authorized listener playback
-- [ ] Add source, mount/session and playback health
-- [ ] Add reconnection behaviour
-- [ ] Measure latency, bitrate, jitter, failures and listener capacity
-- [ ] Retain a path to WebRTC contribution and HLS/LL-HLS delivery when justified
+- [ ] Define provider-neutral media-adapter interfaces in the Fastify backend
+- [ ] Integrate LiveKit for creator publishing, guest participation, backstage rooms, host monitoring and call-ins
+- [ ] Generate short-lived, server-authorized LiveKit room tokens without exposing server secrets
+- [ ] Integrate OvenMediaEngine for public WebRTC and LL-HLS listener distribution
+- [ ] Define the controlled handoff from the LiveKit creator path into OvenMediaEngine delivery
+- [ ] Add microphone permission, input selection, audio level and clipping feedback
+- [ ] Add authorized public, unlisted and private listener playback
+- [ ] Confirm the source and delivery health before marking a broadcast live
+- [ ] Add reconnection, source-loss and delivery-failure behaviour
+- [ ] Measure contribution latency, playback latency, bitrate, jitter, failures and listener capacity
+- [ ] Add media-provider contract and integration tests
+
+Icecast is not part of the DigiStream implementation plan. It remains only a technology used by the team handbook being compared against.
 
 ## Phase 7 — Real-time interaction and notifications
 
@@ -127,7 +130,7 @@
 
 - [ ] Least-privilege PostgreSQL users and secret management
 - [ ] Redis for queues, shared rate limits and distributed presence when required
-- [ ] Reverse proxy, TLS, WebSocket and streaming-specific configuration
+- [ ] Reverse proxy, TLS, WebSocket, WebRTC and LL-HLS configuration
 - [ ] Security headers, CORS policy and dependency scanning
 - [ ] Structured logs, request IDs, metrics, traces and alerts
 - [ ] PostgreSQL backups and restore drills
