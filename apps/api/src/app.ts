@@ -1,6 +1,6 @@
 import cors from '@fastify/cors';
 import Fastify, { type FastifyInstance } from 'fastify';
-import type { PlatformStatus, ServiceHealth } from '@digistream/contracts';
+import type { ServiceHealth } from '@digistream/contracts';
 import { registerAuthRoutes } from './auth/routes.js';
 import {
   createDatabase,
@@ -8,10 +8,13 @@ import {
 } from './db/client.js';
 import { registerHttpErrorHandling } from './http/errors.js';
 import { registerBroadcastContributionRoutes } from './modules/broadcasts/broadcast-contribution.routes.js';
+import { registerBroadcastDeliveryRoutes } from './modules/broadcasts/broadcast-delivery.routes.js';
 import { registerBroadcastRoutes } from './modules/broadcasts/broadcasts.routes.js';
 import { registerChannelRoutes } from './modules/channels/channels.routes.js';
 import type { ContributionProvider } from './modules/media/contribution-provider.js';
+import type { DeliveryProvider } from './modules/media/delivery-provider.js';
 import { createLiveKitContributionProviderFromEnv } from './modules/media/livekit-provider.js';
+import { createOvenMediaEngineDeliveryProviderFromEnv } from './modules/media/ovenmediaengine-provider.js';
 import { registerOrganisationMembershipRoutes } from './modules/organisations/organisation-memberships.routes.js';
 import { registerOrganisationRoutes } from './modules/organisations/organisations.routes.js';
 import { registerProfileRoutes } from './modules/profiles/profiles.routes.js';
@@ -20,6 +23,7 @@ export type BuildAppOptions = {
   database?: DatabaseContext | null;
   mediaControlSecret?: string;
   contributionProvider?: ContributionProvider | null;
+  deliveryProvider?: DeliveryProvider | null;
 };
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
@@ -36,6 +40,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     options.contributionProvider === undefined
       ? createLiveKitContributionProviderFromEnv()
       : options.contributionProvider;
+  const deliveryProvider =
+    options.deliveryProvider === undefined
+      ? createOvenMediaEngineDeliveryProviderFromEnv()
+      : options.deliveryProvider;
 
   void app.register(cors, {
     origin: process.env.WEB_ORIGIN ?? true,
@@ -59,6 +67,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     options.mediaControlSecret ?? process.env.MEDIA_CONTROL_SECRET,
   );
   registerBroadcastContributionRoutes(app, database, contributionProvider);
+  registerBroadcastDeliveryRoutes(app, database, deliveryProvider);
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
     if (!database) {
@@ -99,9 +108,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     }
   });
 
-  app.get<{ Reply: PlatformStatus }>('/api/v1/status', async () => ({
+  app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'broadcast-lifecycle',
+    stage: 'ovenmediaengine-delivery-adapter',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'creator-dashboard',
@@ -123,6 +132,11 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'livekit-room-provisioning',
       'short-lived-livekit-tokens',
       'microphone-only-contribution-permissions',
+      'ovenmediaengine-pull-delivery',
+      'signed-webrtc-playback',
+      'signed-llhls-playback',
+      'private-playback-authorization',
+      'delivery-health-reconciliation',
       'postgresql-data-model',
       'versioned-database-migrations',
       'cookie-session-authentication',
