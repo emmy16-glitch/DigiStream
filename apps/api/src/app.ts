@@ -1,6 +1,7 @@
 import cors from '@fastify/cors';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { PlatformStatus, ServiceHealth } from '@digistream/contracts';
+import { registerAuthRoutes } from './auth/routes.js';
 import {
   createDatabase,
   type DatabaseContext,
@@ -29,6 +30,8 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       await database?.close();
     });
   }
+
+  registerAuthRoutes(app, database);
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
     if (!database) {
@@ -71,7 +74,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get<{ Reply: PlatformStatus }>('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'backend-data-foundation',
+    stage: 'authentication-foundation',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'creator-dashboard',
@@ -79,6 +82,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'organisation-workspaces',
       'postgresql-data-model',
       'versioned-database-migrations',
+      'cookie-session-authentication',
       'live-audio-roadmap',
     ],
   }));

@@ -1,0 +1,161 @@
+import assert from 'node:assert/strict';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import test from 'node:test';
+import { eq } from 'drizzle-orm';
+import { buildApp } from '../src/app.js';
+import { createDatabase } from '../src/db/client.js';
+import { runMigrations } from '../src/db/migrate.js';
+import { authSessions, users } from '../src/db/schema.js';
+
+const databaseUrl = process.env.DATABASE_URL;
+
+function responseCookie(response: { headers: Record<string, unknown> }): string {
+  const header = response.headers['set-cookie'];
+  const value = Array.isArray(header) ? header[0] : header;
+  assert.equal(typeof value, 'string');
+  return value.split(';', 1)[0] ?? '';
+}
+
+test(
+  'registration, login, current user and logout use secure database sessions',
+  { skip: !databaseUrl, timeout: 60_000 },
+  async () => {
+    const database = createDatabase(databaseUrl);
+    assert.ok(database);
+    await runMigrations(database.pool);
+
+    const suffix = randomUUID().replaceAll('-', '').slice(0, 12);
+    const email = `auth-${suffix}@example.test`;
+    const password = 'A-strong-test-password-123!';
+    let userId: string | undefined;
+    const app = buildApp({ database });
+
+    try {
+      const invalidRegistration = await app.inject({
+        method: 'POST',
+        url: '/api/v1/auth/register',
+        payload: {
+          email: 'invalid',
+          displayName: 'A',
+          password: 'short',
+        },
+      });
+      assert.equal(invalidRegistration.statusCode, 400);
+
+      const registration = await app.inject({
+        method: 'POST',
+        url: '/api/v1/auth/register',
+        headers: {
+          'user-agent': 'DigiStream integration test',
+        },
+        payload: {
+          email: `  ${email.toUpperCase()}  `,
+          displayName: '  Test   Broadcaster  ',
+          password,
+        },
+      });
+
+      assert.equal(registration.statusCode, 201);
+      assert.equal(registration.json().user.email, email);
+      assert.equal(registration.json().user.displayName, 'Test Broadcaster');
+      assert.equal('passwordHash' in registration.json().user, false);
+
+      const registrationCookieHeader = String(
+        registration.headers['set-cookie'],
+      );
+      assert.match(registrationCookieHeader, /HttpOnly/i);
+      assert.match(registrationCookieHeader, /SameSite=Lax/i);
+      const registrationCookie = responseCookie(registration);
+
+      const [storedUser] = await database.db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+      assert.ok(storedUser);
+      userId = storedUser.id;
+      assert.notEqual(storedUser.passwordHash, password);
+      assert.match(storedUser.passwordHash, /^scrypt\$/);
+
+      const duplicate = await app.inject({
+        method: 'POST',
+        url: '/api/v1/auth/register',
+        payload: {
+          email: email.toUpperCase(),
+          displayName: 'Duplicate User',
+          password,
+        },
+      });
+      assert.equal(duplicate.statusCode, 409);
+
+      const me = await app.inject({
+        method: 'GET',
+        url: '/api/v1/auth/me',
+        headers: { cookie: registrationCookie },
+      });
+      assert.equal(me.statusCode, 200);
+      assert.equal(me.json().user.id, storedUser.id);
+      assert.equal('passwordHash' in me.json().user, false);
+
+      const wrongPassword = await app.inject({
+        method: 'POST',
+        url: '/api/v1/auth/login',
+        payload: {
+          email,
+          password: 'This-is-the-wrong-password!',
+        },
+      });
+      assert.equal(wrongPassword.statusCode, 401);
+      assert.equal(wrongPassword.json().error.code, 'INVALID_CREDENTIALS');
+
+      const logout = await app.inject({
+        method: 'POST',
+        url: '/api/v1/auth/logout',
+        headers: { cookie: registrationCookie },
+      });
+      assert.equal(logout.statusCode, 204);
+      assert.match(String(logout.headers['set-cookie']), /Max-Age=0/i);
+
+      const meAfterLogout = await app.inject({
+        method: 'GET',
+        url: '/api/v1/auth/me',
+        headers: { cookie: registrationCookie },
+      });
+      assert.equal(meAfterLogout.statusCode, 401);
+
+      const login = await app.inject({
+        method: 'POST',
+        url: '/api/v1/auth/login',
+        payload: { email, password },
+      });
+      assert.equal(login.statusCode, 200);
+      assert.equal(login.json().user.id, storedUser.id);
+      assert.ok(responseCookie(login));
+
+      const expiredToken = randomBytes(32).toString('base64url');
+      const createdAt = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+      await database.db.insert(authSessions).values({
+        userId: storedUser.id,
+        tokenHash: createHash('sha256').update(expiredToken).digest('hex'),
+        createdAt,
+        lastUsedAt: createdAt,
+        expiresAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      });
+
+      const expiredSession = await app.inject({
+        method: 'GET',
+        url: '/api/v1/auth/me',
+        headers: { cookie: `digistream_session=${expiredToken}` },
+      });
+      assert.equal(expiredSession.statusCode, 401);
+    } finally {
+      await app.close();
+
+      if (userId) {
+        await database.db.delete(users).where(eq(users.id, userId));
+      }
+
+      await database.close();
+    }
+  },
+);

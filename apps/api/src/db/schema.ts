@@ -1,6 +1,7 @@
 import {
   boolean,
   index,
+  inet,
   pgEnum,
   pgTable,
   text,
@@ -58,6 +59,44 @@ export const users = pgTable(
       .notNull(),
   },
   (table) => [uniqueIndex('users_email_unique').on(table.email)],
+);
+
+export const authSessions = pgTable(
+  'auth_sessions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: varchar('token_hash', { length: 64 }).notNull(),
+    expiresAt: timestamp('expires_at', {
+      withTimezone: true,
+      mode: 'date',
+    }).notNull(),
+    lastUsedAt: timestamp('last_used_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+    revokedAt: timestamp('revoked_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
+    userAgent: varchar('user_agent', { length: 500 }),
+    ipAddress: inet('ip_address'),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('auth_sessions_token_hash_unique').on(table.tokenHash),
+    index('auth_sessions_user_id_idx').on(table.userId),
+    index('auth_sessions_active_expiry_idx').on(table.expiresAt),
+  ],
 );
 
 export const organisations = pgTable(
@@ -215,6 +254,8 @@ export const broadcasts = pgTable(
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+export type AuthSession = typeof authSessions.$inferSelect;
+export type NewAuthSession = typeof authSessions.$inferInsert;
 export type Organisation = typeof organisations.$inferSelect;
 export type NewOrganisation = typeof organisations.$inferInsert;
 export type OrganisationMembership =
