@@ -199,7 +199,9 @@ test(
         'microphone',
       ]);
       assert.equal(roomRequests.length, 2);
-      assert.ok(roomRequests.every((room) => room === broadcast.contributionRoomName));
+      assert.equal(roomRequests[0], monitor.json().credential.roomName);
+      assert.equal(roomRequests[1], host.json().credential.roomName);
+      assert.equal(roomRequests[0], roomRequests[1]);
 
       await database.db
         .update(broadcasts)
