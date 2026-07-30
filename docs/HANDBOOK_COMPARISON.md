@@ -16,6 +16,8 @@ DigiStream keeps its technical core:
 - multi-tenant organisations and memberships
 - GitHub Actions validation on Node.js 22 and 24
 - Termux and Codespaces support
+- LiveKit for interactive creator, guest, backstage, monitoring, and call-in audio
+- OvenMediaEngine for public WebRTC and LL-HLS distribution
 
 DigiStream adopts the handbook's strongest product and engineering ideas:
 
@@ -44,8 +46,8 @@ DigiStream adopts the handbook's strongest product and engineering ideas:
 | Authentication | access JWT plus rotating refresh session | Keep opaque database sessions for the browser-first application; add verification, reset, rate limiting, audit, and session-management features from the handbook |
 | Tenancy | broadcaster-owned stations | Keep organisation tenancy while allowing individual creators to own a personal organisation or workspace |
 | Product roles | visitor, listener, broadcaster, administrator | Adopt as platform capabilities; keep organisation roles separately |
-| Media | Icecast | Keep the media path behind an adapter. Icecast is an approved MVP option for simple audio-only distribution; WebRTC contribution and HLS/LL-HLS remain options for later scale and latency requirements |
-| Real time | Socket.IO rooms and events | Adopt the room-authorization, idempotency, reconnect, moderation, and presence rules; choose the concrete transport when that phase begins |
+| Media | Icecast | Do not adopt Icecast. Keep the agreed split: LiveKit for creator/guest/backstage real-time paths and OvenMediaEngine for public WebRTC and LL-HLS delivery |
+| Real time | Socket.IO rooms and events | Adopt the room-authorization, idempotency, reconnect, moderation, and presence rules; choose the concrete application-event transport when that phase begins |
 | Recordings | object storage plus metadata lifecycle | Adopt directly, using private objects and PostgreSQL metadata |
 | Payments | Paystack or Flutterwave | Adopt provider abstraction, signed webhooks, idempotent ledger entries, reconciliation, and audit requirements |
 | Testing | unit, component, API, authorization, socket, end-to-end, build | Adopt the complete testing ladder; retain the existing PostgreSQL CI matrix |
@@ -59,6 +61,7 @@ DigiStream adopts the handbook's strongest product and engineering ideas:
 - Authentication uses strong password hashing and server-side revocable sessions.
 - CI applies migrations and validates tests, types, and builds on two supported Node.js versions.
 - The organisation model supports teams rather than only one broadcaster account.
+- The media architecture already separates interactive contribution from public one-to-many distribution.
 
 ## Where the handbook is currently ahead
 
@@ -78,6 +81,7 @@ DigiStream adopts the handbook's strongest product and engineering ideas:
 5. Add infrastructure only when a feature or measured bottleneck requires it.
 6. Implement one reviewable backend slice per pull request and merge only after CI passes.
 7. Every new feature documents success, empty, validation, unauthorized, forbidden, not-found, conflict, dependency-failure, and retry behaviour where applicable.
+8. Never change the agreed media stack merely because a reference implementation uses a different media server.
 
 ## Planned adoption order
 
@@ -86,7 +90,7 @@ DigiStream adopts the handbook's strongest product and engineering ideas:
 3. Organisation creation, membership invitations, and tenant authorization.
 4. Station/channel visibility, lifecycle, categories, discovery, and ownership.
 5. Broadcast scheduling and an enforced lifecycle state machine.
-6. Media transport adapter and the first live-audio proof of concept.
+6. LiveKit creator contribution and OvenMediaEngine public delivery integration behind media adapters.
 7. Secure real-time rooms, chat, reactions, moderation, notifications, and presence.
 8. Recording lifecycle, private object storage, replay, retention, and reconciliation.
 9. Search, following, analytics, administration, and audited commerce.
