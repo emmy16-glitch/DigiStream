@@ -3,6 +3,7 @@ import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
 import type { DeliveryProvider } from '../media/delivery-provider.js';
+import type { MediaRelayProvider } from '../media/media-relay-provider.js';
 import {
   issueMemberBroadcastPlayback,
   issuePublicBroadcastPlayback,
@@ -67,6 +68,7 @@ export function registerBroadcastDeliveryRoutes(
   app: FastifyInstance,
   database: DatabaseContext | null,
   provider: DeliveryProvider | null,
+  relayProvider: MediaRelayProvider | null,
 ): void {
   for (const action of ['start', 'refresh', 'stop'] as const) {
     app.post<{
@@ -80,6 +82,7 @@ export function registerBroadcastDeliveryRoutes(
         const args = [
           context.db,
           deliveryProvider,
+          relayProvider,
           request.params.organisationId,
           request.params.broadcastId,
           user.id,
