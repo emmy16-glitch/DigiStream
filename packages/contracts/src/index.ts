@@ -18,7 +18,8 @@ export type PlatformStatus = {
     | 'backend-data-foundation'
     | 'authentication-foundation'
     | 'profiles-capabilities'
-    | 'organisation-tenancy';
+    | 'organisation-tenancy'
+    | 'organisation-memberships';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
 };
@@ -102,6 +103,53 @@ export type OrganisationResponse = {
 
 export type OrganisationListResponse = {
   organisations: Organisation[];
+};
+
+export type OrganisationMember = {
+  userId: string;
+  email: string;
+  displayName: string;
+  role: OrganisationRole;
+  joinedAt: string;
+};
+
+export type OrganisationMemberListResponse = {
+  members: OrganisationMember[];
+};
+
+export type OrganisationMemberResponse = {
+  member: OrganisationMember;
+};
+
+export type OrganisationInvitation = {
+  id: string;
+  organisationId: string;
+  email: string;
+  role: Exclude<OrganisationRole, 'owner'>;
+  invitedByUserId: string | null;
+  expiresAt: string;
+  createdAt: string;
+};
+
+export type CreatedOrganisationInvitation = OrganisationInvitation & {
+  acceptanceToken: string;
+};
+
+export type OrganisationInvitationResponse = {
+  invitation: CreatedOrganisationInvitation;
+};
+
+export type OrganisationInvitationListResponse = {
+  invitations: OrganisationInvitation[];
+};
+
+export type AcceptedOrganisationMembershipResponse = {
+  membership: {
+    organisationId: string;
+    organisationName: string;
+    role: OrganisationRole;
+    joinedAt: string;
+  };
 };
 
 export type ApiErrorResponse = {
