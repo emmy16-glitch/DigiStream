@@ -12,30 +12,39 @@ DigiStream is an audio-first live-streaming platform for creators, organisations
 - Secure scrypt password hashing and opaque HttpOnly cookies
 - Standard safe API errors and request correlation IDs
 - Shared TypeScript contracts
+- Organisations, invitations, tenant roles, channels and broadcast lifecycles
+- LiveKit creator/guest rooms and short-lived contribution credentials
+- Persistent LiveKit Egress to OvenMediaEngine delivery bridge
+- Signed WebRTC and LL-HLS listener playback
+- Complete Docker Compose media development stack and real end-to-end smoke test
 - npm workspace monorepo with a committed dependency lock
 - PostgreSQL integration tests and GitHub Actions validation on Node.js 22 and Node.js 24
 - Reproducible GitHub Codespaces environment
-- Termux-friendly development commands
+- Termux-friendly application development commands
 
 ## Repository structure
 
 ```text
 DigiStream/
 ├── apps/
-│   ├── api/          # Fastify API and PostgreSQL modules
+│   ├── api/          # Fastify API, PostgreSQL and media orchestration
 │   └── web/          # React + Vite responsive web app
 ├── packages/
 │   └── contracts/    # Shared API contracts
+├── infra/            # Redis, LiveKit, Egress and OME configuration
+├── scripts/          # Stack commands and end-to-end media smoke test
 ├── docs/             # Product, architecture, roadmap and development guides
+├── compose.media.yml # Complete local media infrastructure
 ├── .devcontainer/    # GitHub Codespaces environment
-└── .github/workflows # Continuous integration
+└── .github/workflows # Continuous integration and media smoke workflow
 ```
 
 ## Requirements
 
 - Node.js 22 or newer
 - npm 10 or newer
-- PostgreSQL for database-backed development and integration tests
+- PostgreSQL for database-backed application development and integration tests
+- Docker Engine and Docker Compose v2 for the complete media stack
 
 On Termux:
 
@@ -44,9 +53,9 @@ pkg update
 pkg install nodejs-lts git
 ```
 
-PostgreSQL can run on another reachable machine or a development cloud service when a reliable local Android package is unavailable.
+PostgreSQL can run on another reachable machine or a development cloud service when a reliable local Android package is unavailable. The Docker media stack should run on a desktop, VM or remote Docker host rather than directly inside Android Termux.
 
-## Run locally
+## Run the application locally
 
 ```bash
 git clone https://github.com/emmy16-glitch/DigiStream.git
@@ -72,21 +81,54 @@ Open `http://127.0.0.1:5173` on the phone. A computer on the same network can us
 
 For browser-based development from a phone, see [`docs/CODESPACES.md`](docs/CODESPACES.md).
 
+## Run the complete media stack
+
+On a Docker-capable machine:
+
+```bash
+npm run media:up
+```
+
+This starts PostgreSQL, Redis, LiveKit, LiveKit Egress, OvenMediaEngine and the production-style Fastify API container.
+
+Run the real LiveKit-to-OME verification:
+
+```bash
+npm run media:smoke
+```
+
+Stop the stack:
+
+```bash
+npm run media:down
+```
+
+Remove the stack and its local data volumes:
+
+```bash
+npm run media:reset
+```
+
+See [`docs/LOCAL_MEDIA_STACK.md`](docs/LOCAL_MEDIA_STACK.md) for ports, architecture, remote-host settings and troubleshooting.
+
 ## Validation
 
 ```bash
 npm run check
 ```
 
-GitHub Actions starts PostgreSQL, applies migrations, runs integration tests, checks TypeScript and builds the API and web application on Node.js 22 and Node.js 24. The workflow also supports manual runs from the **Actions** tab.
+GitHub Actions starts PostgreSQL, applies migrations, runs integration tests, checks TypeScript and builds the API and web application on Node.js 22 and Node.js 24. A separate infrastructure job validates the Compose model, parses the OvenMediaEngine XML and builds the production API container image.
 
-Python is not required for the current React and Fastify applications. A separate Python 3.11/3.12 test matrix will be added only if DigiStream later gains a Python analytics, machine-learning or data-processing service.
+The manually triggered **Media stack smoke** workflow starts the full media infrastructure and verifies a real LiveKit room, LiveKit Egress RTMP output, OvenMediaEngine delivery and signed LL-HLS manifest.
+
+Python is not required for the React and Fastify applications. The CI infrastructure check uses the runner's standard Python installation only to verify that `Server.xml` is well-formed.
 
 ## Product and architecture references
 
 - [`docs/PRODUCT_SPECIFICATION.md`](docs/PRODUCT_SPECIFICATION.md) defines users, authority, entities, visibility, lifecycles, MVP scope and production requirements.
 - [`docs/HANDBOOK_COMPARISON.md`](docs/HANDBOOK_COMPARISON.md) records which ideas were adopted from the Echoo team handbook and which DigiStream technologies remain stronger.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) defines modular backend, data, real-time and media boundaries.
+- [`docs/LOCAL_MEDIA_STACK.md`](docs/LOCAL_MEDIA_STACK.md) explains the executable LiveKit, Egress and OvenMediaEngine development environment.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) records implementation order and completion gates.
 
 ## Product direction
@@ -98,7 +140,7 @@ The backend-first implementation order is:
 3. Organisations, invitations and tenant roles
 4. Channels, visibility and discovery
 5. Scheduled and immediate broadcast lifecycle
-6. Media adapter and live-audio proof of concept
+6. LiveKit contribution, Egress bridge and OvenMediaEngine delivery
 7. Secure real-time interaction and notifications
 8. Recording, object storage and replay
 9. Analytics, administration and commerce
