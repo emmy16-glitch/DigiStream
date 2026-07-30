@@ -122,7 +122,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'creator-broadcast-client',
+    stage: 'listener-playback-client',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'creator-dashboard',
@@ -133,6 +133,14 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'creator-mute-and-reconnect-controls',
       'creator-go-live-and-end-controls',
       'listener-experience',
+      'public-listener-discovery',
+      'public-and-unlisted-listener-pages',
+      'private-member-listener-pages',
+      'webrtc-first-listener-playback',
+      'automatic-llhls-fallback',
+      'listener-volume-and-mute-controls',
+      'listener-buffering-and-reconnect-controls',
+      'short-lived-playback-access',
       'organisation-workspaces',
       'organisation-tenant-isolation',
       'organisation-owner-admin-permissions',

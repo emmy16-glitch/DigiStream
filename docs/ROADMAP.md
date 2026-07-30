@@ -88,12 +88,16 @@
 - [x] Add microphone permission, input selection, audio level and clipping feedback
 - [x] Verify browser contribution readiness through LiveKit RoomService before changing broadcast state
 - [x] Add authorized public, unlisted and private listener playback
+- [x] Add responsive public discovery and exact public, unlisted and private listener routes
+- [x] Add WebRTC-first listener playback with automatic LL-HLS fallback
+- [x] Add listener buffering, network recovery, mute and volume controls
 - [x] Confirm contribution and delivery health before marking a broadcast live
 - [x] Define reconnection, source-loss and delivery-failure behaviour
 - [x] Add Docker Compose infrastructure for PostgreSQL, Redis, LiveKit, Egress, OME and the API
 - [x] Add a real room-to-Egress-to-OME-to-LL-HLS smoke-test workflow
 - [ ] Measure contribution latency, playback latency, bitrate, jitter, failures and listener capacity
 - [ ] Run and record the full smoke test against production-like deployed LiveKit and OvenMediaEngine instances
+- [ ] Run browser playback compatibility tests across Android Chrome, desktop Chrome, Firefox and Safari
 
 Icecast is not part of the DigiStream implementation plan. It remains only a technology used by the team handbook being compared against.
 

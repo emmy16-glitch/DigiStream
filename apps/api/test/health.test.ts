@@ -19,7 +19,7 @@ test('GET /health reports when a database is not configured', async () => {
   await app.close();
 });
 
-test('GET /api/v1/status declares creator broadcasting capabilities', async () => {
+test('GET /api/v1/status declares creator and listener media capabilities', async () => {
   process.env.NODE_ENV = 'test';
   const app = buildApp({ database: null });
 
@@ -29,7 +29,7 @@ test('GET /api/v1/status declares creator broadcasting capabilities', async () =
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().stage, 'creator-broadcast-client');
+  assert.equal(response.json().stage, 'listener-playback-client');
   assert.deepEqual(response.json().responsiveTargets, [
     'mobile',
     'tablet',
@@ -42,6 +42,15 @@ test('GET /api/v1/status declares creator broadcasting capabilities', async () =
   );
   assert.ok(
     response.json().capabilities.includes('verified-browser-contribution-readiness'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('webrtc-first-listener-playback'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('automatic-llhls-fallback'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('private-member-listener-pages'),
   );
 
   await app.close();

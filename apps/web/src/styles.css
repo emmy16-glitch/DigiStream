@@ -50,6 +50,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(33, 208, 122, .4
 .topbar h1 { margin: 5px 0 0; font-size: clamp(1.75rem, 3vw, 2.35rem); letter-spacing: -.04em; }
 .eyebrow { font-size: .72rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; color: var(--green); }
 .topbar-actions { display: flex; align-items: center; gap: 10px; }
+.listen-link { padding: 9px 12px; border: 1px solid var(--border); border-radius: 11px; color: var(--green); background: var(--surface); font-size: .78rem; font-weight: 800; text-decoration: none; }
+.listen-link:hover { border-color: #3b4840; background: var(--surface-strong); }
 .icon-button, .avatar-button { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--border); border-radius: 13px; background: var(--surface); cursor: pointer; }
 .avatar-button { font-weight: 800; color: #06150d; background: var(--green); border-color: var(--green); }
 
@@ -61,10 +63,10 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(33, 208, 122, .4
 .hero-card p { max-width: 680px; margin: 0; color: #b6c1bb; font-size: clamp(.98rem, 1.4vw, 1.12rem); line-height: 1.65; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 11px; margin-top: 26px; }
 .primary-button, .secondary-button, .wide-button, .text-button { border: 0; cursor: pointer; font-weight: 750; }
-.primary-button, .secondary-button { min-height: 46px; padding: 0 18px; border-radius: 12px; }
+.primary-button, .secondary-button { min-height: 46px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; text-decoration: none; }
 .primary-button { color: #04130b; background: var(--green); }
 .primary-button:hover { background: #44df91; }
-.secondary-button { border: 1px solid #3b4840; background: rgba(10,13,11,.44); }
+.secondary-button { color: var(--text); border: 1px solid #3b4840; background: rgba(10,13,11,.44); }
 .signal-visual { height: 190px; display: flex; align-items: center; justify-content: center; gap: clamp(5px, 1vw, 10px); padding: 22px; border: 1px solid rgba(255,255,255,.08); border-radius: 22px; background: rgba(4, 10, 7, .42); }
 .signal-visual i { width: clamp(5px, .7vw, 9px); min-height: 15px; border-radius: 999px; background: linear-gradient(to top, var(--green-dark), #7df3ae); box-shadow: 0 0 16px rgba(33,208,122,.17); }
 
@@ -111,11 +113,13 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(33, 208, 122, .4
 
 @media (max-width: 760px) {
   body { padding-bottom: 76px; }
+  .listener-page { margin-bottom: -76px; }
   .sidebar { display: none; }
   .main-content { margin-left: 0; padding: 22px 15px 35px; }
   .topbar { margin-bottom: 18px; }
   .topbar .eyebrow { display: none; }
   .topbar h1 { margin: 0; font-size: 1.65rem; }
+  .listen-link { display: none; }
   .hero-card { min-height: auto; padding: 23px 19px; border-radius: 20px; }
   .hero-card h2 { font-size: clamp(2.1rem, 11vw, 3.25rem); }
   .hero-actions { display: grid; grid-template-columns: 1fr; }
