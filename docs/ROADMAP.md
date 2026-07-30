@@ -66,27 +66,28 @@
 
 ## Phase 5 — Broadcast scheduling and lifecycle
 
-- [ ] Start-now broadcasts
-- [ ] Scheduled broadcasts
-- [ ] Enforce draft, scheduled, starting, live, ending, completed, cancelled and failed transitions
-- [ ] Confirm the media source before declaring a broadcast live
-- [ ] Add public event pages and shareable links
-- [ ] Add stream-session records and reconnection state
-- [ ] Add lifecycle authorization, idempotency and concurrency tests
+- [x] Add a start-now flow through draft creation followed by an idempotent start command
+- [x] Add scheduled broadcasts
+- [x] Enforce draft, scheduled, starting, live, reconnecting, ending, completed, cancelled and failed transitions
+- [x] Require both contribution and delivery readiness before declaring a broadcast live
+- [x] Add public event pages and shareable links
+- [x] Add provider-neutral LiveKit room and OvenMediaEngine stream identifiers
+- [x] Add reconnection, source-loss and delivery-loss state
+- [x] Add lifecycle authorization, idempotency and optimistic-concurrency tests
 
 ## Phase 6 — Live media foundation
 
-- [ ] Define provider-neutral media-adapter interfaces in the Fastify backend
+- [x] Define the provider-neutral media-event contract in the Fastify backend
 - [ ] Integrate LiveKit for creator publishing, guest participation, backstage rooms, host monitoring and call-ins
 - [ ] Generate short-lived, server-authorized LiveKit room tokens without exposing server secrets
 - [ ] Integrate OvenMediaEngine for public WebRTC and LL-HLS listener distribution
-- [ ] Define the controlled handoff from the LiveKit creator path into OvenMediaEngine delivery
+- [ ] Define and implement the controlled relay from the LiveKit creator path into OvenMediaEngine delivery
 - [ ] Add microphone permission, input selection, audio level and clipping feedback
 - [ ] Add authorized public, unlisted and private listener playback
-- [ ] Confirm the source and delivery health before marking a broadcast live
-- [ ] Add reconnection, source-loss and delivery-failure behaviour
+- [x] Confirm contribution and delivery health before marking a broadcast live
+- [x] Define reconnection, source-loss and delivery-failure behaviour
 - [ ] Measure contribution latency, playback latency, bitrate, jitter, failures and listener capacity
-- [ ] Add media-provider contract and integration tests
+- [ ] Add real LiveKit and OvenMediaEngine adapter integration tests
 
 Icecast is not part of the DigiStream implementation plan. It remains only a technology used by the team handbook being compared against.
 
