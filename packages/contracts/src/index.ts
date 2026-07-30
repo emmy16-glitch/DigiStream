@@ -26,7 +26,8 @@ export type PlatformStatus = {
     | 'ovenmediaengine-delivery-adapter'
     | 'livekit-ome-egress-bridge'
     | 'local-media-infrastructure'
-    | 'creator-broadcast-client';
+    | 'creator-broadcast-client'
+    | 'listener-playback-client';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
 };
@@ -287,6 +288,21 @@ export type PublicBroadcastResponse = {
 
 export type PublicBroadcastListResponse = {
   broadcasts: PublicBroadcast[];
+};
+
+export type BroadcastPlaybackSource = {
+  protocol: 'webrtc' | 'llhls';
+  url: string;
+};
+
+export type BroadcastPlayback = {
+  provider: 'ovenmediaengine';
+  expiresAt: string;
+  sources: BroadcastPlaybackSource[];
+};
+
+export type BroadcastPlaybackResponse = {
+  playback: BroadcastPlayback;
 };
 
 export type ApiErrorResponse = {
