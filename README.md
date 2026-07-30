@@ -4,10 +4,14 @@ DigiStream is an audio-first live-streaming platform for creators, organisations
 
 ## Current foundation
 
-- Responsive React creator dashboard and listener-ready web shell
+- Responsive React creator dashboard and public listener application
 - Browser creator studio with microphone permission, input selection, live levels and clipping feedback
 - LiveKit room join, microphone publishing, mute, guest monitoring and reconnect controls
 - Server-verified browser contribution readiness before broadcast state changes
+- Public live-audio discovery and exact unlisted listener links
+- WebRTC-first OvenPlayer playback with automatic LL-HLS fallback
+- Listener volume, mute, buffering, offline and bounded recovery controls
+- Private listener routes protected by existing organisation membership and HttpOnly sessions
 - Fastify and TypeScript API
 - PostgreSQL and Drizzle typed data model
 - Versioned checksum-protected SQL migrations
@@ -49,6 +53,7 @@ DigiStream/
 - PostgreSQL for database-backed application development and integration tests
 - Docker Engine and Docker Compose v2 for the complete media stack
 - HTTPS or `localhost` for browser microphone access
+- Secure `wss://` WebRTC and `https://` LL-HLS endpoints for an HTTPS production listener page
 
 On Termux:
 
@@ -85,7 +90,22 @@ Open `http://127.0.0.1:5173` on the phone. A computer on the same network can us
 
 The creator dashboard's **Start a broadcast**, **Broadcasts**, **Configure** and **Run sound check** controls open the creator studio. The studio uses the existing cookie session, lets the creator select an organisation/channel/broadcast, tests the microphone, joins LiveKit and starts the Egress-to-OME public delivery path.
 
-For browser-based development from a phone, see [`docs/CODESPACES.md`](docs/CODESPACES.md). For the creator workflow and security boundaries, see [`docs/CREATOR_BROADCAST_STUDIO.md`](docs/CREATOR_BROADCAST_STUDIO.md).
+Open the public listener application at:
+
+```text
+http://127.0.0.1:5173/listen
+```
+
+Exact listener routes use:
+
+```text
+/listen/:organisationSlug/:channelSlug/:broadcastSlug
+/listen/member/:organisationId/:broadcastId
+```
+
+The public route supports public and unlisted broadcasts. The member route requires an authenticated current organisation member. Production web hosting must rewrite these nested paths to the React `index.html`.
+
+For browser-based development from a phone, see [`docs/CODESPACES.md`](docs/CODESPACES.md). For creator workflow and security boundaries, see [`docs/CREATOR_BROADCAST_STUDIO.md`](docs/CREATOR_BROADCAST_STUDIO.md). For the listener player, transport fallback and deployment requirements, see [`docs/LISTENER_PLAYBACK.md`](docs/LISTENER_PLAYBACK.md).
 
 ## Run the complete media stack
 
@@ -135,6 +155,7 @@ Python is not required for the React and Fastify applications. The CI infrastruc
 - [`docs/HANDBOOK_COMPARISON.md`](docs/HANDBOOK_COMPARISON.md) records which ideas were adopted from the Echoo team handbook and which DigiStream technologies remain stronger.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) defines modular backend, data, real-time and media boundaries.
 - [`docs/CREATOR_BROADCAST_STUDIO.md`](docs/CREATOR_BROADCAST_STUDIO.md) explains browser microphone publishing, go-live orchestration and readiness verification.
+- [`docs/LISTENER_PLAYBACK.md`](docs/LISTENER_PLAYBACK.md) explains public/private routes, signed playback, WebRTC-first fallback and listener recovery.
 - [`docs/LOCAL_MEDIA_STACK.md`](docs/LOCAL_MEDIA_STACK.md) explains the executable LiveKit, Egress and OvenMediaEngine development environment.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) records implementation order and completion gates.
 
@@ -147,7 +168,7 @@ The backend-first implementation order is:
 3. Organisations, invitations and tenant roles
 4. Channels, visibility and discovery
 5. Scheduled and immediate broadcast lifecycle
-6. LiveKit contribution, Egress bridge, OvenMediaEngine delivery and creator browser controls
+6. LiveKit contribution, Egress bridge, OvenMediaEngine delivery, creator controls and listener playback
 7. Secure real-time interaction and notifications
 8. Recording, object storage and replay
 9. Analytics, administration and commerce
