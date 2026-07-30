@@ -7,9 +7,18 @@
 - [x] Add API health endpoints
 - [x] Add shared contracts
 - [x] Add continuous integration
-- [ ] Generate and commit a package lock after the first install
+- [x] Generate and commit a package lock after the first dependency update
 
-## Phase 1 — Identity and organisations
+## Phase 1 — Backend data foundation
+
+- [x] Select PostgreSQL as the system of record
+- [x] Add typed users, organisations, memberships, channels and broadcasts schema
+- [x] Add versioned checksum-protected SQL migrations
+- [x] Add database-aware health checks
+- [x] Add PostgreSQL integration tests and CI service
+- [ ] Document database backup and restore before production deployment
+
+## Phase 2 — Identity and organisations
 
 - [ ] User registration and login
 - [ ] Secure password hashing and session/token handling
@@ -18,7 +27,7 @@
 - [ ] Owner, admin, broadcaster, moderator and analyst roles
 - [ ] Tenant-isolation tests
 
-## Phase 2 — Channels and broadcasts
+## Phase 3 — Channels and broadcasts
 
 - [ ] Organisation channels
 - [ ] Start-now broadcasts
@@ -26,7 +35,7 @@
 - [ ] Public event pages and shareable links
 - [ ] Broadcast lifecycle state machine
 
-## Phase 3 — Live audio proof of concept
+## Phase 4 — Live audio proof of concept
 
 - [ ] Microphone permission and input selection
 - [ ] Audio level meter and clipping warning
@@ -35,7 +44,7 @@
 - [ ] Reconnection behaviour
 - [ ] Latency, bitrate, jitter and packet-loss indicators
 
-## Phase 4 — Audience interaction
+## Phase 5 — Audience interaction
 
 - [ ] Live chat
 - [ ] Reactions
@@ -43,7 +52,7 @@
 - [ ] Moderation and reporting
 - [ ] Rate limiting and anti-spam controls
 
-## Phase 5 — Recordings and analytics
+## Phase 6 — Recordings and analytics
 
 - [ ] Automatic recording
 - [ ] Recording processing status
@@ -51,9 +60,9 @@
 - [ ] Creator and organisation dashboards
 - [ ] Retention and quality analytics
 
-## Phase 6 — Production readiness
+## Phase 7 — Production readiness
 
-- [ ] PostgreSQL migrations and backups
+- [ ] PostgreSQL backups and restore drills
 - [ ] Redis queues and presence
 - [ ] Object storage
 - [ ] Media-server deployment

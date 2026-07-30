@@ -14,6 +14,7 @@
   "scripts": {
     "dev:web": "npm run dev --workspace @digistream/web",
     "dev:api": "npm run dev --workspace @digistream/api",
+    "db:migrate": "npm run db:migrate --workspace @digistream/api",
     "build": "npm run build --workspace @digistream/contracts && npm run build --workspace @digistream/api && npm run build --workspace @digistream/web",
     "typecheck": "npm run build --workspace @digistream/contracts && npm run typecheck --workspace @digistream/api && npm run typecheck --workspace @digistream/web",
     "test": "npm run test --workspace @digistream/api",
