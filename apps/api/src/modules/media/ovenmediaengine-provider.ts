@@ -17,11 +17,7 @@ export type OvenMediaEngineConfig = {
 };
 
 type FetchLike = typeof fetch;
-
-type OmeEnvelope = {
-  statusCode?: number;
-  response?: unknown;
-};
+type OmeEnvelope = { statusCode?: number; response?: unknown };
 
 export class OvenMediaEngineError extends Error {
   constructor(
@@ -37,7 +33,7 @@ function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
 }
 
-function parseRequiredUrl(
+function requiredUrl(
   value: string,
   protocols: readonly string[],
   label: string,
@@ -55,19 +51,18 @@ function parseRequiredUrl(
 }
 
 function validateConfig(config: OvenMediaEngineConfig): OvenMediaEngineConfig {
-  const apiUrl = parseRequiredUrl(config.apiUrl, ['http:', 'https:'], 'OME_API_URL');
-  const webrtcUrl = parseRequiredUrl(
+  const api = requiredUrl(config.apiUrl, ['http:', 'https:'], 'OME_API_URL');
+  const webrtc = requiredUrl(
     config.webrtcBaseUrl,
     ['ws:', 'wss:'],
     'OME_WEBRTC_BASE_URL',
   );
-  const llhlsUrl = parseRequiredUrl(
+  const llhls = requiredUrl(
     config.llhlsBaseUrl,
     ['http:', 'https:'],
     'OME_LLHLS_BASE_URL',
   );
-
-  if (!webrtcUrl.port || !llhlsUrl.port) {
+  if (!webrtc.port || !llhls.port) {
     throw new Error(
       'OME playback base URLs must include explicit ports for signed-policy verification.',
     );
@@ -89,43 +84,39 @@ function validateConfig(config: OvenMediaEngineConfig): OvenMediaEngineConfig {
       'DELIVERY_RELAY_URL_TEMPLATE must contain {streamName} or {roomName}.',
     );
   }
-
   return {
     ...config,
-    apiUrl: trimTrailingSlash(apiUrl.toString()),
-    webrtcBaseUrl: trimTrailingSlash(webrtcUrl.toString()),
-    llhlsBaseUrl: trimTrailingSlash(llhlsUrl.toString()),
+    apiUrl: trimTrailingSlash(api.toString()),
+    webrtcBaseUrl: trimTrailingSlash(webrtc.toString()),
+    llhlsBaseUrl: trimTrailingSlash(llhls.toString()),
   };
 }
 
-function toNonNegativeInteger(value: unknown): number {
+function nonNegativeInteger(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0
     ? Math.floor(value)
     : 0;
 }
 
-function parseHealth(response: unknown): DeliveryHealth {
-  if (typeof response !== 'object' || response === null) {
+function parseHealth(value: unknown): DeliveryHealth {
+  if (typeof value !== 'object' || value === null) {
     return { ready: true, connections: null };
   }
-
-  const connections = (response as { connections?: unknown }).connections;
+  const connections = (value as { connections?: unknown }).connections;
   if (typeof connections !== 'object' || connections === null) {
     return { ready: true, connections: null };
   }
-
+  const record = connections as Record<string, unknown>;
   return {
     ready: true,
     connections: {
-      webrtc: toNonNegativeInteger(
-        (connections as Record<string, unknown>).webrtc,
-      ),
-      llhls: toNonNegativeInteger((connections as Record<string, unknown>).llhls),
+      webrtc: nonNegativeInteger(record.webrtc),
+      llhls: nonNegativeInteger(record.llhls),
     },
   };
 }
 
-function buildSignedPolicyUrl(
+function signedPolicyUrl(
   baseUrl: string,
   secret: string,
   expiresAt: Date,
@@ -136,11 +127,21 @@ function buildSignedPolicyUrl(
       stream_expire: expiresAt.getTime(),
     }),
   ).toString('base64url');
-  const unsignedUrl = `${baseUrl}?policy=${policy}`;
+  const unsigned = `${baseUrl}?policy=${policy}`;
   const signature = createHmac('sha1', secret)
-    .update(unsignedUrl)
+    .update(unsigned)
     .digest('base64url');
-  return `${unsignedUrl}&signature=${signature}`;
+  return `${unsigned}&signature=${signature}`;
+}
+
+export function resolveDeliveryRelayUrl(
+  template: string,
+  streamName: string,
+  roomName: string,
+): string {
+  return template
+    .replaceAll('{streamName}', encodeURIComponent(streamName))
+    .replaceAll('{roomName}', encodeURIComponent(roomName));
 }
 
 export function createOvenMediaEngineDeliveryProvider(
@@ -148,7 +149,7 @@ export function createOvenMediaEngineDeliveryProvider(
   fetcher: FetchLike = fetch,
 ): DeliveryProvider {
   const config = validateConfig(rawConfig);
-  const resourcePath = `/v1/vhosts/${encodeURIComponent(config.vhost)}/apps/${encodeURIComponent(config.app)}/streams`;
+  const streamsPath = `/v1/vhosts/${encodeURIComponent(config.vhost)}/apps/${encodeURIComponent(config.app)}/streams`;
   const authorization = `Basic ${Buffer.from(config.accessToken).toString('base64')}`;
 
   async function request(
@@ -156,21 +157,24 @@ export function createOvenMediaEngineDeliveryProvider(
     path: string,
     body?: unknown,
   ): Promise<{ status: number; envelope: OmeEnvelope }> {
+    const init: RequestInit = {
+      method,
+      headers: {
+        authorization,
+        accept: 'application/json',
+        ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+      },
+      signal: AbortSignal.timeout(5_000),
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    };
+
     let response: Response;
     try {
-      response = await fetcher(`${config.apiUrl}${path}`, {
-        method,
-        headers: {
-          authorization,
-          accept: 'application/json',
-          ...(body === undefined ? {} : { 'content-type': 'application/json' }),
-        },
-        body: body === undefined ? undefined : JSON.stringify(body),
-        signal: AbortSignal.timeout(5_000),
-      });
+      response = await fetcher(`${config.apiUrl}${path}`, init);
     } catch (error) {
       throw new OvenMediaEngineError(
-        error instanceof Error && error.name === 'TimeoutError'
+        error instanceof Error &&
+          (error.name === 'TimeoutError' || error.name === 'AbortError')
           ? 'OvenMediaEngine request timed out.'
           : 'OvenMediaEngine is unavailable.',
       );
@@ -180,26 +184,18 @@ export function createOvenMediaEngineDeliveryProvider(
     try {
       envelope = (await response.json()) as OmeEnvelope;
     } catch {
-      // Some successful DELETE responses may not include a useful body.
+      // Successful DELETE responses may have no JSON body.
     }
     return { status: response.status, envelope };
   }
 
   function streamPath(streamName: string): string {
-    return `${resourcePath}/${encodeURIComponent(streamName)}`;
-  }
-
-  function relayUrl(streamName: string, roomName: string): string {
-    return config.relayUrlTemplate
-      .replaceAll('{streamName}', encodeURIComponent(streamName))
-      .replaceAll('{roomName}', encodeURIComponent(roomName));
+    return `${streamsPath}/${encodeURIComponent(streamName)}`;
   }
 
   async function inspectDelivery(streamName: string): Promise<DeliveryHealth> {
     const result = await request('GET', streamPath(streamName));
-    if (result.status === 404) {
-      return { ready: false, connections: null };
-    }
+    if (result.status === 404) return { ready: false, connections: null };
     if (result.status !== 200) {
       throw new OvenMediaEngineError(
         'OvenMediaEngine stream inspection failed.',
@@ -216,16 +212,22 @@ export function createOvenMediaEngineDeliveryProvider(
       const current = await inspectDelivery(input.streamName);
       if (current.ready) return current;
 
-      const result = await request('POST', resourcePath, {
+      const sourceUrl =
+        input.sourceUrl ??
+        resolveDeliveryRelayUrl(
+          config.relayUrlTemplate,
+          input.streamName,
+          input.contributionRoomName,
+        );
+      const result = await request('POST', streamsPath, {
         name: input.streamName,
-        urls: [input.sourceUrl || relayUrl(input.streamName, input.contributionRoomName)],
+        urls: [sourceUrl],
         properties: {
           persistent: false,
           noInputFailoverTimeoutMs: 5_000,
           unusedStreamDeletionTimeoutMs: 60_000,
         },
       });
-
       if (result.status !== 201 && result.status !== 409) {
         throw new OvenMediaEngineError(
           'OvenMediaEngine could not start delivery.',
@@ -248,10 +250,8 @@ export function createOvenMediaEngineDeliveryProvider(
     },
 
     issuePlayback(streamName, expiresAt): DeliveryPlayback {
-      const application = encodeURIComponent(config.app);
+      const app = encodeURIComponent(config.app);
       const stream = encodeURIComponent(streamName);
-      const webrtcUrl = `${config.webrtcBaseUrl}/${application}/${stream}`;
-      const llhlsUrl = `${config.llhlsBaseUrl}/${application}/${stream}/llhls.m3u8`;
       return {
         provider: 'ovenmediaengine',
         streamName,
@@ -259,16 +259,16 @@ export function createOvenMediaEngineDeliveryProvider(
         sources: [
           {
             protocol: 'webrtc',
-            url: buildSignedPolicyUrl(
-              webrtcUrl,
+            url: signedPolicyUrl(
+              `${config.webrtcBaseUrl}/${app}/${stream}`,
               config.signedPolicySecret,
               expiresAt,
             ),
           },
           {
             protocol: 'llhls',
-            url: buildSignedPolicyUrl(
-              llhlsUrl,
+            url: signedPolicyUrl(
+              `${config.llhlsBaseUrl}/${app}/${stream}/llhls.m3u8`,
               config.signedPolicySecret,
               expiresAt,
             ),
@@ -280,7 +280,7 @@ export function createOvenMediaEngineDeliveryProvider(
 }
 
 export function createOvenMediaEngineDeliveryProviderFromEnv(): DeliveryProvider | null {
-  const required = [
+  const values = [
     process.env.OME_API_URL,
     process.env.OME_API_ACCESS_TOKEN,
     process.env.OME_WEBRTC_BASE_URL,
@@ -288,13 +288,10 @@ export function createOvenMediaEngineDeliveryProviderFromEnv(): DeliveryProvider
     process.env.OME_SIGNED_POLICY_SECRET,
     process.env.DELIVERY_RELAY_URL_TEMPLATE,
   ];
-  if (required.every((value) => value === undefined || value.length === 0)) {
-    return null;
-  }
-  if (required.some((value) => value === undefined || value.length === 0)) {
+  if (values.every((value) => !value)) return null;
+  if (values.some((value) => !value)) {
     throw new Error('OvenMediaEngine delivery configuration is incomplete.');
   }
-
   return createOvenMediaEngineDeliveryProvider({
     apiUrl: process.env.OME_API_URL!,
     accessToken: process.env.OME_API_ACCESS_TOKEN!,
@@ -305,14 +302,4 @@ export function createOvenMediaEngineDeliveryProviderFromEnv(): DeliveryProvider
     signedPolicySecret: process.env.OME_SIGNED_POLICY_SECRET!,
     relayUrlTemplate: process.env.DELIVERY_RELAY_URL_TEMPLATE!,
   });
-}
-
-export function resolveDeliveryRelayUrl(
-  template: string,
-  streamName: string,
-  roomName: string,
-): string {
-  return template
-    .replaceAll('{streamName}', encodeURIComponent(streamName))
-    .replaceAll('{roomName}', encodeURIComponent(roomName));
 }
