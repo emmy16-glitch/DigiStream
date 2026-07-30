@@ -1,6 +1,7 @@
 import { createHmac } from 'node:crypto';
 import type {
   DeliveryHealth,
+  DeliveryIngestTarget,
   DeliveryPlayback,
   DeliveryProvider,
 } from './delivery-provider.js';
@@ -13,7 +14,8 @@ export type OvenMediaEngineConfig = {
   webrtcBaseUrl: string;
   llhlsBaseUrl: string;
   signedPolicySecret: string;
-  relayUrlTemplate: string;
+  relayUrlTemplate?: string;
+  ingestUrlTemplate?: string;
 };
 
 type FetchLike = typeof fetch;
@@ -50,6 +52,23 @@ function requiredUrl(
   return parsed;
 }
 
+function validateTemplate(
+  template: string | undefined,
+  protocols: readonly string[],
+  label: string,
+): string | undefined {
+  if (!template) return undefined;
+  if (!template.includes('{streamName}')) {
+    throw new Error(`${label} must contain {streamName}.`);
+  }
+  const sample = template
+    .replaceAll('{streamName}', 'sample-stream')
+    .replaceAll('{app}', 'app')
+    .replaceAll('{roomName}', 'sample-room');
+  requiredUrl(sample, protocols, label);
+  return template;
+}
+
 function validateConfig(config: OvenMediaEngineConfig): OvenMediaEngineConfig {
   const api = requiredUrl(config.apiUrl, ['http:', 'https:'], 'OME_API_URL');
   const webrtc = requiredUrl(
@@ -76,19 +95,30 @@ function validateConfig(config: OvenMediaEngineConfig): OvenMediaEngineConfig {
   if (!/^[A-Za-z0-9._-]{1,100}$/.test(config.app)) {
     throw new Error('OME_APP contains unsupported characters.');
   }
-  if (
-    !config.relayUrlTemplate.includes('{streamName}') &&
-    !config.relayUrlTemplate.includes('{roomName}')
-  ) {
+
+  const ingestUrlTemplate = validateTemplate(
+    config.ingestUrlTemplate,
+    ['rtmp:', 'rtmps:', 'srt:'],
+    'OME_INGEST_URL_TEMPLATE',
+  );
+  const relayUrlTemplate = validateTemplate(
+    config.relayUrlTemplate,
+    ['rtsp:', 'rtsps:', 'ovt:', 'http:', 'https:'],
+    'DELIVERY_RELAY_URL_TEMPLATE',
+  );
+  if (!ingestUrlTemplate && !relayUrlTemplate) {
     throw new Error(
-      'DELIVERY_RELAY_URL_TEMPLATE must contain {streamName} or {roomName}.',
+      'Configure OME_INGEST_URL_TEMPLATE for push delivery or DELIVERY_RELAY_URL_TEMPLATE for pull delivery.',
     );
   }
+
   return {
     ...config,
     apiUrl: trimTrailingSlash(api.toString()),
     webrtcBaseUrl: trimTrailingSlash(webrtc.toString()),
     llhlsBaseUrl: trimTrailingSlash(llhls.toString()),
+    ingestUrlTemplate,
+    relayUrlTemplate,
   };
 }
 
@@ -142,6 +172,26 @@ export function resolveDeliveryRelayUrl(
   return template
     .replaceAll('{streamName}', encodeURIComponent(streamName))
     .replaceAll('{roomName}', encodeURIComponent(roomName));
+}
+
+export function resolveOmeIngestTarget(
+  template: string,
+  app: string,
+  streamName: string,
+): DeliveryIngestTarget {
+  const url = template
+    .replaceAll('{app}', encodeURIComponent(app))
+    .replaceAll('{streamName}', encodeURIComponent(streamName));
+  const parsed = requiredUrl(
+    url,
+    ['rtmp:', 'rtmps:', 'srt:'],
+    'OME_INGEST_URL_TEMPLATE',
+  );
+  return {
+    protocol: parsed.protocol === 'srt:' ? 'srt' : 'rtmp',
+    url,
+    host: parsed.host,
+  };
 }
 
 export function createOvenMediaEngineDeliveryProvider(
@@ -208,14 +258,20 @@ export function createOvenMediaEngineDeliveryProvider(
   return {
     provider: 'ovenmediaengine',
 
+    getIngestTarget(streamName) {
+      return config.ingestUrlTemplate
+        ? resolveOmeIngestTarget(config.ingestUrlTemplate, config.app, streamName)
+        : null;
+    },
+
     async ensureDelivery(input) {
       const current = await inspectDelivery(input.streamName);
-      if (current.ready) return current;
+      if (current.ready || config.ingestUrlTemplate) return current;
 
       const sourceUrl =
         input.sourceUrl ??
         resolveDeliveryRelayUrl(
-          config.relayUrlTemplate,
+          config.relayUrlTemplate!,
           input.streamName,
           input.contributionRoomName,
         );
@@ -240,6 +296,7 @@ export function createOvenMediaEngineDeliveryProvider(
     inspectDelivery,
 
     async stopDelivery(streamName) {
+      if (config.ingestUrlTemplate) return;
       const result = await request('DELETE', streamPath(streamName));
       if (result.status !== 200 && result.status !== 404) {
         throw new OvenMediaEngineError(
@@ -280,17 +337,26 @@ export function createOvenMediaEngineDeliveryProvider(
 }
 
 export function createOvenMediaEngineDeliveryProviderFromEnv(): DeliveryProvider | null {
-  const values = [
+  const common = [
     process.env.OME_API_URL,
     process.env.OME_API_ACCESS_TOKEN,
     process.env.OME_WEBRTC_BASE_URL,
     process.env.OME_LLHLS_BASE_URL,
     process.env.OME_SIGNED_POLICY_SECRET,
+  ];
+  const supplied = [
+    ...common,
+    process.env.OME_INGEST_URL_TEMPLATE,
     process.env.DELIVERY_RELAY_URL_TEMPLATE,
   ];
-  if (values.every((value) => !value)) return null;
-  if (values.some((value) => !value)) {
+  if (supplied.every((value) => !value)) return null;
+  if (common.some((value) => !value)) {
     throw new Error('OvenMediaEngine delivery configuration is incomplete.');
+  }
+  if (!process.env.OME_INGEST_URL_TEMPLATE && !process.env.DELIVERY_RELAY_URL_TEMPLATE) {
+    throw new Error(
+      'Configure OME_INGEST_URL_TEMPLATE or DELIVERY_RELAY_URL_TEMPLATE.',
+    );
   }
   return createOvenMediaEngineDeliveryProvider({
     apiUrl: process.env.OME_API_URL!,
@@ -300,6 +366,7 @@ export function createOvenMediaEngineDeliveryProviderFromEnv(): DeliveryProvider
     webrtcBaseUrl: process.env.OME_WEBRTC_BASE_URL!,
     llhlsBaseUrl: process.env.OME_LLHLS_BASE_URL!,
     signedPolicySecret: process.env.OME_SIGNED_POLICY_SECRET!,
-    relayUrlTemplate: process.env.DELIVERY_RELAY_URL_TEMPLATE!,
+    ingestUrlTemplate: process.env.OME_INGEST_URL_TEMPLATE,
+    relayUrlTemplate: process.env.DELIVERY_RELAY_URL_TEMPLATE,
   });
 }
