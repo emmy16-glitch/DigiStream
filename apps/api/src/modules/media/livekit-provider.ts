@@ -4,6 +4,7 @@ import {
   type ContributionCredential,
   type ContributionCredentialRequest,
   type ContributionProvider,
+  type ContributionPublisherVerificationRequest,
   type ContributionRoomRequest,
 } from './contribution-provider.js';
 import { signLiveKitToken, type LiveKitVideoGrant } from './livekit-jwt.js';
@@ -29,6 +30,18 @@ type TwirpErrorPayload = {
   code?: string;
   msg?: string;
   meta?: Record<string, string>;
+};
+
+type LiveKitTrackInfo = {
+  type?: string | number;
+  source?: string | number;
+  muted?: boolean;
+};
+
+type LiveKitParticipantInfo = {
+  identity?: string;
+  is_publisher?: boolean;
+  tracks?: LiveKitTrackInfo[];
 };
 
 function parseInteger(
@@ -72,6 +85,22 @@ function deriveApiUrl(clientUrl: string): string {
   const parsed = new URL(clientUrl);
   parsed.protocol = parsed.protocol === 'wss:' ? 'https:' : 'http:';
   return parsed.toString().replace(/\/$/, '');
+}
+
+function isAudioTrack(track: LiveKitTrackInfo): boolean {
+  return (
+    track.type === 0 ||
+    track.type === 'AUDIO' ||
+    track.type === 'TRACK_TYPE_AUDIO'
+  );
+}
+
+function isMicrophoneTrack(track: LiveKitTrackInfo): boolean {
+  return (
+    track.source === 2 ||
+    track.source === 'MICROPHONE' ||
+    track.source === 'TRACK_SOURCE_MICROPHONE'
+  );
 }
 
 export function readLiveKitProviderConfig(
@@ -165,7 +194,7 @@ export class LiveKitContributionProvider implements ContributionProvider {
   }
 
   private async roomServiceCall(
-    method: 'ListRooms' | 'CreateRoom',
+    method: 'ListRooms' | 'CreateRoom' | 'GetParticipant',
     video: LiveKitVideoGrant,
     body: Record<string, unknown>,
   ): Promise<unknown> {
@@ -307,6 +336,37 @@ export class LiveKitContributionProvider implements ContributionProvider {
       expiresAt: signed.expiresAt,
       permissions,
     };
+  }
+
+  async verifyPublishedMicrophone(
+    request: ContributionPublisherVerificationRequest,
+  ): Promise<boolean> {
+    let participant: LiveKitParticipantInfo;
+    try {
+      participant = (await this.roomServiceCall(
+        'GetParticipant',
+        { room: request.roomName, roomAdmin: true },
+        {
+          room: request.roomName,
+          identity: request.participantIdentity,
+        },
+      )) as LiveKitParticipantInfo;
+    } catch (error) {
+      const payload =
+        error instanceof ContributionProviderError
+          ? (error.cause as TwirpErrorPayload | undefined)
+          : undefined;
+      if (payload?.code === 'not_found') return false;
+      throw error;
+    }
+
+    if (participant.identity !== request.participantIdentity) return false;
+    return Boolean(
+      participant.is_publisher &&
+        participant.tracks?.some(
+          (track) => isAudioTrack(track) && isMicrophoneTrack(track) && !track.muted,
+        ),
+    );
   }
 }
 
