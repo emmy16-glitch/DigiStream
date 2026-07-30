@@ -20,8 +20,11 @@
 
 ## Phase 2 — Identity and organisations
 
-- [ ] User registration and login
-- [ ] Secure password hashing and session/token handling
+- [x] User registration and login
+- [x] Secure password hashing and database-backed session handling
+- [x] Current-user and logout endpoints
+- [ ] Login rate limiting and suspicious-attempt controls
+- [ ] Email verification and password reset
 - [ ] Organisation creation
 - [ ] Membership invitations
 - [ ] Owner, admin, broadcaster, moderator and analyst roles
