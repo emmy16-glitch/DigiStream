@@ -19,7 +19,7 @@ test('GET /health reports when a database is not configured', async () => {
   await app.close();
 });
 
-test('GET /api/v1/status declares creator and listener media capabilities', async () => {
+test('GET /api/v1/status declares creator, listener and backstage capabilities', async () => {
   process.env.NODE_ENV = 'test';
   const app = buildApp({ database: null });
 
@@ -29,7 +29,7 @@ test('GET /api/v1/status declares creator and listener media capabilities', asyn
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().stage, 'listener-playback-client');
+  assert.equal(response.json().stage, 'guest-backstage-control');
   assert.deepEqual(response.json().responsiveTargets, [
     'mobile',
     'tablet',
@@ -41,16 +41,16 @@ test('GET /api/v1/status declares creator and listener media capabilities', asyn
     response.json().capabilities.includes('creator-livekit-browser-client'),
   );
   assert.ok(
-    response.json().capabilities.includes('verified-browser-contribution-readiness'),
-  );
-  assert.ok(
     response.json().capabilities.includes('webrtc-first-listener-playback'),
   );
   assert.ok(
-    response.json().capabilities.includes('automatic-llhls-fallback'),
+    response.json().capabilities.includes('single-use-guest-invitations'),
   );
   assert.ok(
-    response.json().capabilities.includes('private-member-listener-pages'),
+    response.json().capabilities.includes('livekit-guest-mute-and-remove'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('public-call-in-requests'),
   );
 
   await app.close();
