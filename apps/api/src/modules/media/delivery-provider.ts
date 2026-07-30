@@ -4,7 +4,7 @@ export type DeliveryEnsureRequest = {
   broadcastId: string;
   streamName: string;
   contributionRoomName: string;
-  sourceUrl: string;
+  sourceUrl?: string;
 };
 
 export type DeliveryHealth = {
