@@ -25,7 +25,7 @@
 
 - [x] Document the team-handbook comparison and DigiStream adoption rules
 - [x] Define product roles, entities, traffic paths, visibility and lifecycles
-- [ ] Standardize API error envelopes, request IDs and safe not-found handling
+- [x] Standardize API error envelopes, request IDs and safe not-found handling
 - [ ] Refactor backend features into route/controller/service/repository modules
 - [ ] Add public user profiles and explicit public DTO projections
 - [ ] Add usernames, biography, avatar metadata and privacy preferences
