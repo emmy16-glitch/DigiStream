@@ -1,0 +1,223 @@
+import {
+  boolean,
+  index,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
+
+export const userStatusEnum = pgEnum('user_status', [
+  'active',
+  'suspended',
+  'deleted',
+]);
+
+export const membershipRoleEnum = pgEnum('membership_role', [
+  'owner',
+  'admin',
+  'broadcaster',
+  'moderator',
+  'analyst',
+]);
+
+export const broadcastStatusEnum = pgEnum('broadcast_status', [
+  'draft',
+  'scheduled',
+  'live',
+  'ended',
+  'cancelled',
+]);
+
+export const users = pgTable(
+  'users',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    email: varchar('email', { length: 320 }).notNull(),
+    displayName: varchar('display_name', { length: 100 }).notNull(),
+    passwordHash: text('password_hash').notNull(),
+    status: userStatusEnum('status').default('active').notNull(),
+    emailVerifiedAt: timestamp('email_verified_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [uniqueIndex('users_email_unique').on(table.email)],
+);
+
+export const organisations = pgTable(
+  'organisations',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: varchar('name', { length: 120 }).notNull(),
+    slug: varchar('slug', { length: 80 }).notNull(),
+    createdByUserId: uuid('created_by_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'restrict' }),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('organisations_slug_unique').on(table.slug),
+    index('organisations_created_by_user_idx').on(table.createdByUserId),
+  ],
+);
+
+export const organisationMemberships = pgTable(
+  'organisation_memberships',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organisationId: uuid('organisation_id')
+      .notNull()
+      .references(() => organisations.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: membershipRoleEnum('role').notNull(),
+    invitedByUserId: uuid('invited_by_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    joinedAt: timestamp('joined_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('organisation_memberships_org_user_unique').on(
+      table.organisationId,
+      table.userId,
+    ),
+    index('organisation_memberships_user_idx').on(table.userId),
+    index('organisation_memberships_org_role_idx').on(
+      table.organisationId,
+      table.role,
+    ),
+  ],
+);
+
+export const channels = pgTable(
+  'channels',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organisationId: uuid('organisation_id')
+      .notNull()
+      .references(() => organisations.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 120 }).notNull(),
+    slug: varchar('slug', { length: 80 }).notNull(),
+    description: text('description'),
+    isPublic: boolean('is_public').default(true).notNull(),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('channels_org_slug_unique').on(
+      table.organisationId,
+      table.slug,
+    ),
+    index('channels_organisation_idx').on(table.organisationId),
+  ],
+);
+
+export const broadcasts = pgTable(
+  'broadcasts',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organisationId: uuid('organisation_id')
+      .notNull()
+      .references(() => organisations.id, { onDelete: 'cascade' }),
+    channelId: uuid('channel_id')
+      .notNull()
+      .references(() => channels.id, { onDelete: 'cascade' }),
+    createdByUserId: uuid('created_by_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'restrict' }),
+    title: varchar('title', { length: 160 }).notNull(),
+    slug: varchar('slug', { length: 100 }).notNull(),
+    description: text('description'),
+    status: broadcastStatusEnum('status').default('draft').notNull(),
+    scheduledStartAt: timestamp('scheduled_start_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
+    liveStartedAt: timestamp('live_started_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
+    endedAt: timestamp('ended_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', {
+      withTimezone: true,
+      mode: 'date',
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('broadcasts_channel_slug_unique').on(
+      table.channelId,
+      table.slug,
+    ),
+    index('broadcasts_organisation_status_idx').on(
+      table.organisationId,
+      table.status,
+    ),
+    index('broadcasts_channel_scheduled_idx').on(
+      table.channelId,
+      table.scheduledStartAt,
+    ),
+  ],
+);
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+export type Organisation = typeof organisations.$inferSelect;
+export type NewOrganisation = typeof organisations.$inferInsert;
+export type OrganisationMembership =
+  typeof organisationMemberships.$inferSelect;
+export type Channel = typeof channels.$inferSelect;
+export type Broadcast = typeof broadcasts.$inferSelect;
