@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { PlatformStatus } from '@digistream/contracts';
+import { CreatorBroadcastStudio } from './features/broadcasting/CreatorBroadcastStudio';
 
 type NavItem = {
   label: string;
@@ -40,12 +41,12 @@ function MetricCard({ label, value, note }: { label: string; value: string; note
   );
 }
 
-function Panel({ title, action, children }: { title: string; action?: string; children: ReactNode }) {
+function Panel({ title, action, onAction, children }: { title: string; action?: string; onAction?: () => void; children: ReactNode }) {
   return (
     <section className="panel">
       <header className="panel-header">
         <h2>{title}</h2>
-        {action ? <button className="text-button" type="button">{action}</button> : null}
+        {action ? <button className="text-button" onClick={onAction} type="button">{action}</button> : null}
       </header>
       {children}
     </section>
@@ -55,6 +56,7 @@ function Panel({ title, action, children }: { title: string; action?: string; ch
 export function App() {
   const [activeNav, setActiveNav] = useState('Overview');
   const [status, setStatus] = useState<PlatformStatus | null>(null);
+  const [studioOpen, setStudioOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -71,6 +73,11 @@ export function App() {
     return () => controller.abort();
   }, []);
 
+  function selectNavigation(label: string) {
+    setActiveNav(label);
+    if (label === 'Broadcasts') setStudioOpen(true);
+  }
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Primary navigation">
@@ -84,7 +91,7 @@ export function App() {
             <button
               className={activeNav === item.label ? 'nav-item active' : 'nav-item'}
               key={item.label}
-              onClick={() => setActiveNav(item.label)}
+              onClick={() => selectNavigation(item.label)}
               type="button"
             >
               <span aria-hidden="true">{item.glyph}</span>
@@ -121,7 +128,7 @@ export function App() {
               tablets or desktop computers.
             </p>
             <div className="hero-actions">
-              <button className="primary-button" type="button">Start a broadcast</button>
+              <button className="primary-button" onClick={() => setStudioOpen(true)} type="button">Start a broadcast</button>
               <button className="secondary-button" type="button">Schedule event</button>
             </div>
           </div>
@@ -159,7 +166,7 @@ export function App() {
             </div>
           </Panel>
 
-          <Panel title="Audio setup" action="Configure">
+          <Panel title="Audio setup" action="Configure" onAction={() => setStudioOpen(true)}>
             <div className="audio-device">
               <div className="device-icon" aria-hidden="true">◍</div>
               <div>
@@ -170,7 +177,7 @@ export function App() {
             <div className="level-meter" aria-label="Inactive audio level meter">
               {Array.from({ length: 18 }, (_, index) => <i key={index} />)}
             </div>
-            <button className="wide-button" type="button">Run sound check</button>
+            <button className="wide-button" onClick={() => setStudioOpen(true)} type="button">Run sound check</button>
           </Panel>
         </div>
       </main>
@@ -180,7 +187,7 @@ export function App() {
           <button
             className={activeNav === item.label ? 'active' : ''}
             key={item.label}
-            onClick={() => setActiveNav(item.label)}
+            onClick={() => selectNavigation(item.label)}
             type="button"
           >
             <span aria-hidden="true">{item.glyph}</span>
@@ -188,6 +195,11 @@ export function App() {
           </button>
         ))}
       </nav>
+
+      <CreatorBroadcastStudio
+        onClose={() => setStudioOpen(false)}
+        open={studioOpen}
+      />
     </div>
   );
 }
