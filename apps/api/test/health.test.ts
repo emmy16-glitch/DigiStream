@@ -19,7 +19,7 @@ test('GET /health reports when a database is not configured', async () => {
   await app.close();
 });
 
-test('GET /api/v1/status declares all responsive targets', async () => {
+test('GET /api/v1/status declares creator broadcasting capabilities', async () => {
   process.env.NODE_ENV = 'test';
   const app = buildApp({ database: null });
 
@@ -29,7 +29,7 @@ test('GET /api/v1/status declares all responsive targets', async () => {
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().stage, 'local-media-infrastructure');
+  assert.equal(response.json().stage, 'creator-broadcast-client');
   assert.deepEqual(response.json().responsiveTargets, [
     'mobile',
     'tablet',
@@ -37,6 +37,12 @@ test('GET /api/v1/status declares all responsive targets', async () => {
   ]);
   assert.ok(response.json().capabilities.includes('local-media-compose'));
   assert.ok(response.json().capabilities.includes('live-media-smoke-test'));
+  assert.ok(
+    response.json().capabilities.includes('creator-livekit-browser-client'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('verified-browser-contribution-readiness'),
+  );
 
   await app.close();
 });

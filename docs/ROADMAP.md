@@ -81,11 +81,12 @@
 - [x] Add idempotent LiveKit RoomService provisioning through the documented Twirp API
 - [x] Generate short-lived, server-authorized LiveKit host, guest and monitor tokens without exposing server secrets
 - [x] Restrict publisher credentials to microphone tracks and monitor credentials to subscribe-only access
-- [ ] Connect the web creator client to LiveKit microphone publishing and host monitoring
+- [x] Connect the web creator client to LiveKit microphone publishing and host monitoring
 - [ ] Add external guest invitations, backstage admission, participant removal and call-ins
 - [x] Integrate OvenMediaEngine for public WebRTC and LL-HLS listener distribution
 - [x] Define and implement the controlled LiveKit Egress relay into OvenMediaEngine delivery
-- [ ] Add microphone permission, input selection, audio level and clipping feedback
+- [x] Add microphone permission, input selection, audio level and clipping feedback
+- [x] Verify browser contribution readiness through LiveKit RoomService before changing broadcast state
 - [x] Add authorized public, unlisted and private listener playback
 - [x] Confirm contribution and delivery health before marking a broadcast live
 - [x] Define reconnection, source-loss and delivery-failure behaviour

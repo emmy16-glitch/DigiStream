@@ -4,8 +4,10 @@ import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
 import type { ContributionProvider } from '../media/contribution-provider.js';
 import {
+  confirmBroadcastContributionReady,
   issueBroadcastContributionCredential,
   type ContributionCredentialBody,
+  type ContributionReadyBody,
 } from './broadcast-contribution.service.js';
 
 function requireDatabase(database: DatabaseContext | null): DatabaseContext {
@@ -34,6 +36,17 @@ async function requireUser(
   return user;
 }
 
+function requireProvider(provider: ContributionProvider | null): ContributionProvider {
+  if (!provider) {
+    throw new ApiError(
+      503,
+      'LIVEKIT_NOT_CONFIGURED',
+      'Live contribution access is not configured.',
+    );
+  }
+  return provider;
+}
+
 export function registerBroadcastContributionRoutes(
   app: FastifyInstance,
   database: DatabaseContext | null,
@@ -47,17 +60,9 @@ export function registerBroadcastContributionRoutes(
     async (request, reply) => {
       const context = requireDatabase(database);
       const user = await requireUser(request, context);
-      if (!provider) {
-        throw new ApiError(
-          503,
-          'LIVEKIT_NOT_CONFIGURED',
-          'Live contribution access is not configured.',
-        );
-      }
-
       const credential = await issueBroadcastContributionCredential(
         context.db,
-        provider,
+        requireProvider(provider),
         request.params.organisationId,
         request.params.broadcastId,
         user,
@@ -70,6 +75,37 @@ export function registerBroadcastContributionRoutes(
         credential: {
           ...credential,
           expiresAt: credential.expiresAt.toISOString(),
+        },
+      };
+    },
+  );
+
+  app.post<{
+    Params: { organisationId: string; broadcastId: string };
+    Body: ContributionReadyBody;
+  }>(
+    '/api/v1/organisations/:organisationId/broadcasts/:broadcastId/contribution/ready',
+    async (request, reply) => {
+      const context = requireDatabase(database);
+      const user = await requireUser(request, context);
+      const contribution = await confirmBroadcastContributionReady(
+        context.db,
+        requireProvider(provider),
+        request.params.organisationId,
+        request.params.broadcastId,
+        user,
+        request.body ?? {},
+      );
+
+      reply.header('cache-control', 'no-store');
+      return {
+        contribution: {
+          ...contribution,
+          broadcast: {
+            ...contribution.broadcast,
+            contributionReadyAt:
+              contribution.broadcast.contributionReadyAt?.toISOString() ?? null,
+          },
         },
       };
     },

@@ -25,7 +25,8 @@ export type PlatformStatus = {
     | 'livekit-contribution-adapter'
     | 'ovenmediaengine-delivery-adapter'
     | 'livekit-ome-egress-bridge'
-    | 'local-media-infrastructure';
+    | 'local-media-infrastructure'
+    | 'creator-broadcast-client';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
 };

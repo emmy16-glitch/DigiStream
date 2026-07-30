@@ -9,14 +9,25 @@ import {
 import { findOrganisationRole } from '../organisations/organisation-memberships.repository.js';
 import type { OrganisationRole } from '../organisations/organisations.types.js';
 import { findOrganisationBroadcastRecord } from './broadcasts.repository.js';
+import { applyBroadcastMediaEvent } from './broadcasts.service.js';
 import type { BroadcastStatus } from './broadcasts.types.js';
 
 export type ContributionCredentialBody = {
   participantRole?: unknown;
 };
 
+export type ContributionReadyBody = {
+  participantIdentity?: unknown;
+};
+
 const CONTRIBUTION_STATUSES = new Set<BroadcastStatus>([
   'scheduled',
+  'starting',
+  'live',
+  'reconnecting',
+]);
+
+const CONTRIBUTION_READY_STATUSES = new Set<BroadcastStatus>([
   'starting',
   'live',
   'reconnecting',
@@ -41,6 +52,14 @@ function validUuid(value: string): boolean {
   );
 }
 
+function notFound(): never {
+  throw new ApiError(
+    404,
+    'BROADCAST_NOT_FOUND',
+    'The requested broadcast was not found.',
+  );
+}
+
 function parseParticipantRole(
   value: unknown,
   organisationRole: OrganisationRole,
@@ -62,6 +81,31 @@ function roleCanJoin(
   return GUEST_ROLES.has(organisationRole);
 }
 
+function parseHostIdentity(value: unknown, userId: string): string {
+  if (
+    typeof value !== 'string' ||
+    value.length > 180 ||
+    !new RegExp(`^host-${userId}-[a-z0-9]{12}$`, 'i').test(value)
+  ) {
+    throw new ApiError(
+      400,
+      'INVALID_CONTRIBUTION_IDENTITY',
+      'The LiveKit host identity is invalid.',
+    );
+  }
+  return value;
+}
+
+async function requireOrganisationRole(
+  db: DigiStreamDatabase,
+  organisationId: string,
+  userId: string,
+): Promise<OrganisationRole> {
+  if (!validUuid(organisationId)) return notFound();
+  const role = await findOrganisationRole(db, organisationId, userId);
+  return role ?? notFound();
+}
+
 export async function issueBroadcastContributionCredential(
   db: DigiStreamDatabase,
   provider: ContributionProvider,
@@ -70,39 +114,15 @@ export async function issueBroadcastContributionCredential(
   user: { id: string; displayName: string },
   body: ContributionCredentialBody,
 ): Promise<ContributionCredential> {
-  if (!validUuid(organisationId) || !validUuid(broadcastId)) {
-    throw new ApiError(
-      404,
-      'BROADCAST_NOT_FOUND',
-      'The requested broadcast was not found.',
-    );
-  }
+  if (!validUuid(organisationId) || !validUuid(broadcastId)) return notFound();
 
-  const organisationRole = await findOrganisationRole(
-    db,
-    organisationId,
-    user.id,
-  );
-  if (!organisationRole) {
-    throw new ApiError(
-      404,
-      'BROADCAST_NOT_FOUND',
-      'The requested broadcast was not found.',
-    );
-  }
-
+  const organisationRole = await requireOrganisationRole(db, organisationId, user.id);
   const broadcast = await findOrganisationBroadcastRecord(
     db,
     organisationId,
     broadcastId,
   );
-  if (!broadcast) {
-    throw new ApiError(
-      404,
-      'BROADCAST_NOT_FOUND',
-      'The requested broadcast was not found.',
-    );
-  }
+  if (!broadcast) return notFound();
 
   if (!CONTRIBUTION_STATUSES.has(broadcast.status)) {
     throw new ApiError(
@@ -155,4 +175,90 @@ export async function issueBroadcastContributionCredential(
     }
     throw error;
   }
+}
+
+export async function confirmBroadcastContributionReady(
+  db: DigiStreamDatabase,
+  provider: ContributionProvider,
+  organisationId: string,
+  broadcastId: string,
+  user: { id: string },
+  body: ContributionReadyBody,
+) {
+  if (!validUuid(organisationId) || !validUuid(broadcastId)) return notFound();
+
+  const organisationRole = await requireOrganisationRole(db, organisationId, user.id);
+  if (!HOST_ROLES.has(organisationRole)) {
+    throw new ApiError(
+      403,
+      'BROADCAST_CONTRIBUTION_FORBIDDEN',
+      'Owner, administrator or broadcaster permission is required.',
+    );
+  }
+
+  const broadcast = await findOrganisationBroadcastRecord(
+    db,
+    organisationId,
+    broadcastId,
+  );
+  if (!broadcast) return notFound();
+  if (!CONTRIBUTION_READY_STATUSES.has(broadcast.status)) {
+    throw new ApiError(
+      409,
+      'BROADCAST_NOT_READY_FOR_CONTRIBUTION',
+      'Start the broadcast lifecycle before confirming microphone readiness.',
+      { status: broadcast.status },
+    );
+  }
+
+  const participantIdentity = parseHostIdentity(body.participantIdentity, user.id);
+  if (!provider.verifyPublishedMicrophone) {
+    throw new ApiError(
+      503,
+      'LIVEKIT_VERIFICATION_UNAVAILABLE',
+      'LiveKit publisher verification is not configured.',
+    );
+  }
+
+  let published = false;
+  try {
+    published = await provider.verifyPublishedMicrophone({
+      roomName: broadcast.contributionRoomName,
+      participantIdentity,
+    });
+  } catch (error) {
+    if (error instanceof ContributionProviderError) {
+      throw new ApiError(
+        503,
+        'LIVEKIT_UNAVAILABLE',
+        'Live contribution verification is temporarily unavailable.',
+      );
+    }
+    throw error;
+  }
+
+  if (!published) {
+    throw new ApiError(
+      409,
+      'MICROPHONE_NOT_PUBLISHED',
+      'Join the LiveKit room and publish an unmuted microphone before continuing.',
+    );
+  }
+
+  const updated = broadcast.contributionReadyAt
+    ? broadcast
+    : await applyBroadcastMediaEvent(db, broadcast.id, {
+        event: 'contribution_ready',
+        idempotencyKey: `creator-ready-${broadcast.id}-${participantIdentity}`,
+      });
+
+  return {
+    ready: true as const,
+    broadcast: {
+      id: updated.id,
+      status: updated.status,
+      lifecycleVersion: updated.lifecycleVersion,
+      contributionReadyAt: updated.contributionReadyAt,
+    },
+  };
 }
