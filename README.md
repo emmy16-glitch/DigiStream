@@ -71,6 +71,8 @@ npm run check
 
 GitHub Actions runs the same validation automatically on Node.js 22 and Node.js 24. The workflow also supports manual runs from the **Actions** tab.
 
+Python is not required for the current React and Fastify applications. A separate Python 3.11/3.12 test matrix will be added only if DigiStream later gains a Python analytics, machine-learning or data-processing service.
+
 ## Product direction
 
 The first product slice will cover:
