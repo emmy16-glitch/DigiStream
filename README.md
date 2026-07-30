@@ -8,21 +8,21 @@ DigiStream is an audio-first live-streaming platform for creators, organisations
 - Fastify TypeScript API with health and platform-status endpoints
 - Shared TypeScript contracts
 - npm workspace monorepo
-- GitHub Actions validation
+- GitHub Actions validation on Node.js 22 and Node.js 24
+- Reproducible GitHub Codespaces environment
 - Termux-friendly development commands with no Docker requirement
-- GitHub Codespaces configuration with automatic dependency installation and port forwarding
 
 ## Repository structure
 
 ```text
 DigiStream/
-├── .devcontainer/    # Reproducible GitHub Codespaces environment
 ├── apps/
 │   ├── api/          # Fastify API
 │   └── web/          # React + Vite responsive web app
 ├── packages/
 │   └── contracts/    # Shared API contracts
 ├── docs/             # Architecture, roadmap and development guides
+├── .devcontainer/    # GitHub Codespaces environment
 └── .github/workflows # Continuous integration
 ```
 
@@ -38,7 +38,7 @@ pkg update
 pkg install nodejs-lts git
 ```
 
-## Run locally in Termux or desktop Linux
+## Run locally
 
 ```bash
 git clone https://github.com/emmy16-glitch/DigiStream.git
@@ -47,28 +47,21 @@ npm install
 cp .env.example .env
 ```
 
-Start the API in one terminal:
+Start the API in one Termux session:
 
 ```bash
 npm run dev:api
 ```
 
-Start the web app in another terminal:
+Start the web app in another Termux session:
 
 ```bash
-npm run dev:web
+npm run dev:web -- --host 0.0.0.0
 ```
 
-Open `http://127.0.0.1:5173` on the same device. A computer on the same local network can use the development device's local IP address instead of `127.0.0.1`.
+Open `http://127.0.0.1:5173` on the phone. A computer on the same network can use the phone's local IP address instead of `127.0.0.1`.
 
-## Run in GitHub Codespaces
-
-Create a Codespace for the branch you want to inspect. The included development-container configuration uses Node.js 22, runs `npm install`, and forwards:
-
-- Port `3000` for the API
-- Port `5173` for the web application
-
-Then run `npm run dev:api` and `npm run dev:web` in separate terminals. See [`docs/CODESPACES.md`](docs/CODESPACES.md) for the complete phone workflow.
+For browser-based development from a phone, see [`docs/CODESPACES.md`](docs/CODESPACES.md).
 
 ## Validation
 
@@ -76,7 +69,7 @@ Then run `npm run dev:api` and `npm run dev:web` in separate terminals. See [`do
 npm run check
 ```
 
-This runs TypeScript checks, API tests and production builds.
+GitHub Actions runs the same validation automatically on Node.js 22 and Node.js 24. The workflow also supports manual runs from the **Actions** tab.
 
 ## Product direction
 
