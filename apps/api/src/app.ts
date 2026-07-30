@@ -7,10 +7,15 @@ import {
   type DatabaseContext,
 } from './db/client.js';
 import { registerHttpErrorHandling } from './http/errors.js';
+import { registerBroadcastGuestRoutes } from './modules/broadcast-guests/broadcast-guests.routes.js';
 import { registerBroadcastContributionRoutes } from './modules/broadcasts/broadcast-contribution.routes.js';
 import { registerBroadcastDeliveryRoutes } from './modules/broadcasts/broadcast-delivery.routes.js';
 import { registerBroadcastRoutes } from './modules/broadcasts/broadcasts.routes.js';
 import { registerChannelRoutes } from './modules/channels/channels.routes.js';
+import {
+  createLiveKitBackstageProviderFromEnv,
+  type BackstageProvider,
+} from './modules/media/backstage-provider.js';
 import type { ContributionProvider } from './modules/media/contribution-provider.js';
 import type { DeliveryProvider } from './modules/media/delivery-provider.js';
 import { createLiveKitEgressProviderFromEnv } from './modules/media/livekit-egress-provider.js';
@@ -25,6 +30,7 @@ export type BuildAppOptions = {
   database?: DatabaseContext | null;
   mediaControlSecret?: string;
   contributionProvider?: ContributionProvider | null;
+  backstageProvider?: BackstageProvider | null;
   deliveryProvider?: DeliveryProvider | null;
   mediaRelayProvider?: MediaRelayProvider | null;
 };
@@ -43,6 +49,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     options.contributionProvider === undefined
       ? createLiveKitContributionProviderFromEnv()
       : options.contributionProvider;
+  const backstageProvider =
+    options.backstageProvider === undefined
+      ? createLiveKitBackstageProviderFromEnv()
+      : options.backstageProvider;
   const deliveryProvider =
     options.deliveryProvider === undefined
       ? createOvenMediaEngineDeliveryProviderFromEnv()
@@ -74,6 +84,12 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     options.mediaControlSecret ?? process.env.MEDIA_CONTROL_SECRET,
   );
   registerBroadcastContributionRoutes(app, database, contributionProvider);
+  registerBroadcastGuestRoutes(
+    app,
+    database,
+    contributionProvider,
+    backstageProvider,
+  );
   registerBroadcastDeliveryRoutes(
     app,
     database,
@@ -122,7 +138,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'listener-playback-client',
+    stage: 'guest-backstage-control',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'creator-dashboard',
@@ -141,6 +157,13 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'listener-volume-and-mute-controls',
       'listener-buffering-and-reconnect-controls',
       'short-lived-playback-access',
+      'single-use-guest-invitations',
+      'guest-admission-control',
+      'guest-session-expiry',
+      'livekit-backstage-participant-list',
+      'livekit-guest-mute-and-remove',
+      'public-call-in-requests',
+      'call-in-approval-to-guest-invitation',
       'organisation-workspaces',
       'organisation-tenant-isolation',
       'organisation-owner-admin-permissions',
