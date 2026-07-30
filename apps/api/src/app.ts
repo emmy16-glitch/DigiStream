@@ -7,6 +7,7 @@ import {
   type DatabaseContext,
 } from './db/client.js';
 import { registerHttpErrorHandling } from './http/errors.js';
+import { registerBroadcastRoutes } from './modules/broadcasts/broadcasts.routes.js';
 import { registerChannelRoutes } from './modules/channels/channels.routes.js';
 import { registerOrganisationMembershipRoutes } from './modules/organisations/organisation-memberships.routes.js';
 import { registerOrganisationRoutes } from './modules/organisations/organisations.routes.js';
@@ -14,6 +15,7 @@ import { registerProfileRoutes } from './modules/profiles/profiles.routes.js';
 
 export type BuildAppOptions = {
   database?: DatabaseContext | null;
+  mediaControlSecret?: string;
 };
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
@@ -43,6 +45,11 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   registerOrganisationRoutes(app, database);
   registerOrganisationMembershipRoutes(app, database);
   registerChannelRoutes(app, database);
+  registerBroadcastRoutes(
+    app,
+    database,
+    options.mediaControlSecret ?? process.env.MEDIA_CONTROL_SECRET,
+  );
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
     if (!database) {
@@ -85,7 +92,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get<{ Reply: PlatformStatus }>('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'channel-foundation',
+    stage: 'broadcast-lifecycle',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'creator-dashboard',
@@ -99,6 +106,11 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'channel-lifecycle',
       'channel-visibility',
       'public-channel-discovery',
+      'broadcast-scheduling',
+      'broadcast-lifecycle',
+      'broadcast-idempotency',
+      'broadcast-media-readiness-gate',
+      'public-broadcast-pages',
       'postgresql-data-model',
       'versioned-database-migrations',
       'cookie-session-authentication',
