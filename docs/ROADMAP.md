@@ -83,6 +83,9 @@
 - [x] Restrict publisher credentials to microphone tracks and monitor credentials to subscribe-only access
 - [x] Connect the web creator client to LiveKit microphone publishing and host monitoring
 - [x] Add external guest invitations, backstage admission, participant removal and call-ins
+- [x] Add an external guest browser waiting room with microphone setup and admitted LiveKit join
+- [x] Add a creator backstage web workspace for guest links, admission, participant controls and call-in decisions
+- [ ] Add listener-side call-in request controls to public and unlisted broadcast pages
 - [x] Integrate OvenMediaEngine for public WebRTC and LL-HLS listener distribution
 - [x] Define and implement the controlled LiveKit Egress relay into OvenMediaEngine delivery
 - [x] Add microphone permission, input selection, audio level and clipping feedback
