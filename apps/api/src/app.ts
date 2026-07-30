@@ -7,8 +7,11 @@ import {
   type DatabaseContext,
 } from './db/client.js';
 import { registerHttpErrorHandling } from './http/errors.js';
+import { registerBroadcastContributionRoutes } from './modules/broadcasts/broadcast-contribution.routes.js';
 import { registerBroadcastRoutes } from './modules/broadcasts/broadcasts.routes.js';
 import { registerChannelRoutes } from './modules/channels/channels.routes.js';
+import type { ContributionProvider } from './modules/media/contribution-provider.js';
+import { createLiveKitContributionProviderFromEnv } from './modules/media/livekit-provider.js';
 import { registerOrganisationMembershipRoutes } from './modules/organisations/organisation-memberships.routes.js';
 import { registerOrganisationRoutes } from './modules/organisations/organisations.routes.js';
 import { registerProfileRoutes } from './modules/profiles/profiles.routes.js';
@@ -16,6 +19,7 @@ import { registerProfileRoutes } from './modules/profiles/profiles.routes.js';
 export type BuildAppOptions = {
   database?: DatabaseContext | null;
   mediaControlSecret?: string;
+  contributionProvider?: ContributionProvider | null;
 };
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
@@ -28,6 +32,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const database =
     options.database === undefined ? createDatabase() : options.database;
   const ownsDatabase = options.database === undefined && database !== null;
+  const contributionProvider =
+    options.contributionProvider === undefined
+      ? createLiveKitContributionProviderFromEnv()
+      : options.contributionProvider;
 
   void app.register(cors, {
     origin: process.env.WEB_ORIGIN ?? true,
@@ -50,6 +58,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     database,
     options.mediaControlSecret ?? process.env.MEDIA_CONTROL_SECRET,
   );
+  registerBroadcastContributionRoutes(app, database, contributionProvider);
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
     if (!database) {
@@ -111,6 +120,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'broadcast-idempotency',
       'broadcast-media-readiness-gate',
       'public-broadcast-pages',
+      'livekit-room-provisioning',
+      'short-lived-livekit-tokens',
+      'microphone-only-contribution-permissions',
       'postgresql-data-model',
       'versioned-database-migrations',
       'cookie-session-authentication',
