@@ -30,6 +30,20 @@ export const membershipRoleEnum = pgEnum('membership_role', [
   'analyst',
 ]);
 
+export const channelStatusEnum = pgEnum('channel_status', [
+  'draft',
+  'pending_review',
+  'active',
+  'suspended',
+  'archived',
+]);
+
+export const channelVisibilityEnum = pgEnum('channel_visibility', [
+  'public',
+  'unlisted',
+  'private',
+]);
+
 export const broadcastStatusEnum = pgEnum('broadcast_status', [
   'draft',
   'scheduled',
@@ -238,7 +252,12 @@ export const channels = pgTable(
     name: varchar('name', { length: 120 }).notNull(),
     slug: varchar('slug', { length: 80 }).notNull(),
     description: text('description'),
-    isPublic: boolean('is_public').default(true).notNull(),
+    category: varchar('category', { length: 40 }),
+    status: channelStatusEnum('status').default('draft').notNull(),
+    visibility: channelVisibilityEnum('visibility').default('public').notNull(),
+    createdByUserId: uuid('created_by_user_id').references(() => users.id, {
+      onDelete: 'restrict',
+    }),
     createdAt: timestamp('created_at', {
       withTimezone: true,
       mode: 'date',
@@ -257,7 +276,17 @@ export const channels = pgTable(
       table.organisationId,
       table.slug,
     ),
-    index('channels_organisation_idx').on(table.organisationId),
+    index('channels_organisation_status_idx').on(
+      table.organisationId,
+      table.status,
+      table.createdAt,
+    ),
+    index('channels_public_discovery_idx').on(
+      table.status,
+      table.visibility,
+      table.category,
+      table.createdAt,
+    ),
   ],
 );
 

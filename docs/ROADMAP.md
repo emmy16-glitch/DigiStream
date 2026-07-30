@@ -53,14 +53,15 @@
 
 ## Phase 4 — Channels, profiles and discovery foundation
 
-- [ ] Treat profiles and channels as separate identities
-- [ ] Add channel lifecycle: draft, pending approval, active, suspended and archived
-- [ ] Add public, unlisted and private visibility
-- [ ] Add categories, artwork metadata and stable slugs
-- [ ] Add bounded public listing and channel detail endpoints
-- [ ] Add ownership-safe channel management endpoints
+- [x] Treat profiles and channels as separate identities
+- [x] Add channel lifecycle: draft, pending review, active, suspended and archived
+- [x] Add public, unlisted and private visibility
+- [x] Add normalized categories and stable organisation-scoped slugs
+- [ ] Add storage-backed channel artwork metadata
+- [x] Add bounded public listing and exact channel detail endpoints
+- [x] Add ownership-safe channel management endpoints
 - [ ] Add following and idempotent unfollow
-- [ ] Add search, filtering, stable sorting and pagination
+- [ ] Add full-text search, stable cursor pagination and advanced filtering
 - [ ] Add moderation and soft-delete/retention policy
 
 ## Phase 5 — Broadcast scheduling and lifecycle

@@ -7,6 +7,7 @@ import {
   type DatabaseContext,
 } from './db/client.js';
 import { registerHttpErrorHandling } from './http/errors.js';
+import { registerChannelRoutes } from './modules/channels/channels.routes.js';
 import { registerOrganisationMembershipRoutes } from './modules/organisations/organisation-memberships.routes.js';
 import { registerOrganisationRoutes } from './modules/organisations/organisations.routes.js';
 import { registerProfileRoutes } from './modules/profiles/profiles.routes.js';
@@ -41,6 +42,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   registerProfileRoutes(app, database);
   registerOrganisationRoutes(app, database);
   registerOrganisationMembershipRoutes(app, database);
+  registerChannelRoutes(app, database);
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
     if (!database) {
@@ -83,7 +85,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get<{ Reply: PlatformStatus }>('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'organisation-memberships',
+    stage: 'channel-foundation',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'creator-dashboard',
@@ -94,6 +96,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'organisation-invitations',
       'organisation-member-role-management',
       'organisation-final-owner-protection',
+      'channel-lifecycle',
+      'channel-visibility',
+      'public-channel-discovery',
       'postgresql-data-model',
       'versioned-database-migrations',
       'cookie-session-authentication',
