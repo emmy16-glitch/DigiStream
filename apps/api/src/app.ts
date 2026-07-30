@@ -101,7 +101,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get<{ Reply: PlatformStatus }>('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'livekit-contribution-adapter',
+    stage: 'broadcast-lifecycle',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'creator-dashboard',
