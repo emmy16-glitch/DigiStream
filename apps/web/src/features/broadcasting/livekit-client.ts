@@ -56,7 +56,7 @@ export type LiveKitModule = {
   createLocalAudioTrack(options?: {
     autoGainControl?: boolean;
     channelCount?: number;
-    deviceId?: ConstrainDOMString;
+    deviceId?: ConstrainDOMString | undefined;
     echoCancellation?: boolean;
     noiseSuppression?: boolean;
     sampleRate?: number;
