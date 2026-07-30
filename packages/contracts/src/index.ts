@@ -27,7 +27,8 @@ export type PlatformStatus = {
     | 'livekit-ome-egress-bridge'
     | 'local-media-infrastructure'
     | 'creator-broadcast-client'
-    | 'listener-playback-client';
+    | 'listener-playback-client'
+    | 'guest-backstage-control';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
 };
@@ -303,6 +304,72 @@ export type BroadcastPlayback = {
 
 export type BroadcastPlaybackResponse = {
   playback: BroadcastPlayback;
+};
+
+export type GuestInvitationStatus =
+  | 'pending'
+  | 'accepted'
+  | 'admitted'
+  | 'revoked';
+
+export type BroadcastGuestInvitation = {
+  id: string;
+  organisationId: string;
+  broadcastId: string;
+  invitedEmail: string | null;
+  displayName: string | null;
+  status: GuestInvitationStatus;
+  expiresAt: string;
+  acceptedAt: string | null;
+  admittedAt: string | null;
+  revokedAt: string | null;
+  sessionExpiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreatedBroadcastGuestInvitation = BroadcastGuestInvitation & {
+  acceptanceToken: string;
+};
+
+export type GuestSession = {
+  invitationId: string;
+  organisationId: string;
+  broadcastId: string;
+  displayName: string;
+  admitted: boolean;
+  expiresAt: string;
+  sessionToken: string;
+};
+
+export type BackstageParticipant = {
+  identity: string;
+  name: string;
+  role: 'host' | 'guest' | 'monitor' | 'unknown';
+  connected: boolean;
+  publishing: boolean;
+  tracks: Array<{
+    sid: string;
+    source: string;
+    muted: boolean;
+  }>;
+};
+
+export type CallInStatus = 'pending' | 'approved' | 'rejected';
+
+export type BroadcastCallInRequest = {
+  id: string;
+  organisationId: string;
+  broadcastId: string;
+  displayName: string;
+  contactEmail: string | null;
+  message: string | null;
+  status: CallInStatus;
+  invitationId: string | null;
+  decidedByUserId: string | null;
+  decidedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ApiErrorResponse = {
