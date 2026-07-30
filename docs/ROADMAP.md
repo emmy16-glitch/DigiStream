@@ -7,7 +7,7 @@
 - [x] Add API health endpoints
 - [x] Add shared contracts
 - [x] Add continuous integration
-- [ ] Generate and commit a package lock after the first dependency update
+- [x] Generate and commit a package lock after the first dependency update
 
 ## Phase 1 — Backend data foundation
 
