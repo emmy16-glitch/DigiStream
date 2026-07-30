@@ -17,7 +17,8 @@ export type PlatformStatus = {
     | 'foundation'
     | 'backend-data-foundation'
     | 'authentication-foundation'
-    | 'profiles-capabilities';
+    | 'profiles-capabilities'
+    | 'organisation-tenancy';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
 };
@@ -77,6 +78,30 @@ export type CapabilityChangeResponse = {
     capability: PlatformCapability;
     active: boolean;
   };
+};
+
+export type OrganisationRole =
+  | 'owner'
+  | 'admin'
+  | 'broadcaster'
+  | 'moderator'
+  | 'analyst';
+
+export type Organisation = {
+  id: string;
+  name: string;
+  slug: string;
+  role: OrganisationRole;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OrganisationResponse = {
+  organisation: Organisation;
+};
+
+export type OrganisationListResponse = {
+  organisations: Organisation[];
 };
 
 export type ApiErrorResponse = {
