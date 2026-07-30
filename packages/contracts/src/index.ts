@@ -19,7 +19,8 @@ export type PlatformStatus = {
     | 'authentication-foundation'
     | 'profiles-capabilities'
     | 'organisation-tenancy'
-    | 'organisation-memberships';
+    | 'organisation-memberships'
+    | 'channel-foundation';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
 };
@@ -150,6 +151,60 @@ export type AcceptedOrganisationMembershipResponse = {
     role: OrganisationRole;
     joinedAt: string;
   };
+};
+
+export type ChannelStatus =
+  | 'draft'
+  | 'pending_review'
+  | 'active'
+  | 'suspended'
+  | 'archived';
+
+export type ChannelVisibility = 'public' | 'unlisted' | 'private';
+
+export type Channel = {
+  id: string;
+  organisationId: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string | null;
+  status: ChannelStatus;
+  visibility: ChannelVisibility;
+  createdByUserId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ChannelResponse = {
+  channel: Channel;
+};
+
+export type ChannelListResponse = {
+  channels: Channel[];
+};
+
+export type PublicChannel = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  category: string | null;
+  organisation: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PublicChannelResponse = {
+  channel: PublicChannel;
+};
+
+export type PublicChannelListResponse = {
+  channels: PublicChannel[];
 };
 
 export type ApiErrorResponse = {
