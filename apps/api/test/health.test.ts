@@ -29,12 +29,14 @@ test('GET /api/v1/status declares all responsive targets', async () => {
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().stage, 'livekit-ome-egress-bridge');
+  assert.equal(response.json().stage, 'local-media-infrastructure');
   assert.deepEqual(response.json().responsiveTargets, [
     'mobile',
     'tablet',
     'desktop',
   ]);
+  assert.ok(response.json().capabilities.includes('local-media-compose'));
+  assert.ok(response.json().capabilities.includes('live-media-smoke-test'));
 
   await app.close();
 });
