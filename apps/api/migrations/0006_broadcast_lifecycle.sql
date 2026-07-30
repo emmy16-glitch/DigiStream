@@ -47,6 +47,12 @@ SET
 WHERE contribution_room_name IS NULL OR delivery_stream_name IS NULL;
 
 ALTER TABLE broadcasts
+  ALTER COLUMN contribution_room_name SET DEFAULT (
+    'broadcast-' || replace(gen_random_uuid()::text, '-', '')
+  ),
+  ALTER COLUMN delivery_stream_name SET DEFAULT (
+    'broadcast-' || replace(gen_random_uuid()::text, '-', '')
+  ),
   ALTER COLUMN contribution_room_name SET NOT NULL,
   ALTER COLUMN delivery_stream_name SET NOT NULL;
 
