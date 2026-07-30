@@ -29,6 +29,11 @@ export type ContributionCredential = {
   };
 };
 
+export type ContributionPublisherVerificationRequest = {
+  roomName: string;
+  participantIdentity: string;
+};
+
 export interface ContributionProvider {
   readonly provider: 'livekit';
   readonly clientUrl: string;
@@ -38,6 +43,10 @@ export interface ContributionProvider {
   issueCredential(
     request: ContributionCredentialRequest,
   ): Promise<ContributionCredential>;
+
+  verifyPublishedMicrophone?(
+    request: ContributionPublisherVerificationRequest,
+  ): Promise<boolean>;
 }
 
 export class ContributionProviderError extends Error {
