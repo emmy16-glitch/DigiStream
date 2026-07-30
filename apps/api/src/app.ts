@@ -1,6 +1,6 @@
 import cors from '@fastify/cors';
 import Fastify, { type FastifyInstance } from 'fastify';
-import type { PlatformStatus, ServiceHealth } from '@digistream/contracts';
+import type { ServiceHealth } from '@digistream/contracts';
 import { registerAuthRoutes } from './auth/routes.js';
 import {
   createDatabase,
@@ -108,7 +108,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     }
   });
 
-  app.get<{ Reply: PlatformStatus }>('/api/v1/status', async () => ({
+  app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
     stage: 'ovenmediaengine-delivery-adapter',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
