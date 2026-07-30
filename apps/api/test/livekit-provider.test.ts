@@ -119,3 +119,34 @@ test('LiveKit monitor credentials cannot publish and existing rooms are reused',
   assert.equal(video.canPublish, false);
   assert.equal(video.canSubscribe, true);
 });
+
+test('LiveKit provider verifies an unmuted microphone publication with room-admin grants', async () => {
+  let serviceGrant: Record<string, unknown> | undefined;
+  const fetchImpl: typeof fetch = async (_input, init) => {
+    const headers = new Headers(init?.headers);
+    const token = headers.get('authorization')?.replace(/^Bearer /, '');
+    assert.ok(token);
+    serviceGrant = decodeToken(token).video as Record<string, unknown>;
+    return new Response(
+      JSON.stringify({
+        identity: 'host-user-abc123def456',
+        is_publisher: true,
+        tracks: [
+          { type: 'AUDIO', source: 'MICROPHONE', muted: false },
+          { type: 'VIDEO', source: 'CAMERA', muted: false },
+        ],
+      }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    );
+  };
+  const provider = new LiveKitContributionProvider(config, { fetchImpl });
+
+  const published = await provider.verifyPublishedMicrophone({
+    roomName: 'verified-room',
+    participantIdentity: 'host-user-abc123def456',
+  });
+
+  assert.equal(published, true);
+  assert.equal(serviceGrant?.room, 'verified-room');
+  assert.equal(serviceGrant?.roomAdmin, true);
+});
