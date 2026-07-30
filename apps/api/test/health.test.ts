@@ -29,7 +29,7 @@ test('GET /api/v1/status declares all responsive targets', async () => {
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().stage, 'channel-foundation');
+  assert.equal(response.json().stage, 'broadcast-lifecycle');
   assert.deepEqual(response.json().responsiveTargets, [
     'mobile',
     'tablet',
