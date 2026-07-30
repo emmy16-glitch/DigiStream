@@ -5,23 +5,28 @@ DigiStream is an audio-first live-streaming platform for creators, organisations
 ## Current foundation
 
 - Responsive React creator dashboard and listener-ready web shell
-- Fastify TypeScript API with health and platform-status endpoints
+- Fastify and TypeScript API
+- PostgreSQL and Drizzle typed data model
+- Versioned checksum-protected SQL migrations
+- Registration, login, current-user, logout and revocable database sessions
+- Secure scrypt password hashing and opaque HttpOnly cookies
+- Standard safe API errors and request correlation IDs
 - Shared TypeScript contracts
-- npm workspace monorepo
-- GitHub Actions validation on Node.js 22 and Node.js 24
+- npm workspace monorepo with a committed dependency lock
+- PostgreSQL integration tests and GitHub Actions validation on Node.js 22 and Node.js 24
 - Reproducible GitHub Codespaces environment
-- Termux-friendly development commands with no Docker requirement
+- Termux-friendly development commands
 
 ## Repository structure
 
 ```text
 DigiStream/
 ├── apps/
-│   ├── api/          # Fastify API
+│   ├── api/          # Fastify API and PostgreSQL modules
 │   └── web/          # React + Vite responsive web app
 ├── packages/
 │   └── contracts/    # Shared API contracts
-├── docs/             # Architecture, roadmap and development guides
+├── docs/             # Product, architecture, roadmap and development guides
 ├── .devcontainer/    # GitHub Codespaces environment
 └── .github/workflows # Continuous integration
 ```
@@ -30,6 +35,7 @@ DigiStream/
 
 - Node.js 22 or newer
 - npm 10 or newer
+- PostgreSQL for database-backed development and integration tests
 
 On Termux:
 
@@ -38,13 +44,16 @@ pkg update
 pkg install nodejs-lts git
 ```
 
+PostgreSQL can run on another reachable machine or a development cloud service when a reliable local Android package is unavailable.
+
 ## Run locally
 
 ```bash
 git clone https://github.com/emmy16-glitch/DigiStream.git
 cd DigiStream
-npm install
+npm ci
 cp .env.example .env
+npm run db:migrate
 ```
 
 Start the API in one Termux session:
@@ -69,21 +78,28 @@ For browser-based development from a phone, see [`docs/CODESPACES.md`](docs/CODE
 npm run check
 ```
 
-GitHub Actions runs the same validation automatically on Node.js 22 and Node.js 24. The workflow also supports manual runs from the **Actions** tab.
+GitHub Actions starts PostgreSQL, applies migrations, runs integration tests, checks TypeScript and builds the API and web application on Node.js 22 and Node.js 24. The workflow also supports manual runs from the **Actions** tab.
 
 Python is not required for the current React and Fastify applications. A separate Python 3.11/3.12 test matrix will be added only if DigiStream later gains a Python analytics, machine-learning or data-processing service.
 
+## Product and architecture references
+
+- [`docs/PRODUCT_SPECIFICATION.md`](docs/PRODUCT_SPECIFICATION.md) defines users, authority, entities, visibility, lifecycles, MVP scope and production requirements.
+- [`docs/HANDBOOK_COMPARISON.md`](docs/HANDBOOK_COMPARISON.md) records which ideas were adopted from the Echoo team handbook and which DigiStream technologies remain stronger.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) defines modular backend, data, real-time and media boundaries.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) records implementation order and completion gates.
+
 ## Product direction
 
-The first product slice will cover:
+The backend-first implementation order is:
 
-1. Accounts and authentication
-2. Organisations and team roles
-3. Channels and scheduled broadcasts
-4. Creator audio setup and go-live workflow
-5. Listener playback pages
-6. Live chat and reactions
-7. Recordings and replay publishing
-8. Analytics and stream-health monitoring
-
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for implementation order.
+1. Production API conventions and identity model
+2. Profiles and platform capabilities
+3. Organisations, invitations and tenant roles
+4. Channels, visibility and discovery
+5. Scheduled and immediate broadcast lifecycle
+6. Media adapter and live-audio proof of concept
+7. Secure real-time interaction and notifications
+8. Recording, object storage and replay
+9. Analytics, administration and commerce
+10. Deployment, monitoring, backup, rollback and recovery
