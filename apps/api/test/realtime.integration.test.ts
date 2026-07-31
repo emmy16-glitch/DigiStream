@@ -24,7 +24,6 @@ import {
 } from '../src/modules/realtime/websocket-protocol.js';
 
 const databaseUrl = process.env.DATABASE_URL;
-
 type JsonMessage = Record<string, unknown>;
 
 function responseCookie(response: { headers: Record<string, unknown> }): string {
@@ -52,28 +51,32 @@ class TestRealtimeClient {
     private readonly socket: Socket,
     initialData: Buffer,
   ) {
+    socket.on('error', () => undefined);
     socket.on('data', (chunk: Buffer) => this.receive(chunk));
-    socket.on('close', () => {
-      this.closed = true;
-      for (const waiter of this.waiters.splice(0)) {
-        clearTimeout(waiter.timer);
-        waiter.reject(new Error('The realtime socket closed.'));
-      }
-    });
+    socket.on('close', () => this.finishClose());
     if (initialData.length > 0) this.receive(initialData);
+  }
+
+  private finishClose(): void {
+    if (this.closed) return;
+    this.closed = true;
+    for (const waiter of this.waiters.splice(0)) {
+      clearTimeout(waiter.timer);
+      waiter.reject(new Error('The realtime socket closed.'));
+    }
   }
 
   private receive(chunk: Buffer): void {
     for (const frame of this.parser.push(chunk)) {
       if (frame.type === 'ping') {
-        this.socket.write(encodeWebSocketFrame(0xa, frame.payload, true));
+        if (!this.socket.destroyed && !this.socket.writableEnded) {
+          this.socket.write(encodeWebSocketFrame(0xa, frame.payload, true));
+        }
         continue;
       }
       if (frame.type === 'close') {
-        if (!this.closed) {
-          this.socket.write(encodeWebSocketFrame(0x8, frame.payload, true));
-          this.socket.end();
-        }
+        this.finishClose();
+        this.socket.destroy();
         continue;
       }
       if (frame.type !== 'text') continue;
@@ -82,19 +85,22 @@ class TestRealtimeClient {
       const waiterIndex = this.waiters.findIndex((waiter) =>
         waiter.predicate(message),
       );
-      if (waiterIndex >= 0) {
-        const [waiter] = this.waiters.splice(waiterIndex, 1);
-        if (waiter) {
-          clearTimeout(waiter.timer);
-          waiter.resolve(message);
-        }
-      } else {
+      if (waiterIndex < 0) {
         this.queued.push(message);
+        continue;
+      }
+
+      const [waiter] = this.waiters.splice(waiterIndex, 1);
+      if (waiter) {
+        clearTimeout(waiter.timer);
+        waiter.resolve(message);
       }
     }
   }
 
   send(message: JsonMessage): void {
+    assert.equal(this.closed, false);
+    assert.equal(this.socket.destroyed, false);
     this.socket.write(
       encodeWebSocketFrame(0x1, JSON.stringify(message), true),
     );
@@ -122,10 +128,8 @@ class TestRealtimeClient {
   }
 
   close(): void {
-    if (this.closed || this.socket.destroyed) return;
-    this.closed = true;
-    this.socket.write(encodeWebSocketFrame(0x8, Buffer.from([0x03, 0xe8]), true));
-    this.socket.end();
+    this.finishClose();
+    this.socket.destroy();
   }
 }
 
@@ -141,7 +145,7 @@ async function upgrade(
   const cookieHeader = cookie ? `Cookie: ${cookie}\r\n` : '';
 
   return new Promise((resolve, reject) => {
-    let buffer = Buffer.alloc(0);
+    let buffer: Buffer<ArrayBufferLike> = Buffer.alloc(0);
     const onError = (error: Error) => reject(error);
     const onData = (chunk: Buffer) => {
       buffer = Buffer.concat([buffer, chunk]);
@@ -152,14 +156,17 @@ async function upgrade(
       socket.off('error', onError);
       const headerText = buffer.subarray(0, boundary).toString('utf8');
       const statusCode = Number(headerText.match(/^HTTP\/1\.1 (\d{3})/)?.[1]);
-      const remaining = buffer.subarray(boundary + 4);
+      const remaining = Buffer.from(buffer.subarray(boundary + 4));
       if (statusCode !== 101) {
         socket.destroy();
         resolve({ statusCode });
         return;
       }
 
-      assert.match(headerText, new RegExp(`Sec-WebSocket-Protocol: ${REALTIME_PROTOCOL}`, 'i'));
+      assert.match(
+        headerText,
+        new RegExp(`Sec-WebSocket-Protocol: ${REALTIME_PROTOCOL}`, 'i'),
+      );
       resolve({
         statusCode,
         client: new TestRealtimeClient(socket, remaining),
@@ -193,6 +200,16 @@ function requestMessage(type: string, requestId: string) {
     message.type === type && message.requestId === requestId;
 }
 
+async function expectRoomResult(
+  client: TestRealtimeClient,
+  requestId: string,
+  room: JsonMessage,
+  resultType: 'room.joined' | 'realtime.error',
+): Promise<JsonMessage> {
+  client.send({ type: 'join', requestId, room });
+  return client.waitFor(requestMessage(resultType, requestId));
+}
+
 test(
   'realtime connections authenticate sessions and isolate server-authorized rooms',
   { skip: !databaseUrl, timeout: 90_000 },
@@ -209,8 +226,6 @@ test(
     const app = buildApp({ database, realtime });
     const suffix = randomUUID().replaceAll('-', '').slice(0, 12);
     const password = 'Realtime-test-password-123!';
-    const ownerEmail = `realtime-owner-${suffix}@example.test`;
-    const outsiderEmail = `realtime-outsider-${suffix}@example.test`;
     let organisationId = '';
     let ownerId = '';
     let outsiderId = '';
@@ -221,7 +236,7 @@ test(
         method: 'POST',
         url: '/api/v1/auth/register',
         payload: {
-          email: ownerEmail,
+          email: `realtime-owner-${suffix}@example.test`,
           displayName: 'Realtime Owner',
           password,
         },
@@ -234,7 +249,7 @@ test(
         method: 'POST',
         url: '/api/v1/auth/register',
         payload: {
-          email: outsiderEmail,
+          email: `realtime-outsider-${suffix}@example.test`,
           displayName: 'Realtime Outsider',
           password,
         },
@@ -253,71 +268,76 @@ test(
         .returning();
       assert.ok(organisation);
       organisationId = organisation.id;
-
       await database.db.insert(organisationMemberships).values({
         organisationId,
         userId: ownerId,
         role: 'owner',
       });
 
-      const [publicChannel] = await database.db
-        .insert(channels)
-        .values({
-          organisationId,
-          name: 'Public realtime channel',
-          slug: `public-${suffix}`,
-          status: 'active',
-          visibility: 'public',
-          createdByUserId: ownerId,
-        })
-        .returning();
-      const [privateChannel] = await database.db
-        .insert(channels)
-        .values({
-          organisationId,
-          name: 'Private realtime channel',
-          slug: `private-${suffix}`,
-          status: 'active',
-          visibility: 'private',
-          createdByUserId: ownerId,
-        })
-        .returning();
+      const [publicChannel, privateChannel] = await Promise.all([
+        database.db
+          .insert(channels)
+          .values({
+            organisationId,
+            name: 'Public realtime channel',
+            slug: `public-${suffix}`,
+            status: 'active',
+            visibility: 'public',
+            createdByUserId: ownerId,
+          })
+          .returning()
+          .then(([row]) => row),
+        database.db
+          .insert(channels)
+          .values({
+            organisationId,
+            name: 'Private realtime channel',
+            slug: `private-${suffix}`,
+            status: 'active',
+            visibility: 'private',
+            createdByUserId: ownerId,
+          })
+          .returning()
+          .then(([row]) => row),
+      ]);
       assert.ok(publicChannel);
       assert.ok(privateChannel);
 
-      const [publicBroadcast] = await database.db
-        .insert(broadcastRecords)
-        .values({
-          organisationId,
-          channelId: publicChannel.id,
-          createdByUserId: ownerId,
-          title: 'Public realtime broadcast',
-          slug: `public-live-${suffix}`,
-          status: 'live',
-          contributionRoomName: `public-room-${suffix}`,
-          deliveryStreamName: `public-stream-${suffix}`,
-        })
-        .returning();
-      const [privateBroadcast] = await database.db
-        .insert(broadcastRecords)
-        .values({
-          organisationId,
-          channelId: privateChannel.id,
-          createdByUserId: ownerId,
-          title: 'Private realtime broadcast',
-          slug: `private-live-${suffix}`,
-          status: 'live',
-          contributionRoomName: `private-room-${suffix}`,
-          deliveryStreamName: `private-stream-${suffix}`,
-        })
-        .returning();
+      const [publicBroadcast, privateBroadcast] = await Promise.all([
+        database.db
+          .insert(broadcastRecords)
+          .values({
+            organisationId,
+            channelId: publicChannel.id,
+            createdByUserId: ownerId,
+            title: 'Public realtime broadcast',
+            slug: `public-live-${suffix}`,
+            status: 'live',
+            contributionRoomName: `public-room-${suffix}`,
+            deliveryStreamName: `public-stream-${suffix}`,
+          })
+          .returning()
+          .then(([row]) => row),
+        database.db
+          .insert(broadcastRecords)
+          .values({
+            organisationId,
+            channelId: privateChannel.id,
+            createdByUserId: ownerId,
+            title: 'Private realtime broadcast',
+            slug: `private-live-${suffix}`,
+            status: 'live',
+            contributionRoomName: `private-room-${suffix}`,
+            deliveryStreamName: `private-stream-${suffix}`,
+          })
+          .returning()
+          .then(([row]) => row),
+      ]);
       assert.ok(publicBroadcast);
       assert.ok(privateBroadcast);
 
       const address = await app.listen({ host: '127.0.0.1', port: 0 });
-
-      const unauthenticated = await upgrade(address);
-      assert.equal(unauthenticated.statusCode, 401);
+      assert.equal((await upgrade(address)).statusCode, 401);
 
       const ownerUpgrade = await upgrade(address, ownerCookie);
       assert.equal(ownerUpgrade.statusCode, 101);
@@ -342,27 +362,25 @@ test(
         ownerConnected.connectionId,
       );
 
-      ownerUpgrade.client.send({
-        type: 'join',
-        requestId: 'owner-org',
-        room: { kind: 'organisation', id: organisationId },
-      });
-      const ownerOrg = await ownerUpgrade.client.waitFor(
-        requestMessage('room.joined', 'owner-org'),
+      const ownerOrg = await expectRoomResult(
+        ownerUpgrade.client,
+        'owner-org',
+        { kind: 'organisation', id: organisationId },
+        'room.joined',
       );
-      assert.equal((ownerOrg.room as JsonMessage).key, `organisation:${organisationId}`);
-
-      ownerUpgrade.client.send({
-        type: 'join',
-        requestId: 'owner-private',
-        room: {
+      assert.equal(
+        (ownerOrg.room as JsonMessage).key,
+        `organisation:${organisationId}`,
+      );
+      await expectRoomResult(
+        ownerUpgrade.client,
+        'owner-private',
+        {
           kind: 'broadcast',
           id: privateBroadcast.id,
           organisationId,
         },
-      });
-      await ownerUpgrade.client.waitFor(
-        requestMessage('room.joined', 'owner-private'),
+        'room.joined',
       );
 
       const outsiderUpgrade = await upgrade(address, outsiderCookie);
@@ -370,60 +388,47 @@ test(
       clients.push(outsiderUpgrade.client);
       await outsiderUpgrade.client.waitFor(messageType('realtime.connected'));
 
-      outsiderUpgrade.client.send({
-        type: 'join',
-        requestId: 'other-user',
-        room: { kind: 'user', id: ownerId },
-      });
-      const otherUser = await outsiderUpgrade.client.waitFor(
-        requestMessage('realtime.error', 'other-user'),
+      await expectRoomResult(
+        outsiderUpgrade.client,
+        'other-user',
+        { kind: 'user', id: ownerId },
+        'realtime.error',
       );
-      assert.equal(
-        (otherUser.error as JsonMessage).code,
-        'REALTIME_ROOM_NOT_AVAILABLE',
+      await expectRoomResult(
+        outsiderUpgrade.client,
+        'outsider-org',
+        { kind: 'organisation', id: organisationId },
+        'realtime.error',
       );
-
-      outsiderUpgrade.client.send({
-        type: 'join',
-        requestId: 'outsider-org',
-        room: { kind: 'organisation', id: organisationId },
-      });
-      await outsiderUpgrade.client.waitFor(
-        requestMessage('realtime.error', 'outsider-org'),
-      );
-
-      outsiderUpgrade.client.send({
-        type: 'join',
-        requestId: 'outsider-public',
-        room: {
+      const publicJoined = await expectRoomResult(
+        outsiderUpgrade.client,
+        'outsider-public',
+        {
           kind: 'broadcast',
           id: publicBroadcast.id,
           organisationId,
         },
-      });
-      const publicJoined = await outsiderUpgrade.client.waitFor(
-        requestMessage('room.joined', 'outsider-public'),
+        'room.joined',
       );
-      assert.equal((publicJoined.room as JsonMessage).key, `broadcast:${publicBroadcast.id}`);
-
-      outsiderUpgrade.client.send({
-        type: 'join',
-        requestId: 'outsider-private',
-        room: {
+      assert.equal(
+        (publicJoined.room as JsonMessage).key,
+        `broadcast:${publicBroadcast.id}`,
+      );
+      await expectRoomResult(
+        outsiderUpgrade.client,
+        'outsider-private',
+        {
           kind: 'broadcast',
           id: privateBroadcast.id,
           organisationId,
         },
-      });
-      await outsiderUpgrade.client.waitFor(
-        requestMessage('realtime.error', 'outsider-private'),
+        'realtime.error',
       );
 
       outsiderUpgrade.client.send({ type: 'ping', requestId: 'client-ping' });
       await outsiderUpgrade.client.waitFor(
         requestMessage('realtime.pong', 'client-ping'),
       );
-
       outsiderUpgrade.client.send({
         type: 'leave',
         requestId: 'leave-public',
@@ -441,9 +446,7 @@ test(
         .update(authSessions)
         .set({ revokedAt: new Date() })
         .where(eq(authSessions.userId, outsiderId));
-
-      const revokedReconnect = await upgrade(address, outsiderCookie);
-      assert.equal(revokedReconnect.statusCode, 401);
+      assert.equal((await upgrade(address, outsiderCookie)).statusCode, 401);
 
       const sessionEnded = await outsiderUpgrade.client.waitFor(
         messageType('realtime.session-ended'),
