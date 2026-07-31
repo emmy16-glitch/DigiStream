@@ -456,9 +456,15 @@ function CreatorDashboard({
       workspaceName={primaryOrganisation?.name ?? 'Creator workspace'}
     >
       {pageContent}
-      <CreatorBroadcastStudio onClose={() => setStudioOpen(false)} open={studioOpen} />
-      <CreatorBackstageWorkspace onClose={() => setBackstageOpen(false)} open={backstageOpen} />
-      <CreatorChatWorkspace onClose={() => setChatOpen(false)} open={chatOpen} />
+      {studioOpen ? (
+        <CreatorBroadcastStudio onClose={() => setStudioOpen(false)} open />
+      ) : null}
+      {backstageOpen ? (
+        <CreatorBackstageWorkspace onClose={() => setBackstageOpen(false)} open />
+      ) : null}
+      {chatOpen ? (
+        <CreatorChatWorkspace onClose={() => setChatOpen(false)} open />
+      ) : null}
     </CreatorShell>
   );
 }
