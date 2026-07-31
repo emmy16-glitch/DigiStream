@@ -22,7 +22,7 @@ function responseCookie(response: { headers: Record<string, unknown> }): string 
 }
 
 test(
-  'registration, login, current user and logout use secure database sessions',
+  'registration creates a usable creator workspace and secure database session',
   { skip: !databaseUrl, timeout: 60_000 },
   async () => {
     const database = createDatabase(databaseUrl);
@@ -114,6 +114,78 @@ test(
       assert.equal(organisation.statusCode, 201);
       assert.equal(organisation.json().organisation.role, 'owner');
       organisationId = organisation.json().organisation.id;
+
+      const channel = await app.inject({
+        method: 'POST',
+        url: `/api/v1/organisations/${organisationId}/channels`,
+        headers: { cookie: registrationCookie },
+        payload: {
+          name: 'First Channel',
+          slug: `first-channel-${suffix}`,
+          description: 'The first real creator channel.',
+          category: 'community',
+          visibility: 'public',
+        },
+      });
+      assert.equal(channel.statusCode, 201);
+      assert.equal(channel.json().channel.status, 'draft');
+      const channelId = channel.json().channel.id;
+
+      const scheduledStartAt = new Date(Date.now() + 10 * 60_000).toISOString();
+      const scheduleBeforeActivation = await app.inject({
+        method: 'POST',
+        url: `/api/v1/organisations/${organisationId}/channels/${channelId}/broadcasts`,
+        headers: { cookie: registrationCookie },
+        payload: {
+          title: 'First Scheduled Broadcast',
+          slug: `first-broadcast-${suffix}`,
+          scheduledStartAt,
+        },
+      });
+      assert.equal(scheduleBeforeActivation.statusCode, 409);
+      assert.equal(scheduleBeforeActivation.json().error.code, 'CHANNEL_NOT_ACTIVE');
+
+      const submitChannel = await app.inject({
+        method: 'PATCH',
+        url: `/api/v1/organisations/${organisationId}/channels/${channelId}`,
+        headers: { cookie: registrationCookie },
+        payload: { status: 'pending_review' },
+      });
+      assert.equal(submitChannel.statusCode, 200);
+      assert.equal(submitChannel.json().channel.status, 'pending_review');
+
+      const activateChannel = await app.inject({
+        method: 'PATCH',
+        url: `/api/v1/organisations/${organisationId}/channels/${channelId}`,
+        headers: { cookie: registrationCookie },
+        payload: { status: 'active' },
+      });
+      assert.equal(activateChannel.statusCode, 200);
+      assert.equal(activateChannel.json().channel.status, 'active');
+
+      const broadcast = await app.inject({
+        method: 'POST',
+        url: `/api/v1/organisations/${organisationId}/channels/${channelId}/broadcasts`,
+        headers: { cookie: registrationCookie },
+        payload: {
+          title: 'First Scheduled Broadcast',
+          slug: `first-broadcast-${suffix}`,
+          description: 'Created through the first-time creator journey.',
+          scheduledStartAt,
+        },
+      });
+      assert.equal(broadcast.statusCode, 201);
+      assert.equal(broadcast.json().broadcast.status, 'scheduled');
+      assert.equal(broadcast.json().broadcast.channelId, channelId);
+
+      const broadcastList = await app.inject({
+        method: 'GET',
+        url: `/api/v1/organisations/${organisationId}/channels/${channelId}/broadcasts`,
+        headers: { cookie: registrationCookie },
+      });
+      assert.equal(broadcastList.statusCode, 200);
+      assert.equal(broadcastList.json().broadcasts.length, 1);
+      assert.equal(broadcastList.json().broadcasts[0].id, broadcast.json().broadcast.id);
 
       const duplicate = await app.inject({
         method: 'POST',
