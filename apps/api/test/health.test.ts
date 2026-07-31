@@ -19,7 +19,7 @@ test('GET /health reports when a database is not configured', async () => {
   await app.close();
 });
 
-test('GET /api/v1/status declares creator, listener, backstage and realtime capabilities', async () => {
+test('GET /api/v1/status declares chat, creator, listener, backstage and realtime capabilities', async () => {
   process.env.NODE_ENV = 'test';
   const app = buildApp({ database: null });
 
@@ -29,12 +29,22 @@ test('GET /api/v1/status declares creator, listener, backstage and realtime capa
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().stage, 'realtime-auth-foundation');
+  assert.equal(response.json().stage, 'durable-live-chat');
   assert.deepEqual(response.json().responsiveTargets, [
     'mobile',
     'tablet',
     'desktop',
   ]);
+  assert.ok(response.json().capabilities.includes('durable-live-chat'));
+  assert.ok(
+    response.json().capabilities.includes('chat-client-idempotency'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('cursor-paginated-chat-history'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('chat-reconnect-history-recovery'),
+  );
   assert.ok(
     response.json().capabilities.includes('session-authenticated-websocket'),
   );
