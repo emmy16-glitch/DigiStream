@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Organisation } from '@digistream/contracts';
+import type {
+  Broadcast,
+  BroadcastListResponse,
+  Channel,
+  ChannelListResponse,
+  Organisation,
+} from '@digistream/contracts';
 import {
   Button,
   StatePanel,
@@ -55,6 +61,12 @@ type Recording = {
 
 type RecordingListResponse = { recordings: Recording[] };
 type RecordingResponse = { recording: Recording };
+type RecordingRequestResponse = RecordingResponse & { replayed: boolean };
+
+type CompletedBroadcastSource = {
+  broadcast: Broadcast;
+  channel: Channel;
+};
 
 type CreatorRecordingsPageProps = {
   organisation: Organisation;
@@ -147,18 +159,51 @@ export function CreatorRecordingsPage({
   organisation,
 }: CreatorRecordingsPageProps) {
   const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [completedSources, setCompletedSources] = useState<CompletedBroadcastSource[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [requestingBroadcastId, setRequestingBroadcastId] = useState<string | null>(null);
 
-  const loadRecordings = useCallback(async () => {
+  const canManage =
+    organisation.role === 'owner' ||
+    organisation.role === 'admin' ||
+    organisation.role === 'broadcaster';
+
+  const loadWorkspace = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await apiRequest<RecordingListResponse>(
-        `/api/v1/organisations/${organisation.id}/recordings`,
+      const [recordingResponse, channelResponse] = await Promise.all([
+        apiRequest<RecordingListResponse>(
+          `/api/v1/organisations/${organisation.id}/recordings`,
+        ),
+        apiRequest<ChannelListResponse>(
+          `/api/v1/organisations/${organisation.id}/channels`,
+        ),
+      ]);
+
+      const channelBroadcasts = await Promise.all(
+        channelResponse.channels.map(async (channel) => {
+          const response = await apiRequest<BroadcastListResponse>(
+            `/api/v1/organisations/${organisation.id}/channels/${channel.id}/broadcasts`,
+          );
+          return response.broadcasts
+            .filter((broadcast) => broadcast.status === 'completed')
+            .map((broadcast) => ({ broadcast, channel }));
+        }),
       );
-      setRecordings(response.recordings);
+
+      setRecordings(recordingResponse.recordings);
+      setCompletedSources(
+        channelBroadcasts
+          .flat()
+          .sort((left, right) => {
+            const leftDate = left.broadcast.endedAt ?? left.broadcast.updatedAt;
+            const rightDate = right.broadcast.endedAt ?? right.broadcast.updatedAt;
+            return new Date(rightDate).getTime() - new Date(leftDate).getTime();
+          }),
+      );
     } catch (requestError) {
       setError(readableError(requestError));
     } finally {
@@ -167,8 +212,8 @@ export function CreatorRecordingsPage({
   }, [organisation.id]);
 
   useEffect(() => {
-    void loadRecordings();
-  }, [loadRecordings]);
+    void loadWorkspace();
+  }, [loadWorkspace]);
 
   const counts = useMemo(() => ({
     total: recordings.length,
@@ -177,6 +222,35 @@ export function CreatorRecordingsPage({
     ready: recordings.filter((recording) => recording.artifactReady).length,
     published: recordings.filter((recording) => recording.status === 'published').length,
   }), [recordings]);
+
+  const eligibleSources = useMemo(() => {
+    const recordedBroadcastIds = new Set(recordings.map((recording) => recording.broadcastId));
+    return completedSources.filter(
+      (source) => !recordedBroadcastIds.has(source.broadcast.id),
+    );
+  }, [completedSources, recordings]);
+
+  async function requestRecording(source: CompletedBroadcastSource) {
+    setRequestingBroadcastId(source.broadcast.id);
+    setError('');
+    try {
+      const response = await apiRequest<RecordingRequestResponse>(
+        `/api/v1/organisations/${organisation.id}/broadcasts/${source.broadcast.id}/recording`,
+        { method: 'POST' },
+      );
+      setRecordings((current) => {
+        const existing = current.some((item) => item.id === response.recording.id);
+        return existing
+          ? current.map((item) =>
+            item.id === response.recording.id ? response.recording : item)
+          : [response.recording, ...current];
+      });
+    } catch (requestError) {
+      setError(readableError(requestError));
+    } finally {
+      setRequestingBroadcastId(null);
+    }
+  }
 
   async function changeStatus(
     recording: Recording,
@@ -210,7 +284,7 @@ export function CreatorRecordingsPage({
             Track real capture, upload and processing states. Private storage keys remain server-only.
           </p>
         </div>
-        <Button onClick={() => void loadRecordings()}>Refresh</Button>
+        <Button onClick={() => void loadWorkspace()}>Refresh</Button>
       </header>
 
       <section className="recording-summary-grid" aria-label="Recording summary">
@@ -224,7 +298,7 @@ export function CreatorRecordingsPage({
         <StatePanel
           actionLabel="Retry"
           kind="error"
-          onAction={() => void loadRecordings()}
+          onAction={() => void loadWorkspace()}
           title="Recording action could not be completed"
         >
           {error}
@@ -232,81 +306,128 @@ export function CreatorRecordingsPage({
       ) : null}
 
       {loading ? (
-        <StatePanel kind="loading" title="Loading recordings">
-          DigiStream is loading recording jobs for {organisation.name}.
-        </StatePanel>
-      ) : recordings.length === 0 ? (
-        <StatePanel kind="empty" title="No recording jobs yet">
-          Completed broadcasts can create a recording job. DigiStream will show only real capture and processing data here.
+        <StatePanel kind="loading" title="Loading recording workspace">
+          DigiStream is loading completed broadcasts and recording jobs for {organisation.name}.
         </StatePanel>
       ) : (
-        <section className="recording-list" aria-label="Organisation recordings">
-          {recordings.map((recording) => (
-            <article className="recording-card" key={recording.id}>
-              <div className="recording-card-heading">
-                <div>
-                  <StatusBadge tone={statusTone(recording.status)}>
-                    {sentenceCase(recording.status)}
-                  </StatusBadge>
-                  {recording.artifactReady ? (
-                    <StatusBadge tone="success">Artifact verified</StatusBadge>
+        <>
+          <section className="recording-candidates" aria-labelledby="recording-candidates-title">
+            <header>
+              <div>
+                <span>Completed broadcasts</span>
+                <h3 id="recording-candidates-title">Prepare a replay</h3>
+              </div>
+              <StatusBadge tone={eligibleSources.length > 0 ? 'info' : 'neutral'}>
+                {eligibleSources.length} eligible
+              </StatusBadge>
+            </header>
+
+            {eligibleSources.length === 0 ? (
+              <StatePanel kind="empty" title="No completed broadcast needs a recording job">
+                Finish a real broadcast first. Existing recording jobs are listed below and duplicate requests are prevented by the API.
+              </StatePanel>
+            ) : (
+              <div className="recording-candidate-list">
+                {eligibleSources.map((source) => (
+                  <article key={source.broadcast.id}>
+                    <div>
+                      <span className="recording-eyebrow">{source.channel.name}</span>
+                      <h4>{source.broadcast.title}</h4>
+                      <p>Completed {formatDate(source.broadcast.endedAt)}.</p>
+                    </div>
+                    {canManage ? (
+                      <Button
+                        loading={requestingBroadcastId === source.broadcast.id}
+                        onClick={() => void requestRecording(source)}
+                        variant="primary"
+                      >
+                        Prepare recording
+                      </Button>
+                    ) : (
+                      <span className="recording-permission-note">
+                        Owner, administrator or broadcaster permission is required.
+                      </span>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {recordings.length === 0 ? (
+            <StatePanel kind="empty" title="No recording jobs yet">
+              Completed broadcasts can create a recording job. DigiStream will show only real capture and processing data here.
+            </StatePanel>
+          ) : (
+            <section className="recording-list" aria-label="Organisation recordings">
+              {recordings.map((recording) => (
+                <article className="recording-card" key={recording.id}>
+                  <div className="recording-card-heading">
+                    <div>
+                      <StatusBadge tone={statusTone(recording.status)}>
+                        {sentenceCase(recording.status)}
+                      </StatusBadge>
+                      {recording.artifactReady ? (
+                        <StatusBadge tone="success">Artifact verified</StatusBadge>
+                      ) : null}
+                    </div>
+                    <span>Updated {formatDate(recording.updatedAt)}</span>
+                  </div>
+
+                  <div className="recording-card-body">
+                    <div>
+                      <span className="recording-eyebrow">{recording.channel.name}</span>
+                      <h3>{recording.broadcast.title}</h3>
+                      <p>
+                        Broadcast completed {formatDate(recording.broadcast.endedAt)}.
+                      </p>
+                    </div>
+                    <dl>
+                      <div><dt>Duration</dt><dd>{formatDuration(recording.durationMs)}</dd></div>
+                      <div><dt>File size</dt><dd>{formatSize(recording.sizeBytes)}</dd></div>
+                      <div><dt>Format</dt><dd>{recording.mediaFormat?.toUpperCase() ?? 'Pending'}</dd></div>
+                      <div><dt>Retries</dt><dd>{recording.retryCount}</dd></div>
+                    </dl>
+                  </div>
+
+                  {recording.processingError ? (
+                    <div className="recording-error" role="alert">
+                      <strong>Processing failed</strong>
+                      <span>{recording.processingError}</span>
+                    </div>
                   ) : null}
-                </div>
-                <span>Updated {formatDate(recording.updatedAt)}</span>
-              </div>
 
-              <div className="recording-card-body">
-                <div>
-                  <span className="recording-eyebrow">{recording.channel.name}</span>
-                  <h3>{recording.broadcast.title}</h3>
-                  <p>
-                    Broadcast completed {formatDate(recording.broadcast.endedAt)}.
-                  </p>
-                </div>
-                <dl>
-                  <div><dt>Duration</dt><dd>{formatDuration(recording.durationMs)}</dd></div>
-                  <div><dt>File size</dt><dd>{formatSize(recording.sizeBytes)}</dd></div>
-                  <div><dt>Format</dt><dd>{recording.mediaFormat?.toUpperCase() ?? 'Pending'}</dd></div>
-                  <div><dt>Retries</dt><dd>{recording.retryCount}</dd></div>
-                </dl>
-              </div>
-
-              {recording.processingError ? (
-                <div className="recording-error" role="alert">
-                  <strong>Processing failed</strong>
-                  <span>{recording.processingError}</span>
-                </div>
-              ) : null}
-
-              <footer className="recording-card-footer">
-                <div>
-                  {recording.status === 'published' ? (
-                    <strong>Replay policy is published.</strong>
-                  ) : recording.artifactReady ? (
-                    <strong>The artifact is ready for a visibility decision.</strong>
-                  ) : (
-                    <strong>Waiting for the recording worker.</strong>
-                  )}
-                  <span>
-                    Playback and download remain unavailable until the private object-storage delivery route is connected.
-                  </span>
-                </div>
-                <div className="recording-actions">
-                  {availableActions(recording.status).map((action) => (
-                    <Button
-                      key={action.status}
-                      loading={updatingId === recording.id}
-                      onClick={() => void changeStatus(recording, action.status)}
-                      variant={action.primary ? 'primary' : 'default'}
-                    >
-                      {action.label}
-                    </Button>
-                  ))}
-                </div>
-              </footer>
-            </article>
-          ))}
-        </section>
+                  <footer className="recording-card-footer">
+                    <div>
+                      {recording.status === 'published' ? (
+                        <strong>Replay policy is published.</strong>
+                      ) : recording.artifactReady ? (
+                        <strong>The artifact is ready for a visibility decision.</strong>
+                      ) : (
+                        <strong>Waiting for the recording worker.</strong>
+                      )}
+                      <span>
+                        Playback and download remain unavailable until the private object-storage delivery route is connected.
+                      </span>
+                    </div>
+                    <div className="recording-actions">
+                      {availableActions(recording.status).map((action) => (
+                        <Button
+                          key={action.status}
+                          loading={updatingId === recording.id}
+                          onClick={() => void changeStatus(recording, action.status)}
+                          variant={action.primary ? 'primary' : 'default'}
+                        >
+                          {action.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </footer>
+                </article>
+              ))}
+            </section>
+          )}
+        </>
       )}
     </div>
   );
