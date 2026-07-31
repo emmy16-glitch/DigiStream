@@ -352,6 +352,7 @@ export function CreatorBroadcastStudio({
       if (focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
@@ -459,7 +460,7 @@ export function CreatorBroadcastStudio({
   }, [channelId, organisationId]);
 
   useEffect(() => {
-    if (!open || muted || !microphonePrepared || phase === 'ended') {
+    if (!open || muted || !microphonePrepared) {
       setSilentInput(false);
       return;
     }
@@ -1146,7 +1147,7 @@ export function CreatorBroadcastStudio({
                       fullWidth
                       icon="broadcast"
                       loading={busy && phase === 'connecting'}
-                      disabled={!selectedBroadcast || !microphonePrepared || phase === 'checking-microphone'}
+                      disabled={!selectedBroadcast || !microphonePrepared}
                       onClick={joinStudio}
                       variant="primary"
                     >
