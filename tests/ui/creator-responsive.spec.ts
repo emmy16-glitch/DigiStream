@@ -134,11 +134,9 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await page.goto('/creator/recordings');
   await expect(page.getByRole('heading', { name: 'Recordings and replay' })).toBeVisible();
   await expect(
-    page.getByRole('heading', {
-      name: 'No completed broadcast needs a recording job',
-    }),
+    page.getByText('No completed broadcast needs a recording job', { exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'No recording jobs yet' })).toBeVisible();
+  await expect(page.getByText('No recording jobs yet', { exact: true })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await attachViewport(page, testInfo, 'recordings');
 
