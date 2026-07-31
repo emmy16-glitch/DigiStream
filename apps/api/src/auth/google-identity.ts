@@ -64,6 +64,15 @@ function cacheLifetimeMilliseconds(cacheControl: string | null): number {
     : 3_600_000;
 }
 
+function usableSigningKey(key: GoogleJwk): boolean {
+  return (
+    key.kty === 'RSA' &&
+    typeof key.kid === 'string' &&
+    typeof key.n === 'string' &&
+    typeof key.e === 'string'
+  );
+}
+
 async function googleSigningKeys(): Promise<GoogleJwk[]> {
   if (cachedKeys && cachedKeys.expiresAt > Date.now()) return cachedKeys.keys;
 
@@ -77,13 +86,7 @@ async function googleSigningKeys(): Promise<GoogleJwk[]> {
 
   const payload = (await response.json()) as GoogleJwksResponse;
   const keys = Array.isArray(payload.keys)
-    ? payload.keys.filter(
-        (key) =>
-          key.kty === 'RSA' &&
-          typeof key.kid === 'string' &&
-          typeof key.n === 'string' &&
-          typeof key.e === 'string',
-      )
+    ? payload.keys.filter(usableSigningKey)
     : [];
   if (keys.length === 0) {
     throw new Error('Google returned no usable signing keys.');
@@ -108,14 +111,18 @@ function verifiedEmail(value: unknown): boolean {
 }
 
 function nodeSigningKey(key: GoogleJwk): NodeJsonWebKey {
-  return {
-    alg: key.alg,
-    e: key.e,
-    kid: key.kid,
+  if (!key.kty || !key.n || !key.e) {
+    throw new Error('The Google identity token signing key is incomplete.');
+  }
+  const result: NodeJsonWebKey = {
     kty: key.kty,
     n: key.n,
-    use: key.use,
+    e: key.e,
   };
+  if (key.alg) result.alg = key.alg;
+  if (key.kid) result.kid = key.kid;
+  if (key.use) result.use = key.use;
+  return result;
 }
 
 export async function verifyGoogleIdentityToken(
