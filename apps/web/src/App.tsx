@@ -27,6 +27,7 @@ import {
   type CreatorNavigationItem,
 } from './design-system/shells';
 import type { IconName } from './design-system/Icon';
+import { CreatorBroadcastsPage } from './features/broadcasting/CreatorBroadcastsPage';
 import { CreatorBroadcastStudio } from './features/broadcasting/CreatorBroadcastStudio';
 import { BroadcastChat } from './features/chat/BroadcastChat';
 import { CreatorChatWorkspace } from './features/chat/CreatorChatWorkspace';
@@ -392,26 +393,10 @@ function CreatorDashboard({
     );
   } else if (activeNav === 'Broadcasts') {
     pageContent = (
-      <>
-        <PageIntro title="Broadcasts">
-          Create, prepare and control scheduled or immediate live audio broadcasts.
-        </PageIntro>
-        <section className="workspace-action-card">
-          <div>
-            <StatusBadge tone="info">Studio workflow</StatusBadge>
-            <h2>Prepare a broadcast</h2>
-            <p>
-              Select {primaryOrganisation.name}, choose a channel, run a real sound check and verify listener delivery before going live.
-            </p>
-          </div>
-          <Button icon="broadcast" onClick={() => setStudioOpen(true)} variant="primary">
-            Open broadcast studio
-          </Button>
-        </section>
-        <StatePanel kind="empty" title="Broadcast list is not loaded on this page yet">
-          The studio uses the real broadcast API today. A dedicated create, schedule and history table remains a separate vertical slice.
-        </StatePanel>
-      </>
+      <CreatorBroadcastsPage
+        onOpenStudio={() => setStudioOpen(true)}
+        organisation={primaryOrganisation}
+      />
     );
   } else if (activeNav === 'Audience') {
     pageContent = (
