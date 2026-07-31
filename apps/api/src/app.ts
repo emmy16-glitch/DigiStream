@@ -25,6 +25,10 @@ import { createOvenMediaEngineDeliveryProviderFromEnv } from './modules/media/ov
 import { registerOrganisationMembershipRoutes } from './modules/organisations/organisation-memberships.routes.js';
 import { registerOrganisationRoutes } from './modules/organisations/organisations.routes.js';
 import { registerProfileRoutes } from './modules/profiles/profiles.routes.js';
+import {
+  registerRealtimeServer,
+  type RealtimeServerOptions,
+} from './modules/realtime/realtime.server.js';
 
 export type BuildAppOptions = {
   database?: DatabaseContext | null;
@@ -33,6 +37,7 @@ export type BuildAppOptions = {
   backstageProvider?: BackstageProvider | null;
   deliveryProvider?: DeliveryProvider | null;
   mediaRelayProvider?: MediaRelayProvider | null;
+  realtime?: RealtimeServerOptions | false;
 };
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
@@ -96,6 +101,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     deliveryProvider,
     mediaRelayProvider,
   );
+  if (options.realtime !== false) {
+    registerRealtimeServer(app, database, options.realtime ?? {});
+  }
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
     if (!database) {
@@ -138,9 +146,14 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'guest-backstage-control',
+    stage: 'realtime-auth-foundation',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
+      'session-authenticated-websocket',
+      'server-authorized-realtime-rooms',
+      'realtime-heartbeats-and-dead-connection-cleanup',
+      'realtime-reconnect-authentication',
+      'realtime-multi-tab-connections',
       'creator-dashboard',
       'creator-livekit-browser-client',
       'microphone-permission-and-device-selection',

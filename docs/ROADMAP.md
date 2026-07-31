@@ -85,7 +85,7 @@
 - [x] Add external guest invitations, backstage admission, participant removal and call-ins
 - [x] Add an external guest browser waiting room with microphone setup and admitted LiveKit join
 - [x] Add a creator backstage web workspace for guest links, admission, participant controls and call-in decisions
-- [ ] Add listener-side call-in request controls to public and unlisted broadcast pages
+- [x] Add listener-side call-in request controls to public and unlisted broadcast pages
 - [x] Integrate OvenMediaEngine for public WebRTC and LL-HLS listener distribution
 - [x] Define and implement the controlled LiveKit Egress relay into OvenMediaEngine delivery
 - [x] Add microphone permission, input selection, audio level and clipping feedback
@@ -106,8 +106,8 @@ Icecast is not part of the DigiStream implementation plan. It remains only a tec
 
 ## Phase 7 — Real-time interaction and notifications
 
-- [ ] Authenticate real-time connections using the existing session system
-- [ ] Authorize server-generated broadcast, organisation and user rooms
+- [x] Authenticate real-time connections using the existing session system
+- [x] Authorize server-generated broadcast, organisation and user rooms
 - [ ] Add durable live chat with client idempotency IDs
 - [ ] Add rate-limited reactions and expiring typing events
 - [ ] Add presence with heartbeat and multi-tab handling

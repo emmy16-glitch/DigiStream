@@ -19,7 +19,7 @@ test('GET /health reports when a database is not configured', async () => {
   await app.close();
 });
 
-test('GET /api/v1/status declares creator, listener and backstage capabilities', async () => {
+test('GET /api/v1/status declares creator, listener, backstage and realtime capabilities', async () => {
   process.env.NODE_ENV = 'test';
   const app = buildApp({ database: null });
 
@@ -29,12 +29,18 @@ test('GET /api/v1/status declares creator, listener and backstage capabilities',
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().stage, 'guest-backstage-control');
+  assert.equal(response.json().stage, 'realtime-auth-foundation');
   assert.deepEqual(response.json().responsiveTargets, [
     'mobile',
     'tablet',
     'desktop',
   ]);
+  assert.ok(
+    response.json().capabilities.includes('session-authenticated-websocket'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('server-authorized-realtime-rooms'),
+  );
   assert.ok(response.json().capabilities.includes('local-media-compose'));
   assert.ok(response.json().capabilities.includes('live-media-smoke-test'));
   assert.ok(
