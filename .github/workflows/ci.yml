@@ -67,6 +67,66 @@ jobs:
       - name: Validate workspace
         run: npm run check
 
+  ui-smoke:
+    name: Playwright responsive creator smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AUTH_COOKIE_SECURE: false
+      DATABASE_URL: postgresql://digistream:digistream@127.0.0.1:5432/digistream_test
+      NODE_ENV: test
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: digistream
+          POSTGRES_PASSWORD: digistream
+          POSTGRES_DB: digistream_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U digistream -d digistream_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js 22.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Apply database migrations
+        run: npm run db:migrate
+
+      - name: Install Playwright test runner
+        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run responsive browser workflow
+        run: npx playwright test
+
+      - name: Upload Playwright diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-responsive-report
+          path: |
+            playwright-report
+            test-results/playwright
+          if-no-files-found: ignore
+          retention-days: 7
+
   infrastructure:
     name: Compose, OME XML and API image
     runs-on: ubuntu-latest
