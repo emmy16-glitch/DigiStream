@@ -4,12 +4,16 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 echo "[DigiStream] Installing PostgreSQL development services..."
-sudo -n apt-get update
-sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql postgresql-client
-sudo -n service postgresql start
+sudo -n bash <<'ROOT'
+set -euo pipefail
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update
+apt-get install -y postgresql postgresql-client
+service postgresql start
 
 echo "[DigiStream] Preparing the local development database..."
-sudo -n -u postgres psql -v ON_ERROR_STOP=1 <<'SQL'
+runuser -u postgres -- psql -v ON_ERROR_STOP=1 <<'SQL'
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'digistream') THEN
@@ -21,13 +25,14 @@ END
 $$;
 SQL
 
-if ! sudo -n -u postgres psql -tAc \
+if ! runuser -u postgres -- psql -tAc \
   "SELECT 1 FROM pg_database WHERE datname = 'digistream'" | grep -q 1; then
-  sudo -n -u postgres createdb --owner=digistream digistream
+  runuser -u postgres -- createdb --owner=digistream digistream
 fi
 
-sudo -n -u postgres psql -v ON_ERROR_STOP=1 -c \
+runuser -u postgres -- psql -v ON_ERROR_STOP=1 -c \
   "ALTER DATABASE digistream OWNER TO digistream;"
+ROOT
 
 if [[ ! -f .env ]]; then
   cp .env.example .env
