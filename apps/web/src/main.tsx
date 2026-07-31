@@ -8,6 +8,7 @@ import './design-system/feedback.css';
 import './design-system/creator-shell.css';
 import './design-system/listener-shell.css';
 import './auth/auth-screen.css';
+import './features/broadcasting/creator-broadcast-studio-landscape.css';
 import './styles.css';
 
 const root = document.getElementById('root');
