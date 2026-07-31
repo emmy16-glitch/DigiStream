@@ -3,6 +3,8 @@ import type {
   PublicBroadcast,
   PublicBroadcastListResponse,
 } from '@digistream/contracts';
+import { StatePanel, StatusBadge, type StatusTone } from '../../design-system/components';
+import { Icon } from '../../design-system/Icon';
 import { ApiClientError, apiRequest } from '../../lib/api-client';
 import { publicListenerPath } from './listener-route';
 import './listener-playback.css';
@@ -21,6 +23,15 @@ function errorMessage(error: unknown): string {
   return 'Live broadcasts could not be loaded.';
 }
 
+function broadcastTone(status: PublicBroadcast['status']): StatusTone {
+  if (status === 'live') return 'live';
+  if (status === 'reconnecting' || status === 'starting' || status === 'ending') return 'warning';
+  if (status === 'scheduled') return 'info';
+  if (status === 'failed' || status === 'cancelled') return 'danger';
+  if (status === 'completed') return 'success';
+  return 'neutral';
+}
+
 function BroadcastTile({ broadcast }: { broadcast: PublicBroadcast }) {
   const path = publicListenerPath({
     organisationSlug: broadcast.organisation.slug,
@@ -34,9 +45,9 @@ function BroadcastTile({ broadcast }: { broadcast: PublicBroadcast }) {
         {Array.from({ length: 11 }, (_, index) => <i key={index} />)}
       </div>
       <div className="listener-discovery-copy">
-        <span className={`listener-discovery-status ${broadcast.status}`}>
-          <i /> {broadcast.status === 'live' ? 'Live now' : broadcast.status.replace('_', ' ')}
-        </span>
+        <StatusBadge tone={broadcastTone(broadcast.status)}>
+          {broadcast.status === 'live' ? 'Live now' : broadcast.status.replaceAll('_', ' ')}
+        </StatusBadge>
         <h2>{broadcast.title}</h2>
         <p>{broadcast.description ?? 'Live audio on DigiStream.'}</p>
         <div>
@@ -45,7 +56,7 @@ function BroadcastTile({ broadcast }: { broadcast: PublicBroadcast }) {
           <small>{formatDate(broadcast.scheduledStartAt ?? broadcast.liveStartedAt)}</small>
         </div>
       </div>
-      <span className="listener-discovery-arrow" aria-hidden="true">→</span>
+      <Icon className="listener-discovery-arrow" name="arrow-right" size={22} />
     </a>
   );
 }
@@ -88,15 +99,7 @@ export function ListenerDiscoveryPage() {
   );
 
   return (
-    <main className="listener-page listener-discovery-page">
-      <header className="listener-header">
-        <a className="listener-brand" href="/">
-          <span aria-hidden="true">D</span>
-          DigiStream
-        </a>
-        <a className="listener-discover-link" href="/">Creator dashboard</a>
-      </header>
-
+    <div className="listener-discovery-page">
       <section className="listener-discovery-hero">
         <span className="listener-kicker">Listen anywhere</span>
         <h1>Live audio without the heavy video.</h1>
@@ -105,7 +108,18 @@ export function ListenerDiscoveryPage() {
         </p>
       </section>
 
-      {error ? <div className="listener-error listener-discovery-error" role="alert">{error}</div> : null}
+      {error ? (
+        <div className="listener-discovery-section">
+          <StatePanel
+            actionLabel="Retry"
+            kind="error"
+            onAction={() => window.location.reload()}
+            title="Public broadcasts could not be loaded"
+          >
+            {error}
+          </StatePanel>
+        </div>
+      ) : null}
 
       <section className="listener-discovery-section">
         <header>
@@ -117,13 +131,16 @@ export function ListenerDiscoveryPage() {
         </header>
         <div className="listener-discovery-grid">
           {live.map((broadcast) => <BroadcastTile broadcast={broadcast} key={broadcast.id} />)}
-          {!loading && live.length === 0 ? (
-            <div className="listener-empty-state">
-              <strong>No public broadcast is live right now.</strong>
-              <span>Upcoming events appear below and this page refreshes automatically.</span>
-            </div>
+          {loading ? (
+            <StatePanel kind="loading" title="Loading live broadcasts">
+              DigiStream is checking public channels for active audio.
+            </StatePanel>
           ) : null}
-          {loading ? <div className="listener-empty-state">Loading live broadcasts…</div> : null}
+          {!loading && !error && live.length === 0 ? (
+            <StatePanel kind="empty" title="No public broadcast is live right now">
+              Upcoming events appear below and this page refreshes automatically.
+            </StatePanel>
+          ) : null}
         </div>
       </section>
 
@@ -137,18 +154,13 @@ export function ListenerDiscoveryPage() {
         </header>
         <div className="listener-discovery-grid">
           {upcoming.map((broadcast) => <BroadcastTile broadcast={broadcast} key={broadcast.id} />)}
-          {!loading && upcoming.length === 0 ? (
-            <div className="listener-empty-state">
-              <strong>No public events are scheduled yet.</strong>
-              <span>Creators can schedule broadcasts from the DigiStream studio.</span>
-            </div>
+          {!loading && !error && upcoming.length === 0 ? (
+            <StatePanel kind="empty" title="No public events are scheduled yet">
+              Creators can schedule future broadcasts from Broadcast Studio.
+            </StatePanel>
           ) : null}
         </div>
       </section>
-
-      <footer className="listener-footer">
-        Public discovery shows public channels only. Unlisted broadcasts remain accessible through their exact listener link, while private broadcasts require organisation membership.
-      </footer>
-    </main>
+    </div>
   );
 }
