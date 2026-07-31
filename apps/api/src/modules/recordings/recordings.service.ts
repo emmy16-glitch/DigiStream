@@ -3,7 +3,10 @@ import type { DigiStreamDatabase } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
 import { findOrganisationRole } from '../organisations/organisation-memberships.repository.js';
 import type { OrganisationRole } from '../organisations/organisations.types.js';
-import type { RecordingRecord } from './recordings.schema.js';
+import type {
+  NewRecordingRecord,
+  RecordingRecord,
+} from './recordings.schema.js';
 import {
   createRecordingRecord,
   findOrganisationRecordingRecord,
@@ -154,7 +157,7 @@ function storageKey(organisationId: string, broadcastId: string): string {
 function applyWorkerState(
   current: RecordingRecord,
   patch: RecordingWorkerPatch,
-): Partial<typeof import('./recordings.schema.js').recordingRecords.$inferInsert> | null {
+): Partial<NewRecordingRecord> | null {
   if (
     !['recording', 'uploading', 'processing', 'ready', 'failed'].includes(current.status)
   ) {
