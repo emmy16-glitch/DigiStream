@@ -1,0 +1,95 @@
+.ds-icon {
+  --ds-icon-size: 20px;
+  width: var(--ds-icon-size);
+  height: var(--ds-icon-size);
+  flex: 0 0 var(--ds-icon-size);
+  display: inline-grid;
+  place-items: center;
+  color: currentColor;
+  font-family: var(--ds-font-sans);
+  font-size: calc(var(--ds-icon-size) * .82);
+  font-style: normal;
+  font-weight: var(--ds-weight-bold);
+  line-height: 1;
+  text-align: center;
+}
+
+.ds-button {
+  min-height: var(--ds-control-min-height);
+  width: fit-content;
+  max-width: 100%;
+  padding: 0 var(--ds-space-4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  transition: background var(--ds-duration-fast) var(--ds-ease-standard), border-color var(--ds-duration-fast) var(--ds-ease-standard), color var(--ds-duration-fast) var(--ds-ease-standard), transform var(--ds-duration-fast) var(--ds-ease-standard);
+}
+.ds-button:hover:not(:disabled) { transform: translateY(-1px); }
+.ds-button:active:not(:disabled) { transform: translateY(0); }
+.ds-button:disabled { opacity: .52; }
+.ds-button-full { width: 100%; }
+.ds-button-primary { color: #06100a; background: var(--ds-accent); border-color: var(--ds-accent); }
+.ds-button-primary:hover:not(:disabled) { background: var(--ds-accent-hover); border-color: var(--ds-accent-hover); }
+.ds-button-primary:active:not(:disabled) { background: var(--ds-accent-active); border-color: var(--ds-accent-active); }
+.ds-button-secondary { color: var(--ds-text-primary); background: var(--ds-surface-3); border-color: var(--ds-border-default); }
+.ds-button-secondary:hover:not(:disabled) { background: var(--ds-surface-hover); border-color: var(--ds-border-strong); }
+.ds-button-ghost { color: var(--ds-text-secondary); background: transparent; border-color: transparent; }
+.ds-button-ghost:hover:not(:disabled) { color: var(--ds-text-primary); background: var(--ds-surface-hover); }
+.ds-button-danger { color: #fff; background: var(--ds-danger); border-color: var(--ds-danger); }
+.ds-button-danger:hover:not(:disabled) { filter: brightness(1.08); }
+
+.ds-icon-button {
+  width: var(--ds-control-min-height);
+  height: var(--ds-control-min-height);
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface-2);
+}
+.ds-icon-button:hover:not(:disabled) { color: var(--ds-text-primary); background: var(--ds-surface-hover); border-color: var(--ds-border-strong); }
+.ds-icon-button:disabled { opacity: .52; }
+
+.ds-spinner {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ds-spin .75s linear infinite;
+}
+
+.ds-status {
+  min-height: 28px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface-3);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  line-height: 1.2;
+}
+.ds-status-info { color: #b9d9ff; background: var(--ds-info-soft); border-color: rgba(93,168,255,.35); }
+.ds-status-success { color: #bff4cf; background: var(--ds-success-soft); border-color: rgba(69,223,112,.35); }
+.ds-status-warning { color: #ffe2a5; background: var(--ds-warning-soft); border-color: rgba(243,182,63,.35); }
+.ds-status-danger { color: #ffc5c8; background: var(--ds-danger-soft); border-color: rgba(240,91,97,.35); }
+.ds-status-live { color: #bff4cf; background: var(--ds-accent-soft); border-color: var(--ds-accent-border); box-shadow: var(--ds-glow-live); }
+
+@keyframes ds-spin { to { transform: rotate(360deg); } }
