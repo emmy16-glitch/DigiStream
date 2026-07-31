@@ -46,9 +46,14 @@ export class WebSocketFrameParser {
 
     const frames: WebSocketFrame[] = [];
     while (true) {
+      const bufferedBefore = this.buffer.length;
       const frame = this.readFrame();
-      if (!frame) break;
-      frames.push(frame);
+      if (frame) {
+        frames.push(frame);
+        continue;
+      }
+      if (this.buffer.length < bufferedBefore) continue;
+      break;
     }
     return frames;
   }
