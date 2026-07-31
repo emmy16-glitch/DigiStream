@@ -10,15 +10,17 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
-  timeout: 90_000,
+  timeout: 60_000,
   expect: {
     timeout: 12_000,
   },
   outputDir: 'test-results/playwright',
   reporter: process.env.CI ? [['line'], ['html', { open: 'never' }]] : 'list',
   use: {
+    actionTimeout: 12_000,
     baseURL: 'http://127.0.0.1:5173',
     colorScheme: 'dark',
+    navigationTimeout: 20_000,
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
     video: 'retain-on-failure',
