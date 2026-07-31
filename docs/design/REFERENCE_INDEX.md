@@ -1,12 +1,12 @@
 # DigiStream Approved Screen Reference Index
 
-The images in `docs/design/reference/` are the approved visual direction for DigiStream as of 31 July 2026.
+The ten approved visual references supplied on 31 July 2026 are preserved in the companion `DigiStream_Design_Source_Pack.zip`. Their dimensions and SHA-256 fingerprints are recorded in `reference/MANIFEST.md` so the originals can be verified after copying them into a design tool, repository asset store or long-term archive.
 
-They are reference designs rather than evidence that all displayed data and capabilities exist. Sample organisations, dates, people, metrics, verification marks, subscription plans and health values are illustrative.
+They define DigiStream's approved visual direction, but they are not evidence that all displayed data and capabilities exist. Sample organisations, dates, people, metrics, verification marks, subscription plans and health values are illustrative.
 
 ## Screen map
 
-| # | File | Surface | Primary purpose |
+| # | Recommended file name | Surface | Primary purpose |
 |---|---|---|---|
 | 01 | `01-guest-waiting-room.png` | Guest | Invitation acceptance, microphone readiness and host admission |
 | 02 | `02-public-live-player.png` | Listener | Immersive live playback, recovery, sharing and request to speak |
