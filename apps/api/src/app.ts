@@ -12,6 +12,7 @@ import { registerBroadcastContributionRoutes } from './modules/broadcasts/broadc
 import { registerBroadcastDeliveryRoutes } from './modules/broadcasts/broadcast-delivery.routes.js';
 import { registerBroadcastRoutes } from './modules/broadcasts/broadcasts.routes.js';
 import { registerChannelRoutes } from './modules/channels/channels.routes.js';
+import { registerBroadcastChatRoutes } from './modules/chat/broadcast-chat.routes.js';
 import {
   createLiveKitBackstageProviderFromEnv,
   type BackstageProvider,
@@ -101,9 +102,11 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     deliveryProvider,
     mediaRelayProvider,
   );
-  if (options.realtime !== false) {
-    registerRealtimeServer(app, database, options.realtime ?? {});
-  }
+  const realtimeHub =
+    options.realtime === false
+      ? null
+      : registerRealtimeServer(app, database, options.realtime ?? {});
+  registerBroadcastChatRoutes(app, database, realtimeHub);
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
     if (!database) {
@@ -146,9 +149,14 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'realtime-auth-foundation',
+    stage: 'durable-live-chat',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
+      'durable-live-chat',
+      'chat-client-idempotency',
+      'cursor-paginated-chat-history',
+      'chat-reconnect-history-recovery',
+      'chat-broadcast-room-delivery',
       'session-authenticated-websocket',
       'server-authorized-realtime-rooms',
       'realtime-heartbeats-and-dead-connection-cleanup',
