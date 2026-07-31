@@ -108,13 +108,13 @@ Icecast is not part of the DigiStream implementation plan. It remains only a tec
 
 - [x] Authenticate real-time connections using the existing session system
 - [x] Authorize server-generated broadcast, organisation and user rooms
-- [ ] Add durable live chat with client idempotency IDs
+- [x] Add durable live chat with client idempotency IDs
 - [ ] Add rate-limited reactions and expiring typing events
 - [ ] Add presence with heartbeat and multi-tab handling
 - [ ] Keep socket presence distinct from media listener counts
 - [ ] Add moderation: mute, block, slow chat, disable chat and report
 - [ ] Persist notifications before immediate delivery
-- [ ] Recover durable history and state after reconnect
+- [x] Recover durable history and state after reconnect
 - [ ] Add abuse, reconnect and unauthorized-room tests
 
 ## Phase 8 — Recordings and object storage

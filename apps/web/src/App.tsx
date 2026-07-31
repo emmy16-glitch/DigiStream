@@ -1,6 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { PlatformStatus } from '@digistream/contracts';
 import { CreatorBroadcastStudio } from './features/broadcasting/CreatorBroadcastStudio';
+import { BroadcastChat } from './features/chat/BroadcastChat';
+import { CreatorChatWorkspace } from './features/chat/CreatorChatWorkspace';
+import { PublicBroadcastChat } from './features/chat/PublicBroadcastChat';
 import { CreatorBackstageWorkspace } from './features/guests/CreatorBackstageWorkspace';
 import { GuestJoinPage } from './features/guests/GuestJoinPage';
 import { parseGuestRoute } from './features/guests/guest-route';
@@ -65,6 +68,7 @@ function CreatorDashboard() {
   const [status, setStatus] = useState<PlatformStatus | null>(null);
   const [studioOpen, setStudioOpen] = useState(false);
   const [backstageOpen, setBackstageOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -123,6 +127,7 @@ function CreatorDashboard() {
             <h1>{activeNav}</h1>
           </div>
           <div className="topbar-actions">
+            <button className="listen-link" onClick={() => setChatOpen(true)} type="button">Chat</button>
             <button className="listen-link" onClick={() => setBackstageOpen(true)} type="button">Backstage</button>
             <a className="listen-link" href="/listen">Listen</a>
             <button className="icon-button" type="button" aria-label="Open notifications">⌁</button>
@@ -140,6 +145,7 @@ function CreatorDashboard() {
             </p>
             <div className="hero-actions">
               <button className="primary-button" onClick={() => setStudioOpen(true)} type="button">Start a broadcast</button>
+              <button className="secondary-button" onClick={() => setChatOpen(true)} type="button">Open live chat</button>
               <button className="secondary-button" onClick={() => setBackstageOpen(true)} type="button">Manage guests</button>
               <a className="secondary-button" href="/listen">Open listener app</a>
             </div>
@@ -159,7 +165,7 @@ function CreatorDashboard() {
         </section>
 
         <div className="content-grid">
-          <Panel title="Upcoming broadcasts" action="Manage backstage" onAction={() => setBackstageOpen(true)}>
+          <Panel title="Upcoming broadcasts" action="Open live chat" onAction={() => setChatOpen(true)}>
             <div className="broadcast-list">
               {broadcasts.map((broadcast) => (
                 <article className="broadcast-row" key={broadcast.title}>
@@ -216,6 +222,10 @@ function CreatorDashboard() {
         onClose={() => setBackstageOpen(false)}
         open={backstageOpen}
       />
+      <CreatorChatWorkspace
+        onClose={() => setChatOpen(false)}
+        open={chatOpen}
+      />
     </div>
   );
 }
@@ -231,11 +241,22 @@ export function App() {
       <>
         <ListenerBroadcastPage route={listenerRoute} />
         <ListenerCallInPanel route={listenerRoute} />
+        <PublicBroadcastChat route={listenerRoute} />
       </>
     );
   }
   if (listenerRoute?.kind === 'member-broadcast') {
-    return <ListenerBroadcastPage route={listenerRoute} />;
+    return (
+      <>
+        <ListenerBroadcastPage route={listenerRoute} />
+        <BroadcastChat
+          broadcastId={listenerRoute.broadcastId}
+          messagesPath={`/api/v1/organisations/${listenerRoute.organisationId}/broadcasts/${listenerRoute.broadcastId}/chat/messages`}
+          organisationId={listenerRoute.organisationId}
+          variant="listener"
+        />
+      </>
+    );
   }
   return <CreatorDashboard />;
 }

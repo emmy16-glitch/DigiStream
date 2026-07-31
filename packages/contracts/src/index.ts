@@ -28,7 +28,9 @@ export type PlatformStatus = {
     | 'local-media-infrastructure'
     | 'creator-broadcast-client'
     | 'listener-playback-client'
-    | 'guest-backstage-control';
+    | 'guest-backstage-control'
+    | 'realtime-auth-foundation'
+    | 'durable-live-chat';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
 };
@@ -370,6 +372,37 @@ export type BroadcastCallInRequest = {
   decidedAt: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type BroadcastChatMessage = {
+  id: string;
+  organisationId: string;
+  broadcastId: string;
+  clientMessageId: string;
+  body: string;
+  createdAt: string;
+  author: {
+    id: string;
+    displayName: string;
+  };
+};
+
+export type BroadcastChatHistoryResponse = {
+  messages: BroadcastChatMessage[];
+  chat: {
+    broadcastId: string;
+    status: BroadcastState;
+    canSend: boolean;
+  };
+  pageInfo: {
+    hasMore: boolean;
+    nextCursor: string | null;
+  };
+};
+
+export type BroadcastChatMessageResponse = {
+  message: BroadcastChatMessage;
+  replayed: boolean;
 };
 
 export type ApiErrorResponse = {
