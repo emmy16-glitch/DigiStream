@@ -1,0 +1,100 @@
+.ds-shell-brand-link { color: inherit; text-decoration: none; }
+.ds-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ds-text-primary); font-size: var(--ds-text-lg); font-weight: var(--ds-weight-bold); }
+.ds-brand-wave { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; gap: 3px; }
+.ds-brand-wave i { width: 3px; height: 20px; border-radius: 999px; background: var(--ds-accent); }
+
+.ds-creator-shell { min-height: 100vh; padding-left: var(--ds-sidebar-width); }
+.ds-creator-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 40;
+  width: var(--ds-sidebar-width);
+  padding: 26px 16px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface-1);
+}
+.ds-creator-navigation { margin-top: var(--ds-space-10); display: grid; gap: 6px; }
+.ds-shell-nav-item {
+  min-height: var(--ds-control-min-height);
+  width: 100%;
+  padding: 0 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid transparent;
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text-muted);
+  background: transparent;
+  font-weight: var(--ds-weight-medium);
+  text-align: left;
+}
+.ds-shell-nav-item:hover, .ds-shell-nav-item.active { color: var(--ds-text-primary); background: var(--ds-surface-hover); }
+.ds-shell-nav-item.active { border-color: var(--ds-border-default); box-shadow: inset 3px 0 var(--ds-accent); }
+.ds-workspace-summary {
+  margin-top: auto;
+  padding: var(--ds-space-4);
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-2);
+}
+.ds-workspace-summary span, .ds-workspace-summary small { color: var(--ds-text-muted); font-size: var(--ds-text-xs); }
+.ds-creator-topbar {
+  min-height: 92px;
+  padding: 22px clamp(22px, 4vw, 56px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-5);
+  border-bottom: 1px solid var(--ds-border-subtle);
+  background: rgba(7, 9, 13, .92);
+}
+.ds-page-heading span { color: var(--ds-accent); font-size: var(--ds-text-xs); font-weight: var(--ds-weight-bold); letter-spacing: .12em; text-transform: uppercase; }
+.ds-page-heading h1 { margin: 5px 0 0; font-size: clamp(1.7rem, 3vw, 2.35rem); letter-spacing: -.04em; }
+.ds-topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--ds-space-2); }
+.ds-creator-content { width: min(100%, var(--ds-page-max)); margin: 0 auto; padding: clamp(20px, 4vw, 48px); }
+.ds-creator-mobile-nav { display: none; }
+
+@media (max-width: 900px) {
+  .ds-creator-shell { padding-left: 82px; }
+  .ds-creator-sidebar { width: 82px; padding-inline: 12px; }
+  .ds-creator-sidebar .ds-brand > span:last-child, .ds-shell-nav-item > span:last-child, .ds-workspace-summary { display: none; }
+  .ds-shell-nav-item { justify-content: center; padding: 0; }
+}
+
+@media (max-width: 640px) {
+  .ds-creator-shell { padding-left: 0; }
+  .ds-creator-sidebar { display: none; }
+  .ds-creator-topbar { min-height: 72px; padding: 14px 16px; }
+  .ds-page-heading span { display: none; }
+  .ds-page-heading h1 { margin: 0; font-size: 1.55rem; }
+  .ds-topbar-actions .ds-button span { display: none; }
+  .ds-creator-content { padding: 18px 14px 34px; }
+  .ds-creator-mobile-nav {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 60;
+    min-height: 68px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    border-top: 1px solid var(--ds-border-default);
+    background: rgba(7, 9, 13, .96);
+  }
+  .ds-creator-mobile-nav button {
+    min-height: 52px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 3px;
+    border: 0;
+    border-radius: var(--ds-radius-md);
+    color: var(--ds-text-muted);
+    background: transparent;
+    font-size: .66rem;
+  }
+  .ds-creator-mobile-nav button.active { color: var(--ds-accent); background: var(--ds-accent-soft); }
+}

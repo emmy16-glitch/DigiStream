@@ -1,0 +1,37 @@
+.ds-state-panel {
+  width: 100%;
+  min-height: 180px;
+  padding: var(--ds-space-8);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ds-space-4);
+  border: 1px dashed var(--ds-border-strong);
+  border-radius: var(--ds-radius-lg);
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface-1);
+}
+
+.ds-state-compact {
+  min-height: auto;
+  padding: var(--ds-space-4);
+}
+
+.ds-state-icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface-3);
+}
+
+.ds-state-copy {
+  min-width: 0;
+  display: grid;
+  gap: var(--ds-space-1);
+}
+
+.ds-state-copy strong { color: var(--ds-text-primary); }
+.ds-state-copy > div { color: var(--ds-text-muted); font-size: var(--ds-text-sm); }
