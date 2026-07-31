@@ -85,6 +85,13 @@ jobs:
       - name: Validate Docker Compose model
         run: docker compose -f compose.media.yml config --quiet
 
+      - name: Validate local Egress Chrome policy
+        run: |
+          set -euo pipefail
+          if grep -Eq '^[[:space:]]*enable_chrome_sandbox:[[:space:]]*true' infra/livekit/egress.yaml; then
+            docker compose -f compose.media.yml config | grep -Eq 'seccomp=.*chrome-sandboxing'
+          fi
+
       - name: Verify pinned OvenMediaEngine image exists
         run: |
           set -euo pipefail
