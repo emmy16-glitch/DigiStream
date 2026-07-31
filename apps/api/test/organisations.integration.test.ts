@@ -65,23 +65,40 @@ test(
       });
       assert.equal(unauthenticated.statusCode, 401);
 
+      await database.db
+        .update(userPlatformCapabilities)
+        .set({ revokedAt: new Date() })
+        .where(
+          and(
+            eq(userPlatformCapabilities.userId, creator.userId),
+            eq(userPlatformCapabilities.capability, 'broadcaster'),
+          ),
+        );
+
       const forbiddenCreation = await app.inject({
         method: 'POST',
         url: '/api/v1/organisations',
         headers: { cookie: creator.cookie },
         payload: { name: 'Creator Network', slug: `creator-${suffix}` },
       });
+      if (forbiddenCreation.statusCode === 201) {
+        organisationId = forbiddenCreation.json().organisation.id as string;
+      }
       assert.equal(forbiddenCreation.statusCode, 403);
       assert.equal(
         forbiddenCreation.json().error.code,
         'BROADCASTER_CAPABILITY_REQUIRED',
       );
 
-      await database.db.insert(userPlatformCapabilities).values({
-        userId: creator.userId,
-        capability: 'broadcaster',
-        grantedByUserId: creator.userId,
-      });
+      await database.db
+        .update(userPlatformCapabilities)
+        .set({ revokedAt: null })
+        .where(
+          and(
+            eq(userPlatformCapabilities.userId, creator.userId),
+            eq(userPlatformCapabilities.capability, 'broadcaster'),
+          ),
+        );
 
       const invalid = await app.inject({
         method: 'POST',
@@ -174,18 +191,20 @@ test(
       assert.equal(update.json().organisation.name, 'Creator Network Updated');
       assert.equal(update.json().organisation.role, 'owner');
     } finally {
-      if (organisationId) {
-        await database.db
-          .delete(organisations)
-          .where(eq(organisations.id, organisationId));
-      }
+      try {
+        if (organisationId) {
+          await database.db
+            .delete(organisations)
+            .where(eq(organisations.id, organisationId));
+        }
 
-      for (const userId of userIds) {
-        await database.db.delete(users).where(eq(users.id, userId));
+        for (const userId of userIds) {
+          await database.db.delete(users).where(eq(users.id, userId));
+        }
+      } finally {
+        await app.close();
+        await database.close();
       }
-
-      await app.close();
-      await database.close();
     }
   },
 );
