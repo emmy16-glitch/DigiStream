@@ -1,9 +1,10 @@
 import type { ApiErrorResponse } from '@digistream/contracts';
 
-const apiBaseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(
-  /\/$/,
-  '',
-);
+const configuredApiBaseUrl = import.meta.env.VITE_API_URL?.trim();
+
+export const apiBaseUrl = configuredApiBaseUrl
+  ? configuredApiBaseUrl.replace(/\/$/, '')
+  : '';
 
 export class ApiClientError extends Error {
   constructor(
@@ -26,11 +27,23 @@ export async function apiRequest<T>(
     headers.set('content-type', 'application/json');
   }
 
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    ...options,
-    headers,
-    credentials: 'include',
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl}${path}`, {
+      ...options,
+      headers,
+      credentials: 'include',
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error;
+    throw new ApiClientError(
+      0,
+      'API_UNREACHABLE',
+      'DigiStream could not connect to the application server.',
+      error,
+    );
+  }
+
   const text = await response.text();
   let payload: unknown = null;
   if (text) {
@@ -59,6 +72,15 @@ export async function apiRequest<T>(
   }
 
   return payload as T;
+}
+
+export function realtimeEndpoint(path = '/api/v1/realtime'): string {
+  const base = new URL(apiBaseUrl || window.location.origin, window.location.origin);
+  base.protocol = base.protocol === 'https:' ? 'wss:' : 'ws:';
+  base.pathname = path;
+  base.search = '';
+  base.hash = '';
+  return base.toString();
 }
 
 export function jsonBody(value: unknown): string {
