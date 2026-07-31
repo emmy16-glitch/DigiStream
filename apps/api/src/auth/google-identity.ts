@@ -23,8 +23,13 @@ type GoogleTokenClaims = {
   sub?: unknown;
 };
 
-type GoogleJwk = JsonWebKey & {
+type GoogleJwk = {
+  alg?: string;
+  e?: string;
   kid?: string;
+  kty?: string;
+  n?: string;
+  use?: string;
 };
 
 type GoogleJwksResponse = {
@@ -135,7 +140,7 @@ export async function verifyGoogleIdentityToken(
   const signatureValid = verify(
     'RSA-SHA256',
     Buffer.from(`${encodedHeader}.${encodedPayload}`, 'utf8'),
-    createPublicKey({ key: signingKey, format: 'jwk' }),
+    createPublicKey({ key: signingKey as unknown as JsonWebKey, format: 'jwk' }),
     Buffer.from(encodedSignature, 'base64url'),
   );
   if (!signatureValid) {
@@ -168,8 +173,9 @@ export async function verifyGoogleIdentityToken(
     throw new Error('Google did not provide a valid verified email address.');
   }
 
+  const localPart = email.slice(0, email.indexOf('@'));
   const proposedName =
-    typeof claims.name === 'string' ? claims.name : email.split('@')[0];
+    typeof claims.name === 'string' ? claims.name : localPart || 'DigiStream User';
   const displayName = proposedName.trim().replace(/\s+/g, ' ').slice(0, 100);
   if (displayName.length < 2) {
     throw new Error('Google did not provide a usable account name.');
