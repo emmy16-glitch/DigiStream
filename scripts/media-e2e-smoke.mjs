@@ -135,11 +135,25 @@ async function waitForApi() {
   throw new Error('DigiStream API did not become healthy within 120 seconds.');
 }
 
+function hasUnmutedAudioTrack(participant) {
+  return (
+    Array.isArray(participant?.tracks) &&
+    participant.tracks.some((track) => {
+      const audioType = track?.type === 'AUDIO' || track?.type === 0;
+      const microphoneSource =
+        track?.source === 'MICROPHONE' || track?.source === 2;
+      return (audioType || microphoneSource) && track?.muted !== true;
+    })
+  );
+}
+
 async function waitForPublisher(roomName) {
   const deadline = Date.now() + 90_000;
   while (Date.now() < deadline) {
     if (publisher?.exitCode !== null) {
-      throw new Error(`LiveKit demo publisher exited early with ${publisher?.exitCode}.`);
+      throw new Error(
+        `LiveKit audio publisher exited early with ${publisher?.exitCode}.`,
+      );
     }
     try {
       const response = await fetch(
@@ -158,14 +172,21 @@ async function waitForPublisher(roomName) {
       );
       if (response.ok) {
         const body = await response.json();
-        if (Array.isArray(body.participants) && body.participants.length > 0) return;
+        if (
+          Array.isArray(body.participants) &&
+          body.participants.some(hasUnmutedAudioTrack)
+        ) {
+          return;
+        }
       }
     } catch {
-      // LiveKit or the publisher is still connecting.
+      // LiveKit or the audio publisher is still connecting.
     }
     await sleep(2_000);
   }
-  throw new Error('The demo publisher did not join the LiveKit room in time.');
+  throw new Error(
+    'The simulated publisher did not publish an unmuted LiveKit audio track in time.',
+  );
 }
 
 async function waitForDelivery() {
@@ -363,23 +384,26 @@ async function main() {
       'run',
       '--rm',
       'livekit-cli',
-      'room',
-      'join',
+      'load-test',
       '--url',
       'ws://livekit:7880',
       '--api-key',
       liveKitApiKey,
       '--api-secret',
       liveKitApiSecret,
-      '--identity',
-      `smoke-publisher-${suffix}`,
-      '--publish-demo',
+      '--room',
       roomName,
+      '--audio-publishers',
+      '1',
     ],
     { stdio: ['ignore', 'pipe', 'pipe'] },
   );
-  publisher.stdout.on('data', (chunk) => process.stdout.write(`[publisher] ${chunk}`));
-  publisher.stderr.on('data', (chunk) => process.stderr.write(`[publisher] ${chunk}`));
+  publisher.stdout.on('data', (chunk) =>
+    process.stdout.write(`[audio-publisher] ${chunk}`),
+  );
+  publisher.stderr.on('data', (chunk) =>
+    process.stderr.write(`[audio-publisher] ${chunk}`),
+  );
 
   await waitForPublisher(roomName);
 
