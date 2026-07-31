@@ -322,7 +322,7 @@ function CreatorDashboard({
         {organisationError}
       </StatePanel>
     );
-  } else if (organisations.length === 0) {
+  } else if (!primaryOrganisation) {
     pageContent = (
       <OrganisationSetup
         busy={creatingOrganisation}
@@ -360,7 +360,7 @@ function CreatorDashboard({
         </section>
 
         <section className="metrics-grid" aria-label="Creator workspace summary">
-          <MetricCard label="Organisation" value={primaryOrganisation.name} note={`Owner access · /${primaryOrganisation.slug}`} />
+          <MetricCard label="Organisation" value={primaryOrganisation.name} note={`${primaryOrganisation.role} access · /${primaryOrganisation.slug}`} />
           <MetricCard label="Live listeners" value="—" note="Available during verified live delivery" />
           <MetricCard label="Published recordings" value="—" note="Recording storage is not implemented yet" />
           <MetricCard label="API" value="Online" note={`${apiStatus.product} application server connected`} />
