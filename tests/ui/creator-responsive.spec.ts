@@ -50,11 +50,16 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await expect(page.getByRole('heading', { name: 'Broadcasts', exact: true }).last()).toBeVisible();
 
   const channelNameInput = page.getByLabel('Channel name');
+  const channelToggle = page.locator('.creator-broadcasts-intro-actions button').first();
+  await expect.poll(async () => {
+    const loading = await page.getByText('Loading channels', { exact: true }).isVisible();
+    const formVisible = await channelNameInput.isVisible();
+    const toggleVisible = await channelToggle.isVisible();
+    return !loading && (formVisible || toggleVisible);
+  }).toBe(true);
+
   if (!(await channelNameInput.isVisible())) {
-    await page
-      .locator('.creator-broadcasts-intro-actions')
-      .getByRole('button', { name: 'Create channel', exact: true })
-      .click();
+    await channelToggle.click();
   }
   await expect(channelNameInput).toBeVisible();
 
