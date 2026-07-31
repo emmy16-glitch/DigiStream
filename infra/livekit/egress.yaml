@@ -9,5 +9,9 @@ redis:
 health_port: 8080
 prometheus_port: 9090
 log_level: info
-enable_chrome_sandbox: true
+# The local Docker/GitHub Actions stack does not mount LiveKit's custom
+# Chrome seccomp profile, so RoomComposite Egress must use the supported
+# no-sandbox development mode. Production deployments should use the
+# hardened seccomp profile before enabling Chrome sandboxing.
+enable_chrome_sandbox: false
 backup_storage: /out
