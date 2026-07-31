@@ -92,6 +92,9 @@ jobs:
           test -n "$image"
           docker manifest inspect "$image" >/dev/null
 
+      - name: Verify LiveKit CLI image starts
+        run: docker compose -f compose.media.yml --profile tools run --rm --no-deps livekit-cli --version
+
       - name: Validate OvenMediaEngine XML
         run: python3 -c "import xml.etree.ElementTree as ET; ET.parse('infra/ome/Server.xml')"
 

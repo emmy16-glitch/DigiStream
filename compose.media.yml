@@ -163,7 +163,6 @@ services:
   livekit-cli:
     image: livekit/livekit-cli:v2.18.2
     profiles: ["tools"]
-    entrypoint: ["lk"]
     environment:
       LIVEKIT_URL: ws://livekit:7880
       LIVEKIT_API_KEY: devkey
