@@ -9,7 +9,6 @@ const GOOGLE_ISSUERS = new Set([
 type GoogleTokenHeader = {
   alg?: unknown;
   kid?: unknown;
-  typ?: unknown;
 };
 
 type GoogleTokenClaims = {
@@ -24,13 +23,8 @@ type GoogleTokenClaims = {
   sub?: unknown;
 };
 
-type GoogleJwk = {
-  alg?: string;
-  e?: string;
+type GoogleJwk = JsonWebKey & {
   kid?: string;
-  kty?: string;
-  n?: string;
-  use?: string;
 };
 
 type GoogleJwksResponse = {
@@ -125,23 +119,15 @@ export async function verifyGoogleIdentityToken(
     throw new Error('The Google identity token uses an unsupported signature.');
   }
 
-  const key = (await googleSigningKeys()).find(
+  let signingKey = (await googleSigningKeys()).find(
     (candidate) => candidate.kid === header.kid,
   );
-  if (!key) {
+  if (!signingKey) {
     cachedKeys = null;
-    const refreshedKey = (await googleSigningKeys()).find(
+    signingKey = (await googleSigningKeys()).find(
       (candidate) => candidate.kid === header.kid,
     );
-    if (!refreshedKey) {
-      throw new Error('The Google identity token signing key is unknown.');
-    }
-    Object.assign(key ?? {}, refreshedKey);
   }
-
-  const signingKey = key ?? (await googleSigningKeys()).find(
-    (candidate) => candidate.kid === header.kid,
-  );
   if (!signingKey) {
     throw new Error('The Google identity token signing key is unknown.');
   }
@@ -182,7 +168,8 @@ export async function verifyGoogleIdentityToken(
     throw new Error('Google did not provide a valid verified email address.');
   }
 
-  const proposedName = typeof claims.name === 'string' ? claims.name : email.split('@')[0];
+  const proposedName =
+    typeof claims.name === 'string' ? claims.name : email.split('@')[0];
   const displayName = proposedName.trim().replace(/\s+/g, ' ').slice(0, 100);
   if (displayName.length < 2) {
     throw new Error('Google did not provide a usable account name.');
