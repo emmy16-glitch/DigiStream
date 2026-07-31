@@ -336,6 +336,7 @@ export async function updateRecordingFromWorker(
   if (
     !status ||
     provider === undefined ||
+    provider === null ||
     providerArtifactId === undefined ||
     mediaFormat === undefined ||
     contentType === undefined ||
@@ -356,7 +357,7 @@ export async function updateRecordingFromWorker(
 
   const patch: RecordingWorkerPatch = {
     status,
-    ...(provider !== undefined ? { provider } : {}),
+    provider,
     ...(providerArtifactId !== undefined ? { providerArtifactId } : {}),
     ...(mediaFormat !== undefined ? { mediaFormat } : {}),
     ...(contentType !== undefined ? { contentType } : {}),
