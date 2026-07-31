@@ -58,6 +58,16 @@ export function userRoom(userId: string): AuthorizedRealtimeRoom {
   return { key: `user:${userId}`, kind: 'user', id: userId };
 }
 
+export function broadcastRoom(
+  broadcastId: string,
+): AuthorizedRealtimeRoom {
+  return {
+    key: `broadcast:${broadcastId}`,
+    kind: 'broadcast',
+    id: broadcastId,
+  };
+}
+
 export async function authorizeRealtimeRoom(
   db: DigiStreamDatabase,
   userId: string,
@@ -92,5 +102,5 @@ export async function authorizeRealtimeRoom(
     if (!role) return null;
   }
 
-  return { key: `broadcast:${room.id}`, kind: room.kind, id: room.id };
+  return broadcastRoom(room.id);
 }
