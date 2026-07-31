@@ -289,14 +289,39 @@ function CreatorDashboard({
 
   const topbarActions = (
     <>
-      <Button icon="chat" onClick={() => setChatOpen(true)} variant="ghost">Chat</Button>
-      <Button icon="audience" onClick={() => setBackstageOpen(true)} variant="ghost">Backstage</Button>
-      <LinkButton href="/listen" icon="headphones" variant="ghost">Listen</LinkButton>
+      <Button
+        aria-label="Open creator chat"
+        icon="chat"
+        onClick={() => setChatOpen(true)}
+        title="Chat"
+        variant="ghost"
+      >
+        Chat
+      </Button>
+      <Button
+        aria-label="Open creator backstage"
+        icon="audience"
+        onClick={() => setBackstageOpen(true)}
+        title="Backstage"
+        variant="ghost"
+      >
+        Backstage
+      </Button>
+      <LinkButton
+        aria-label="Open listener application"
+        href="/listen"
+        icon="headphones"
+        title="Listen"
+        variant="ghost"
+      >
+        Listen
+      </LinkButton>
       <Button
         aria-label={`Sign out ${user.displayName}`}
         icon="user"
         loading={signingOut}
         onClick={signOut}
+        title="Sign out"
         variant="ghost"
       >
         Sign out
