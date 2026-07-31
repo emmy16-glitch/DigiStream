@@ -28,12 +28,70 @@
 .recording-summary-grid span,
 .recording-card-heading > span,
 .recording-eyebrow,
-.recording-card-footer span {
+.recording-card-footer span,
+.recording-permission-note {
   color: var(--text-muted, #929ba7);
 }
 
 .recording-summary-grid strong {
   font-size: 1.65rem;
+}
+
+.recording-candidates {
+  background: var(--surface-raised, #11161c);
+  border: 1px solid var(--border, #29313a);
+  border-radius: 1.15rem;
+  display: grid;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+}
+
+.recording-candidates > header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.recording-candidates > header span:first-child {
+  color: var(--text-muted, #929ba7);
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.recording-candidates h3,
+.recording-candidate-list h4 {
+  margin: 0;
+}
+
+.recording-candidate-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.recording-candidate-list article {
+  align-items: center;
+  background: var(--surface, #0b0f14);
+  border: 1px solid var(--border, #29313a);
+  border-radius: 0.9rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.recording-candidate-list p {
+  color: var(--text-secondary, #b4bcc6);
+  margin: 0.35rem 0 0;
+}
+
+.recording-permission-note {
+  max-width: 18rem;
+  text-align: right;
 }
 
 .recording-list {
@@ -166,15 +224,19 @@
 
 @media (max-width: 620px), (pointer: coarse) and (max-device-width: 620px) {
   .recording-page-intro,
-  .recording-card-heading {
+  .recording-card-heading,
+  .recording-candidates > header,
+  .recording-candidate-list article {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .recording-page-intro > button {
+  .recording-page-intro > button,
+  .recording-candidate-list button {
     width: 100%;
   }
 
+  .recording-candidates,
   .recording-card-heading,
   .recording-card-body,
   .recording-card-footer {
@@ -192,5 +254,10 @@
 
   .recording-actions > * {
     width: 100%;
+  }
+
+  .recording-permission-note {
+    max-width: none;
+    text-align: left;
   }
 }
