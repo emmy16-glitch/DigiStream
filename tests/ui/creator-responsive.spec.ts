@@ -49,31 +49,39 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await page.goto('/creator/broadcasts');
   await expect(page.getByRole('heading', { name: 'Broadcasts', exact: true }).last()).toBeVisible();
 
-  const channelHeading = page.getByRole('heading', { name: 'Create a channel' });
-  if (!(await channelHeading.isVisible())) {
-    await page.getByRole('button', { name: 'Create channel', exact: true }).first().click();
+  const channelNameInput = page.getByLabel('Channel name');
+  if (!(await channelNameInput.isVisible())) {
+    await page
+      .locator('.creator-broadcasts-intro-actions')
+      .getByRole('button', { name: 'Create channel', exact: true })
+      .click();
   }
+  await expect(channelNameInput).toBeVisible();
 
-  const channelCard = page.locator('.creator-form-card').filter({ has: channelHeading });
-  await channelCard.getByLabel('Channel name').fill(channelName);
-  await channelCard.getByLabel('Public slug').fill(`channel-${suffix}`);
-  await channelCard.getByLabel('Category').fill('community');
-  await channelCard.getByLabel('Visibility').selectOption('public');
-  await channelCard.getByLabel('Description').fill('Responsive Playwright channel');
-  await channelCard.getByRole('button', { name: 'Create channel', exact: true }).click();
+  const channelForm = page.locator('form.creator-form-grid').filter({ has: channelNameInput });
+  await channelNameInput.fill(channelName);
+  await channelForm.getByLabel('Public slug').fill(`channel-${suffix}`);
+  await channelForm.getByLabel('Category').fill('community');
+  await channelForm.getByLabel('Visibility').selectOption('public');
+  await channelForm.getByLabel('Description').fill('Responsive Playwright channel');
+  await channelForm.getByRole('button', { name: 'Create channel', exact: true }).click();
 
   const channelStrip = page.locator('.channel-strip');
   await expect(channelStrip).toContainText(channelName);
   await channelStrip.getByRole('button', { name: 'Activate channel' }).click();
   await expect(channelStrip).toContainText('Active');
 
-  await page.getByRole('button', { name: 'Create broadcast', exact: true }).first().click();
-  const broadcastHeading = page.getByRole('heading', { name: 'Create a broadcast' });
-  const broadcastCard = page.locator('.creator-form-card').filter({ has: broadcastHeading });
-  await broadcastCard.getByLabel('Broadcast title').fill(broadcastTitle);
-  await broadcastCard.getByLabel('Public slug').fill(`broadcast-${suffix}`);
-  await broadcastCard.getByLabel('Description').fill('Responsive Playwright broadcast');
-  await broadcastCard.getByRole('button', { name: 'Create draft' }).click();
+  await page
+    .locator('.creator-broadcasts-intro-actions')
+    .getByRole('button', { name: 'Create broadcast', exact: true })
+    .click();
+  const broadcastTitleInput = page.getByLabel('Broadcast title');
+  await expect(broadcastTitleInput).toBeVisible();
+  const broadcastForm = page.locator('form.creator-form-grid').filter({ has: broadcastTitleInput });
+  await broadcastTitleInput.fill(broadcastTitle);
+  await broadcastForm.getByLabel('Public slug').fill(`broadcast-${suffix}`);
+  await broadcastForm.getByLabel('Description').fill('Responsive Playwright broadcast');
+  await broadcastForm.getByRole('button', { name: 'Create draft' }).click();
 
   const broadcastRow = page.locator('.broadcast-row').filter({ hasText: broadcastTitle });
   await expect(broadcastRow).toBeVisible();
@@ -83,8 +91,9 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await broadcastRow.getByRole('button', { name: 'Open in Studio' }).click();
   const studio = page.getByRole('dialog', { name: 'Broadcast studio' });
   await expect(studio).toBeVisible();
-  await expect(studio.getByLabel('Channel').locator('option:checked')).toContainText(channelName);
-  await expect(studio.getByLabel('Broadcast').locator('option:checked')).toContainText(broadcastTitle);
+  const studioSelects = studio.locator('.studio-field select');
+  await expect(studioSelects.nth(1).locator('option:checked')).toContainText(channelName);
+  await expect(studioSelects.nth(2).locator('option:checked')).toContainText(broadcastTitle);
   await expect(studio.getByRole('button', { name: 'Join private studio' })).toBeDisabled();
   await expectNoHorizontalOverflow(page);
   await attachViewport(page, testInfo, 'studio');
