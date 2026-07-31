@@ -37,6 +37,14 @@ export default defineConfig({
         ...devices['Pixel 7'],
       },
     },
+    {
+      name: 'android-desktop-site',
+      use: {
+        ...devices['Pixel 7'],
+        viewport: { width: 980, height: 1740 },
+        deviceScaleFactor: 1,
+      },
+    },
   ],
   webServer: [
     {
