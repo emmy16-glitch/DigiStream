@@ -85,6 +85,13 @@ jobs:
       - name: Validate Docker Compose model
         run: docker compose -f compose.media.yml config --quiet
 
+      - name: Verify pinned OvenMediaEngine image exists
+        run: |
+          set -euo pipefail
+          image="$(docker compose -f compose.media.yml config --images | grep -i ovenmediaengine | head -n 1)"
+          test -n "$image"
+          docker manifest inspect "$image" >/dev/null
+
       - name: Validate OvenMediaEngine XML
         run: python3 -c "import xml.etree.ElementTree as ET; ET.parse('infra/ome/Server.xml')"
 
