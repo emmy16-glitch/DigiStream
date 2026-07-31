@@ -48,6 +48,17 @@
 .ds-listener-creator-link { justify-self: end; }
 .ds-listener-content { min-height: calc(100vh - 150px); }
 
+.ds-listener-content > .listener-page {
+  min-height: auto;
+  margin-bottom: 0;
+  background: transparent;
+}
+
+.ds-listener-content > .listener-page > .listener-header,
+.ds-listener-content > .listener-page > .listener-footer {
+  display: none;
+}
+
 .ds-listener-footer {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
