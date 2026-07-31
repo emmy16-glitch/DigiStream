@@ -116,6 +116,9 @@ class TestRealtimeClient {
       assert.ok(message);
       return Promise.resolve(message);
     }
+    if (this.closed) {
+      return Promise.reject(new Error('The realtime socket was already closed.'));
+    }
 
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -442,16 +445,17 @@ test(
         requestMessage('room.left', 'leave-public'),
       );
 
+      const sessionEndedPromise = outsiderUpgrade.client.waitFor(
+        messageType('realtime.session-ended'),
+        5_000,
+      );
       await database.db
         .update(authSessions)
         .set({ revokedAt: new Date() })
         .where(eq(authSessions.userId, outsiderId));
       assert.equal((await upgrade(address, outsiderCookie)).statusCode, 401);
 
-      const sessionEnded = await outsiderUpgrade.client.waitFor(
-        messageType('realtime.session-ended'),
-        5_000,
-      );
+      const sessionEnded = await sessionEndedPromise;
       assert.equal(
         (sessionEnded.error as JsonMessage).code,
         'AUTHENTICATION_REQUIRED',
