@@ -10,7 +10,7 @@ GitHub Codespaces supplies the Linux development computer. The phone only needs 
 2. Select the branch you intend to test.
 3. Open **Code**, then **Codespaces**.
 4. Create a Codespace for that branch.
-5. In Chrome on Android, enable **Desktop site** and use landscape mode when useful.
+5. Open the normal mobile site first. Use Chrome **Desktop site** only when deliberately checking the desktop layout.
 
 The repository's `.devcontainer/devcontainer.json` configures Node.js 22, installs dependencies and forwards the API and web ports.
 
@@ -26,6 +26,38 @@ node --version
 npm --version
 ```
 
+For pull request 29, the expected branch is:
+
+```text
+agent/broadcast-studio-ui
+```
+
+## Prepare the application
+
+Create the local environment file:
+
+```bash
+cp -n .env.example .env
+```
+
+Start PostgreSQL inside the Codespace:
+
+```bash
+docker compose -f compose.media.yml up -d postgres
+```
+
+Apply all migrations:
+
+```bash
+npm run db:migrate
+```
+
+The authentication migration must include:
+
+```text
+0011_google_auth_identities.sql
+```
+
 ## Run DigiStream
 
 Start the API in one terminal:
@@ -33,6 +65,8 @@ Start the API in one terminal:
 ```bash
 npm run dev:api
 ```
+
+Wait until the API reports that it is listening on port `3000`.
 
 Start the web application in another terminal:
 
@@ -42,10 +76,48 @@ npm run dev:web
 
 Codespaces forwards these ports automatically:
 
-- `3000` — DigiStream API
-- `5173` — DigiStream web application
+- `3000` — DigiStream API;
+- `5173` — DigiStream web application.
 
-Open the forwarded `5173` port to inspect the interface. The web application is responsive, so use the browser's device toolbar or resize the window to check mobile, tablet and desktop layouts.
+Open the forwarded `5173` port. The browser should use only the web URL. The Vite development server proxies `/api` and `/api/v1/realtime` to port `3000`, so the phone no longer tries to contact its own `localhost:3000`.
+
+A healthy signed-out creator page should show:
+
+- **Sign in** and **Create account** tabs;
+- email authentication;
+- Google authentication only when `GOOGLE_CLIENT_ID` is configured;
+- no yellow **API unavailable** badge;
+- no generic **Failed to fetch** alert.
+
+## Optional Google sign-in
+
+Email registration and login work without Google configuration.
+
+To enable the real Google button:
+
+1. Create a Google OAuth 2.0 web client.
+2. Add the exact forwarded Codespace web origin as an authorized JavaScript origin.
+3. Set the client ID in `.env`:
+
+```bash
+GOOGLE_CLIENT_ID=your-web-client-id.apps.googleusercontent.com
+```
+
+4. Restart the API.
+5. Reload the web page.
+
+Do not put a Google client secret in the web application. See [`AUTHENTICATION.md`](AUTHENTICATION.md).
+
+## Responsive visual checks
+
+Use the forwarded `5173` page and test:
+
+- normal phone portrait;
+- normal phone landscape;
+- Chrome Desktop site only as a desktop approximation;
+- desktop browser widths when available.
+
+For the Broadcast Studio, verify that phone landscape becomes a full-height control surface with a compact header and internally scrollable content.
 
 ## Validate before committing
 
