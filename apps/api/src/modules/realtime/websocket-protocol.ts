@@ -32,7 +32,7 @@ function decodeText(payload: Buffer): string {
 }
 
 export class WebSocketFrameParser {
-  private buffer = Buffer.alloc(0);
+  private buffer: Buffer<ArrayBufferLike> = Buffer.alloc(0);
   private fragmentChunks: Buffer[] | null = null;
   private fragmentBytes = 0;
 
@@ -114,7 +114,8 @@ export class WebSocketFrameParser {
 
     if (mask) {
       for (let index = 0; index < payload.length; index += 1) {
-        payload[index] ^= mask[index % 4] ?? 0;
+        payload[index] =
+          (payload[index] ?? 0) ^ (mask[index % 4] ?? 0);
       }
     }
 
