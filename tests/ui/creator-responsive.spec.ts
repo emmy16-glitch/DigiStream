@@ -124,7 +124,7 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await attachViewport(page, testInfo, 'backstage');
   await backstage.getByRole('button', { name: 'Close backstage workspace' }).click();
 
-  await page.getByRole('button', { name: 'Chat', exact: true }).click();
+  await page.getByRole('button', { name: 'Open creator chat' }).click();
   const chat = page.getByRole('dialog', { name: 'Creator live chat' });
   await expect(chat).toBeVisible();
   await expectNoHorizontalOverflow(page);
