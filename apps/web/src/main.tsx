@@ -10,6 +10,7 @@ import './design-system/listener-shell.css';
 import './auth/auth-screen.css';
 import './features/broadcasting/creator-broadcast-studio-landscape.css';
 import './styles.css';
+import './design-system/responsive-operations.css';
 
 const root = document.getElementById('root');
 
