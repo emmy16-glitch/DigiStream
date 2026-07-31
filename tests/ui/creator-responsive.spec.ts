@@ -131,6 +131,17 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await attachViewport(page, testInfo, 'chat');
   await chat.getByRole('button', { name: 'Close creator chat' }).click();
 
+  await page.goto('/creator/recordings');
+  await expect(page.getByRole('heading', { name: 'Recordings and replay' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', {
+      name: 'No completed broadcast needs a recording job',
+    }),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'No recording jobs yet' })).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await attachViewport(page, testInfo, 'recordings');
+
   await page.goto('/listen');
   await expect(page.getByRole('heading', { name: 'Live audio without the heavy video.' })).toBeVisible();
   await expectNoHorizontalOverflow(page);
