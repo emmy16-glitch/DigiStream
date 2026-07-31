@@ -46,10 +46,12 @@ export async function apiRequest<T>(
 
   const text = await response.text();
   let payload: unknown = null;
+  let parsedJson = true;
   if (text) {
     try {
       payload = JSON.parse(text);
     } catch {
+      parsedJson = false;
       payload = text;
     }
   }
@@ -68,6 +70,15 @@ export async function apiRequest<T>(
       response.status,
       'REQUEST_FAILED',
       typeof payload === 'string' ? payload : 'The request could not be completed.',
+    );
+  }
+
+  if (text && !parsedJson) {
+    throw new ApiClientError(
+      response.status,
+      'INVALID_API_RESPONSE',
+      'DigiStream received an invalid response from the application server.',
+      { contentType: response.headers.get('content-type') },
     );
   }
 
