@@ -134,6 +134,7 @@ export function BroadcastChat({
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef(true);
   const userRef = useRef<AuthUser | null>(null);
+  const nextCursorRef = useRef<string | null>(null);
 
   const roomRequest = useMemo(
     () => ({
@@ -144,13 +145,19 @@ export function BroadcastChat({
     [broadcastId, organisationId],
   );
 
-  const appendMessage = useCallback((message: BroadcastChatMessage) => {
-    if (message.broadcastId !== broadcastId) return;
-    setMessages((current) => mergeMessages(current, [message]));
-  }, [broadcastId]);
+  const appendMessage = useCallback(
+    (message: BroadcastChatMessage) => {
+      if (message.broadcastId !== broadcastId) return;
+      setMessages((current) => mergeMessages(current, [message]));
+    },
+    [broadcastId],
+  );
 
   const applyHistory = useCallback(
-    (response: BroadcastChatHistoryResponse, mode: 'initial' | 'latest' | 'older') => {
+    (
+      response: BroadcastChatHistoryResponse,
+      mode: 'initial' | 'latest' | 'older',
+    ) => {
       setMessages((current) =>
         mode === 'initial'
           ? response.messages
@@ -158,40 +165,44 @@ export function BroadcastChat({
       );
       setCanSend(response.chat.canSend);
       setBroadcastStatus(response.chat.status);
-      if (mode !== 'latest' || nextCursor === null) {
+      if (mode !== 'latest' || nextCursorRef.current === null) {
+        nextCursorRef.current = response.pageInfo.nextCursor;
         setNextCursor(response.pageInfo.nextCursor);
         setHasMore(response.pageInfo.hasMore);
       }
     },
-    [nextCursor],
+    [],
   );
 
-  const loadLatest = useCallback(async (mode: 'initial' | 'latest' = 'latest') => {
-    if (!userRef.current) return;
-    if (mode === 'initial') setLoadingHistory(true);
-    try {
-      const separator = messagesPath.includes('?') ? '&' : '?';
-      const response = await apiRequest<BroadcastChatHistoryResponse>(
-        `${messagesPath}${separator}limit=50`,
-      );
-      if (mountedRef.current) {
-        applyHistory(response, mode);
-        setError('');
+  const loadLatest = useCallback(
+    async (mode: 'initial' | 'latest' = 'latest') => {
+      if (!userRef.current) return;
+      if (mode === 'initial') setLoadingHistory(true);
+      try {
+        const separator = messagesPath.includes('?') ? '&' : '?';
+        const response = await apiRequest<BroadcastChatHistoryResponse>(
+          `${messagesPath}${separator}limit=50`,
+        );
+        if (mountedRef.current) {
+          applyHistory(response, mode);
+          setError('');
+        }
+      } catch (requestError) {
+        if (
+          requestError instanceof ApiClientError &&
+          requestError.status === 401
+        ) {
+          userRef.current = null;
+          setUser(null);
+        } else if (mountedRef.current) {
+          setError(readableError(requestError));
+        }
+      } finally {
+        if (mountedRef.current && mode === 'initial') setLoadingHistory(false);
       }
-    } catch (requestError) {
-      if (
-        requestError instanceof ApiClientError &&
-        requestError.status === 401
-      ) {
-        userRef.current = null;
-        setUser(null);
-      } else if (mountedRef.current) {
-        setError(readableError(requestError));
-      }
-    } finally {
-      if (mountedRef.current && mode === 'initial') setLoadingHistory(false);
-    }
-  }, [applyHistory, messagesPath]);
+    },
+    [applyHistory, messagesPath],
+  );
 
   const loadOlder = useCallback(async () => {
     if (!nextCursor || loadingOlder) return;
@@ -199,7 +210,9 @@ export function BroadcastChat({
     try {
       const separator = messagesPath.includes('?') ? '&' : '?';
       const response = await apiRequest<BroadcastChatHistoryResponse>(
-        `${messagesPath}${separator}limit=50&before=${encodeURIComponent(nextCursor)}`,
+        `${messagesPath}${separator}limit=50&before=${encodeURIComponent(
+          nextCursor,
+        )}`,
       );
       if (mountedRef.current) {
         applyHistory(response, 'older');
@@ -242,13 +255,14 @@ export function BroadcastChat({
 
   useEffect(() => {
     userRef.current = user;
+    nextCursorRef.current = null;
     setMessages([]);
     setNextCursor(null);
     setHasMore(false);
     setCanSend(false);
     setBroadcastStatus(null);
     if (user) void loadLatest('initial');
-  }, [broadcastId, loadLatest, user]);
+  }, [broadcastId, loadLatest, messagesPath, user]);
 
   useEffect(() => {
     if (!user) return;
@@ -321,7 +335,10 @@ export function BroadcastChat({
         }
         reconnectAttempt += 1;
         setRealtimeState('recovering');
-        const delay = Math.min(10_000, 750 * 2 ** Math.min(4, reconnectAttempt));
+        const delay = Math.min(
+          10_000,
+          750 * 2 ** Math.min(4, reconnectAttempt),
+        );
         reconnectTimerRef.current = window.setTimeout(connect, delay);
       });
 
@@ -374,13 +391,16 @@ export function BroadcastChat({
     setSending(true);
     setError('');
     try {
-      const response = await apiRequest<BroadcastChatMessageResponse>(messagesPath, {
-        method: 'POST',
-        body: jsonBody({
-          clientMessageId: clientMessageId(),
-          body,
-        }),
-      });
+      const response = await apiRequest<BroadcastChatMessageResponse>(
+        messagesPath,
+        {
+          method: 'POST',
+          body: jsonBody({
+            clientMessageId: clientMessageId(),
+            body,
+          }),
+        },
+      );
       appendMessage(response.message);
       setDraft('');
     } catch (requestError) {
