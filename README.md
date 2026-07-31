@@ -2,6 +2,12 @@
 
 DigiStream is an audio-first live-streaming platform for creators, organisations and listeners. It is designed as one responsive web product that works across phones, tablets and desktop computers.
 
+## Product quality rule
+
+DigiStream is quality-gated by reliability, truthful state communication, correct authorization and plain language before decorative polish. Every human contributor and AI coding agent must read [`docs/PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`](docs/PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md) before changing listener, creator, guest, backstage, chat, navigation or media UI behaviour.
+
+A scheduled broadcast must never look live, a listener-only action must not be promoted to an authorised owner, incomplete product areas must not pretend to work, and media/network failures must have explicit understandable recovery states.
+
 ## Current foundation
 
 - Responsive React creator dashboard and public listener application
@@ -11,6 +17,8 @@ DigiStream is an audio-first live-streaming platform for creators, organisations
 - Public live-audio discovery and exact unlisted listener links
 - WebRTC-first OvenPlayer playback with automatic LL-HLS fallback
 - Listener volume, mute, buffering, offline and bounded recovery controls
+- Listener call-in requests with durable status tracking
+- Creator backstage review, approval, guest invitation, admission, mute and removal controls
 - Private listener routes protected by existing organisation membership and HttpOnly sessions
 - Fastify and TypeScript API
 - PostgreSQL and Drizzle typed data model
@@ -40,7 +48,7 @@ DigiStream/
 │   └── contracts/    # Shared API contracts
 ├── infra/            # Redis, LiveKit, Egress and OME configuration
 ├── scripts/          # Stack commands and end-to-end media smoke test
-├── docs/             # Product, architecture, roadmap and development guides
+├── docs/             # Product, architecture, quality, roadmap and development guides
 ├── compose.media.yml # Complete local media infrastructure
 ├── .devcontainer/    # GitHub Codespaces environment
 └── .github/workflows # Continuous integration and media smoke workflow
@@ -145,19 +153,20 @@ npm run check
 
 GitHub Actions starts PostgreSQL, applies migrations, runs integration tests, checks TypeScript and builds the API and web application on Node.js 22 and Node.js 24. A separate infrastructure job validates the Compose model, parses the OvenMediaEngine XML and builds the production API container image.
 
-The manually triggered **Media stack smoke** workflow starts the full media infrastructure and verifies a real LiveKit room, LiveKit Egress RTMP output, OvenMediaEngine delivery and signed LL-HLS manifest.
+The manually triggered **Media stack smoke** workflow starts the full media infrastructure and verifies a real LiveKit room, LiveKit Egress RTMP output, OvenMediaEngine delivery and signed LL-HLS manifest. This happy-path proof does not replace browser-level fallback, constrained-network, source-loss, reconnect and capacity testing required by the product quality standard.
 
 Python is not required for the React and Fastify applications. The CI infrastructure check uses the runner's standard Python installation only to verify that `Server.xml` is well-formed.
 
 ## Product and architecture references
 
+- [`docs/PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`](docs/PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md) is the authoritative state, mobile UX, plain-language, resilience, accessibility and AI-contributor quality standard.
 - [`docs/PRODUCT_SPECIFICATION.md`](docs/PRODUCT_SPECIFICATION.md) defines users, authority, entities, visibility, lifecycles, MVP scope and production requirements.
 - [`docs/HANDBOOK_COMPARISON.md`](docs/HANDBOOK_COMPARISON.md) records which ideas were adopted from the Echoo team handbook and which DigiStream technologies remain stronger.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) defines modular backend, data, real-time and media boundaries.
-- [`docs/CREATOR_BROADCAST_STUDIO.md`](docs/CREATOR_BROADCAST_STUDIO.md) explains browser microphone publishing, go-live orchestration and readiness verification.
-- [`docs/LISTENER_PLAYBACK.md`](docs/LISTENER_PLAYBACK.md) explains public/private routes, signed playback, WebRTC-first fallback and listener recovery.
+- [`docs/CREATOR_BROADCAST_STUDIO.md`](docs/CREATOR_BROADCAST_STUDIO.md) explains browser microphone publishing, go-live orchestration, creator-facing failure states and readiness verification.
+- [`docs/LISTENER_PLAYBACK.md`](docs/LISTENER_PLAYBACK.md) explains public/private routes, signed playback, WebRTC-first fallback, truthful listener states and recovery.
 - [`docs/LOCAL_MEDIA_STACK.md`](docs/LOCAL_MEDIA_STACK.md) explains the executable LiveKit, Egress and OvenMediaEngine development environment.
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) records implementation order and completion gates.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) records implementation order, reliability work and completion gates.
 
 ## Product direction
 
@@ -169,7 +178,8 @@ The backend-first implementation order is:
 4. Channels, visibility and discovery
 5. Scheduled and immediate broadcast lifecycle
 6. LiveKit contribution, Egress bridge, OvenMediaEngine delivery, creator controls and listener playback
-7. Secure real-time interaction and notifications
-8. Recording, object storage and replay
-9. Analytics, administration and commerce
-10. Deployment, monitoring, backup, rollback and recovery
+7. Reliability proof, truthful state UX and constrained-network recovery
+8. Secure real-time interaction and notifications
+9. Recording, object storage and replay
+10. Analytics, administration and commerce
+11. Deployment, monitoring, backup, rollback and recovery
