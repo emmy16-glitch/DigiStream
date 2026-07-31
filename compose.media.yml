@@ -86,7 +86,7 @@ services:
       - media
 
   ome:
-    image: ovenmedialabs/ovenmediaengine:0.20.5
+    image: airensoft/ovenmediaengine:v0.20.5
     restart: unless-stopped
     environment:
       OME_HOST_IP: ${OME_HOST_IP:-127.0.0.1}
