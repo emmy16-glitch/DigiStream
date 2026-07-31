@@ -26,7 +26,7 @@ async function createCreatorWorkspace(page: Page, suffix: string) {
   await page.getByRole('tab', { name: 'Create account' }).click();
   await page.getByLabel('Display name').fill('Playwright Creator');
   await page.getByLabel('Email').fill(`playwright-${suffix}@example.test`);
-  await page.getByLabel('Password', { exact: true }).fill(password);
+  await page.getByLabel(/^Password/).fill(password);
   await page.getByLabel('Confirm password').fill(password);
   await page.getByRole('button', { name: 'Create account with email' }).click();
 
