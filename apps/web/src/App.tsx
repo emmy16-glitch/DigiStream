@@ -39,6 +39,7 @@ import { ListenerBroadcastPage } from './features/listening/ListenerBroadcastPag
 import { ListenerCallInPanel } from './features/listening/ListenerCallInPanel';
 import { ListenerDiscoveryPage } from './features/listening/ListenerDiscoveryPage';
 import { parseListenerRoute } from './features/listening/listener-route';
+import { CreatorRecordingsPage } from './features/recordings/CreatorRecordingsPage';
 import { ApiClientError, apiRequest, jsonBody } from './lib/api-client';
 
 type CreatorPage =
@@ -388,7 +389,7 @@ function CreatorDashboard({
         <section className="metrics-grid" aria-label="Creator workspace summary">
           <MetricCard label="Organisation" value={primaryOrganisation.name} note={`${primaryOrganisation.role} access · /${primaryOrganisation.slug}`} />
           <MetricCard label="Live listeners" value="—" note="Available during verified live delivery" />
-          <MetricCard label="Published recordings" value="—" note="Recording storage is not implemented yet" />
+          <MetricCard label="Published recordings" value="—" note="Open Replay to manage real recording jobs" />
           <MetricCard label="API" value="Online" note={`${apiStatus.product} application server connected`} />
         </section>
 
@@ -447,16 +448,7 @@ function CreatorDashboard({
       </>
     );
   } else if (activeNav === 'Recordings') {
-    pageContent = (
-      <>
-        <PageIntro title="Recordings">
-          Review, publish and replay completed broadcasts after durable recording storage is implemented.
-        </PageIntro>
-        <StatePanel kind="empty" title="Recording storage is not implemented yet">
-          DigiStream does not display sample recordings. This page will connect to object storage, processing states and real replay metadata in the recording phase.
-        </StatePanel>
-      </>
-    );
+    pageContent = <CreatorRecordingsPage organisation={primaryOrganisation} />;
   } else {
     pageContent = (
       <>
