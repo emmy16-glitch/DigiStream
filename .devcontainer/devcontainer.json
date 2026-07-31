@@ -17,7 +17,7 @@
       "onAutoForward": "openPreview"
     }
   },
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
   "remoteUser": "node",
   "customizations": {
     "vscode": {
