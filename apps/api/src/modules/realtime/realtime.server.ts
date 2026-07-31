@@ -572,7 +572,7 @@ export function registerRealtimeServer(
   app.server.on('upgrade', upgradeListener);
 
   const heartbeat = setInterval(() => {
-    if (heartbeatRunning) return;
+    if (heartbeatRunning || !database) return;
     heartbeatRunning = true;
     void Promise.all(
       hub.allConnections().map(async (connection) => {
@@ -586,7 +586,7 @@ export function registerRealtimeServer(
         if (now - connection.lastSessionCheckAt >= resolved.sessionCheckIntervalMs) {
           connection.lastSessionCheckAt = now;
           const active = await sessionRemainsActive(
-            database?.db ?? (null as never),
+            database.db,
             connection.sessionId,
             connection.userId,
           );
@@ -614,7 +614,6 @@ export function registerRealtimeServer(
         heartbeatRunning = false;
       });
   }, resolved.heartbeatIntervalMs);
-  heartbeat.unref();
 
   app.addHook('onClose', async () => {
     clearInterval(heartbeat);
