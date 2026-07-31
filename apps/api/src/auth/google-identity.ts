@@ -1,4 +1,8 @@
-import { createPublicKey, verify } from 'node:crypto';
+import {
+  createPublicKey,
+  verify,
+  type JsonWebKey as NodeJsonWebKey,
+} from 'node:crypto';
 
 const GOOGLE_CERTS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
 const GOOGLE_ISSUERS = new Set([
@@ -103,6 +107,17 @@ function verifiedEmail(value: unknown): boolean {
   return value === true || value === 'true';
 }
 
+function nodeSigningKey(key: GoogleJwk): NodeJsonWebKey {
+  return {
+    alg: key.alg,
+    e: key.e,
+    kid: key.kid,
+    kty: key.kty,
+    n: key.n,
+    use: key.use,
+  };
+}
+
 export async function verifyGoogleIdentityToken(
   credential: string,
   clientId: string,
@@ -140,7 +155,7 @@ export async function verifyGoogleIdentityToken(
   const signatureValid = verify(
     'RSA-SHA256',
     Buffer.from(`${encodedHeader}.${encodedPayload}`, 'utf8'),
-    createPublicKey({ key: signingKey as unknown as JsonWebKey, format: 'jwk' }),
+    createPublicKey({ key: nodeSigningKey(signingKey), format: 'jwk' }),
     Buffer.from(encodedSignature, 'base64url'),
   );
   if (!signatureValid) {
