@@ -1,0 +1,132 @@
+@media (orientation: landscape) and (max-height: 620px) {
+  .studio-backdrop {
+    place-items: stretch;
+    padding: 0;
+    background: var(--ds-canvas);
+  }
+
+  .creator-studio {
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .studio-header {
+    min-height: 68px;
+    align-items: center;
+    padding: 10px 16px;
+  }
+
+  .studio-title-group {
+    align-items: center;
+    gap: var(--ds-space-3);
+  }
+
+  .studio-header h2 {
+    margin: 2px 0 0;
+    font-size: var(--ds-text-xl);
+  }
+
+  .studio-header p,
+  .studio-eyebrow {
+    display: none;
+  }
+
+  .studio-global-alert {
+    margin: 10px 14px 0;
+    padding: 10px 12px;
+  }
+
+  .studio-login {
+    width: min(640px, calc(100% - 28px));
+    margin: 12px auto 18px;
+    padding: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .studio-login > div,
+  .studio-login > .ds-button,
+  .studio-login > .studio-global-alert {
+    grid-column: 1 / -1;
+  }
+
+  .studio-login p {
+    display: none;
+  }
+
+  .studio-body {
+    grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 14px 18px;
+  }
+
+  .studio-setup-panel,
+  .studio-status-card,
+  .studio-audio-card,
+  .studio-delivery-card {
+    padding: 14px;
+    border-radius: var(--ds-radius-lg);
+  }
+
+  .studio-setup-panel,
+  .studio-workspace {
+    gap: 12px;
+  }
+
+  .studio-readiness-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .studio-readiness-list li {
+    grid-template-columns: 28px minmax(0, 1fr);
+    padding: 10px;
+  }
+
+  .studio-readiness-list li > span {
+    width: 28px;
+    height: 28px;
+  }
+
+  .studio-primary-actions {
+    position: static;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  .studio-confirmation-backdrop {
+    padding: 10px;
+  }
+
+  .studio-confirmation {
+    width: min(560px, 100%);
+    padding: 18px;
+    border-radius: var(--ds-radius-lg);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 460px) {
+  .studio-header {
+    min-height: 58px;
+    padding-block: 7px;
+  }
+
+  .studio-title-group > .ds-status {
+    display: none;
+  }
+
+  .studio-login {
+    margin-top: 8px;
+    padding: 12px;
+  }
+
+  .studio-body {
+    padding-top: 8px;
+  }
+}
