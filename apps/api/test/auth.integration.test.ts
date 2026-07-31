@@ -5,7 +5,12 @@ import { eq } from 'drizzle-orm';
 import { buildApp } from '../src/app.js';
 import { createDatabase } from '../src/db/client.js';
 import { runMigrations } from '../src/db/migrate.js';
-import { authSessions, users } from '../src/db/schema.js';
+import {
+  authSessions,
+  organisations,
+  userPlatformCapabilities,
+  users,
+} from '../src/db/schema.js';
 
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -28,9 +33,19 @@ test(
     const email = `auth-${suffix}@example.test`;
     const password = 'A-strong-test-password-123!';
     let userId: string | undefined;
+    let organisationId: string | undefined;
     const app = buildApp({ database });
 
     try {
+      const providers = await app.inject({
+        method: 'GET',
+        url: '/api/v1/auth/providers',
+      });
+      assert.equal(providers.statusCode, 200);
+      assert.equal(providers.json().providers.email.enabled, true);
+      assert.equal(typeof providers.json().providers.google.enabled, 'boolean');
+      assert.equal('clientSecret' in providers.json().providers.google, false);
+
       const invalidRegistration = await app.inject({
         method: 'POST',
         url: '/api/v1/auth/register',
@@ -76,6 +91,29 @@ test(
       userId = storedUser.id;
       assert.notEqual(storedUser.passwordHash, password);
       assert.match(storedUser.passwordHash, /^scrypt\$/);
+
+      const capabilities = await database.db
+        .select()
+        .from(userPlatformCapabilities)
+        .where(eq(userPlatformCapabilities.userId, storedUser.id));
+      const broadcasterCapability = capabilities.find(
+        (capability) => capability.capability === 'broadcaster',
+      );
+      assert.ok(broadcasterCapability);
+      assert.equal(broadcasterCapability.revokedAt, null);
+
+      const organisation = await app.inject({
+        method: 'POST',
+        url: '/api/v1/organisations',
+        headers: { cookie: registrationCookie },
+        payload: {
+          name: `Auth Test ${suffix}`,
+          slug: `auth-test-${suffix}`,
+        },
+      });
+      assert.equal(organisation.statusCode, 201);
+      assert.equal(organisation.json().organisation.role, 'owner');
+      organisationId = organisation.json().organisation.id;
 
       const duplicate = await app.inject({
         method: 'POST',
@@ -151,6 +189,11 @@ test(
     } finally {
       await app.close();
 
+      if (organisationId) {
+        await database.db
+          .delete(organisations)
+          .where(eq(organisations.id, organisationId));
+      }
       if (userId) {
         await database.db.delete(users).where(eq(users.id, userId));
       }
