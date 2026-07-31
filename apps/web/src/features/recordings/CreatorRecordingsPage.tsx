@@ -416,7 +416,7 @@ export function CreatorRecordingsPage({
                           key={action.status}
                           loading={updatingId === recording.id}
                           onClick={() => void changeStatus(recording, action.status)}
-                          variant={action.primary ? 'primary' : 'default'}
+                          variant={action.primary ? 'primary' : 'secondary'}
                         >
                           {action.label}
                         </Button>
