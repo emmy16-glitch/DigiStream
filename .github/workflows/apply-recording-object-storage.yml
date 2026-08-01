@@ -88,8 +88,14 @@ jobs:
       - name: Apply database migrations
         run: npm run db:migrate
 
-      - name: Validate TypeScript, API tests and production builds
-        run: npm run check
+      - name: Validate TypeScript
+        run: timeout 180s npm run typecheck
+
+      - name: Run API and storage tests
+        run: timeout 240s npm run test
+
+      - name: Build production workspaces
+        run: timeout 180s npm run build
 
       - name: Install Playwright runner and Chromium
         run: |
@@ -97,7 +103,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run responsive browser regressions
-        run: npx playwright test
+        run: timeout 240s npx playwright test
 
       - name: Commit validated lockfile and remove one-time workflow
         run: |
