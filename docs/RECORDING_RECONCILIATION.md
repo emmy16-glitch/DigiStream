@@ -47,6 +47,10 @@ The reconciliation endpoint performs two safe repairs:
 
 The operation is bounded by a caller-supplied limit and uses row locking with `SKIP LOCKED`, allowing multiple reconcilers without duplicate work.
 
+## Validation gate
+
+The implementation is not complete until migrations, TypeScript checks, the focused recording-job integration test, the complete API suite, production builds and responsive browser regressions all pass in GitHub Actions. The pull request remains draft throughout that validation.
+
 ## Operational guidance
 
 Run reconciliation periodically from a trusted scheduler or worker supervisor. A one-minute cadence is a reasonable starting point for development. Production cadence, maximum attempts and alert thresholds should be selected from measured worker duration and failure data.
