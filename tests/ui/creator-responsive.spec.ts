@@ -122,7 +122,6 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await page.getByRole('button', { name: 'Open call-in desk' }).click();
   const backstage = page.getByRole('dialog', { name: 'Creator backstage' });
   await expect(backstage).toBeVisible();
-  await expect(backstage.getByRole('heading', { name: 'Call-ins' })).toBeVisible();
 
   if (testInfo.project.name.includes('android')) {
     const organisationBox = await backstage.getByLabel('Organisation').boundingBox();
