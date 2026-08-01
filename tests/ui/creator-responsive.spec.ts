@@ -113,7 +113,10 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await expect(studio.getByRole('button', { name: 'Join private studio' })).toBeDisabled();
   await expectNoHorizontalOverflow(page);
   await attachViewport(page, testInfo, 'studio');
-  await studio.getByRole('button', { name: 'Close broadcast studio' }).click();
+  const studioUrl = page.url();
+  await page.goBack();
+  await expect(studio).toHaveCount(0);
+  expect(page.url()).toBe(studioUrl);
 
   await page.goto('/creator/audience');
   await expect(page.getByRole('heading', { name: 'Backstage and call-ins' })).toBeVisible();
