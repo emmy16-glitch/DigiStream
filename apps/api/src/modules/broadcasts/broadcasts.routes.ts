@@ -3,7 +3,6 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
-import { registerRecordingRoutes } from '../recordings/recordings.routes.js';
 import {
   applyBroadcastMediaEvent,
   commandBroadcast,
@@ -58,8 +57,6 @@ export function registerBroadcastRoutes(
   database: DatabaseContext | null,
   mediaControlSecret: string | undefined,
 ): void {
-  registerRecordingRoutes(app, database, mediaControlSecret);
-
   app.get<{ Querystring: { status?: string; limit?: string } }>(
     '/api/v1/broadcasts',
     async (request) => {
