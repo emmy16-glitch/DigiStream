@@ -1,0 +1,37 @@
+name: Apply public replay wiring
+
+on:
+  push:
+    branches: [agent/public-replay-listening]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: public-replay-wiring-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apply-and-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout implementation branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/public-replay-listening
+          fetch-depth: 0
+
+      - name: Apply API, contract and listener wiring
+        run: python3 scripts/apply-public-replay-backend-wiring.py
+
+      - name: Commit wiring and remove one-time automation
+        run: |
+          set -euo pipefail
+          rm -f scripts/apply-public-replay-backend-wiring.py
+          rm -f .github/workflows/validate-public-replay-backend.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Wire authorised public replay listening"
+          git push origin HEAD:agent/public-replay-listening
