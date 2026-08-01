@@ -56,7 +56,8 @@ test('scheduled listener page keeps lifecycle honest and fixed creator CTA clear
 
   await page.goto('/listen/manual-review-org/manual-review-channel/manual-review-broadcast');
   await expect(page.getByRole('heading', { name: broadcast.title })).toBeVisible();
-  await expect(page.getByText(/Scheduled for/).first()).toBeVisible();
+  await expect(page.getByText('Upcoming', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/Starts in /).first()).toBeVisible();
   await expect(page.getByRole('link', { name: 'Manage broadcast' })).toBeVisible();
 
   const pseudoContent = await page.locator('.listener-orb').evaluate((element) =>
@@ -65,9 +66,9 @@ test('scheduled listener page keeps lifecycle honest and fixed creator CTA clear
   expect(['none', 'normal', '""']).toContain(pseudoContent);
 
   await context.setOffline(true);
-  await expect(page.getByText('Your device is offline.')).toBeVisible();
+  await expect(page.getByText('Offline', { exact: true })).toBeVisible();
   await context.setOffline(false);
-  await expect(page.getByText(/Scheduled for/).first()).toBeVisible();
+  await expect(page.getByText('Upcoming', { exact: true }).first()).toBeVisible();
   await expect(page.getByText(/Connection restored\. Tap Listen live/)).toHaveCount(0);
 
   await page.evaluate(() =>
