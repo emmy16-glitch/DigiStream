@@ -1,0 +1,141 @@
+,7 @@ export function CreatorBroadcastStudio({
+         lifecycleVersion: delivery.delivery.broadcast.lifecycleVersion,
+       });
+ 
++      liveStage = 'delivery-verification';
+       const deadline = Date.now() + 90_000;
+       while (
+         Date.now() < deadline &&
+@@ -753,8 +878,8 @@ export function CreatorBroadcastStudio({
+       setMessage('You are live. Listener playback is now available through the verified delivery path.');
+     } catch (requestError) {
+       setPhase('connected');
+-      setError(errorMessage(requestError));
+-      setMessage('Studio audio is still connected, but public delivery did not start.');
++      reportStudioFailure(liveStage, requestError);
++      setMessage('Studio audio remains connected, but the failed public-delivery stage must be resolved before listeners can hear it.');
+     } finally {
+       setBusy(false);
+     }
+@@ -763,7 +888,7 @@ export function CreatorBroadcastStudio({
+   async function endBroadcast() {
+     if (!organisationId || !selectedBroadcast) return;
+     setBusy(true);
+-    setError('');
++    clearStudioFailure();
+     setMessage('Ending public delivery safely…');
+     try {
+       let current = (
+@@ -804,7 +929,7 @@ export function CreatorBroadcastStudio({
+       setPhase('ended');
+       setMessage('Broadcast completed and studio audio was released.');
+     } catch (requestError) {
+-      setError(errorMessage(requestError));
++      reportStudioFailure('safe-end', requestError);
+     } finally {
+       setBusy(false);
+     }
+@@ -848,13 +973,22 @@ export function CreatorBroadcastStudio({
+           />
+         </header>
+ 
+-        {error ? (
++        {failure || error ? (
+           <div className="studio-global-alert" role="alert">
+             <div>
+-              <strong>Studio action failed</strong>
+-              <span>{error}</span>
++              <strong>{failure?.title ?? 'Studio action needs attention'}</strong>
++              <span>{failure?.message ?? error}</span>
++              {failure ? <span className="studio-global-alert-recovery">{failure.recovery}</span> : null}
++              {failure ? (
++                <small>
++                  Stage: {failure.stage}
++                  {failure.code ? ` · Code: ${failure.code}` : ''}
++                  {failure.status !== null ? ` · HTTP ${failure.status}` : ''}
++                  {failure.requestId ? ` · Request: ${failure.requestId}` : ''}
++                </small>
++              ) : null}
+             </div>
+-            <Button onClick={() => setError('')} variant="ghost">Dismiss</Button>
++            <Button onClick={clearStudioFailure} variant="ghost">Dismiss</Button>
+           </div>
+         ) : null}
+ 
+@@ -1032,17 +1166,16 @@ export function CreatorBroadcastStudio({
+                     <span>Step 2</span>
+                     <h3 id="studio-audio-title">Prepare studio audio</h3>
+                   </div>
+-                  <StatusBadge tone={clipping ? 'danger' : microphonePrepared ? 'success' : 'neutral'}>
+-                    {clipping ? 'Clipping' : microphonePrepared ? 'Input open' : 'Not tested'}
++                  <StatusBadge tone={microphoneSignal.tone}>
++                    {microphoneSignal.label}
+                   </StatusBadge>
+                 </div>
+ 
+-                <AudioLevelMeter
+-                  clipping={clipping}
++                <StudioAudioMeter
+                   decibels={decibels}
+                   label="Microphone input"
+                   level={level}
+-                  muted={muted}
++                  state={microphoneSignalState}
+                 />
+ 
+                 <label className="studio-field">
+@@ -1061,18 +1194,6 @@ export function CreatorBroadcastStudio({
+                   </select>
+                 </label>
+ 
+-                {clipping ? (
+-                  <div className="studio-inline-alert studio-inline-danger" role="alert">
+-                    <strong>Input is clipping</strong>
+-                    <span>Reduce microphone gain or move farther away. DigiStream will not change gain silently.</span>
+-                  </div>
+-                ) : silentInput ? (
+-                  <div className="studio-inline-alert studio-inline-warning" role="status">
+-                    <strong>No microphone signal detected</strong>
+-                    <span>Check the selected input, hardware mute switch and browser permission before going live.</span>
+-                  </div>
+-                ) : null}
+-
+                 <div className="studio-audio-actions">
+                   <Button
+                     icon="microphone"
+@@ -1112,11 +1233,11 @@ export function CreatorBroadcastStudio({
+                 </div>
+ 
+                 <ol className="studio-readiness-list">
+-                  <li className={microphonePrepared ? 'complete' : ''}>
++                  <li className={microphoneReadyForDelivery ? 'complete' : ''}>
+                     <span aria-hidden="true">1</span>
+                     <div>
+                       <strong>Microphone permission and input</strong>
+-                      <small>{microphonePrepared ? 'Input is open and measured.' : 'Run the microphone test first.'}</small>
++                      <small>{microphoneReadyForDelivery ? `${microphoneSignal.label}: ${microphoneSignal.guidance}` : microphoneSignal.guidance}</small>
+                     </div>
+                   </li>
+                   <li className={connected ? 'complete' : ''}>
+@@ -1159,7 +1280,7 @@ export function CreatorBroadcastStudio({
+                         fullWidth
+                         icon="broadcast"
+                         loading={busy && phase === 'starting-delivery'}
+-                        disabled={muted || clipping}
++                        disabled={!microphoneReadyForDelivery}
+                         onClick={goLive}
+                         variant="primary"
+                       >
+@@ -1182,10 +1303,8 @@ export function CreatorBroadcastStudio({
+                   )}
+                 </div>
+ 
+-                {muted && connected ? (
+-                  <p className="studio-action-note">Unmute the microphone before starting public delivery.</p>
+-                ) : clipping && connected && phase !== 'live' ? (
+-                  <p className="studio-action-note">Resolve clipping before starting public delivery.</p>
++                {connected && !microphoneReadyForDelivery && phase !== 'live' ? (
++                  <p className="studio-action-note">{microphoneSignal.guidance}</p>
+                 ) : liveCritical ? (
+                   <p className="studio-action-note">Closing the studio is blocked until the broadcast ends safely.</p>
+                 ) : (
