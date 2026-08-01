@@ -1,12 +1,12 @@
 # Public and member replay listening
 
-This document defines the next Phase 8 implementation slice after recording retention and protected cleanup.
+This document defines the Phase 8 replay-listening implementation after recording retention and protected cleanup.
 
 ## Goal
 
 Expose real, authorised replay listening without making private storage public, leaking object keys or presenting an unfinished recording as playable.
 
-The slice will add:
+The implementation adds:
 
 - public replay discovery for published recordings on active public channels;
 - exact unlisted replay links that are not returned by discovery;
@@ -16,7 +16,7 @@ The slice will add:
 - honest loading, unavailable, expired-link, archived and playback-failure states;
 - browser regression coverage on desktop Chrome, Android Chrome and Android Desktop-site simulation.
 
-## Proposed API surface
+## API surface
 
 Public discovery and exact routes:
 
@@ -40,7 +40,7 @@ A replay may appear in public discovery only when all of these are true:
 - the channel is active and public;
 - deletion has not been requested;
 - cleanup has not started or completed;
-- no legal or moderation hold requires the replay to be hidden by policy.
+- no legal or moderation hold is active.
 
 Unlisted channels may be opened only through the exact organisation, channel and broadcast slug route. Private channels require an authenticated organisation membership.
 
@@ -48,29 +48,37 @@ Unlisted channels may be opened only through the exact organisation, channel and
 
 The browser never receives an object-storage key or credential. It requests a short-lived playback grant from DigiStream, then uses the existing `/api/v1/recording-media?token=...` delivery path.
 
-Every grant request must reload current database state. Archived, private, deleted, deletion-scheduled or otherwise non-deliverable recordings fail closed even when a stale discovery response remains in a browser cache.
+Every grant request reloads current database state. Archived, private-to-public, deleted, deletion-scheduled, held or otherwise non-deliverable recordings fail closed even when a stale discovery response remains in a browser cache.
 
-Playback links remain private, short-lived and `no-store`. Expiry during listening must be communicated clearly and must not be confused with general application-server failure.
+The media route independently rechecks the recording, broadcast, channel and retention policy for every request. A token minted before a moderation hold, legal hold, deletion request, archive action or channel suspension is therefore revoked immediately rather than remaining usable until token expiry.
+
+Playback links remain private, short-lived and `no-store`. Expiry during listening is communicated clearly and is not described as a general application-server failure.
 
 ## Listener experience
 
-The replay page must display only real metadata:
+The replay page displays only real metadata:
 
 - broadcast and channel identity;
 - completion or publication date;
-- verified duration, format and size when present;
+- verified duration, format and size;
 - actual playback availability;
 - clear access or failure guidance.
 
-The player starts only after a user action. Loading and retry controls must not imply success before the media element confirms it can play. Mobile controls must remain reachable above safe areas and bottom navigation.
+The player starts only after a user action. Loading and retry controls do not imply success before a playback grant exists. Mobile controls remain reachable on narrow portrait and short-height landscape screens.
+
+Listener routes:
+
+- `/listen/replays`
+- `/listen/replay/:organisationSlug/:channelSlug/:broadcastSlug`
+- `/listen/member-replay/:organisationId/:recordingId`
 
 ## Validation gate
 
-The pull request remains draft until it includes:
+The pull request remains draft until it passes:
 
-- API integration tests for public, unlisted, private, archived, deletion-scheduled and cross-tenant cases;
-- playback-grant expiry and revocation tests;
+- API integration tests for public, unlisted, private, archived, deletion-scheduled, held and cross-tenant cases;
+- playback-grant revocation tests after policy changes;
 - responsive replay discovery and exact-page browser tests;
 - Node 22 and Node 24 typecheck, complete API tests and production builds;
 - Playwright desktop, Android and Android Desktop-site coverage;
-- updated roadmap and recording documentation.
+- infrastructure and production API image checks.
