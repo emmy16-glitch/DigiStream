@@ -29,7 +29,7 @@ test('GET /api/v1/status declares chat, creator, listener, backstage and realtim
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().stage, 'recording-retention');
+  assert.equal(response.json().stage, 'public-replay-listening');
   assert.ok(response.json().capabilities.includes('recording-object-storage'));
   assert.ok(
     response.json().capabilities.includes('database-backed-recording-job-queue'),
@@ -48,6 +48,10 @@ test('GET /api/v1/status declares chat, creator, listener, backstage and realtim
   );
   assert.ok(
     response.json().capabilities.includes('recording-cleanup-reconciliation'),
+  );
+  assert.ok(response.json().capabilities.includes('public-replay-discovery'));
+  assert.ok(
+    response.json().capabilities.includes('public-and-unlisted-replay-listening'),
   );
   assert.ok(
     response.json().capabilities.includes('verified-recording-artifact-upload'),

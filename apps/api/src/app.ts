@@ -30,6 +30,7 @@ import {
   createRecordingAccessManagerFromEnv,
   type RecordingAccessManager,
 } from './modules/recordings/recording-access.js';
+import { registerPublicReplayRoutes } from './modules/recordings/public-replays.routes.js';
 import { registerRecordingJobRoutes } from './modules/recordings/recording-jobs.routes.js';
 import { registerRecordingRetentionRoutes } from './modules/recordings/recording-retention.routes.js';
 import { registerRecordingRoutes } from './modules/recordings/recordings.routes.js';
@@ -130,6 +131,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     accessManager: recordingAccessManager,
     maxUploadBytes: recordingUploadMaxBytes,
   });
+  registerPublicReplayRoutes(app, database, {
+    objectStorage,
+    accessManager: recordingAccessManager,
+  });
   registerRecordingJobRoutes(app, database, mediaControlSecret, {
     objectStorage,
     maxUploadBytes: recordingUploadMaxBytes,
@@ -202,7 +207,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'recording-retention',
+    stage: 'public-replay-listening',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'recording-object-storage',
@@ -220,6 +225,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'short-lived-recording-access',
       'recording-http-range-delivery',
       'independent-playback-download-authorization',
+      'public-replay-discovery',
+      'public-and-unlisted-replay-listening',
+      'private-member-replay-metadata',
       'durable-live-chat',
       'chat-client-idempotency',
       'cursor-paginated-chat-history',
