@@ -28,6 +28,18 @@
   gap: var(--ds-space-3);
 }
 
+/* Empty and form states already expose their own contextual primary action. */
+.creator-broadcasts-intro-actions .ds-button {
+  display: none;
+}
+
+.creator-broadcasts-page:has(.channel-strip):not(:has(#create-channel-title))
+  .creator-broadcasts-intro-actions .ds-button:first-child,
+.creator-broadcasts-page:has(.broadcast-list):not(:has(#create-broadcast-title))
+  .creator-broadcasts-intro-actions .ds-button:last-child {
+  display: inline-flex;
+}
+
 .creator-form-card,
 .channel-strip,
 .broadcast-list {
