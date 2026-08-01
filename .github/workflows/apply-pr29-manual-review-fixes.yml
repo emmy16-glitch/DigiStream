@@ -53,6 +53,7 @@ jobs:
         run: |
           python3 scripts/apply-pr29-manual-review-fixes.py
           python3 scripts/apply-pr29-manual-review-fixes-v2.py
+          python3 scripts/apply-pr29-manual-review-fixes-v3.py
 
       - name: Reject malformed patches
         run: git diff --check
@@ -78,6 +79,7 @@ jobs:
         run: |
           rm -f scripts/apply-pr29-manual-review-fixes.py
           rm -f scripts/apply-pr29-manual-review-fixes-v2.py
+          rm -f scripts/apply-pr29-manual-review-fixes-v3.py
           rm -f .github/workflows/apply-pr29-manual-review-fixes.yml
           git config user.name "Emmanuel Okunlola"
           git config user.email "74790322+emmy16-glitch@users.noreply.github.com"
