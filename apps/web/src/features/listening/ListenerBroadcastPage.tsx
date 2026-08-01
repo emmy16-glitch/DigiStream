@@ -25,6 +25,7 @@ import {
   listenerCalendarHref,
   listenerCountdown,
 } from './listener-lifecycle-presentation';
+import { listenerConnectionPresentation } from './listener-connection-presentation';
 import type { ListenerRoute } from './listener-route';
 import {
   loadOvenPlayer,
@@ -34,6 +35,7 @@ import {
 } from './oven-player';
 import './listener-playback.css';
 import './listener-lifecycle-trust.css';
+import './listener-resilience.css';
 
 type PlaybackResponse = {
   playback: {
@@ -146,14 +148,6 @@ function statusCopy(broadcast: ListenerBroadcast | null): string {
   if (broadcast.status === 'cancelled') return 'This broadcast was cancelled.';
   if (broadcast.status === 'failed') return 'The broadcast ended because of a media failure.';
   return 'This broadcast is not available to listeners yet.';
-}
-
-function protocolLabel(protocol: 'webrtc' | 'llhls' | null): string {
-  return protocol === 'webrtc'
-    ? 'WebRTC · ultra-low latency'
-    : protocol === 'llhls'
-      ? 'LL-HLS · reliable fallback'
-      : 'Automatic WebRTC → LL-HLS';
 }
 
 export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
@@ -401,8 +395,8 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
         setActiveProtocol(source?.type === 'webrtc' ? 'webrtc' : source ? 'llhls' : null);
         setMessage(
           source?.type === 'webrtc'
-            ? 'Using the ultra-low-latency WebRTC path.'
-            : 'Using the reliable LL-HLS fallback path.',
+            ? 'DigiStream selected the fastest healthy playback path.'
+            : 'DigiStream switched to a steadier playback path.',
         );
       });
       player.on('volumeChanged', (value) => {
@@ -639,28 +633,18 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
     broadcast && displayStatus === 'scheduled' && countdown
       ? listenerCalendarHref(broadcast, shareUrl)
       : null;
-  const connectionDetail = !online
-    ? 'Network unavailable'
-    : isPlayable
-      ? protocolLabel(activeProtocol)
-      : displayStatus === 'scheduled'
-        ? 'Audio controls will appear after the broadcast is live'
-        : displayStatus === 'starting'
-          ? 'The creator is preparing the listener audio path'
-          : 'No live audio path is available in this lifecycle state';
+  const connectionPresentation = listenerConnectionPresentation({
+    activeProtocol,
+    online,
+    phase,
+    playable: isPlayable,
+    status: displayStatus,
+  });
 
   return (
-    <main
+    <div
       className={`listener-page listener-lifecycle-${displayStatus ?? 'loading'}`}
     >
-      <header className="listener-header">
-        <a className="listener-brand" href="/">
-          <span aria-hidden="true">D</span>
-          DigiStream
-        </a>
-        <a className="listener-discover-link" href="/listen">Discover live audio</a>
-      </header>
-
       <section className="listener-shell" aria-live="polite">
         <div className="listener-stage">
           <div
@@ -696,10 +680,15 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
           ) : null}
 
           <div className={`listener-status listener-status-${phase}`}>
-            <span className="listener-status-dot" />
             <div>
-              <strong>{message}</strong>
-              <small>{connectionDetail}</small>
+              <strong
+                className="listener-connection-heading"
+                data-tone={connectionPresentation.tone}
+              >
+                {connectionPresentation.label}
+              </strong>
+              <small>{connectionPresentation.guidance}</small>
+              <small>{message}</small>
             </div>
           </div>
 
@@ -710,6 +699,16 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
               <span>Sign in through the creator studio with an organisation member account, then reopen this link.</span>
             </div>
           ) : null}
+
+          <details className="listener-diagnostics">
+            <summary>Technical details</summary>
+            <div>
+              <span>{connectionPresentation.technical}</span>
+              <code>Playback phase: {phase}</code>
+              <code>Broadcast state: {displayStatus ?? 'loading'}</code>
+              {error ? <span>Latest error: {error}</span> : null}
+            </div>
+          </details>
 
           {isPlayable ? (
             <div className="listener-controls">
@@ -812,10 +811,6 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
           </dl>
         </article>
       </section>
-
-      <footer className="listener-footer">
-        WebRTC is attempted first for the lowest delay. DigiStream automatically falls back to LL-HLS when the browser or network cannot keep the WebRTC path healthy.
-      </footer>
-    </main>
+    </div>
   );
 }
