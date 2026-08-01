@@ -64,6 +64,9 @@ jobs:
         with:
           node-version: 22.x
 
+      - name: Apply validation fixes
+        run: python3 scripts/apply-recording-object-storage-fixes.py
+
       - name: Wait for S3-compatible storage
         run: |
           set -euo pipefail
@@ -95,7 +98,10 @@ jobs:
         run: timeout --signal=KILL 75s npx tsx --test apps/api/test/object-storage.integration.test.ts
 
       - name: Run API integration suite
-        run: OBJECT_STORAGE_ENDPOINT= timeout --signal=KILL 180s npm run test
+        run: >-
+          env -u OBJECT_STORAGE_ENDPOINT -u OBJECT_STORAGE_BUCKET
+          -u OBJECT_STORAGE_ACCESS_KEY_ID -u OBJECT_STORAGE_SECRET_ACCESS_KEY
+          timeout --signal=KILL 180s npm run test
 
       - name: Build production workspaces
         run: timeout 180s npm run build
@@ -108,12 +114,13 @@ jobs:
       - name: Run responsive browser regressions
         run: timeout 240s npx playwright test
 
-      - name: Commit validated lockfile and remove one-time workflow
+      - name: Commit validated implementation and remove one-time automation
         run: |
+          rm -f scripts/apply-recording-object-storage-fixes.py
           rm -f .github/workflows/apply-recording-object-storage.yml
           git config user.name "Emmanuel Okunlola"
           git config user.email "74790322+emmy16-glitch@users.noreply.github.com"
           git add -A
           git diff --cached --check
-          git commit -m "Lock recording object storage implementation"
+          git commit -m "Complete recording object storage implementation"
           git push origin HEAD:agent/recording-object-storage
