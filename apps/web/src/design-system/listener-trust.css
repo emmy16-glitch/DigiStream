@@ -49,7 +49,8 @@ body.ds-listener-fixed-action-visible .ds-listener-content {
   padding-bottom: calc(92px + env(safe-area-inset-bottom));
 }
 
-.broadcast-chat-scheduled-state {
+.broadcast-chat.broadcast-chat-scheduled-state {
+  grid-template-rows: auto;
   min-height: 0;
 }
 
