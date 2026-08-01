@@ -9,7 +9,7 @@ permissions:
 
 concurrency:
   group: apply-pr29-manual-review-fixes
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   apply-and-validate:
