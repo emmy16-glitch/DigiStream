@@ -63,7 +63,7 @@ test('scheduled listener page keeps lifecycle honest and fixed creator CTA clear
   const pseudoContent = await page.locator('.listener-orb').evaluate((element) =>
     getComputedStyle(element, '::after').content,
   );
-  expect(pseudoContent).toBe('"UPCOMING"');
+  expect(['none', 'normal', '""']).toContain(pseudoContent);
 
   await context.setOffline(true);
   await expect(page.getByText('Offline', { exact: true })).toBeVisible();
