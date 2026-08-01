@@ -25,7 +25,7 @@ export function PublicBroadcastChat({ route }: PublicBroadcastChatProps) {
   const loadBroadcast = useCallback(async (signal?: AbortSignal) => {
     try {
       const response = await apiRequest<PublicBroadcastResponse>(metadataPath, {
-        signal,
+        signal: signal ?? null,
       });
       setBroadcast(response.broadcast);
       setError('');
