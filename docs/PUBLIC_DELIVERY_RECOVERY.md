@@ -6,6 +6,7 @@ This slice separates private Studio contribution health from public listener del
 
 - Delivery start, status and stop operations use a PostgreSQL advisory lock keyed by broadcast ID.
 - A concurrent operation receives `DELIVERY_OPERATION_IN_PROGRESS` instead of launching a duplicate Egress or delivery request.
+- `POST /delivery/status` performs the same authorised health reconciliation as refresh without starting a second relay.
 - A failed Egress relay remains a recoverable delivery problem and no longer moves a healthy contribution broadcast directly to terminal `failed`.
 - When delivery is lost after a broadcast was live, the lifecycle moves to `reconnecting` while contribution remains available.
 - A later start request replaces a failed relay with a new Egress job.
