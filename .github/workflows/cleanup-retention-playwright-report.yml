@@ -1,0 +1,37 @@
+name: Remove generated retention Playwright report
+
+on:
+  push:
+    branches: [agent/recording-retention]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cleanup-retention-playwright-report
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout retention branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/recording-retention
+          fetch-depth: 0
+
+      - name: Remove generated browser artifacts
+        run: |
+          set -euo pipefail
+          rm -rf playwright-report test-results
+          rm -f .github/workflows/cleanup-retention-playwright-report.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No generated artifacts were tracked."
+          else
+            git commit -m "Remove generated Playwright artifacts"
+            git push origin HEAD:agent/recording-retention
+          fi
