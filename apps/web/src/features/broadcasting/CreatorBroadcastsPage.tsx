@@ -626,7 +626,6 @@ export function CreatorBroadcastsPage({
                         <small>/{organisation.slug}/{selectedChannel?.slug}/{broadcast.slug}</small>
                       </div>
                       <div className="broadcast-row-actions">
-                        <span>Version {broadcast.lifecycleVersion}</span>
                         <Button onClick={onOpenStudio}>
                           {overdue ? 'Open Studio to recover' : 'Open in Studio'}
                         </Button>

@@ -88,11 +88,6 @@ body.ds-listener-fixed-action-visible .ds-listener-content {
   line-height: 1.45;
 }
 
-/* Lifecycle versions are internal optimistic-concurrency values, not user content. */
-.broadcast-row-actions > span {
-  display: none;
-}
-
 @media (max-width: 620px) {
   .listener-controls {
     grid-template-columns: minmax(0, 1fr) auto;
