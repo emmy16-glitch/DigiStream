@@ -318,8 +318,10 @@ export class S3ObjectStorage implements ObjectStorage {
         new ListObjectsV2Command({
           Bucket: this.config.bucket,
           Prefix: input.prefix,
-          ContinuationToken: input.cursor,
           MaxKeys: input.limit,
+          ...(input.cursor === undefined
+            ? {}
+            : { ContinuationToken: input.cursor }),
         }),
       );
       const items = (response.Contents ?? []).flatMap((object) => {
@@ -528,9 +530,10 @@ export class InMemoryObjectStorage implements ObjectStorage {
     const keys = [...this.objects.keys()]
       .filter((key) => key.startsWith(input.prefix))
       .sort((left, right) => left.localeCompare(right));
-    const start = input.cursor
-      ? Math.max(0, keys.findIndex((key) => key > input.cursor))
-      : 0;
+    const cursor = input.cursor;
+    const cursorIndex =
+      cursor === undefined ? 0 : keys.findIndex((key) => key > cursor);
+    const start = cursorIndex === -1 ? keys.length : cursorIndex;
     const selected = keys.slice(start, start + input.limit);
     return {
       items: selected.map((key) => {
