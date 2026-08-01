@@ -13,6 +13,7 @@ import type {
   OrganisationListResponse,
 } from '@digistream/contracts';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
+import { useModalDialog } from '../../lib/use-modal-dialog';
 import { BroadcastChat } from './BroadcastChat';
 import './creator-chat-workspace.css';
 
@@ -54,20 +55,12 @@ export function CreatorChatWorkspace({
   const [broadcastId, setBroadcastId] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const dialogRef = useModalDialog<HTMLElement>(open, onClose);
 
   const selectedBroadcast = useMemo(
     () => broadcasts.find((broadcast) => broadcast.id === broadcastId) ?? null,
     [broadcastId, broadcasts],
   );
-
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -167,16 +160,19 @@ export function CreatorChatWorkspace({
   return (
     <div className="creator-chat-backdrop" role="presentation">
       <section
+        aria-describedby="creator-chat-description"
         aria-labelledby="creator-chat-title"
         aria-modal="true"
         className="creator-chat-workspace"
+        ref={dialogRef}
         role="dialog"
+        tabIndex={-1}
       >
         <header className="creator-chat-header">
           <div>
             <span className="eyebrow">Audience interaction</span>
-            <h2 id="creator-chat-title">Creator live chat</h2>
-            <p>Choose a broadcast, review committed history and reply in real time.</p>
+            <h2 data-dialog-initial-focus id="creator-chat-title" tabIndex={-1}>Creator live chat</h2>
+            <p id="creator-chat-description">Choose a broadcast, review committed history and reply in real time.</p>
           </div>
           <button aria-label="Close creator chat" onClick={onClose} type="button">×</button>
         </header>

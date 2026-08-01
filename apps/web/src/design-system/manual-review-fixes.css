@@ -1,0 +1,64 @@
+/* Final manual-review corrections for PR #29. */
+
+.listener-orb::after {
+  content: none;
+}
+
+.ds-listener-content {
+  min-height: auto;
+}
+
+.ds-listener-content > .listener-page .listener-shell {
+  min-height: auto;
+  padding-block: clamp(24px, 5vw, 64px);
+  align-items: start;
+}
+
+.ds-listener-shell:has(.listener-call-in-role-action) .ds-listener-content {
+  padding-bottom: 24px;
+}
+
+.ds-listener-shell:has(.listener-call-in-role-action) .ds-listener-footer {
+  margin-bottom: calc(92px + env(safe-area-inset-bottom));
+}
+
+.broadcast-row-overdue {
+  border-color: color-mix(in srgb, #f3b33d 45%, var(--ds-border-subtle));
+}
+
+.broadcast-overdue-note {
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, #f3b33d 30%, transparent);
+  border-radius: var(--ds-radius-md);
+  color: #f5d89b !important;
+  background: color-mix(in srgb, #f3b33d 9%, transparent);
+  font-size: var(--ds-text-sm);
+}
+
+@media (max-width: 640px) {
+  .ds-listener-shell:has(.listener-call-in-role-action) .ds-listener-footer {
+    margin-bottom: calc(108px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (orientation: landscape) and (max-height: 700px) {
+  .ds-listener-content > .listener-page .listener-shell {
+    min-height: auto;
+    padding-block: 18px;
+    gap: clamp(18px, 4vw, 40px);
+    align-items: center;
+  }
+
+  .ds-listener-content > .listener-page .listener-stage {
+    min-height: min(260px, 66dvh);
+  }
+
+  .ds-listener-content > .listener-page .listener-orb {
+    width: min(220px, 34vw);
+    padding: 42px;
+  }
+
+  .ds-listener-content > .listener-page .listener-card {
+    padding: 22px;
+  }
+}

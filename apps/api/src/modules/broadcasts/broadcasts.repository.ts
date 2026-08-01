@@ -338,6 +338,10 @@ export async function listPublicBroadcastRecords(
         inArray(broadcastRecords.status, statuses),
         eq(channelRecords.status, 'active'),
         eq(channelRecords.visibility, 'public'),
+        or(
+          sql`${broadcastRecords.status} <> 'scheduled'`,
+          sql`${broadcastRecords.scheduledStartAt} > now()`,
+        ),
       ),
     )
     .orderBy(

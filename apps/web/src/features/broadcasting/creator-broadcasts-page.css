@@ -1,0 +1,325 @@
+.creator-broadcasts-page {
+  display: grid;
+  gap: var(--ds-space-5);
+}
+
+.creator-broadcasts-intro {
+  margin-bottom: 0;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--ds-space-5);
+}
+
+.creator-broadcasts-intro > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: var(--ds-space-2);
+}
+
+.creator-broadcasts-intro-actions,
+.creator-form-actions,
+.channel-summary > div:first-child,
+.broadcast-row-status,
+.broadcast-row-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+}
+
+.creator-form-card,
+.channel-strip,
+.broadcast-list {
+  padding: clamp(20px, 3vw, 30px);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl);
+  background: var(--ds-surface-2);
+}
+
+.creator-form-card {
+  display: grid;
+  grid-template-columns: minmax(240px, .72fr) minmax(0, 1.28fr);
+  gap: clamp(24px, 4vw, 44px);
+  align-items: start;
+}
+
+.creator-form-copy {
+  display: grid;
+  justify-items: start;
+  gap: var(--ds-space-3);
+}
+
+.creator-form-copy h3,
+.broadcast-list h3,
+.broadcast-row h4 {
+  margin: 0;
+  color: var(--ds-text-primary);
+  letter-spacing: -.03em;
+}
+
+.creator-form-copy h3,
+.broadcast-list h3 {
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+}
+
+.creator-form-copy p,
+.channel-summary p,
+.broadcast-row p {
+  margin: 0;
+  color: var(--ds-text-secondary);
+  line-height: var(--ds-leading-body);
+}
+
+.creator-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+}
+
+.creator-form-grid label {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: var(--ds-space-2);
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.creator-form-grid input,
+.creator-form-grid select,
+.creator-form-grid textarea,
+.channel-strip select {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 var(--ds-space-4);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text-primary);
+  background: var(--ds-surface-1);
+  font: inherit;
+}
+
+.creator-form-grid textarea {
+  min-height: 104px;
+  padding-block: var(--ds-space-3);
+  resize: vertical;
+}
+
+.creator-form-grid input:disabled {
+  cursor: not-allowed;
+  opacity: .56;
+}
+
+.creator-form-grid small,
+.channel-summary small,
+.broadcast-row small,
+.broadcast-row-actions > span {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  line-height: 1.45;
+}
+
+.creator-form-wide {
+  grid-column: 1 / -1;
+}
+
+.creator-form-actions {
+  justify-content: flex-end;
+}
+
+.channel-strip {
+  display: grid;
+  gap: var(--ds-space-5);
+}
+
+.channel-strip-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+}
+
+.channel-strip-heading > div {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.channel-strip-heading span,
+.broadcast-list > header span {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.channel-strip-heading strong {
+  overflow-wrap: anywhere;
+  color: var(--ds-text-primary);
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+}
+
+.channel-strip-heading select {
+  width: min(360px, 100%);
+}
+
+.channel-summary {
+  padding: var(--ds-space-5);
+  display: grid;
+  justify-items: start;
+  gap: var(--ds-space-3);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-1);
+}
+
+.channel-approval-note {
+  color: #ffe2a5 !important;
+}
+
+.broadcast-list {
+  display: grid;
+  gap: var(--ds-space-4);
+}
+
+.broadcast-list > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+}
+
+.broadcast-list > header > div {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.broadcast-list-items {
+  display: grid;
+  gap: var(--ds-space-3);
+}
+
+.broadcast-row {
+  min-width: 0;
+  padding: var(--ds-space-5);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--ds-space-5);
+  align-items: center;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-1);
+}
+
+.broadcast-row-main {
+  min-width: 0;
+  display: grid;
+  gap: var(--ds-space-2);
+}
+
+.broadcast-row h4 {
+  overflow-wrap: anywhere;
+  font-size: var(--ds-text-lg);
+}
+
+.broadcast-row-status span {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+}
+
+.broadcast-row-actions {
+  justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .creator-broadcasts-intro,
+  .channel-strip-heading,
+  .broadcast-list > header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .creator-broadcasts-intro-actions,
+  .creator-broadcasts-intro-actions .ds-button,
+  .channel-strip-heading select,
+  .broadcast-list > header .ds-button {
+    width: 100%;
+  }
+
+  .creator-form-card {
+    grid-template-columns: 1fr;
+  }
+
+  .broadcast-row {
+    grid-template-columns: 1fr;
+  }
+
+  .broadcast-row-actions {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 640px) {
+  .creator-broadcasts-page {
+    gap: var(--ds-space-4);
+  }
+
+  .creator-broadcasts-intro-actions,
+  .creator-form-actions,
+  .broadcast-row-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .creator-form-card,
+  .channel-strip,
+  .broadcast-list {
+    padding: 17px;
+    border-radius: var(--ds-radius-lg);
+  }
+
+  .creator-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .creator-form-wide {
+    grid-column: auto;
+  }
+
+  .creator-form-actions .ds-button,
+  .channel-summary .ds-button,
+  .broadcast-row-actions .ds-button {
+    width: 100%;
+  }
+
+  .broadcast-row {
+    padding: var(--ds-space-4);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 620px) {
+  .creator-form-card,
+  .channel-strip,
+  .broadcast-list {
+    padding: 18px 20px;
+  }
+
+  .creator-form-card {
+    grid-template-columns: minmax(220px, .72fr) minmax(0, 1.28fr);
+    gap: 24px;
+  }
+
+  .creator-form-grid input,
+  .creator-form-grid select,
+  .channel-strip select {
+    min-height: 44px;
+  }
+
+  .creator-form-grid textarea {
+    min-height: 80px;
+  }
+}

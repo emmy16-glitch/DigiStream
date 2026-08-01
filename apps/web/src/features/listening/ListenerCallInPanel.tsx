@@ -1,11 +1,25 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import type {
+  AuthUserResponse,
+  OrganisationListResponse,
+  PublicBroadcast,
+  PublicBroadcastResponse,
+} from '@digistream/contracts';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
+import { useModalDialog } from '../../lib/use-modal-dialog';
 import type { ListenerRoute } from './listener-route';
 import './listener-call-ins.css';
 
 type PublicBroadcastRoute = Extract<ListenerRoute, { kind: 'public-broadcast' }>;
 
 type CallInState = 'pending' | 'approved' | 'rejected';
+type ListenerRelationship =
+  | 'checking'
+  | 'visitor'
+  | 'production'
+  | 'moderator'
+  | 'analyst'
+  | 'unknown';
 
 type CreatedCallInResponse = {
   callIn: {
@@ -86,17 +100,31 @@ function pendingGuidance(): string {
   return 'Your request is waiting for the production team. Keep this page open for updates.';
 }
 
+function relationshipForRole(role: string): ListenerRelationship {
+  if (role === 'owner' || role === 'admin' || role === 'broadcaster') {
+    return 'production';
+  }
+  if (role === 'moderator') return 'moderator';
+  if (role === 'analyst') return 'analyst';
+  return 'visitor';
+}
+
+function acceptsCallIns(status: PublicBroadcast['status'] | null): boolean {
+  return status === 'live' || status === 'reconnecting';
+}
+
 export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
   const key = useMemo(() => storageKey(route), [route]);
-  const endpoint = useMemo(
+  const metadataEndpoint = useMemo(
     () =>
       `/api/v1/broadcasts/${encodeURIComponent(
         route.organisationSlug,
       )}/${encodeURIComponent(route.channelSlug)}/${encodeURIComponent(
         route.broadcastSlug,
-      )}/call-ins`,
+      )}`,
     [route],
   );
+  const endpoint = `${metadataEndpoint}/call-ins`;
 
   const [open, setOpen] = useState(false);
   const [displayName, setDisplayName] = useState('');
@@ -107,9 +135,16 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
   const [status, setStatus] = useState<CallInStatusResponse['callIn'] | null>(
     null,
   );
+  const [broadcastStatus, setBroadcastStatus] =
+    useState<PublicBroadcast['status'] | null>(null);
+  const [relationship, setRelationship] =
+    useState<ListenerRelationship>('checking');
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+
+  const dialogRef = useModalDialog<HTMLElement>(open, () => setOpen(false));
 
   const saveTracking = useCallback(
     (tracking: StoredTracking) => {
@@ -126,7 +161,22 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
     setStatusToken('');
     setStatusExpiresAt('');
     setStatus(null);
+    setSubmitted(false);
   }, [key]);
+
+  const loadBroadcastStatus = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const response = await apiRequest<PublicBroadcastResponse>(metadataEndpoint, {
+        signal: signal ?? null,
+      });
+      setBroadcastStatus(response.broadcast.status);
+    } catch (requestError) {
+      if (requestError instanceof DOMException && requestError.name === 'AbortError') {
+        return;
+      }
+      setBroadcastStatus(null);
+    }
+  }, [metadataEndpoint]);
 
   const refreshStatus = useCallback(async () => {
     if (!statusToken) return;
@@ -164,6 +214,50 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
   }, [clearTracking, statusExpiresAt, statusToken]);
 
   useEffect(() => {
+    const controller = new AbortController();
+    void loadBroadcastStatus(controller.signal);
+    const timer = window.setInterval(() => {
+      void loadBroadcastStatus();
+    }, 8_000);
+    return () => {
+      controller.abort();
+      window.clearInterval(timer);
+    };
+  }, [loadBroadcastStatus]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void apiRequest<AuthUserResponse>('/api/v1/auth/me', {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        setDisplayName((current) => current || response.user.displayName);
+        setEmail((current) => current || response.user.email);
+        const organisations = await apiRequest<OrganisationListResponse>(
+          '/api/v1/organisations',
+          { signal: controller.signal },
+        );
+        const organisation = organisations.organisations.find(
+          (item) => item.slug === route.organisationSlug,
+        );
+        setRelationship(
+          organisation ? relationshipForRole(organisation.role) : 'visitor',
+        );
+      })
+      .catch((requestError) => {
+        if (requestError instanceof DOMException && requestError.name === 'AbortError') {
+          return;
+        }
+        if (requestError instanceof ApiClientError && requestError.status === 401) {
+          setRelationship('visitor');
+        } else {
+          setRelationship('unknown');
+        }
+      });
+    return () => controller.abort();
+  }, [route.organisationSlug]);
+
+  useEffect(() => {
     const stored = sessionStorage.getItem(key);
     if (!stored) return;
     try {
@@ -190,9 +284,20 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
     return () => window.clearInterval(timer);
   }, [refreshStatus, statusToken]);
 
+  useEffect(() => {
+    if (
+      relationship === 'production' ||
+      relationship === 'moderator' ||
+      relationship === 'analyst'
+    ) {
+      setOpen(false);
+    }
+  }, [relationship]);
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
+    setSubmitted(false);
     setError('');
     try {
       const response = await apiRequest<CreatedCallInResponse>(endpoint, {
@@ -220,12 +325,40 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
         guidance: pendingGuidance(),
       });
       setMessage('');
+      setSubmitted(true);
     } catch (requestError) {
       setError(readableError(requestError));
     } finally {
       setBusy(false);
     }
   }
+
+  if (relationship === 'checking' || relationship === 'unknown' || !broadcastStatus) {
+    return null;
+  }
+
+  if (relationship === 'production') {
+    return (
+      <aside className="listener-call-in listener-call-in-role-action">
+        <a className="listener-call-in-launcher" href="/creator/broadcasts">
+          Manage broadcast
+        </a>
+      </aside>
+    );
+  }
+
+  if (relationship === 'moderator') {
+    return (
+      <aside className="listener-call-in listener-call-in-role-action">
+        <a className="listener-call-in-launcher" href="/creator/audience">
+          Open backstage
+        </a>
+      </aside>
+    );
+  }
+
+  if (relationship === 'analyst') return null;
+  if (!statusToken && !acceptsCallIns(broadcastStatus)) return null;
 
   const launcherText = status
     ? status.status === 'pending'
@@ -237,137 +370,158 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
 
   return (
     <aside className={`listener-call-in ${open ? 'open' : ''}`}>
-      <button
-        aria-expanded={open}
-        className="listener-call-in-launcher"
-        onClick={() => setOpen((current) => !current)}
-        type="button"
-      >
-        <span aria-hidden="true">◉</span>
-        {launcherText}
-      </button>
+      {!open ? (
+        <button
+          aria-expanded="false"
+          className="listener-call-in-launcher"
+          onClick={() => setOpen(true)}
+          type="button"
+        >
+          {launcherText}
+        </button>
+      ) : null}
 
       {open ? (
-        <section
-          aria-labelledby="listener-call-in-title"
-          className="listener-call-in-panel"
-        >
-          <header>
-            <div>
-              <span>Live participation</span>
-              <h2 id="listener-call-in-title">Request to speak</h2>
-            </div>
-            <button
-              aria-label="Close request-to-speak panel"
-              onClick={() => setOpen(false)}
-              type="button"
-            >
-              ×
-            </button>
-          </header>
-
-          {error ? (
-            <div className="listener-call-in-error" role="alert">
-              {error}
-            </div>
-          ) : null}
-
-          {statusToken ? (
-            <div className="listener-call-in-status" aria-live="polite">
-              <div className={`listener-call-in-state ${status?.status ?? 'pending'}`}>
-                <i />
-                <div>
-                  <strong>
-                    {status ? statusLabel(status.status) : 'Checking your request'}
-                  </strong>
-                  <span>
-                    {refreshing ? 'Refreshing status…' : 'Status updates automatically'}
-                  </span>
-                </div>
+        <>
+          <button
+            aria-label="Close request-to-speak panel"
+            className="listener-call-in-backdrop"
+            onClick={() => setOpen(false)}
+            tabIndex={-1}
+            type="button"
+          />
+          <section
+            aria-labelledby="listener-call-in-title"
+            aria-modal="true"
+            className="listener-call-in-panel"
+            ref={dialogRef}
+            role="dialog"
+            tabIndex={-1}
+          >
+            <header>
+              <div>
+                <span>Live participation</span>
+                <h2 id="listener-call-in-title">Request to speak</h2>
               </div>
+              <button
+                aria-label="Close request-to-speak panel"
+                data-dialog-initial-focus
+                onClick={() => setOpen(false)}
+                type="button"
+              >
+                ×
+              </button>
+            </header>
 
-              <p>{status?.guidance ?? pendingGuidance()}</p>
+            {error ? (
+              <div className="listener-call-in-error" role="alert">
+                {error}
+              </div>
+            ) : null}
 
-              {status?.status === 'approved' ? (
-                <div className="listener-call-in-guidance">
-                  <strong>Prepare for backstage</strong>
-                  <ul>
-                    <li>Use headphones to prevent echo.</li>
-                    <li>Move somewhere quiet with a stable connection.</li>
-                    <li>Allow microphone access only after receiving the guest link.</li>
-                  </ul>
+            {submitted ? (
+              <div className="listener-call-in-success" role="status">
+                Request sent. Your status will update here while the production team reviews it.
+              </div>
+            ) : null}
+
+            {statusToken ? (
+              <div className="listener-call-in-status" aria-live="polite">
+                <div className={`listener-call-in-state ${status?.status ?? 'pending'}`}>
+                  <i />
+                  <div>
+                    <strong>
+                      {status ? statusLabel(status.status) : 'Checking your request'}
+                    </strong>
+                    <span>
+                      {refreshing ? 'Refreshing status…' : 'Status updates automatically'}
+                    </span>
+                  </div>
                 </div>
-              ) : null}
 
-              <div className="listener-call-in-actions">
-                <button
-                  disabled={refreshing}
-                  onClick={() => void refreshStatus()}
-                  type="button"
-                >
-                  {refreshing ? 'Checking…' : 'Check now'}
-                </button>
-                {status?.status === 'rejected' ? (
+                <p>{status?.guidance ?? pendingGuidance()}</p>
+
+                {status?.status === 'approved' ? (
+                  <div className="listener-call-in-guidance">
+                    <strong>Prepare for backstage</strong>
+                    <ul>
+                      <li>Use headphones to prevent echo.</li>
+                      <li>Move somewhere quiet with a stable connection.</li>
+                      <li>Allow microphone access only after receiving the guest link.</li>
+                    </ul>
+                  </div>
+                ) : null}
+
+                <div className="listener-call-in-actions">
                   <button
-                    className="secondary"
-                    onClick={() => {
-                      clearTracking();
-                      setError('');
-                    }}
+                    disabled={refreshing}
+                    onClick={() => void refreshStatus()}
                     type="button"
                   >
-                    Start a new request
+                    {refreshing ? 'Checking…' : 'Check now'}
                   </button>
-                ) : null}
+                  {status?.status === 'rejected' ? (
+                    <button
+                      className="secondary"
+                      onClick={() => {
+                        clearTracking();
+                        setError('');
+                      }}
+                      type="button"
+                    >
+                      Start a new request
+                    </button>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          ) : (
-            <form onSubmit={submit}>
-              <p>
-                Send a short request to the production team. Approval does not
-                automatically turn on your microphone.
-              </p>
-              <label>
-                Display name
-                <input
-                  autoComplete="name"
-                  maxLength={80}
-                  minLength={2}
-                  onChange={(event) => setDisplayName(event.target.value)}
-                  required
-                  value={displayName}
-                />
-              </label>
-              <label>
-                Contact email <small>Optional</small>
-                <input
-                  autoComplete="email"
-                  maxLength={320}
-                  onChange={(event) => setEmail(event.target.value)}
-                  type="email"
-                  value={email}
-                />
-              </label>
-              <label>
-                What would you like to say? <small>Optional</small>
-                <textarea
-                  maxLength={500}
-                  onChange={(event) => setMessage(event.target.value)}
-                  rows={4}
-                  value={message}
-                />
-                <span>{message.length}/500</span>
-              </label>
-              <button className="listener-call-in-submit" disabled={busy} type="submit">
-                {busy ? 'Sending request…' : 'Send request'}
-              </button>
-              <small className="listener-call-in-privacy">
-                DigiStream stores a one-way request fingerprint for duplicate and
-                abuse prevention. Your raw IP address is not stored with the call-in.
-              </small>
-            </form>
-          )}
-        </section>
+            ) : (
+              <form onSubmit={submit}>
+                <p>
+                  Send a short request to the production team. Approval does not
+                  automatically turn on your microphone.
+                </p>
+                <label>
+                  Display name
+                  <input
+                    autoComplete="name"
+                    maxLength={80}
+                    minLength={2}
+                    onChange={(event) => setDisplayName(event.target.value)}
+                    required
+                    value={displayName}
+                  />
+                </label>
+                <label>
+                  Contact email <small>Optional</small>
+                  <input
+                    autoComplete="email"
+                    maxLength={320}
+                    onChange={(event) => setEmail(event.target.value)}
+                    type="email"
+                    value={email}
+                  />
+                </label>
+                <label>
+                  What would you like to say? <small>Optional</small>
+                  <textarea
+                    maxLength={500}
+                    onChange={(event) => setMessage(event.target.value)}
+                    rows={4}
+                    value={message}
+                  />
+                  <span>{message.length}/500</span>
+                </label>
+                <button className="listener-call-in-submit" disabled={busy} type="submit">
+                  {busy ? 'Sending request…' : 'Send request'}
+                </button>
+                <small className="listener-call-in-privacy">
+                  DigiStream stores a one-way request fingerprint for duplicate and
+                  abuse prevention. Your raw IP address is not stored with the call-in.
+                </small>
+              </form>
+            )}
+          </section>
+        </>
       ) : null}
     </aside>
   );

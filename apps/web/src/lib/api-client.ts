@@ -1,9 +1,10 @@
 import type { ApiErrorResponse } from '@digistream/contracts';
 
-const apiBaseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(
-  /\/$/,
-  '',
-);
+const configuredApiBaseUrl = import.meta.env.VITE_API_URL?.trim();
+
+export const apiBaseUrl = configuredApiBaseUrl
+  ? configuredApiBaseUrl.replace(/\/$/, '')
+  : '';
 
 export class ApiClientError extends Error {
   constructor(
@@ -11,6 +12,7 @@ export class ApiClientError extends Error {
     readonly code: string,
     message: string,
     readonly details?: unknown,
+    readonly requestId?: string,
   ) {
     super(message);
     this.name = 'ApiClientError';
@@ -26,17 +28,31 @@ export async function apiRequest<T>(
     headers.set('content-type', 'application/json');
   }
 
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    ...options,
-    headers,
-    credentials: 'include',
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl}${path}`, {
+      ...options,
+      headers,
+      credentials: 'include',
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error;
+    throw new ApiClientError(
+      0,
+      'API_UNREACHABLE',
+      'DigiStream could not connect to the application server.',
+      error,
+    );
+  }
+
   const text = await response.text();
   let payload: unknown = null;
+  let parsedJson = true;
   if (text) {
     try {
       payload = JSON.parse(text);
     } catch {
+      parsedJson = false;
       payload = text;
     }
   }
@@ -49,6 +65,7 @@ export async function apiRequest<T>(
         apiError.error.code,
         apiError.error.message,
         apiError.error.details,
+        apiError.error.requestId,
       );
     }
     throw new ApiClientError(
@@ -58,7 +75,25 @@ export async function apiRequest<T>(
     );
   }
 
+  if (text && !parsedJson) {
+    throw new ApiClientError(
+      response.status,
+      'INVALID_API_RESPONSE',
+      'DigiStream received an invalid response from the application server.',
+      { contentType: response.headers.get('content-type') },
+    );
+  }
+
   return payload as T;
+}
+
+export function realtimeEndpoint(path = '/api/v1/realtime'): string {
+  const base = new URL(apiBaseUrl || window.location.origin, window.location.origin);
+  base.protocol = base.protocol === 'https:' ? 'wss:' : 'ws:';
+  base.pathname = path;
+  base.search = '';
+  base.hash = '';
+  return base.toString();
 }
 
 export function jsonBody(value: unknown): string {

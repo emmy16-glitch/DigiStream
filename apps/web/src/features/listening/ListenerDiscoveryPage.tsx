@@ -6,6 +6,11 @@ import type {
 import { StatePanel, StatusBadge, type StatusTone } from '../../design-system/components';
 import { Icon } from '../../design-system/Icon';
 import { ApiClientError, apiRequest } from '../../lib/api-client';
+import {
+  isFutureUpcomingBroadcast,
+  isOverdueBroadcast,
+  presentationLabel,
+} from '../../lib/broadcast-lifecycle';
 import { publicListenerPath } from './listener-route';
 import './listener-playback.css';
 
@@ -32,6 +37,13 @@ function broadcastTone(status: PublicBroadcast['status']): StatusTone {
   return 'neutral';
 }
 
+function tileLabel(broadcast: PublicBroadcast): string {
+  if (isOverdueBroadcast(broadcast.status, broadcast.scheduledStartAt)) {
+    return 'Start time passed';
+  }
+  return presentationLabel(broadcast.status);
+}
+
 function BroadcastTile({ broadcast }: { broadcast: PublicBroadcast }) {
   const path = publicListenerPath({
     organisationSlug: broadcast.organisation.slug,
@@ -46,7 +58,7 @@ function BroadcastTile({ broadcast }: { broadcast: PublicBroadcast }) {
       </div>
       <div className="listener-discovery-copy">
         <StatusBadge tone={broadcastTone(broadcast.status)}>
-          {broadcast.status === 'live' ? 'Live now' : broadcast.status.replaceAll('_', ' ')}
+          {tileLabel(broadcast)}
         </StatusBadge>
         <h2>{broadcast.title}</h2>
         <p>{broadcast.description ?? 'Live audio on DigiStream.'}</p>
@@ -94,8 +106,11 @@ export function ListenerDiscoveryPage() {
   const live = broadcasts.filter((broadcast) =>
     broadcast.status === 'live' || broadcast.status === 'reconnecting' || broadcast.status === 'ending',
   );
+  // A scheduled broadcast whose start time has passed is overdue, not upcoming.
+  // The API is the authoritative filter; this client filter is defensive so a
+  // stale cached list never re-promotes an overdue event as a future one.
   const upcoming = broadcasts.filter((broadcast) =>
-    broadcast.status === 'scheduled' || broadcast.status === 'starting',
+    isFutureUpcomingBroadcast(broadcast.status, broadcast.scheduledStartAt),
   );
 
   return (

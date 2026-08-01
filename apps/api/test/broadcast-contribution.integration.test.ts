@@ -135,8 +135,7 @@ test(
           createdByUserId: owner.userId,
           title: 'Contribution Test',
           slug: `contribution-test-${suffix}`,
-          status: 'scheduled',
-          scheduledStartAt: new Date(Date.now() + 3_600_000),
+          status: 'draft',
           contributionRoomName: `broadcast-${suffix}`,
           deliveryStreamName: `delivery-${suffix}`,
         })

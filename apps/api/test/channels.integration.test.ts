@@ -8,7 +8,6 @@ import { runMigrations } from '../src/db/migrate.js';
 import {
   organisationMemberships,
   organisations,
-  userPlatformCapabilities,
   users,
 } from '../src/db/schema.js';
 
@@ -58,12 +57,6 @@ test(
       const broadcaster = await register('Broadcaster');
       const analyst = await register('Analyst');
       const stranger = await register('Stranger');
-
-      await database.db.insert(userPlatformCapabilities).values({
-        userId: owner.userId,
-        capability: 'broadcaster',
-        grantedByUserId: owner.userId,
-      });
 
       const organisationCreation = await app.inject({
         method: 'POST',
@@ -258,16 +251,19 @@ test(
       });
       assert.equal(restoreArchived.statusCode, 409);
     } finally {
-      if (organisationId) {
-        await database.db
-          .delete(organisations)
-          .where(eq(organisations.id, organisationId));
+      try {
+        if (organisationId) {
+          await database.db
+            .delete(organisations)
+            .where(eq(organisations.id, organisationId));
+        }
+        for (const userId of userIds) {
+          await database.db.delete(users).where(eq(users.id, userId));
+        }
+      } finally {
+        await app.close();
+        await database.close();
       }
-      for (const userId of userIds) {
-        await database.db.delete(users).where(eq(users.id, userId));
-      }
-      await app.close();
-      await database.close();
     }
   },
 );

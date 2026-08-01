@@ -70,7 +70,10 @@ test(
       });
       assert.equal(emptyOwnProfile.statusCode, 200);
       assert.equal(emptyOwnProfile.json().profile.profile, null);
-      assert.deepEqual(emptyOwnProfile.json().profile.capabilities, []);
+      assert.deepEqual(
+        emptyOwnProfile.json().profile.capabilities,
+        ['broadcaster'],
+      );
 
       const unauthenticatedUpdate = await app.inject({
         method: 'PUT',
@@ -128,7 +131,7 @@ test(
       });
       assert.equal(publicProfile.statusCode, 200);
       assert.equal(publicProfile.json().profile.username, username);
-      assert.equal(publicProfile.json().profile.isBroadcaster, false);
+      assert.equal(publicProfile.json().profile.isBroadcaster, true);
       assert.equal('email' in publicProfile.json().profile, false);
       assert.equal('status' in publicProfile.json().profile, false);
       assert.equal('capabilities' in publicProfile.json().profile, false);
@@ -240,13 +243,15 @@ test(
         'PROFILE_NOT_FOUND',
       );
     } finally {
-      await app.close();
+      try {
+        await app.close();
 
-      for (const userId of createdUserIds) {
-        await database.db.delete(users).where(eq(users.id, userId));
+        for (const userId of createdUserIds) {
+          await database.db.delete(users).where(eq(users.id, userId));
+        }
+      } finally {
+        await database.close();
       }
-
-      await database.close();
     }
   },
 );

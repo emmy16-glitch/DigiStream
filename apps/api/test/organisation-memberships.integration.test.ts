@@ -7,7 +7,6 @@ import { createDatabase } from '../src/db/client.js';
 import { runMigrations } from '../src/db/migrate.js';
 import {
   organisations,
-  userPlatformCapabilities,
   users,
 } from '../src/db/schema.js';
 
@@ -57,12 +56,6 @@ test(
       const administrator = await register('Administrator');
       const broadcaster = await register('Broadcaster');
       const outsider = await register('Outsider');
-
-      await database.db.insert(userPlatformCapabilities).values({
-        userId: owner.userId,
-        capability: 'broadcaster',
-        grantedByUserId: owner.userId,
-      });
 
       const creation = await app.inject({
         method: 'POST',
@@ -251,18 +244,20 @@ test(
       assert.equal(finalOwnerRemoval.statusCode, 409);
       assert.equal(finalOwnerRemoval.json().error.code, 'FINAL_OWNER_REQUIRED');
     } finally {
-      if (organisationId) {
-        await database.db
-          .delete(organisations)
-          .where(eq(organisations.id, organisationId));
-      }
+      try {
+        if (organisationId) {
+          await database.db
+            .delete(organisations)
+            .where(eq(organisations.id, organisationId));
+        }
 
-      for (const userId of userIds) {
-        await database.db.delete(users).where(eq(users.id, userId));
+        for (const userId of userIds) {
+          await database.db.delete(users).where(eq(users.id, userId));
+        }
+      } finally {
+        await app.close();
+        await database.close();
       }
-
-      await app.close();
-      await database.close();
     }
   },
 );

@@ -126,6 +126,67 @@ export function StatusBadge({
   );
 }
 
+export function AudioLevelMeter({
+  clipping = false,
+  decibels,
+  label,
+  level,
+  muted = false,
+  segments = 24,
+}: {
+  clipping?: boolean;
+  decibels: number;
+  label: string;
+  level: number;
+  muted?: boolean;
+  segments?: number;
+}) {
+  const normalizedLevel = Math.min(1, Math.max(0, level));
+  const activeSegments = Math.round(normalizedLevel * segments);
+  const percentage = Math.round(normalizedLevel * 100);
+  const finiteDecibels = Number.isFinite(decibels);
+  const state = muted
+    ? { label: 'Muted', tone: 'neutral' as const }
+    : clipping
+      ? { label: 'Clipping', tone: 'danger' as const }
+      : normalizedLevel >= 0.025
+        ? { label: 'Input detected', tone: 'success' as const }
+        : { label: 'Listening', tone: 'info' as const };
+
+  return (
+    <div className={`ds-audio-meter ${muted ? 'is-muted' : ''} ${clipping ? 'is-clipping' : ''}`.trim()}>
+      <div className="ds-audio-meter-header">
+        <strong>{label}</strong>
+        <StatusBadge tone={state.tone}>{state.label}</StatusBadge>
+      </div>
+      <div
+        aria-label={label}
+        aria-valuemax={100}
+        aria-valuemin={0}
+        aria-valuenow={percentage}
+        aria-valuetext={
+          muted
+            ? 'Microphone muted'
+            : `${percentage} percent, ${finiteDecibels ? `${decibels.toFixed(1)} dBFS` : 'silent'}`
+        }
+        className="ds-audio-meter-bars"
+        role="meter"
+        style={{ gridTemplateColumns: `repeat(${segments}, minmax(3px, 1fr))` }}
+      >
+        {Array.from({ length: segments }, (_, index) => {
+          const active = index < activeSegments;
+          const hot = active && index >= Math.floor(segments * 0.84);
+          return <i className={hot ? 'is-hot' : active ? 'is-active' : ''} key={index} />;
+        })}
+      </div>
+      <div className="ds-audio-meter-readout" aria-hidden="true">
+        <span>{muted ? 'Muted' : `${percentage}%`}</span>
+        <span>{finiteDecibels ? `${decibels.toFixed(1)} dBFS` : 'Silent'}</span>
+      </div>
+    </div>
+  );
+}
+
 export type StateKind =
   | 'loading'
   | 'empty'

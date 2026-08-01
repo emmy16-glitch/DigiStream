@@ -14,7 +14,12 @@ import type {
   BroadcastChatMessageResponse,
   BroadcastState,
 } from '@digistream/contracts';
-import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
+import {
+  ApiClientError,
+  apiRequest,
+  jsonBody,
+  realtimeEndpoint,
+} from '../../lib/api-client';
 import './broadcast-chat.css';
 
 type BroadcastChatProps = {
@@ -44,18 +49,6 @@ function readableError(error: unknown): string {
   if (error instanceof ApiClientError) return error.message;
   if (error instanceof Error) return error.message;
   return 'Live chat could not complete that request.';
-}
-
-function realtimeUrl(): string {
-  const apiUrl = new URL(
-    import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
-    window.location.origin,
-  );
-  apiUrl.protocol = apiUrl.protocol === 'https:' ? 'wss:' : 'ws:';
-  apiUrl.pathname = '/api/v1/realtime';
-  apiUrl.search = '';
-  apiUrl.hash = '';
-  return apiUrl.toString();
 }
 
 function clientMessageId(): string {
@@ -280,7 +273,7 @@ export function BroadcastChat({
       if (stopped || !userRef.current) return;
       clearReconnectTimer();
       setRealtimeState(reconnectAttempt > 0 ? 'recovering' : 'connecting');
-      const socket = new WebSocket(realtimeUrl(), REALTIME_PROTOCOL);
+      const socket = new WebSocket(realtimeEndpoint(), REALTIME_PROTOCOL);
       socketRef.current = socket;
 
       socket.addEventListener('message', (event) => {
