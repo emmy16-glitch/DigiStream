@@ -22,6 +22,14 @@ jobs:
     env:
       DATABASE_URL: postgresql://digistream:digistream@127.0.0.1:5432/digistream_test
       NODE_ENV: test
+      OBJECT_STORAGE_ENDPOINT: http://127.0.0.1:8333
+      OBJECT_STORAGE_REGION: us-east-1
+      OBJECT_STORAGE_BUCKET: digistream-recordings
+      OBJECT_STORAGE_ACCESS_KEY_ID: digistream
+      OBJECT_STORAGE_SECRET_ACCESS_KEY: digistream-ci-storage-secret
+      OBJECT_STORAGE_FORCE_PATH_STYLE: true
+      RECORDING_ACCESS_SECRET: digistream-ci-recording-access-secret-at-least-32-bytes
+      RECORDING_ACCESS_TTL_SECONDS: 120
 
     services:
       postgres:
@@ -37,6 +45,14 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      object-storage:
+        image: chrislusf/seaweedfs:4.29
+        env:
+          AWS_ACCESS_KEY_ID: digistream
+          AWS_SECRET_ACCESS_KEY: digistream-ci-storage-secret
+          S3_BUCKET: digistream-recordings
+        ports:
+          - 8333:8333
 
     strategy:
       fail-fast: false
@@ -57,6 +73,18 @@ jobs:
         run: |
           node --version
           npm --version
+
+      - name: Wait for S3-compatible storage
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            if timeout 1 bash -c '</dev/tcp/127.0.0.1/8333' 2>/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo 'Object storage did not become reachable.' >&2
+          exit 1
 
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
@@ -156,6 +184,13 @@ jobs:
         run: |
           set -euo pipefail
           image="$(docker compose -f compose.media.yml config --images | grep -i ovenmediaengine | head -n 1)"
+          test -n "$image"
+          docker manifest inspect "$image" >/dev/null
+
+      - name: Verify pinned SeaweedFS image exists
+        run: |
+          set -euo pipefail
+          image="$(docker compose -f compose.media.yml config --images | grep -i seaweedfs | head -n 1)"
           test -n "$image"
           docker manifest inspect "$image" >/dev/null
 

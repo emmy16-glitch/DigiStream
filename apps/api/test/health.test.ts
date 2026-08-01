@@ -29,7 +29,17 @@ test('GET /api/v1/status declares chat, creator, listener, backstage and realtim
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().stage, 'durable-live-chat');
+  assert.equal(response.json().stage, 'recording-object-storage');
+  assert.ok(response.json().capabilities.includes('recording-object-storage'));
+  assert.ok(
+    response.json().capabilities.includes('verified-recording-artifact-upload'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('short-lived-recording-access'),
+  );
+  assert.ok(
+    response.json().capabilities.includes('recording-http-range-delivery'),
+  );
   assert.deepEqual(response.json().responsiveTargets, [
     'mobile',
     'tablet',

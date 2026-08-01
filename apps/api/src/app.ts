@@ -27,9 +27,18 @@ import { registerOrganisationMembershipRoutes } from './modules/organisations/or
 import { registerOrganisationRoutes } from './modules/organisations/organisations.routes.js';
 import { registerProfileRoutes } from './modules/profiles/profiles.routes.js';
 import {
+  createRecordingAccessManagerFromEnv,
+  type RecordingAccessManager,
+} from './modules/recordings/recording-access.js';
+import { registerRecordingRoutes } from './modules/recordings/recordings.routes.js';
+import {
   registerRealtimeServer,
   type RealtimeServerOptions,
 } from './modules/realtime/realtime.server.js';
+import {
+  createS3ObjectStorageFromEnv,
+  type ObjectStorage,
+} from './modules/storage/object-storage.js';
 
 export type BuildAppOptions = {
   database?: DatabaseContext | null;
@@ -38,8 +47,16 @@ export type BuildAppOptions = {
   backstageProvider?: BackstageProvider | null;
   deliveryProvider?: DeliveryProvider | null;
   mediaRelayProvider?: MediaRelayProvider | null;
+  objectStorage?: ObjectStorage | null;
+  recordingAccessManager?: RecordingAccessManager | null;
+  recordingUploadMaxBytes?: number;
   realtime?: RealtimeServerOptions | false;
 };
+
+function positiveInteger(value: unknown, fallback: number): number {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const app = Fastify({
@@ -67,6 +84,23 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     options.mediaRelayProvider === undefined
       ? createLiveKitEgressProviderFromEnv()
       : options.mediaRelayProvider;
+  const objectStorage =
+    options.objectStorage === undefined
+      ? createS3ObjectStorageFromEnv()
+      : options.objectStorage;
+  const recordingAccessManager =
+    options.recordingAccessManager === undefined
+      ? createRecordingAccessManagerFromEnv()
+      : options.recordingAccessManager;
+  const mediaControlSecret =
+    options.mediaControlSecret ?? process.env.MEDIA_CONTROL_SECRET;
+  const recordingUploadMaxBytes = Math.min(
+    1_073_741_824,
+    positiveInteger(
+      options.recordingUploadMaxBytes ?? process.env.OBJECT_STORAGE_MAX_UPLOAD_BYTES,
+      268_435_456,
+    ),
+  );
 
   void app.register(cors, {
     origin: process.env.WEB_ORIGIN ?? true,
@@ -78,16 +112,26 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       await database?.close();
     });
   }
+  if (objectStorage) {
+    app.addHook('onClose', async () => {
+      await objectStorage.close();
+    });
+  }
 
   registerAuthRoutes(app, database);
   registerProfileRoutes(app, database);
   registerOrganisationRoutes(app, database);
   registerOrganisationMembershipRoutes(app, database);
   registerChannelRoutes(app, database);
+  registerRecordingRoutes(app, database, mediaControlSecret, {
+    objectStorage,
+    accessManager: recordingAccessManager,
+    maxUploadBytes: recordingUploadMaxBytes,
+  });
   registerBroadcastRoutes(
     app,
     database,
-    options.mediaControlSecret ?? process.env.MEDIA_CONTROL_SECRET,
+    mediaControlSecret,
   );
   registerBroadcastContributionRoutes(app, database, contributionProvider);
   registerBroadcastGuestRoutes(
@@ -149,9 +193,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'durable-live-chat',
+    stage: 'recording-object-storage',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
+      'recording-object-storage',
+      'verified-recording-artifact-upload',
+      'recording-checksum-verification',
+      'short-lived-recording-access',
+      'recording-http-range-delivery',
+      'independent-playback-download-authorization',
       'durable-live-chat',
       'chat-client-idempotency',
       'cursor-paginated-chat-history',
