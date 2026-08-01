@@ -24,7 +24,7 @@ CREATE TABLE recording_orphan_quarantine (
     )
   ),
   CONSTRAINT recording_orphan_resolution_check CHECK (
-    resolution IS NULL OR resolution IN ('deleted', 'restored', 'missing')
+    resolution IS NULL OR resolution IN ('deleted', 'restored', 'missing', 'recorded')
   ),
   CONSTRAINT recording_orphan_size_non_negative CHECK (size_bytes >= 0),
   CONSTRAINT recording_orphan_attempt_non_negative CHECK (attempt_count >= 0),
