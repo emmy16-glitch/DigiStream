@@ -106,9 +106,45 @@ export async function detectRecordingOrphan(
        cleanup_after
      ) values ($1, $2, $3, $4, $5, $6)
      on conflict (original_key) do update
-       set size_bytes = excluded.size_bytes,
+       set quarantine_key = excluded.quarantine_key,
+           size_bytes = excluded.size_bytes,
            source_etag = excluded.source_etag,
            source_last_modified = excluded.source_last_modified,
+           status = case
+             when recording_orphan_quarantine.status = 'resolved'
+               then 'detected'
+             else recording_orphan_quarantine.status
+           end,
+           detected_at = case
+             when recording_orphan_quarantine.status = 'resolved'
+               then now()
+             else recording_orphan_quarantine.detected_at
+           end,
+           quarantined_at = case
+             when recording_orphan_quarantine.status = 'resolved'
+               then null
+             else recording_orphan_quarantine.quarantined_at
+           end,
+           cleanup_after = case
+             when recording_orphan_quarantine.status = 'resolved'
+               then excluded.cleanup_after
+             else recording_orphan_quarantine.cleanup_after
+           end,
+           resolved_at = case
+             when recording_orphan_quarantine.status = 'resolved'
+               then null
+             else recording_orphan_quarantine.resolved_at
+           end,
+           resolution = case
+             when recording_orphan_quarantine.status = 'resolved'
+               then null
+             else recording_orphan_quarantine.resolution
+           end,
+           last_error = case
+             when recording_orphan_quarantine.status = 'resolved'
+               then null
+             else recording_orphan_quarantine.last_error
+           end,
            updated_at = now()
      returning *`,
     [
