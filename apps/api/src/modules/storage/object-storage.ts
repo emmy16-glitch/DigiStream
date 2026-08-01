@@ -1,9 +1,12 @@
 import { createHash } from 'node:crypto';
 import { Readable } from 'node:stream';
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -24,6 +27,25 @@ export type ObjectStorageReadResult = {
   contentLength: number;
   contentType: string;
   contentRange: string | null;
+  etag: string | null;
+};
+
+export type ObjectStorageInventoryItem = {
+  key: string;
+  sizeBytes: number;
+  lastModified: Date | null;
+  etag: string | null;
+};
+
+export type ObjectStorageInventoryPage = {
+  items: ObjectStorageInventoryItem[];
+  nextCursor: string | null;
+};
+
+export type ObjectStorageMoveResult = {
+  status: 'moved' | 'already_moved';
+  sizeBytes: number;
+  contentType: string;
   etag: string | null;
 };
 
@@ -62,6 +84,16 @@ export interface ObjectStorage {
     range?: ObjectStorageRange;
   }): Promise<ObjectStorageReadResult>;
   deleteObject(key: string): Promise<void>;
+  listObjects?(input: {
+    prefix: string;
+    cursor?: string;
+    limit: number;
+  }): Promise<ObjectStorageInventoryPage>;
+  moveObject?(input: {
+    sourceKey: string;
+    destinationKey: string;
+    expectedSizeBytes?: number;
+  }): Promise<ObjectStorageMoveResult>;
   close(): void | Promise<void>;
 }
 
@@ -109,6 +141,20 @@ function asObjectStorageError(error: unknown): ObjectStorageError {
     'Object storage is unavailable.',
     error,
   );
+}
+
+function safeContentLength(value: unknown): number {
+  if (
+    typeof value !== 'number' ||
+    !Number.isSafeInteger(value) ||
+    value < 0
+  ) {
+    throw new ObjectStorageError(
+      'invalid_response',
+      'Object storage omitted a valid object size.',
+    );
+  }
+  return value;
 }
 
 async function checksumStream(stream: Readable): Promise<{
@@ -236,19 +282,10 @@ export class S3ObjectStorage implements ObjectStorage {
             : {}),
         }),
       );
-      if (
-        typeof response.ContentLength !== 'number' ||
-        !Number.isSafeInteger(response.ContentLength) ||
-        response.ContentLength < 0
-      ) {
-        throw new ObjectStorageError(
-          'invalid_response',
-          'Object storage omitted the response length.',
-        );
-      }
+      const contentLength = safeContentLength(response.ContentLength);
       return {
         body: toReadable(response.Body),
-        contentLength: response.ContentLength,
+        contentLength,
         contentType: response.ContentType ?? input.contentType,
         contentRange: response.ContentRange ?? null,
         etag: response.ETag ?? null,
@@ -271,17 +308,145 @@ export class S3ObjectStorage implements ObjectStorage {
     }
   }
 
+  async listObjects(input: {
+    prefix: string;
+    cursor?: string;
+    limit: number;
+  }): Promise<ObjectStorageInventoryPage> {
+    try {
+      const response = await this.client.send(
+        new ListObjectsV2Command({
+          Bucket: this.config.bucket,
+          Prefix: input.prefix,
+          MaxKeys: input.limit,
+          ...(input.cursor === undefined
+            ? {}
+            : { ContinuationToken: input.cursor }),
+        }),
+      );
+      const items = (response.Contents ?? []).flatMap((object) => {
+        if (typeof object.Key !== 'string') return [];
+        return [{
+          key: object.Key,
+          sizeBytes: safeContentLength(object.Size),
+          lastModified: object.LastModified ?? null,
+          etag: object.ETag ?? null,
+        }];
+      });
+      return {
+        items,
+        nextCursor: response.IsTruncated
+          ? response.NextContinuationToken ?? null
+          : null,
+      };
+    } catch (error) {
+      throw asObjectStorageError(error);
+    }
+  }
+
+  private async headObject(key: string): Promise<{
+    sizeBytes: number;
+    contentType: string;
+    etag: string | null;
+  }> {
+    try {
+      const response = await this.client.send(
+        new HeadObjectCommand({
+          Bucket: this.config.bucket,
+          Key: key,
+        }),
+      );
+      return {
+        sizeBytes: safeContentLength(response.ContentLength),
+        contentType: response.ContentType ?? 'application/octet-stream',
+        etag: response.ETag ?? null,
+      };
+    } catch (error) {
+      throw asObjectStorageError(error);
+    }
+  }
+
+  async moveObject(input: {
+    sourceKey: string;
+    destinationKey: string;
+    expectedSizeBytes?: number;
+  }): Promise<ObjectStorageMoveResult> {
+    let source: {
+      sizeBytes: number;
+      contentType: string;
+      etag: string | null;
+    };
+    try {
+      source = await this.headObject(input.sourceKey);
+    } catch (error) {
+      if (!(error instanceof ObjectStorageError) || error.code !== 'not_found') {
+        throw error;
+      }
+      const destination = await this.headObject(input.destinationKey);
+      if (
+        input.expectedSizeBytes !== undefined &&
+        destination.sizeBytes !== input.expectedSizeBytes
+      ) {
+        throw new ObjectStorageError(
+          'invalid_response',
+          'The previously moved object has an unexpected size.',
+        );
+      }
+      return { status: 'already_moved', ...destination };
+    }
+
+    if (
+      input.expectedSizeBytes !== undefined &&
+      source.sizeBytes !== input.expectedSizeBytes
+    ) {
+      throw new ObjectStorageError(
+        'invalid_response',
+        'The source object size changed before quarantine.',
+      );
+    }
+
+    try {
+      const encodedSource = `/${encodeURIComponent(this.config.bucket)}/${input.sourceKey
+        .split('/')
+        .map((segment) => encodeURIComponent(segment))
+        .join('/')}`;
+      await this.client.send(
+        new CopyObjectCommand({
+          Bucket: this.config.bucket,
+          Key: input.destinationKey,
+          CopySource: encodedSource,
+          MetadataDirective: 'COPY',
+        }),
+      );
+      const destination = await this.headObject(input.destinationKey);
+      if (destination.sizeBytes !== source.sizeBytes) {
+        throw new ObjectStorageError(
+          'invalid_response',
+          'The quarantined object size did not match the source object.',
+        );
+      }
+      await this.deleteObject(input.sourceKey);
+      return { status: 'moved', ...destination };
+    } catch (error) {
+      throw asObjectStorageError(error);
+    }
+  }
+
   close(): void {
     this.client.destroy();
   }
 }
 
+type InMemoryObject = {
+  body: Buffer;
+  contentType: string;
+  checksumSha256: string;
+  lastModified: Date;
+};
+
 export class InMemoryObjectStorage implements ObjectStorage {
   readonly provider = 'memory';
-  private readonly objects = new Map<
-    string,
-    { body: Buffer; contentType: string; checksumSha256: string }
-  >();
+  private readonly objects = new Map<string, InMemoryObject>();
 
   async check(): Promise<void> {}
 
@@ -296,6 +461,7 @@ export class InMemoryObjectStorage implements ObjectStorage {
       body,
       contentType: input.contentType,
       checksumSha256,
+      lastModified: new Date(),
     });
     return {
       sizeBytes: body.byteLength,
@@ -348,12 +514,93 @@ export class InMemoryObjectStorage implements ObjectStorage {
       contentRange: input.range
         ? `bytes ${input.range.start}-${input.range.end}/${object.body.byteLength}`
         : null,
-      etag: null,
+      etag: object.checksumSha256,
     };
   }
 
   async deleteObject(key: string): Promise<void> {
     this.objects.delete(key);
+  }
+
+  async listObjects(input: {
+    prefix: string;
+    cursor?: string;
+    limit: number;
+  }): Promise<ObjectStorageInventoryPage> {
+    const keys = [...this.objects.keys()]
+      .filter((key) => key.startsWith(input.prefix))
+      .sort((left, right) => left.localeCompare(right));
+    const cursor = input.cursor;
+    const cursorIndex =
+      cursor === undefined ? 0 : keys.findIndex((key) => key > cursor);
+    const start = cursorIndex === -1 ? keys.length : cursorIndex;
+    const selected = keys.slice(start, start + input.limit);
+    return {
+      items: selected.map((key) => {
+        const object = this.objects.get(key) as InMemoryObject;
+        return {
+          key,
+          sizeBytes: object.body.byteLength,
+          lastModified: object.lastModified,
+          etag: object.checksumSha256,
+        };
+      }),
+      nextCursor:
+        start + selected.length < keys.length
+          ? selected.at(-1) ?? null
+          : null,
+    };
+  }
+
+  async moveObject(input: {
+    sourceKey: string;
+    destinationKey: string;
+    expectedSizeBytes?: number;
+  }): Promise<ObjectStorageMoveResult> {
+    const source = this.objects.get(input.sourceKey);
+    if (!source) {
+      const destination = this.objects.get(input.destinationKey);
+      if (!destination) {
+        throw new ObjectStorageError('not_found', 'The requested object was not found.');
+      }
+      if (
+        input.expectedSizeBytes !== undefined &&
+        destination.body.byteLength !== input.expectedSizeBytes
+      ) {
+        throw new ObjectStorageError(
+          'invalid_response',
+          'The previously moved object has an unexpected size.',
+        );
+      }
+      return {
+        status: 'already_moved',
+        sizeBytes: destination.body.byteLength,
+        contentType: destination.contentType,
+        etag: destination.checksumSha256,
+      };
+    }
+    if (
+      input.expectedSizeBytes !== undefined &&
+      source.body.byteLength !== input.expectedSizeBytes
+    ) {
+      throw new ObjectStorageError(
+        'invalid_response',
+        'The source object size changed before quarantine.',
+      );
+    }
+    this.objects.set(input.destinationKey, {
+      body: Buffer.from(source.body),
+      contentType: source.contentType,
+      checksumSha256: source.checksumSha256,
+      lastModified: new Date(),
+    });
+    this.objects.delete(input.sourceKey);
+    return {
+      status: 'moved',
+      sizeBytes: source.body.byteLength,
+      contentType: source.contentType,
+      etag: source.checksumSha256,
+    };
   }
 
   close(): void {

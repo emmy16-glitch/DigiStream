@@ -32,7 +32,8 @@ export type PlatformStatus = {
     | 'realtime-auth-foundation'
     | 'durable-live-chat'
     | 'recording-retention'
-    | 'public-replay-listening';
+    | 'public-replay-listening'
+    | 'recording-orphan-reconciliation';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
 };

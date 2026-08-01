@@ -32,6 +32,7 @@ import {
 } from './modules/recordings/recording-access.js';
 import { registerPublicReplayRoutes } from './modules/recordings/public-replays.routes.js';
 import { registerRecordingJobRoutes } from './modules/recordings/recording-jobs.routes.js';
+import { registerRecordingOrphanRoutes } from './modules/recordings/recording-orphans.routes.js';
 import { registerRecordingRetentionRoutes } from './modules/recordings/recording-retention.routes.js';
 import { registerRecordingRoutes } from './modules/recordings/recordings.routes.js';
 import {
@@ -142,6 +143,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   registerRecordingRetentionRoutes(app, database, mediaControlSecret, {
     objectStorage,
   });
+  registerRecordingOrphanRoutes(app, database, mediaControlSecret, {
+    objectStorage,
+  });
   registerBroadcastRoutes(
     app,
     database,
@@ -207,10 +211,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'public-replay-listening',
+    stage: 'recording-orphan-reconciliation',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'recording-object-storage',
+      'recording-object-inventory',
+      'recording-orphan-detection',
+      'recording-orphan-quarantine',
+      'recording-orphan-cleanup',
+      'recording-orphan-race-restoration',
       'database-backed-recording-job-queue',
       'exclusive-recording-worker-leases',
       'recording-job-heartbeats',
