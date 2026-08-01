@@ -3,15 +3,27 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
+import type { ObjectStorage } from '../storage/object-storage.js';
+import type { RecordingAccessManager } from './recording-access.js';
 import {
+  createRecordingAccess,
   getRecording,
   listRecordings,
   manageRecording,
   requestRecording,
+  resolveRecordingMedia,
   updateRecordingFromWorker,
+  uploadRecordingArtifact,
+  type RecordingAccessBody,
   type RecordingManagementBody,
   type RecordingWorkerBody,
 } from './recordings.service.js';
+
+export type RecordingRouteOptions = {
+  objectStorage: ObjectStorage | null;
+  accessManager: RecordingAccessManager | null;
+  maxUploadBytes: number;
+};
 
 function requireDatabase(database: DatabaseContext | null): DatabaseContext {
   if (!database) {
@@ -22,6 +34,32 @@ function requireDatabase(database: DatabaseContext | null): DatabaseContext {
     );
   }
   return database;
+}
+
+function requireObjectStorage(
+  objectStorage: ObjectStorage | null,
+): ObjectStorage {
+  if (!objectStorage) {
+    throw new ApiError(
+      503,
+      'OBJECT_STORAGE_UNAVAILABLE',
+      'Recording storage is not configured.',
+    );
+  }
+  return objectStorage;
+}
+
+function requireAccessManager(
+  accessManager: RecordingAccessManager | null,
+): RecordingAccessManager {
+  if (!accessManager) {
+    throw new ApiError(
+      503,
+      'RECORDING_ACCESS_UNAVAILABLE',
+      'Recording access is not configured.',
+    );
+  }
+  return accessManager;
 }
 
 async function requireUser(
@@ -45,11 +83,33 @@ function secretMatches(actual: unknown, expected: string | undefined): boolean {
   );
 }
 
+function requireMediaSecret(actual: unknown, expected: string | undefined): void {
+  if (!secretMatches(actual, expected)) {
+    throw new ApiError(
+      401,
+      'MEDIA_CONTROL_AUTHENTICATION_REQUIRED',
+      'Valid media-control authentication is required.',
+    );
+  }
+}
+
+function safeFilename(value: string): string {
+  const safe = value.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '');
+  return safe || 'digistream-recording';
+}
+
 export function registerRecordingRoutes(
   app: FastifyInstance,
   database: DatabaseContext | null,
-  mediaControlSecret = process.env.MEDIA_CONTROL_SECRET,
+  mediaControlSecret: string | undefined,
+  options: RecordingRouteOptions,
 ): void {
+  app.addContentTypeParser(
+    /^audio\/[a-z0-9][a-z0-9.+-]*$/i,
+    { parseAs: 'buffer', bodyLimit: options.maxUploadBytes },
+    (_request, body, done) => done(null, body),
+  );
+
   app.post<{
     Params: { organisationId: string; broadcastId: string };
   }>(
@@ -126,23 +186,35 @@ export function registerRecordingRoutes(
 
   app.post<{
     Params: { organisationId: string; recordingId: string };
+    Body: RecordingAccessBody;
+  }>(
+    '/api/v1/organisations/:organisationId/recordings/:recordingId/access',
+    async (request) => {
+      const context = requireDatabase(database);
+      const user = await requireUser(request, context);
+      requireObjectStorage(options.objectStorage);
+      return createRecordingAccess(
+        context.db,
+        requireAccessManager(options.accessManager),
+        request.params.organisationId,
+        request.params.recordingId,
+        user.id,
+        request.body ?? {},
+      );
+    },
+  );
+
+  app.post<{
+    Params: { organisationId: string; recordingId: string };
     Headers: { 'x-digistream-media-secret'?: string };
     Body: RecordingWorkerBody;
   }>(
     '/api/v1/internal/organisations/:organisationId/recordings/:recordingId/state',
     async (request) => {
-      if (
-        !secretMatches(
-          request.headers['x-digistream-media-secret'],
-          mediaControlSecret,
-        )
-      ) {
-        throw new ApiError(
-          401,
-          'MEDIA_CONTROL_AUTHENTICATION_REQUIRED',
-          'Valid media-control authentication is required.',
-        );
-      }
+      requireMediaSecret(
+        request.headers['x-digistream-media-secret'],
+        mediaControlSecret,
+      );
       const context = requireDatabase(database);
       return {
         recording: await updateRecordingFromWorker(
@@ -154,4 +226,82 @@ export function registerRecordingRoutes(
       };
     },
   );
+
+  app.put<{
+    Params: { organisationId: string; recordingId: string };
+    Headers: {
+      'x-digistream-media-secret'?: string;
+      'x-digistream-media-format'?: string;
+      'x-digistream-duration-ms'?: string;
+      'x-digistream-recording-provider'?: string;
+      'x-digistream-provider-artifact-id'?: string;
+    };
+    Body: Buffer;
+  }>(
+    '/api/v1/internal/organisations/:organisationId/recordings/:recordingId/artifact',
+    async (request) => {
+      requireMediaSecret(
+        request.headers['x-digistream-media-secret'],
+        mediaControlSecret,
+      );
+      const context = requireDatabase(database);
+      return {
+        recording: await uploadRecordingArtifact(
+          context.db,
+          requireObjectStorage(options.objectStorage),
+          request.params.organisationId,
+          request.params.recordingId,
+          {
+            body: request.body,
+            contentType: request.headers['content-type'],
+            mediaFormat: request.headers['x-digistream-media-format'],
+            durationMs: request.headers['x-digistream-duration-ms'],
+            provider: request.headers['x-digistream-recording-provider'],
+            providerArtifactId:
+              request.headers['x-digistream-provider-artifact-id'],
+            maxUploadBytes: options.maxUploadBytes,
+          },
+        ),
+      };
+    },
+  );
+
+  app.get<{
+    Params: { token: string };
+    Headers: { range?: string };
+  }>('/api/v1/recording-media/:token', async (request, reply) => {
+    const context = requireDatabase(database);
+    const result = await resolveRecordingMedia(
+      context.db,
+      requireObjectStorage(options.objectStorage),
+      requireAccessManager(options.accessManager),
+      request.params.token,
+      request.headers.range,
+    );
+    reply.header('accept-ranges', 'bytes');
+    reply.header('cache-control', 'private, no-store');
+    reply.header('cross-origin-resource-policy', 'same-origin');
+    reply.header('x-content-type-options', 'nosniff');
+
+    if (result.kind === 'range_not_satisfiable') {
+      reply.header('content-range', `bytes */${result.totalSize}`);
+      throw new ApiError(
+        416,
+        'RECORDING_RANGE_NOT_SATISFIABLE',
+        'The requested recording byte range is not available.',
+      );
+    }
+
+    const filename = safeFilename(result.filename);
+    reply.header(
+      'content-disposition',
+      `${result.mode === 'download' ? 'attachment' : 'inline'}; filename="${filename}"`,
+    );
+    reply.header('content-length', result.contentLength);
+    if (result.contentRange) {
+      reply.header('content-range', result.contentRange);
+    }
+    reply.type(result.contentType);
+    return reply.code(result.partial ? 206 : 200).send(result.body);
+  });
 }
