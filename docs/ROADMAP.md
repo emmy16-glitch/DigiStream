@@ -1,5 +1,7 @@
 # DigiStream implementation roadmap
 
+All phases are governed by [`PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`](PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md). Reliability, truthful state communication, authorization and plain language are completion gates, not optional polish after feature development.
+
 ## Phase 0 — Foundation
 
 - [x] Create the monorepo
@@ -74,6 +76,8 @@
 - [x] Add provider-neutral LiveKit room and OvenMediaEngine stream identifiers
 - [x] Add reconnection, source-loss and delivery-loss state
 - [x] Add lifecycle authorization, idempotency and optimistic-concurrency tests
+- [ ] Verify creator and listener screens always agree on lifecycle state
+- [ ] Remove every scheduled-state control or visual that falsely implies live playback
 
 ## Phase 6 — Live media foundation
 
@@ -98,11 +102,88 @@
 - [x] Define reconnection, source-loss and delivery-failure behaviour
 - [x] Add Docker Compose infrastructure for PostgreSQL, Redis, LiveKit, Egress, OME and the API
 - [x] Add a real room-to-Egress-to-OME-to-LL-HLS smoke-test workflow
-- [ ] Measure contribution latency, playback latency, bitrate, jitter, failures and listener capacity
+- [ ] Measure contribution latency, playback latency, bitrate, jitter, packet loss, buffering, failures, fallback rate and listener capacity
 - [ ] Run and record the full smoke test against production-like deployed LiveKit and OvenMediaEngine instances
 - [ ] Run browser playback compatibility tests across Android Chrome, desktop Chrome, Firefox and Safari
 
 Icecast is not part of the DigiStream implementation plan. It remains only a technology used by the team handbook being compared against.
+
+## Phase 6A — Product trust, resilience and mobile quality gate
+
+This phase blocks decorative expansion until the existing live product behaves honestly and recoverably.
+
+### Correct state and authorization
+
+- [ ] Trace the exact backend, authentication, authorization or configuration cause of **Studio action failed**
+- [ ] Make public listener actions role-aware for organisation owners, admins and broadcasters
+- [ ] Replace owner-facing **Request to speak** with **Manage broadcast**, **Open studio** or **Open backstage** as appropriate
+- [ ] Keep the API as the independent authorization boundary and add matching tests
+- [ ] Render distinct scheduled, starting, live, reconnecting, ending, completed, cancelled and failed listener layouts
+- [ ] Remove permanent `LIVE` artwork from scheduled events
+- [ ] Prevent the `Live now` navigation state from appearing active for an upcoming event
+- [ ] Remove developer-facing lifecycle values such as `Version 0` from end-user cards
+- [ ] Remove duplicate or competing create-broadcast primary actions in the same state
+
+### Listener reliability and plain language
+
+- [ ] Translate WebRTC, LL-HLS and provider language into listener-friendly connection states
+- [ ] Add evidence-based Stable, Unstable, Buffering, Reconnecting, Offline and Unavailable states
+- [ ] Make manual retry primary only after bounded automatic recovery fails
+- [ ] Hide playback, mute, volume and retry controls while a broadcast is scheduled
+- [ ] Add a text countdown, exact local date/time and optional calendar action for upcoming events
+- [ ] Hide or collapse the full mobile volume slider while preserving mute
+- [ ] Add a contextual route back to discovery from event pages
+- [ ] Keep technical protocol data available only as secondary diagnostics
+
+### Creator audio and failure recovery
+
+- [ ] Add sustained **No signal** detection instead of leaving a zero-level input as neutral `Listening`
+- [ ] Add Quiet, Good, Loud, Clipping, Muted and Device disconnected labels with dBFS as secondary detail
+- [ ] Smooth the underlying meter signal with fast attack, slower release and immediate clipping peaks
+- [ ] Preserve a healthy contribution room when public delivery alone fails, where safe
+- [ ] Add safe retry or status actions to understood studio failures without duplicate dismiss controls
+- [ ] Make browser and Android Back close the studio before leaving the workspace
+
+### Call-in, chat and mobile layout
+
+- [ ] Convert the mobile request-to-speak panel into a safe-area-aware bottom sheet
+- [ ] Hide the floating launcher while the panel is open
+- [ ] Prevent fixed launchers and bottom navigation from covering content
+- [ ] Handle virtual keyboards with dynamic viewport layout and `visualViewport` only as fallback
+- [ ] Pre-fill call-in display name and email from the signed-in profile when available
+- [ ] Keep the request panel open through progress, success confirmation and pending-status transition
+- [ ] Make the producer-side backstage call-in flow discoverable
+- [ ] Replace scheduled read-only chat composers and counters with a compact `Chat will open when the broadcast starts` state
+- [ ] Rename ambiguous mobile `People` navigation to `Backstage`, `Guests` or another approved explicit label
+
+### Consistency and accessibility
+
+- [ ] Standardize enabled and disabled primary-button treatment
+- [ ] Add consistent press feedback and focus states across the design system
+- [ ] Use the shared icon system instead of browser-dependent Unicode symbols
+- [ ] Preserve strong responsive event typography without clipping or overlap
+- [ ] Test long titles, keyboard navigation, reduced motion, bright sunlight contrast and mobile safe areas
+- [ ] Hide Replay and Stats navigation until real authorised data and failure states exist
+
+### Failure and constrained-network verification
+
+- [ ] Add browser-level WebRTC failure followed by successful LL-HLS playback verification
+- [ ] Test temporary listener network loss and recovery without page reload
+- [ ] Test high latency, jitter and packet loss
+- [ ] Test repeated buffering and bounded retry exhaustion
+- [ ] Test creator contribution disconnect and reconnect
+- [ ] Test publisher source loss and OvenMediaEngine delivery interruption
+- [ ] Test signed playback expiry during an active session
+- [ ] Test mobile background/foreground transitions
+- [ ] Test low-end devices and constrained CPU or memory
+- [ ] Record evidence and logs for every resilience scenario
+
+### Non-technical usability verification
+
+- [ ] Run the complete Select -> Prepare audio -> Go live flow with a non-technical production volunteer without coaching
+- [ ] Run the listener and request-to-speak flow with a separate non-technical user
+- [ ] Record hesitation, wrong actions and misunderstood states
+- [ ] Resolve critical usability findings before adding decorative motion
 
 ## Phase 7 — Real-time interaction and notifications
 
@@ -127,15 +208,17 @@ Icecast is not part of the DigiStream implementation plan. It remains only a tec
 - [ ] Add HTTP range playback through the delivery path
 - [ ] Add retention, deletion, legal/moderation hold and orphan cleanup
 - [ ] Add replay pages and recording management APIs
+- [ ] Expose Replay navigation only after the complete authorised flow works
 
 ## Phase 9 — Product expansion
 
 - [ ] Saved broadcasts and listening history
 - [ ] Durable in-app notifications and notification preferences
 - [ ] Creator, channel and organisation analytics
-- [ ] Audience and stream-quality analytics with accurate metric labels
+- [ ] Audience and stream-quality analytics with accurate metric definitions
+- [ ] Expose Stats navigation only after trustworthy metrics, loading, empty, failure and authorization states exist
 - [ ] Administrative users, reports, categories, audit logs and moderation queues
-- [ ] Accessibility and offline/error recovery for product flows
+- [ ] Accessibility and offline/error recovery for every product flow
 
 ## Phase 10 — Commerce
 
@@ -155,14 +238,29 @@ Icecast is not part of the DigiStream implementation plan. It remains only a tec
 - [ ] Reverse proxy, TLS, WebSocket, WebRTC and LL-HLS configuration
 - [ ] Security headers, CORS policy and dependency scanning
 - [ ] Structured logs, request IDs, metrics, traces and alerts
+- [ ] Playback fallback, buffering, packet-loss, reconnect and contribution/delivery metrics
 - [ ] PostgreSQL backups and restore drills
 - [ ] Object-storage backup and lifecycle policy
 - [ ] Compatible migrations, staged releases and rollback rehearsal
-- [ ] End-to-end smoke tests for registration, channels, streaming, chat, recording, notifications, admin and logout
-- [ ] Load, partial-failure and abuse testing
+- [ ] End-to-end smoke tests for registration, channels, streaming, chat, call-ins, backstage, recording, notifications, admin and logout
+- [ ] Load, constrained-network, partial-failure and abuse testing
 - [ ] SLI, SLO, error-budget, RTO and RPO definitions
 - [ ] Incident, recovery and disaster-recovery runbooks
+- [ ] Real HTTPS domain and correct listener deep-link routing
+- [ ] Add a web app manifest, production icons and standalone metadata after live reliability is proven
+- [ ] Add a deliberately limited service-worker offline shell without caching protected or short-lived media URLs
+- [ ] Verify safe PWA update behaviour and installed-mode playback
 
 ## Completion gate rule
 
-A later phase does not begin with an unexplained failure from the previous phase. Each pull request records the behaviour added, tests run, dependency failures considered, and evidence required to continue.
+A later phase does not begin with an unexplained failure from the previous phase. Each pull request records the behaviour added, tests run, lifecycle states covered, roles checked, dependency failures considered, mobile and accessibility behaviour, and evidence required to continue.
+
+A pull request must not merge when:
+
+- creator and listener lifecycle states disagree;
+- a protected action lacks independent backend authorization;
+- scheduled content can look or behave live;
+- a fixed mobile control can cover required content;
+- an error has no understood cause or safe next action;
+- fake data is used to make an unfinished area look complete;
+- an implementation change leaves its documentation stale.
