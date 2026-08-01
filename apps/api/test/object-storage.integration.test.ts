@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { once } from 'node:events';
 import test from 'node:test';
 import {
   ObjectStorageError,
@@ -11,16 +10,15 @@ const configured = Boolean(process.env.OBJECT_STORAGE_ENDPOINT);
 
 async function readAll(stream: NodeJS.ReadableStream): Promise<Buffer> {
   const chunks: Buffer[] = [];
-  stream.on('data', (chunk) => {
+  for await (const chunk of stream as AsyncIterable<Buffer | Uint8Array | string>) {
     chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  });
-  await once(stream, 'end');
+  }
   return Buffer.concat(chunks);
 }
 
 async function waitForStorage(
   check: () => Promise<void>,
-  attempts = 30,
+  attempts = 12,
 ): Promise<void> {
   let lastError: unknown;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
@@ -37,15 +35,16 @@ async function waitForStorage(
 
 test(
   'S3-compatible adapter writes, verifies, ranges and deletes private objects',
-  { skip: !configured, timeout: 60_000 },
+  { skip: !configured, timeout: 45_000 },
   async () => {
     const storage = createS3ObjectStorageFromEnv();
     assert.ok(storage);
-    await waitForStorage(() => storage.check());
 
     const key = `integration/${randomUUID()}/fixture.wav`;
     const body = Buffer.from('DigiStream verified object storage fixture');
     try {
+      await waitForStorage(() => storage.check());
+
       const stored = await storage.putObject({
         key,
         body,
