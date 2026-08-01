@@ -8,10 +8,12 @@ import type {
 } from '@digistream/contracts';
 import {
   Button,
+  LinkButton,
   StatePanel,
   StatusBadge,
   type StatusTone,
 } from '../../design-system/components';
+import { memberReplayPath, publicReplayPath } from '../listening/listener-route';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
 import './creator-recordings-page.css';
 
@@ -153,6 +155,22 @@ function availableActions(status: RecordingStatus): Array<{
     return [{ label: 'Restore privately', status: 'private' }];
   }
   return [];
+}
+
+function replayGuidance(recording: Recording): string {
+  if (recording.status === 'published') {
+    return 'Open the listener page to verify the published or unlisted replay experience.';
+  }
+  if (recording.status === 'private') {
+    return 'Organisation members can open the protected member replay page.';
+  }
+  if (recording.status === 'archived') {
+    return 'Playback is revoked while this recording remains archived.';
+  }
+  if (recording.artifactReady) {
+    return 'Choose published or private visibility before listener playback becomes available.';
+  }
+  return 'Playback becomes available only after the recording worker verifies the artifact.';
 }
 
 export function CreatorRecordingsPage({
@@ -401,16 +419,40 @@ export function CreatorRecordingsPage({
                     <div>
                       {recording.status === 'published' ? (
                         <strong>Replay policy is published.</strong>
+                      ) : recording.status === 'private' ? (
+                        <strong>Replay access is limited to organisation members.</strong>
                       ) : recording.artifactReady ? (
                         <strong>The artifact is ready for a visibility decision.</strong>
                       ) : (
                         <strong>Waiting for the recording worker.</strong>
                       )}
-                      <span>
-                        Playback and download remain unavailable until the private object-storage delivery route is connected.
-                      </span>
+                      <span>{replayGuidance(recording)}</span>
                     </div>
                     <div className="recording-actions">
+                      {recording.status === 'published' ? (
+                        <LinkButton
+                          href={publicReplayPath({
+                            organisationSlug: organisation.slug,
+                            channelSlug: recording.channel.slug,
+                            broadcastSlug: recording.broadcast.slug,
+                          })}
+                          icon="headphones"
+                          variant="primary"
+                        >
+                          Open listener replay
+                        </LinkButton>
+                      ) : null}
+                      {recording.status === 'private' ? (
+                        <LinkButton
+                          href={memberReplayPath({
+                            organisationId: organisation.id,
+                            recordingId: recording.id,
+                          })}
+                          icon="headphones"
+                        >
+                          Open member replay
+                        </LinkButton>
+                      ) : null}
                       {availableActions(recording.status).map((action) => (
                         <Button
                           key={action.status}
