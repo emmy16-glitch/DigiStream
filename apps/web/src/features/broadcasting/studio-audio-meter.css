@@ -73,6 +73,19 @@
   line-height: var(--ds-leading-body);
 }
 
+.studio-global-alert-recovery {
+  color: var(--ds-text-primary) !important;
+  font-weight: var(--ds-weight-medium);
+}
+
+.studio-global-alert small {
+  color: #e8aeb1;
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-body);
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 640px) {
   .studio-signal-meter-bars {
     min-height: 88px;
