@@ -4,7 +4,10 @@ import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
 import type { ObjectStorage } from '../storage/object-storage.js';
-import type { RecordingAccessManager } from './recording-access.js';
+import type {
+  RecordingAccessManager,
+  RecordingAccessScope,
+} from './recording-access.js';
 import { findRecordingPlaybackPolicy } from './recording-playback-policy.repository.js';
 import {
   createRecordingAccess,
@@ -103,11 +106,13 @@ async function requirePlaybackAllowed(
   context: DatabaseContext,
   organisationId: string,
   recordingId: string,
+  scope: RecordingAccessScope,
 ): Promise<void> {
   const policy = await findRecordingPlaybackPolicy(
     context.pool,
     organisationId,
     recordingId,
+    scope,
   );
   if (!policy.allowed) {
     throw new ApiError(
@@ -217,6 +222,7 @@ export function registerRecordingRoutes(
         context,
         request.params.organisationId,
         request.params.recordingId,
+        'member',
       );
       return createRecordingAccess(
         context.db,
@@ -310,6 +316,7 @@ export function registerRecordingRoutes(
         context,
         verification.grant.organisationId,
         verification.grant.recordingId,
+        verification.grant.scope,
       );
     }
     const result = await resolveRecordingMedia(
