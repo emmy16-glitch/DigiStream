@@ -115,18 +115,32 @@ function publicRelay(relay: BroadcastMediaRelay | null) {
     : null;
 }
 
+type DeliveryProblem = {
+  code: 'MEDIA_RELAY_FAILED';
+  message: string;
+  retryable: true;
+};
+
 function deliveryResult(
   context: BroadcastDeliveryContext,
   health: DeliveryHealth,
   relay: BroadcastMediaRelay | null,
   status = context.status,
   lifecycleVersion = context.lifecycleVersion,
+  problem: DeliveryProblem | null = null,
 ) {
+  const active = DELIVERY_ACTIVE_STATES.has(status);
   return {
     provider: 'ovenmediaengine' as const,
     ready: health.ready,
     connections: health.connections,
     relay: publicRelay(relay),
+    problem,
+    recovery: {
+      checkedAt: new Date().toISOString(),
+      privateStudioPreserved: !health.ready && active,
+      retryable: !health.ready && active,
+    },
     broadcast: {
       id: context.id,
       status,
@@ -200,25 +214,24 @@ async function ensureRelayHealthy(
   return updateBroadcastMediaRelayJob(db, relay, job);
 }
 
-async function failBroadcastForRelay(
+async function markDeliveryUnavailable(
   db: DigiStreamDatabase,
   context: BroadcastDeliveryContext,
-  relay: BroadcastMediaRelay,
 ) {
-  if (
-    relay.status !== 'failed' ||
-    (context.status !== 'starting' &&
-      context.status !== 'live' &&
-      context.status !== 'reconnecting' &&
-      context.status !== 'ending')
-  ) {
-    return null;
-  }
+  if (context.status !== 'live' || !context.deliveryReadyAt) return null;
   return applyBroadcastMediaEvent(db, context.id, {
-    event: 'failed',
-    idempotencyKey: `relay-failed-${context.id}-${context.lifecycleVersion}`,
-    failureReason: relay.failureReason ?? 'LiveKit egress relay failed.',
+    event: 'delivery_lost',
+    idempotencyKey: `delivery-recovery-${context.id}-${context.lifecycleVersion}`,
   });
+}
+
+function failedRelayProblem(): DeliveryProblem {
+  return {
+    code: 'MEDIA_RELAY_FAILED',
+    message:
+      'The public-delivery relay failed. The private Studio remains connected and delivery can be retried safely.',
+    retryable: true,
+  };
 }
 
 export async function startBroadcastDelivery(
@@ -256,10 +269,14 @@ export async function startBroadcastDelivery(
       }
       relay = await startOrReuseRelay(db, relayProvider, context, target);
       if (relay.status === 'failed') {
-        await failBroadcastForRelay(db, context, relay);
-        throw new MediaRelayProviderError(
-          'request_failed',
-          relay.failureReason ?? 'LiveKit Egress failed to start.',
+        const updated = await markDeliveryUnavailable(db, context);
+        return deliveryResult(
+          context,
+          { ready: false, connections: null },
+          relay,
+          updated?.status ?? context.status,
+          updated?.lifecycleVersion ?? context.lifecycleVersion,
+          failedRelayProblem(),
         );
       }
       health = await provider.inspectDelivery(context.deliveryStreamName);
@@ -281,6 +298,7 @@ export async function startBroadcastDelivery(
     );
   } catch (error) {
     if (error instanceof ApiError) throw error;
+    await markDeliveryUnavailable(db, context).catch(() => null);
     return providerFailure(error);
   }
 }
@@ -302,14 +320,15 @@ export async function refreshBroadcastDelivery(
     let relay = await findBroadcastMediaRelay(db, context.id);
     if (relay && relayProvider && relay.externalId) {
       relay = await ensureRelayHealthy(db, relayProvider, relay);
-      const failed = await failBroadcastForRelay(db, context, relay);
-      if (failed) {
+      if (relay.status === 'failed') {
+        const updated = await markDeliveryUnavailable(db, context);
         return deliveryResult(
           context,
           { ready: false, connections: null },
           relay,
-          failed.status,
-          failed.lifecycleVersion,
+          updated?.status ?? context.status,
+          updated?.lifecycleVersion ?? context.lifecycleVersion,
+          failedRelayProblem(),
         );
       }
     }
@@ -341,6 +360,7 @@ export async function refreshBroadcastDelivery(
     }
     return deliveryResult(context, health, relay);
   } catch (error) {
+    await markDeliveryUnavailable(db, context).catch(() => null);
     return providerFailure(error);
   }
 }
