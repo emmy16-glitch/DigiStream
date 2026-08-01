@@ -200,15 +200,16 @@ This phase blocks decorative expansion until the existing live product behaves h
 
 ## Phase 8 — Recordings and object storage
 
-- [ ] Add private object storage and generated storage keys
-- [ ] Add recording states: recording, uploading, processing, ready, failed, published, private, archived and deleted
+- [x] Add private object storage and generated storage keys
+- [x] Add recording states: recording, uploading, processing, ready, failed, published, private, archived and deleted
 - [ ] Add retry-safe processing jobs and reconciliation
-- [ ] Add checksums, duration, size, format and processing errors
-- [ ] Add independent playback and download authorization
-- [ ] Add HTTP range playback through the delivery path
+- [x] Add checksums, duration, size, format and processing errors
+- [x] Add independent playback and download authorization
+- [x] Add HTTP range playback through the delivery path
 - [ ] Add retention, deletion, legal/moderation hold and orphan cleanup
-- [ ] Add replay pages and recording management APIs
-- [ ] Expose Replay navigation only after the complete authorised flow works
+- [x] Add creator recording management APIs and an API-backed Replay workspace
+- [ ] Add public/member replay listening pages and published replay discovery
+- [ ] Expose public Replay navigation only after the complete authorised listener flow works
 
 ## Phase 9 — Product expansion
 
