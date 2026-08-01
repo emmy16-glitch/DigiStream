@@ -1,0 +1,82 @@
+.studio-signal-meter {
+  display: grid;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-1);
+}
+
+.studio-signal-meter-header,
+.studio-signal-meter-readout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.studio-signal-meter-header > strong {
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+}
+
+.studio-signal-meter-bars {
+  min-height: 112px;
+  display: grid;
+  align-items: end;
+  gap: 5px;
+  padding: var(--ds-space-4);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-canvas);
+}
+
+.studio-signal-meter-bars i {
+  min-height: 10px;
+  height: 12%;
+  border-radius: 4px 4px 2px 2px;
+  background: var(--ds-border-default);
+  transition: height 90ms var(--ds-ease-standard), background 90ms var(--ds-ease-standard), opacity 90ms var(--ds-ease-standard);
+}
+
+.studio-signal-meter-bars i.is-active {
+  height: 78%;
+  background: linear-gradient(to top, var(--ds-accent-active), var(--ds-success));
+}
+
+.studio-signal-meter-bars i.is-hot {
+  height: 100%;
+  background: linear-gradient(to top, var(--ds-warning), var(--ds-danger));
+}
+
+.studio-signal-muted .studio-signal-meter-bars i,
+.studio-signal-disconnected .studio-signal-meter-bars i { opacity: .42; }
+
+.studio-signal-clipping,
+.studio-signal-disconnected,
+.studio-signal-no-signal { border-color: rgba(240, 91, 97, .45); }
+.studio-signal-quiet,
+.studio-signal-loud { border-color: rgba(243, 182, 63, .42); }
+.studio-signal-good { border-color: rgba(69, 223, 112, .4); }
+
+.studio-signal-meter-readout {
+  color: var(--ds-text-muted);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.studio-signal-meter > p {
+  margin: 0;
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-body);
+}
+
+@media (max-width: 640px) {
+  .studio-signal-meter-bars {
+    min-height: 88px;
+    gap: 3px;
+    padding: var(--ds-space-3);
+  }
+}
