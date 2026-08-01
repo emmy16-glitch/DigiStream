@@ -49,6 +49,41 @@ async function requireUser(
   return user;
 }
 
+async function withDeliveryOperationLock<T>(
+  database: DatabaseContext,
+  broadcastId: string,
+  operation: () => Promise<T>,
+): Promise<T> {
+  const client = await database.pool.connect();
+  const lockName = `digistream-delivery:${broadcastId}`;
+  let acquired = false;
+
+  try {
+    const result = await client.query<{ acquired: boolean }>(
+      'select pg_try_advisory_lock(hashtextextended($1, 0)) as acquired',
+      [lockName],
+    );
+    acquired = result.rows[0]?.acquired === true;
+    if (!acquired) {
+      throw new ApiError(
+        409,
+        'DELIVERY_OPERATION_IN_PROGRESS',
+        'Another public-delivery operation is already running. Wait for it to finish, then check delivery status.',
+      );
+    }
+    return await operation();
+  } finally {
+    if (acquired) {
+      await client
+        .query('select pg_advisory_unlock(hashtextextended($1, 0))', [
+          lockName,
+        ])
+        .catch(() => undefined);
+    }
+    client.release();
+  }
+}
+
 function playbackResponse(playback: ReturnType<DeliveryProvider['issuePlayback']>) {
   return {
     playback: {
@@ -70,7 +105,7 @@ export function registerBroadcastDeliveryRoutes(
   provider: DeliveryProvider | null,
   relayProvider: MediaRelayProvider | null,
 ): void {
-  for (const action of ['start', 'refresh', 'stop'] as const) {
+  for (const action of ['start', 'refresh', 'status', 'stop'] as const) {
     app.post<{
       Params: { organisationId: string; broadcastId: string };
     }>(
@@ -88,12 +123,16 @@ export function registerBroadcastDeliveryRoutes(
           user.id,
         ] as const;
 
-        const delivery =
-          action === 'start'
-            ? await startBroadcastDelivery(...args)
-            : action === 'refresh'
-              ? await refreshBroadcastDelivery(...args)
-              : await stopBroadcastDelivery(...args);
+        const delivery = await withDeliveryOperationLock(
+          context,
+          request.params.broadcastId,
+          () =>
+            action === 'start'
+              ? startBroadcastDelivery(...args)
+              : action === 'refresh' || action === 'status'
+                ? refreshBroadcastDelivery(...args)
+                : stopBroadcastDelivery(...args),
+        );
         return { delivery };
       },
     );
