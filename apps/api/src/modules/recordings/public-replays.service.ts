@@ -171,6 +171,7 @@ export async function createPublicReplayAccess(
     organisationId: replay.organisationId,
     recordingId: replay.recordingId,
     mode: 'playback',
+    scope: 'public',
   });
   return {
     access: {
