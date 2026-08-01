@@ -17,6 +17,8 @@ The control records:
 
 No default destructive retention period is imposed. A recording is retained indefinitely until an owner or administrator explicitly schedules deletion.
 
+A retention deadline is authoritative. When deletion is requested before that deadline, DigiStream automatically moves the effective purge time to the retention deadline instead of allowing the shorter deletion schedule to bypass it. Extending retention on an already scheduled recording also extends its purge deadline.
+
 ## Permissions
 
 Authenticated organisation members may read retention state.
@@ -39,6 +41,8 @@ A legal or moderation hold blocks cleanup even when the purge deadline has passe
 
 Scheduling deletion immediately archives the recording. This revokes new playback and download grants before the object is permanently removed. Cancelling deletion does not automatically republish the recording; visibility must be restored through the existing explicit recording-management flow.
 
+Cleanup claims and retention mutations lock the same database row. After cleanup has claimed a recording, cancellation, retention changes and new holds are rejected until that cleanup attempt finishes. This prevents a hold or cancellation request from appearing successful while a destructive object-store operation is already underway.
+
 ## Cleanup reconciliation
 
 The protected internal endpoint is:
@@ -53,7 +57,8 @@ Before deletion, DigiStream verifies the stored object against the server-owned 
 
 - a verified object is deleted and recorded as `deleted`;
 - an already missing object is recorded honestly as `missing`;
-- checksum mismatch or storage unavailability records a failed attempt and leaves the recording recoverable for a later retry.
+- checksum mismatch or storage unavailability records a failed attempt and leaves the recording recoverable for a later retry;
+- an existing object with incomplete checksum or size metadata is not deleted and is recorded as a failed cleanup attempt.
 
 Successful cleanup changes the recording status to `deleted`, completes any processing job and makes repeated reconciliation idempotent.
 
