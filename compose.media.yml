@@ -35,6 +35,21 @@ services:
     networks:
       - media
 
+  object-storage:
+    image: chrislusf/seaweedfs:4.29
+    restart: unless-stopped
+    command: ["mini", "-dir=/data"]
+    environment:
+      AWS_ACCESS_KEY_ID: digistream
+      AWS_SECRET_ACCESS_KEY: local-object-storage-secret-change-before-deployment
+      S3_BUCKET: digistream-recordings
+    ports:
+      - "8333:8333"
+    volumes:
+      - object-storage-data:/data
+    networks:
+      - media
+
   livekit:
     image: livekit/livekit-server:v1.13.4
     restart: unless-stopped
@@ -130,6 +145,15 @@ services:
       AUTH_COOKIE_SECURE: "false"
       ORGANISATION_INVITATION_TTL_SECONDS: 604800
       MEDIA_CONTROL_SECRET: local-media-control-secret-change-before-deployment
+      OBJECT_STORAGE_ENDPOINT: http://object-storage:8333
+      OBJECT_STORAGE_REGION: us-east-1
+      OBJECT_STORAGE_BUCKET: digistream-recordings
+      OBJECT_STORAGE_ACCESS_KEY_ID: digistream
+      OBJECT_STORAGE_SECRET_ACCESS_KEY: local-object-storage-secret-change-before-deployment
+      OBJECT_STORAGE_FORCE_PATH_STYLE: "true"
+      OBJECT_STORAGE_MAX_UPLOAD_BYTES: 268435456
+      RECORDING_ACCESS_SECRET: local-recording-access-secret-change-before-deployment-32-bytes
+      RECORDING_ACCESS_TTL_SECONDS: 120
       LIVEKIT_URL: ws://localhost:7880
       LIVEKIT_API_URL: http://livekit:7880
       LIVEKIT_API_KEY: devkey
@@ -153,6 +177,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      object-storage:
+        condition: service_started
       livekit-egress:
         condition: service_healthy
       ome:
@@ -180,5 +206,6 @@ networks:
 volumes:
   postgres-data:
   redis-data:
+  object-storage-data:
   egress-data:
   ome-logs:
