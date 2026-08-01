@@ -12,6 +12,7 @@
     "db:migrate": "tsx src/db/migrate-cli.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1095.0",
     "@digistream/contracts": "*",
     "@fastify/cors": "^11.3.0",
     "dotenv": "^17.4.2",
