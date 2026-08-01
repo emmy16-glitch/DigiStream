@@ -72,6 +72,10 @@ Listener routes:
 - `/listen/replay/:organisationSlug/:channelSlug/:broadcastSlug`
 - `/listen/member-replay/:organisationId/:recordingId`
 
+## Creator workflow
+
+Published recording cards link to the exact public or unlisted replay page. Private recording cards link to the authenticated member replay page. Archiving or scheduling deletion revokes those playback paths immediately.
+
 ## Validation gate
 
 The pull request remains draft until it passes:
