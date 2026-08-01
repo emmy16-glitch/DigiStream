@@ -216,6 +216,24 @@ test(
       assert.equal(publicMedia.statusCode, 200);
       assert.deepEqual(publicMedia.rawPayload, publicReplay.body);
 
+      await database.db
+        .update(recordingRecords)
+        .set({ status: 'private', updatedAt: new Date() })
+        .where(eq(recordingRecords.id, publicReplay.recordingId));
+      const privateRevokedPublicMedia = await app.inject({
+        method: 'GET',
+        url: publicAccess.json().access.url,
+      });
+      assert.equal(privateRevokedPublicMedia.statusCode, 404);
+      assert.equal(
+        privateRevokedPublicMedia.json().error.code,
+        'RECORDING_MEDIA_NOT_FOUND',
+      );
+      await database.db
+        .update(recordingRecords)
+        .set({ status: 'published', updatedAt: new Date() })
+        .where(eq(recordingRecords.id, publicReplay.recordingId));
+
       await database.pool.query(
         `update recording_retention_controls
          set moderation_hold_at = now(),
