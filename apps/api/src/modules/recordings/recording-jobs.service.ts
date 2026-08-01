@@ -10,6 +10,7 @@ import {
   reconcileRecordingProcessingJobs,
 } from './recording-jobs.repository.js';
 import {
+  updateRecordingFromWorker,
   uploadRecordingArtifact,
   type RecordingArtifactUploadInput,
 } from './recordings.service.js';
@@ -194,7 +195,23 @@ export async function failRecordingWork(
       'Provide a valid failure code and failure message.',
     );
   }
-  await requireLease(db, jobId, workerId, leaseToken);
+  const lease = await requireLease(db, jobId, workerId, leaseToken);
+  await updateRecordingFromWorker(
+    db,
+    lease.organisationId,
+    lease.recordingId,
+    {
+      status: 'failed',
+      provider: 'recording-job-worker',
+      providerArtifactId: null,
+      mediaFormat: null,
+      contentType: null,
+      sizeBytes: null,
+      durationMs: null,
+      checksumSha256: null,
+      processingError: failureMessage,
+    },
+  );
   const result = await failRecordingProcessingJob(db, {
     jobId,
     workerId,
