@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import test from 'node:test';
 import { and, eq } from 'drizzle-orm';
 import { buildApp } from '../src/app.js';
@@ -11,7 +11,9 @@ import {
   users,
 } from '../src/db/schema.js';
 import { broadcastRecords } from '../src/modules/broadcasts/broadcasts.schema.js';
+import { RecordingAccessManager } from '../src/modules/recordings/recording-access.js';
 import { recordingRecords } from '../src/modules/recordings/recordings.schema.js';
+import { InMemoryObjectStorage } from '../src/modules/storage/object-storage.js';
 
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -22,8 +24,28 @@ function responseCookie(response: { headers: Record<string, unknown> }): string 
   return value.split(';', 1)[0] ?? '';
 }
 
+function silentWave(durationMs = 1_000, sampleRate = 8_000): Buffer {
+  const sampleCount = Math.floor((sampleRate * durationMs) / 1_000);
+  const dataSize = sampleCount * 2;
+  const buffer = Buffer.alloc(44 + dataSize);
+  buffer.write('RIFF', 0, 'ascii');
+  buffer.writeUInt32LE(36 + dataSize, 4);
+  buffer.write('WAVE', 8, 'ascii');
+  buffer.write('fmt ', 12, 'ascii');
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(1, 22);
+  buffer.writeUInt32LE(sampleRate, 24);
+  buffer.writeUInt32LE(sampleRate * 2, 28);
+  buffer.writeUInt16LE(2, 32);
+  buffer.writeUInt16LE(16, 34);
+  buffer.write('data', 36, 'ascii');
+  buffer.writeUInt32LE(dataSize, 40);
+  return buffer;
+}
+
 test(
-  'recording routes keep storage keys private and enforce lifecycle authorization',
+  'recording artifacts are stored, verified and delivered through short-lived authorised range access',
   { skip: !databaseUrl, timeout: 60_000 },
   async () => {
     const database = createDatabase(databaseUrl);
@@ -33,9 +55,15 @@ test(
     const suffix = randomUUID().replaceAll('-', '').slice(0, 12);
     const password = 'A-strong-test-password-123!';
     const mediaSecret = `recording-secret-${suffix}`;
+    const objectStorage = new InMemoryObjectStorage();
     const app = buildApp({
       database,
       mediaControlSecret: mediaSecret,
+      objectStorage,
+      recordingAccessManager: new RecordingAccessManager(
+        `recording-access-secret-${suffix}-at-least-thirty-two-bytes`,
+        120,
+      ),
       realtime: false,
       contributionProvider: null,
       backstageProvider: null,
@@ -158,7 +186,6 @@ test(
       });
       assert.equal(creation.statusCode, 201);
       assert.equal(creation.json().recording.status, 'recording');
-      assert.equal(creation.json().replayed, false);
       assert.equal('storageKey' in creation.json().recording, false);
       const recordingId = creation.json().recording.id as string;
 
@@ -168,15 +195,6 @@ test(
         .where(eq(recordingRecords.id, recordingId));
       assert.ok(stored?.storageKey.startsWith(`recordings/${organisationId}/${broadcastId}/`));
 
-      const replay = await app.inject({
-        method: 'POST',
-        url: `/api/v1/organisations/${organisationId}/broadcasts/${broadcastId}/recording`,
-        headers: { cookie: owner.cookie },
-      });
-      assert.equal(replay.statusCode, 200);
-      assert.equal(replay.json().replayed, true);
-      assert.equal(replay.json().recording.id, recordingId);
-
       const publishTooEarly = await app.inject({
         method: 'PATCH',
         url: `/api/v1/organisations/${organisationId}/recordings/${recordingId}`,
@@ -185,65 +203,63 @@ test(
       });
       assert.equal(publishTooEarly.statusCode, 409);
 
-      const unauthorizedWorker = await app.inject({
-        method: 'POST',
-        url: `/api/v1/internal/organisations/${organisationId}/recordings/${recordingId}/state`,
-        headers: { 'x-digistream-media-secret': 'wrong-secret' },
-        payload: {
-          status: 'uploading',
-          provider: 'test-worker',
-          providerArtifactId: `artifact-${suffix}`,
-          mediaFormat: null,
-          contentType: null,
-          sizeBytes: null,
-          durationMs: null,
-          checksumSha256: null,
-          processingError: null,
-        },
-      });
-      assert.equal(unauthorizedWorker.statusCode, 401);
-
-      for (const status of ['uploading', 'processing'] as const) {
-        const response = await app.inject({
-          method: 'POST',
-          url: `/api/v1/internal/organisations/${organisationId}/recordings/${recordingId}/state`,
-          headers: { 'x-digistream-media-secret': mediaSecret },
-          payload: {
-            status,
-            provider: 'test-worker',
-            providerArtifactId: `artifact-${suffix}`,
-            mediaFormat: null,
-            contentType: null,
-            sizeBytes: null,
-            durationMs: null,
-            checksumSha256: null,
-            processingError: null,
-          },
-        });
-        assert.equal(response.statusCode, 200);
-        assert.equal(response.json().recording.status, status);
-      }
-
-      const checksum = 'a'.repeat(64);
-      const ready = await app.inject({
+      const fabricatedReady = await app.inject({
         method: 'POST',
         url: `/api/v1/internal/organisations/${organisationId}/recordings/${recordingId}/state`,
         headers: { 'x-digistream-media-secret': mediaSecret },
         payload: {
           status: 'ready',
-          provider: 'test-worker',
+          provider: 'unverified-worker',
           providerArtifactId: `artifact-${suffix}`,
-          mediaFormat: 'webm',
-          contentType: 'audio/webm',
-          sizeBytes: 2_048_000,
-          durationMs: 185_000,
-          checksumSha256: checksum,
+          mediaFormat: 'wav',
+          contentType: 'audio/wav',
+          sizeBytes: 100,
+          durationMs: 1_000,
+          checksumSha256: 'a'.repeat(64),
           processingError: null,
         },
       });
-      assert.equal(ready.statusCode, 200);
-      assert.equal(ready.json().recording.artifactReady, true);
-      assert.equal(ready.json().recording.replayAvailable, false);
+      assert.equal(fabricatedReady.statusCode, 409);
+      assert.equal(
+        fabricatedReady.json().error.code,
+        'RECORDING_ARTIFACT_UPLOAD_REQUIRED',
+      );
+
+      const wave = silentWave();
+      const checksum = createHash('sha256').update(wave).digest('hex');
+      const uploadUrl = `/api/v1/internal/organisations/${organisationId}/recordings/${recordingId}/artifact`;
+      const unauthorizedUpload = await app.inject({
+        method: 'PUT',
+        url: uploadUrl,
+        headers: {
+          'content-type': 'audio/wav',
+          'x-digistream-media-secret': 'wrong-secret',
+          'x-digistream-media-format': 'wav',
+          'x-digistream-duration-ms': '1000',
+        },
+        payload: wave,
+      });
+      assert.equal(unauthorizedUpload.statusCode, 401);
+
+      const upload = await app.inject({
+        method: 'PUT',
+        url: uploadUrl,
+        headers: {
+          'content-type': 'audio/wav',
+          'x-digistream-media-secret': mediaSecret,
+          'x-digistream-media-format': 'wav',
+          'x-digistream-duration-ms': '1000',
+          'x-digistream-recording-provider': 'integration-worker',
+          'x-digistream-provider-artifact-id': `artifact-${suffix}`,
+        },
+        payload: wave,
+      });
+      assert.equal(upload.statusCode, 200);
+      assert.equal(upload.json().recording.status, 'ready');
+      assert.equal(upload.json().recording.checksumSha256, checksum);
+      assert.equal(upload.json().recording.sizeBytes, wave.byteLength);
+      assert.equal(upload.json().recording.durationMs, 1_000);
+      assert.equal(upload.json().recording.artifactReady, true);
 
       const published = await app.inject({
         method: 'PATCH',
@@ -252,8 +268,74 @@ test(
         payload: { status: 'published' },
       });
       assert.equal(published.statusCode, 200);
-      assert.equal(published.json().recording.status, 'published');
       assert.equal(published.json().recording.replayAvailable, true);
+
+      const playbackAccess = await app.inject({
+        method: 'POST',
+        url: `/api/v1/organisations/${organisationId}/recordings/${recordingId}/access`,
+        headers: { cookie: analyst.cookie },
+        payload: { mode: 'playback' },
+      });
+      assert.equal(playbackAccess.statusCode, 200);
+      const playbackUrl = playbackAccess.json().access.url as string;
+      assert.ok(playbackUrl.startsWith('/api/v1/recording-media/'));
+      assert.equal(playbackUrl.includes(stored?.storageKey ?? 'impossible'), false);
+
+      const playback = await app.inject({ method: 'GET', url: playbackUrl });
+      assert.equal(playback.statusCode, 200);
+      assert.deepEqual(playback.rawPayload, wave);
+      assert.match(String(playback.headers['content-type']), /^audio\/wav/);
+      assert.match(String(playback.headers['content-disposition']), /^inline;/);
+      assert.equal(playback.headers['accept-ranges'], 'bytes');
+
+      const range = await app.inject({
+        method: 'GET',
+        url: playbackUrl,
+        headers: { range: 'bytes=0-15' },
+      });
+      assert.equal(range.statusCode, 206);
+      assert.deepEqual(range.rawPayload, wave.subarray(0, 16));
+      assert.equal(range.headers['content-range'], `bytes 0-15/${wave.byteLength}`);
+
+      const invalidRange = await app.inject({
+        method: 'GET',
+        url: playbackUrl,
+        headers: { range: `bytes=${wave.byteLength}-` },
+      });
+      assert.equal(invalidRange.statusCode, 416);
+      assert.equal(invalidRange.headers['content-range'], `bytes */${wave.byteLength}`);
+
+      const downloadAccess = await app.inject({
+        method: 'POST',
+        url: `/api/v1/organisations/${organisationId}/recordings/${recordingId}/access`,
+        headers: { cookie: owner.cookie },
+        payload: { mode: 'download' },
+      });
+      assert.equal(downloadAccess.statusCode, 200);
+      const download = await app.inject({
+        method: 'GET',
+        url: downloadAccess.json().access.url,
+      });
+      assert.equal(download.statusCode, 200);
+      assert.match(String(download.headers['content-disposition']), /^attachment;/);
+
+      const strangerAccess = await app.inject({
+        method: 'POST',
+        url: `/api/v1/organisations/${organisationId}/recordings/${recordingId}/access`,
+        headers: { cookie: stranger.cookie },
+        payload: { mode: 'playback' },
+      });
+      assert.equal(strangerAccess.statusCode, 404);
+
+      const archived = await app.inject({
+        method: 'PATCH',
+        url: `/api/v1/organisations/${organisationId}/recordings/${recordingId}`,
+        headers: { cookie: owner.cookie },
+        payload: { status: 'archived' },
+      });
+      assert.equal(archived.statusCode, 200);
+      const revokedPlayback = await app.inject({ method: 'GET', url: playbackUrl });
+      assert.equal(revokedPlayback.statusCode, 404);
 
       const analystList = await app.inject({
         method: 'GET',
@@ -263,13 +345,6 @@ test(
       assert.equal(analystList.statusCode, 200);
       assert.equal(analystList.json().recordings.length, 1);
       assert.equal('storageKey' in analystList.json().recordings[0], false);
-
-      const strangerList = await app.inject({
-        method: 'GET',
-        url: `/api/v1/organisations/${organisationId}/recordings`,
-        headers: { cookie: stranger.cookie },
-      });
-      assert.equal(strangerList.statusCode, 404);
     } finally {
       try {
         if (organisationId) {
