@@ -216,6 +216,32 @@ test(
       assert.equal(publicMedia.statusCode, 200);
       assert.deepEqual(publicMedia.rawPayload, publicReplay.body);
 
+      await database.pool.query(
+        `update recording_retention_controls
+         set moderation_hold_at = now(),
+             moderation_hold_reason = 'Revoke an already minted playback token.',
+             updated_at = now()
+         where recording_id = $1`,
+        [publicReplay.recordingId],
+      );
+      const revokedPublicMedia = await app.inject({
+        method: 'GET',
+        url: publicAccess.json().access.url,
+      });
+      assert.equal(revokedPublicMedia.statusCode, 404);
+      assert.equal(
+        revokedPublicMedia.json().error.code,
+        'RECORDING_MEDIA_NOT_FOUND',
+      );
+      await database.pool.query(
+        `update recording_retention_controls
+         set moderation_hold_at = null,
+             moderation_hold_reason = null,
+             updated_at = now()
+         where recording_id = $1`,
+        [publicReplay.recordingId],
+      );
+
       const memberReplayUrl = `/api/v1/organisations/${organisationId}/replays/${privateReplay.recordingId}`;
       const anonymousMemberAttempt = await app.inject({
         method: 'GET',
