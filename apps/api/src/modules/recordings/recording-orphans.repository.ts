@@ -9,6 +9,12 @@ export type RecordingOrphanStatus =
   | 'failed'
   | 'resolved';
 
+export type RecordingOrphanResolution =
+  | 'deleted'
+  | 'restored'
+  | 'missing'
+  | 'recorded';
+
 export type RecordingOrphanRecord = {
   originalKey: string;
   quarantineKey: string;
@@ -20,7 +26,7 @@ export type RecordingOrphanRecord = {
   quarantinedAt: Date | null;
   cleanupAfter: Date;
   resolvedAt: Date | null;
-  resolution: 'deleted' | 'restored' | 'missing' | null;
+  resolution: RecordingOrphanResolution | null;
   attemptCount: number;
   lastError: string | null;
   updatedAt: Date;
@@ -37,7 +43,7 @@ type OrphanRow = QueryResultRow & {
   quarantined_at: Date | null;
   cleanup_after: Date;
   resolved_at: Date | null;
-  resolution: 'deleted' | 'restored' | 'missing' | null;
+  resolution: RecordingOrphanResolution | null;
   attempt_count: number;
   last_error: string | null;
   updated_at: Date;
@@ -129,7 +135,10 @@ export async function claimRecordingOrphanQuarantine(
          updated_at = now()
      where original_key = $1
        and quarantined_at is null
-       and status in ('detected', 'failed')
+       and (
+         status in ('detected', 'failed')
+         or (status = 'quarantining' and updated_at < now() - interval '15 minutes')
+       )
      returning *`,
     [originalKey],
   );
@@ -176,7 +185,10 @@ export async function claimDueRecordingOrphanCleanup(
        from recording_orphan_quarantine
        where quarantined_at is not null
          and cleanup_after <= now()
-         and status in ('quarantined', 'failed')
+         and (
+           status in ('quarantined', 'failed')
+           or (status = 'cleaning' and updated_at < now() - interval '15 minutes')
+         )
        order by cleanup_after, original_key
        for update skip locked
        limit $1
@@ -197,7 +209,7 @@ export async function claimDueRecordingOrphanCleanup(
 export async function resolveRecordingOrphan(
   pool: Pool,
   originalKey: string,
-  resolution: 'deleted' | 'restored' | 'missing',
+  resolution: RecordingOrphanResolution,
 ): Promise<void> {
   await pool.query(
     `update recording_orphan_quarantine
