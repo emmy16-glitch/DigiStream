@@ -157,10 +157,11 @@ async function quarantineInventoryPage(
     maximum: 7_776_000,
     allowZeroInTest: true,
   });
+  const cursor = parseCursor(body.cursor);
   const page = await storage.listObjects({
     prefix: RECORDING_PREFIX,
-    cursor: parseCursor(body.cursor),
     limit,
+    ...(cursor === undefined ? {} : { cursor }),
   });
   const known = await findKnownRecordingStorageKeys(
     context.pool,
