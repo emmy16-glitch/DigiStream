@@ -21,6 +21,11 @@ import {
   type StatusTone,
 } from '../../design-system/components';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
+import {
+  presentationLabel,
+  presentationStatus,
+  type BroadcastPresentationStatus,
+} from '../../lib/broadcast-lifecycle';
 import './creator-broadcasts-page.css';
 
 type CreatorBroadcastsPageProps = {
@@ -73,7 +78,8 @@ function slugify(value: string, maxLength: number): string {
     .slice(0, maxLength);
 }
 
-function statusTone(status: Broadcast['status']): StatusTone {
+function statusTone(status: BroadcastPresentationStatus): StatusTone {
+  if (status === 'overdue') return 'warning';
   if (status === 'live') return 'live';
   if (status === 'scheduled' || status === 'starting' || status === 'reconnecting') {
     return 'info';
@@ -591,25 +597,43 @@ export function CreatorBroadcastsPage({
                 <Button onClick={onOpenStudio} variant="primary">Open Broadcast Studio</Button>
               </header>
               <div className="broadcast-list-items">
-                {broadcasts.map((broadcast) => (
-                  <article className="broadcast-row" key={broadcast.id}>
-                    <div className="broadcast-row-main">
-                      <div className="broadcast-row-status">
-                        <StatusBadge tone={statusTone(broadcast.status)}>
-                          {sentenceCase(broadcast.status)}
-                        </StatusBadge>
-                        <span>{formatDate(broadcast.scheduledStartAt ?? broadcast.liveStartedAt)}</span>
+                {broadcasts.map((broadcast) => {
+                  const displayStatus = presentationStatus(
+                    broadcast.status,
+                    broadcast.scheduledStartAt,
+                  );
+                  const overdue = displayStatus === 'overdue';
+                  return (
+                    <article
+                      className={overdue ? 'broadcast-row broadcast-row-overdue' : 'broadcast-row'}
+                      key={broadcast.id}
+                    >
+                      <div className="broadcast-row-main">
+                        <div className="broadcast-row-status">
+                          <StatusBadge tone={statusTone(displayStatus)}>
+                            {presentationLabel(displayStatus)}
+                          </StatusBadge>
+                          <span>{formatDate(broadcast.scheduledStartAt ?? broadcast.liveStartedAt)}</span>
+                        </div>
+                        <h4>{broadcast.title}</h4>
+                        <p>{broadcast.description || 'No description has been added.'}</p>
+                        {overdue ? (
+                          <p className="broadcast-overdue-note">
+                            The scheduled start time passed before this broadcast went live.
+                            Open Studio to start it now, or cancel it before creating a new schedule.
+                          </p>
+                        ) : null}
+                        <small>/{organisation.slug}/{selectedChannel?.slug}/{broadcast.slug}</small>
                       </div>
-                      <h4>{broadcast.title}</h4>
-                      <p>{broadcast.description || 'No description has been added.'}</p>
-                      <small>/{organisation.slug}/{selectedChannel?.slug}/{broadcast.slug}</small>
-                    </div>
-                    <div className="broadcast-row-actions">
-                      <span>Version {broadcast.lifecycleVersion}</span>
-                      <Button onClick={onOpenStudio}>Open in Studio</Button>
-                    </div>
-                  </article>
-                ))}
+                      <div className="broadcast-row-actions">
+                        <span>Version {broadcast.lifecycleVersion}</span>
+                        <Button onClick={onOpenStudio}>
+                          {overdue ? 'Open Studio to recover' : 'Open in Studio'}
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             </section>
           )}

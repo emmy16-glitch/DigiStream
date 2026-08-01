@@ -23,7 +23,7 @@
 
 .studio-primary-actions .ds-button:disabled .ds-icon { opacity: .55; }
 
-@media (pointer: coarse) and (max-width: 1180px) {
+@media (pointer: coarse), (hover: none) and (any-pointer: coarse) {
   body {
     padding-bottom: calc(76px + env(safe-area-inset-bottom));
   }

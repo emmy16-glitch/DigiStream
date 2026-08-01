@@ -34,9 +34,11 @@ export function PublicBroadcastChat({ route }: PublicBroadcastChatProps) {
         return;
       }
       setError(
-        requestError instanceof ApiClientError
-          ? requestError.message
-          : 'Live chat metadata could not be loaded.',
+        requestError instanceof ApiClientError && requestError.code === 'API_UNREACHABLE'
+          ? 'Broadcast chat temporarily lost its server connection. Broadcast details remain available, and chat will retry automatically.'
+          : requestError instanceof ApiClientError
+            ? requestError.message
+            : 'Live chat metadata could not be loaded.',
       );
     }
   }, [metadataPath]);

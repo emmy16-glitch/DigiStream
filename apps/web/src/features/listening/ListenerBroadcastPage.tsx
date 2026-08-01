@@ -14,6 +14,11 @@ import type {
   PublicBroadcastResponse,
 } from '@digistream/contracts';
 import { ApiClientError, apiRequest } from '../../lib/api-client';
+import {
+  isOverdueBroadcast,
+  presentationLabel,
+  presentationStatus,
+} from '../../lib/broadcast-lifecycle';
 import type { ListenerRoute } from './listener-route';
 import {
   loadOvenPlayer,
@@ -118,7 +123,9 @@ function normalisePublicBroadcast(broadcast: PublicBroadcast): ListenerBroadcast
 function statusCopy(broadcast: ListenerBroadcast | null): string {
   if (!broadcast) return 'Loading broadcast details…';
   if (broadcast.status === 'scheduled') {
-    return `Scheduled for ${formatDate(broadcast.scheduledStartAt)}.`;
+    return isOverdueBroadcast(broadcast.status, broadcast.scheduledStartAt)
+      ? 'The scheduled start time passed before this broadcast went live.'
+      : `Scheduled for ${formatDate(broadcast.scheduledStartAt)}.`;
   }
   if (broadcast.status === 'starting') {
     return 'The creator is connecting the live audio path.';
@@ -426,13 +433,18 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
         const playback = await fetchPlayback();
         await createPlayer(playback, true);
       } catch (requestError) {
-        setError(readableError(requestError));
         if (requestError instanceof ApiClientError && requestError.code === 'BROADCAST_NOT_PLAYABLE') {
+          setError('');
           setPhase('waiting');
           setMessage('The creator has not completed the public audio path yet.');
         } else {
+          setError(
+            requestError instanceof ApiClientError
+              ? `Live audio delivery is unavailable: ${requestError.message}`
+              : readableError(requestError),
+          );
           setPhase('error');
-          setMessage('Playback is unavailable right now.');
+          setMessage('The application is online, but the live audio path is unavailable.');
         }
       } finally {
         setBusy(false);
@@ -493,8 +505,27 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
     };
     const onlineHandler = () => {
       setOnline(true);
-      if (hasPlayedRef.current) scheduleRecovery();
-      else setMessage('Connection restored. Tap Listen live when ready.');
+      setError('');
+      if (hasPlayedRef.current) {
+        scheduleRecovery();
+        return;
+      }
+      void loadMetadata()
+        .then((current) => {
+          setPhase(
+            current.status === 'completed'
+              ? 'ended'
+              : playableStatuses.has(current.status)
+                ? 'ready'
+                : 'waiting',
+          );
+          setMessage(statusCopy(current));
+        })
+        .catch((requestError) => {
+          setError(readableError(requestError));
+          setPhase('error');
+          setMessage('Broadcast details could not be refreshed after the connection returned.');
+        });
     };
     window.addEventListener('offline', offlineHandler);
     window.addEventListener('online', onlineHandler);
@@ -502,7 +533,7 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
       window.removeEventListener('offline', offlineHandler);
       window.removeEventListener('online', onlineHandler);
     };
-  }, [scheduleRecovery]);
+  }, [loadMetadata, scheduleRecovery]);
 
   function togglePlayback() {
     const player = playerRef.current;
@@ -547,7 +578,17 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
         ? 'Resume'
         : phase === 'reconnecting'
           ? 'Reconnecting…'
-          : 'Listen live';
+          : isPlayable
+            ? 'Listen live'
+            : 'Check live status';
+  const displayStatus = broadcast
+    ? presentationStatus(broadcast.status, broadcast.scheduledStartAt)
+    : null;
+  const connectionDetail = !online
+    ? 'Network unavailable'
+    : isPlayable
+      ? protocolLabel(activeProtocol)
+      : 'Waiting for the broadcast to enter a playable state';
 
   return (
     <main className="listener-page">
@@ -567,8 +608,8 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
             ))}
           </div>
           <div id={playerContainerIdRef.current} className="listener-player-host" aria-hidden="true" />
-          <span className={`listener-live-badge ${broadcast?.status ?? 'unknown'}`}>
-            <i /> {broadcast?.status === 'live' ? 'Live now' : broadcast?.status ?? 'Loading'}
+          <span className={`listener-live-badge ${displayStatus ?? 'unknown'}`}>
+            <i /> {displayStatus ? presentationLabel(displayStatus) : 'Loading'}
           </span>
         </div>
 
@@ -585,7 +626,7 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
             <span className="listener-status-dot" />
             <div>
               <strong>{message}</strong>
-              <small>{online ? protocolLabel(activeProtocol) : 'Network unavailable'}</small>
+              <small>{connectionDetail}</small>
             </div>
           </div>
 

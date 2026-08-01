@@ -11,6 +11,7 @@ import './auth/auth-screen.css';
 import './features/broadcasting/creator-broadcast-studio-landscape.css';
 import './styles.css';
 import './design-system/responsive-operations.css';
+import './design-system/manual-review-fixes.css';
 
 const root = document.getElementById('root');
 

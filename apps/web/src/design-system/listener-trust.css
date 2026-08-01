@@ -1,10 +1,7 @@
 /* Phase 6A trust fixes shared by public and member listener routes. */
 
 .ds-listener-shell:has(.listener-live-badge.scheduled) .listener-orb::after {
-  content: 'UPCOMING';
-  color: rgba(255, 255, 255, .075);
-  font-size: clamp(2.4rem, 8vw, 4.8rem);
-  letter-spacing: -.045em;
+  content: none;
 }
 
 .ds-listener-shell:has(.listener-live-badge.scheduled) .listener-orb {

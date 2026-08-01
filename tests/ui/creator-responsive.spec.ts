@@ -91,6 +91,17 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   const broadcastRow = page.locator('.broadcast-row').filter({ hasText: broadcastTitle });
   await expect(broadcastRow).toBeVisible();
   await expectNoHorizontalOverflow(page);
+  if (testInfo.project.name === 'android-desktop-site') {
+    const headingFontSize = await page
+      .getByRole('heading', { name: 'Broadcasts', exact: true })
+      .last()
+      .evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
+    expect(headingFontSize).toBeGreaterThanOrEqual(20);
+    const studioButton = broadcastRow.getByRole('button', { name: 'Open in Studio' });
+    const studioButtonBox = await studioButton.boundingBox();
+    expect(studioButtonBox).not.toBeNull();
+    expect(studioButtonBox!.height).toBeGreaterThanOrEqual(44);
+  }
   await attachViewport(page, testInfo, 'broadcasts');
 
   await broadcastRow.getByRole('button', { name: 'Open in Studio' }).click();
