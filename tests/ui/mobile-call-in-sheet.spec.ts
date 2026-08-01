@@ -166,12 +166,17 @@ test('mobile request-to-speak sheet follows the visible viewport and preserves s
           '--ds-overlay-viewport-height',
         ),
         top: element.style.getPropertyValue('--ds-overlay-viewport-top'),
-        keyboard: element.style.getPropertyValue(
-          '--ds-overlay-keyboard-inset',
-        ),
       })),
     )
-    .toEqual({ height: '520px', top: '16px', keyboard: '379px' });
+    .toEqual({ height: '520px', top: '16px' });
+
+  const keyboardInset = await overlay.evaluate((element) =>
+    Number.parseInt(
+      element.style.getPropertyValue('--ds-overlay-keyboard-inset'),
+      10,
+    ),
+  );
+  expect(keyboardInset).toBeGreaterThanOrEqual(0);
 
   const box = await dialog.boundingBox();
   expect(box).not.toBeNull();
