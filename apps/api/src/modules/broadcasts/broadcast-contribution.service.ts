@@ -21,6 +21,7 @@ export type ContributionReadyBody = {
 };
 
 const CONTRIBUTION_STATUSES = new Set<BroadcastStatus>([
+  'draft',
   'scheduled',
   'starting',
   'live',
@@ -128,7 +129,7 @@ export async function issueBroadcastContributionCredential(
     throw new ApiError(
       409,
       'BROADCAST_NOT_READY_FOR_CONTRIBUTION',
-      'Contribution access is available only for scheduled or active broadcasts.',
+      'Contribution access is available only for draft, scheduled or active broadcasts.',
       { status: broadcast.status },
     );
   }
