@@ -8,10 +8,12 @@ import type {
 } from '@digistream/contracts';
 import {
   Button,
+  LinkButton,
   StatePanel,
   StatusBadge,
   type StatusTone,
 } from '../../design-system/components';
+import { memberReplayPath, publicReplayPath } from '../listening/listener-route';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
 import './creator-recordings-page.css';
 
@@ -70,6 +72,11 @@ type CompletedBroadcastSource = {
 
 type CreatorRecordingsPageProps = {
   organisation: Organisation;
+};
+
+type ReplayDestination = {
+  href: string;
+  label: string;
 };
 
 function readableError(error: unknown): string {
@@ -155,10 +162,72 @@ function availableActions(status: RecordingStatus): Array<{
   return [];
 }
 
+function replayGuidance(
+  recording: Recording,
+  channelVisibility: Channel['visibility'] | undefined,
+): string {
+  if (recording.status === 'published') {
+    if (channelVisibility === 'private' || channelVisibility === undefined) {
+      return 'This channel is private, so organisation members use the protected member replay page.';
+    }
+    if (channelVisibility === 'unlisted') {
+      return 'Open the exact unlisted listener link. It is not exposed in public discovery.';
+    }
+    return 'Open the public listener page to verify the published replay experience.';
+  }
+  if (recording.status === 'private') {
+    return 'Organisation members can open the protected member replay page.';
+  }
+  if (recording.status === 'archived') {
+    return 'Playback is revoked while this recording remains archived.';
+  }
+  if (recording.artifactReady) {
+    return 'Choose published or private visibility before listener playback becomes available.';
+  }
+  return 'Playback becomes available only after the recording worker verifies the artifact.';
+}
+
+function replayDestination(
+  recording: Recording,
+  organisation: Organisation,
+  channel: Channel | undefined,
+): ReplayDestination | null {
+  if (recording.status !== 'published' && recording.status !== 'private') {
+    return null;
+  }
+
+  if (
+    recording.status === 'private' ||
+    channel?.visibility === 'private' ||
+    channel === undefined
+  ) {
+    return {
+      href: memberReplayPath({
+        organisationId: organisation.id,
+        recordingId: recording.id,
+      }),
+      label: 'Open member replay',
+    };
+  }
+
+  return {
+    href: publicReplayPath({
+      organisationSlug: organisation.slug,
+      channelSlug: recording.channel.slug,
+      broadcastSlug: recording.broadcast.slug,
+    }),
+    label:
+      channel.visibility === 'unlisted'
+        ? 'Open unlisted replay'
+        : 'Open listener replay',
+  };
+}
+
 export function CreatorRecordingsPage({
   organisation,
 }: CreatorRecordingsPageProps) {
   const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [channels, setChannels] = useState<Channel[]>([]);
   const [completedSources, setCompletedSources] = useState<CompletedBroadcastSource[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -195,6 +264,7 @@ export function CreatorRecordingsPage({
       );
 
       setRecordings(recordingResponse.recordings);
+      setChannels(channelResponse.channels);
       setCompletedSources(
         channelBroadcasts
           .flat()
@@ -222,6 +292,11 @@ export function CreatorRecordingsPage({
     ready: recordings.filter((recording) => recording.artifactReady).length,
     published: recordings.filter((recording) => recording.status === 'published').length,
   }), [recordings]);
+
+  const channelById = useMemo(
+    () => new Map(channels.map((channel) => [channel.id, channel])),
+    [channels],
+  );
 
   const eligibleSources = useMemo(() => {
     const recordedBroadcastIds = new Set(recordings.map((recording) => recording.broadcastId));
@@ -360,71 +435,91 @@ export function CreatorRecordingsPage({
             </StatePanel>
           ) : (
             <section className="recording-list" aria-label="Organisation recordings">
-              {recordings.map((recording) => (
-                <article className="recording-card" key={recording.id}>
-                  <div className="recording-card-heading">
-                    <div>
-                      <StatusBadge tone={statusTone(recording.status)}>
-                        {sentenceCase(recording.status)}
-                      </StatusBadge>
-                      {recording.artifactReady ? (
-                        <StatusBadge tone="success">Artifact verified</StatusBadge>
-                      ) : null}
-                    </div>
-                    <span>Updated {formatDate(recording.updatedAt)}</span>
-                  </div>
+              {recordings.map((recording) => {
+                const channel = channelById.get(recording.channelId);
+                const destination = replayDestination(
+                  recording,
+                  organisation,
+                  channel,
+                );
 
-                  <div className="recording-card-body">
-                    <div>
-                      <span className="recording-eyebrow">{recording.channel.name}</span>
-                      <h3>{recording.broadcast.title}</h3>
-                      <p>
-                        Broadcast completed {formatDate(recording.broadcast.endedAt)}.
-                      </p>
+                return (
+                  <article className="recording-card" key={recording.id}>
+                    <div className="recording-card-heading">
+                      <div>
+                        <StatusBadge tone={statusTone(recording.status)}>
+                          {sentenceCase(recording.status)}
+                        </StatusBadge>
+                        {recording.artifactReady ? (
+                          <StatusBadge tone="success">Artifact verified</StatusBadge>
+                        ) : null}
+                      </div>
+                      <span>Updated {formatDate(recording.updatedAt)}</span>
                     </div>
-                    <dl>
-                      <div><dt>Duration</dt><dd>{formatDuration(recording.durationMs)}</dd></div>
-                      <div><dt>File size</dt><dd>{formatSize(recording.sizeBytes)}</dd></div>
-                      <div><dt>Format</dt><dd>{recording.mediaFormat?.toUpperCase() ?? 'Pending'}</dd></div>
-                      <div><dt>Retries</dt><dd>{recording.retryCount}</dd></div>
-                    </dl>
-                  </div>
 
-                  {recording.processingError ? (
-                    <div className="recording-error" role="alert">
-                      <strong>Processing failed</strong>
-                      <span>{recording.processingError}</span>
+                    <div className="recording-card-body">
+                      <div>
+                        <span className="recording-eyebrow">{recording.channel.name}</span>
+                        <h3>{recording.broadcast.title}</h3>
+                        <p>
+                          Broadcast completed {formatDate(recording.broadcast.endedAt)}.
+                        </p>
+                      </div>
+                      <dl>
+                        <div><dt>Duration</dt><dd>{formatDuration(recording.durationMs)}</dd></div>
+                        <div><dt>File size</dt><dd>{formatSize(recording.sizeBytes)}</dd></div>
+                        <div><dt>Format</dt><dd>{recording.mediaFormat?.toUpperCase() ?? 'Pending'}</dd></div>
+                        <div><dt>Retries</dt><dd>{recording.retryCount}</dd></div>
+                      </dl>
                     </div>
-                  ) : null}
 
-                  <footer className="recording-card-footer">
-                    <div>
-                      {recording.status === 'published' ? (
-                        <strong>Replay policy is published.</strong>
-                      ) : recording.artifactReady ? (
-                        <strong>The artifact is ready for a visibility decision.</strong>
-                      ) : (
-                        <strong>Waiting for the recording worker.</strong>
-                      )}
-                      <span>
-                        Playback and download remain unavailable until the private object-storage delivery route is connected.
-                      </span>
-                    </div>
-                    <div className="recording-actions">
-                      {availableActions(recording.status).map((action) => (
-                        <Button
-                          key={action.status}
-                          loading={updatingId === recording.id}
-                          onClick={() => void changeStatus(recording, action.status)}
-                          variant={action.primary ? 'primary' : 'secondary'}
-                        >
-                          {action.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </footer>
-                </article>
-              ))}
+                    {recording.processingError ? (
+                      <div className="recording-error" role="alert">
+                        <strong>Processing failed</strong>
+                        <span>{recording.processingError}</span>
+                      </div>
+                    ) : null}
+
+                    <footer className="recording-card-footer">
+                      <div>
+                        {recording.status === 'published' ? (
+                          <strong>Replay policy is published.</strong>
+                        ) : recording.status === 'private' ? (
+                          <strong>Replay access is limited to organisation members.</strong>
+                        ) : recording.artifactReady ? (
+                          <strong>The artifact is ready for a visibility decision.</strong>
+                        ) : (
+                          <strong>Waiting for the recording worker.</strong>
+                        )}
+                        <span>
+                          {replayGuidance(recording, channel?.visibility)}
+                        </span>
+                      </div>
+                      <div className="recording-actions">
+                        {destination ? (
+                          <LinkButton
+                            href={destination.href}
+                            icon="headphones"
+                            variant="primary"
+                          >
+                            {destination.label}
+                          </LinkButton>
+                        ) : null}
+                        {availableActions(recording.status).map((action) => (
+                          <Button
+                            key={action.status}
+                            loading={updatingId === recording.id}
+                            onClick={() => void changeStatus(recording, action.status)}
+                            variant={action.primary ? 'primary' : 'secondary'}
+                          >
+                            {action.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </footer>
+                  </article>
+                );
+              })}
             </section>
           )}
         </>

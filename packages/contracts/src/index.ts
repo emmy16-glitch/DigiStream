@@ -30,7 +30,9 @@ export type PlatformStatus = {
     | 'listener-playback-client'
     | 'guest-backstage-control'
     | 'realtime-auth-foundation'
-    | 'durable-live-chat';
+    | 'durable-live-chat'
+    | 'recording-retention'
+    | 'public-replay-listening';
   responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
   capabilities: readonly string[];
 };
@@ -291,6 +293,57 @@ export type PublicBroadcastResponse = {
 
 export type PublicBroadcastListResponse = {
   broadcasts: PublicBroadcast[];
+};
+
+export type ReplayAccess = 'public' | 'unlisted' | 'member';
+
+export type PublicReplay = {
+  id: string;
+  recordingId: string;
+  organisationId: string;
+  channelId: string;
+  broadcastId: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  endedAt: string | null;
+  publishedAt: string | null;
+  media: {
+    format: string;
+    contentType: string;
+    sizeBytes: number;
+    durationMs: number;
+  };
+  organisation: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  channel: {
+    id: string;
+    name: string;
+    slug: string;
+    category: string | null;
+    visibility: ChannelVisibility;
+  };
+  access: ReplayAccess;
+  updatedAt: string;
+};
+
+export type PublicReplayResponse = {
+  replay: PublicReplay;
+};
+
+export type PublicReplayListResponse = {
+  replays: PublicReplay[];
+};
+
+export type RecordingPlaybackAccessResponse = {
+  access: {
+    mode: 'playback';
+    url: string;
+    expiresAt: string;
+  };
 };
 
 export type BroadcastPlaybackSource = {

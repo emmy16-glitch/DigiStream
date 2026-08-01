@@ -4,7 +4,11 @@ import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
 import type { ObjectStorage } from '../storage/object-storage.js';
-import type { RecordingAccessManager } from './recording-access.js';
+import type {
+  RecordingAccessManager,
+  RecordingAccessScope,
+} from './recording-access.js';
+import { findRecordingPlaybackPolicy } from './recording-playback-policy.repository.js';
 import {
   createRecordingAccess,
   getRecording,
@@ -96,6 +100,27 @@ function requireMediaSecret(actual: unknown, expected: string | undefined): void
 function safeFilename(value: string): string {
   const safe = value.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '');
   return safe || 'digistream-recording';
+}
+
+async function requirePlaybackAllowed(
+  context: DatabaseContext,
+  organisationId: string,
+  recordingId: string,
+  scope: RecordingAccessScope,
+): Promise<void> {
+  const policy = await findRecordingPlaybackPolicy(
+    context.pool,
+    organisationId,
+    recordingId,
+    scope,
+  );
+  if (!policy.allowed) {
+    throw new ApiError(
+      404,
+      'RECORDING_MEDIA_NOT_FOUND',
+      'The requested recording media was not found.',
+    );
+  }
 }
 
 export function registerRecordingRoutes(
@@ -193,6 +218,12 @@ export function registerRecordingRoutes(
       const context = requireDatabase(database);
       const user = await requireUser(request, context);
       requireObjectStorage(options.objectStorage);
+      await requirePlaybackAllowed(
+        context,
+        request.params.organisationId,
+        request.params.recordingId,
+        'member',
+      );
       return createRecordingAccess(
         context.db,
         requireAccessManager(options.accessManager),
@@ -278,10 +309,20 @@ export function registerRecordingRoutes(
       );
     }
     const context = requireDatabase(database);
+    const accessManager = requireAccessManager(options.accessManager);
+    const verification = accessManager.verify(request.query.token);
+    if (verification.status === 'valid') {
+      await requirePlaybackAllowed(
+        context,
+        verification.grant.organisationId,
+        verification.grant.recordingId,
+        verification.grant.scope,
+      );
+    }
     const result = await resolveRecordingMedia(
       context.db,
       requireObjectStorage(options.objectStorage),
-      requireAccessManager(options.accessManager),
+      accessManager,
       request.query.token,
       request.headers.range,
     );

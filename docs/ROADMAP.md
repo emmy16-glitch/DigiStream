@@ -209,8 +209,8 @@ This phase blocks decorative expansion until the existing live product behaves h
 - [x] Add retention, deletion and legal/moderation hold controls with protected cleanup
 - [ ] Add object-store orphan listing, quarantine and cleanup
 - [x] Add creator recording management APIs and an API-backed Replay workspace
-- [ ] Add public/member replay listening pages and published replay discovery
-- [ ] Expose public Replay navigation only after the complete authorised listener flow works
+- [x] Add public/member replay listening pages and published replay discovery
+- [x] Expose public Replay navigation only after the complete authorised listener flow works
 
 ## Phase 9 — Product expansion
 

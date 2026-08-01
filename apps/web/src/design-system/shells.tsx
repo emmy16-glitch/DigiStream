@@ -107,12 +107,17 @@ export function ListenerShell({
   footer,
 }: {
   children: ReactNode;
-  current: 'discover' | 'live';
+  current: 'discover' | 'live' | 'replay';
   footer?: ReactNode;
 }) {
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/listen';
+  const replayRoute =
+    pathname === '/listen/replays' ||
+    pathname.startsWith('/listen/replay/') ||
+    pathname.startsWith('/listen/member-replay/');
   const nestedBroadcastRoute =
-    typeof window !== 'undefined' && window.location.pathname.startsWith('/listen/');
-  const resolvedCurrent = nestedBroadcastRoute ? null : current;
+    pathname.startsWith('/listen/') && !replayRoute;
+  const resolvedCurrent = replayRoute ? 'replay' : nestedBroadcastRoute ? null : current;
 
   return (
     <div className="listener-page ds-listener-shell">
@@ -128,6 +133,9 @@ export function ListenerShell({
           </a>
           <a aria-current={resolvedCurrent === 'live' ? 'page' : undefined} href="/listen?status=live">
             Live now
+          </a>
+          <a aria-current={resolvedCurrent === 'replay' ? 'page' : undefined} href="/listen/replays">
+            Replays
           </a>
         </nav>
         <a className="ds-listener-creator-link" href="/">

@@ -5,6 +5,7 @@ node_modules/
 dist/
 coverage/
 .vite/
+*.tsbuildinfo
 
 # Browser test output
 playwright-report/

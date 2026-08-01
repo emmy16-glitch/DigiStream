@@ -38,6 +38,8 @@ import { parseGuestRoute } from './features/guests/guest-route';
 import { ListenerBroadcastPage } from './features/listening/ListenerBroadcastPage';
 import { ListenerCallInPanel } from './features/listening/ListenerCallInPanel';
 import { ListenerDiscoveryPage } from './features/listening/ListenerDiscoveryPage';
+import { ReplayDiscoveryPage } from './features/listening/ReplayDiscoveryPage';
+import { ReplayListeningPage } from './features/listening/ReplayListeningPage';
 import { parseListenerRoute } from './features/listening/listener-route';
 import { CreatorRecordingsPage } from './features/recordings/CreatorRecordingsPage';
 import { ApiClientError, apiRequest, jsonBody } from './lib/api-client';
@@ -576,6 +578,26 @@ export function App() {
     return (
       <ListenerShell current="discover">
         <ListenerDiscoveryPage />
+      </ListenerShell>
+    );
+  }
+  if (listenerRoute?.kind === 'replay-discovery') {
+    return (
+      <ListenerShell current="replay">
+        <ReplayDiscoveryPage />
+      </ListenerShell>
+    );
+  }
+  if (
+    listenerRoute?.kind === 'public-replay' ||
+    listenerRoute?.kind === 'member-replay'
+  ) {
+    return (
+      <ListenerShell
+        current="replay"
+        footer="Replay access is short-lived and private. DigiStream rechecks recording visibility and retention state before playback."
+      >
+        <ReplayListeningPage route={listenerRoute} />
       </ListenerShell>
     );
   }
