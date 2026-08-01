@@ -1,4 +1,5 @@
 import type { Pool, QueryResultRow } from 'pg';
+import type { RecordingAccessScope } from './recording-access.js';
 
 export type RecordingPlaybackPolicy = {
   exists: boolean;
@@ -14,6 +15,7 @@ type PolicyRow = QueryResultRow & {
   checksum_sha256: string | null;
   broadcast_status: string;
   channel_status: string;
+  channel_visibility: string;
   deletion_requested_at: Date | null;
   purge_started_at: Date | null;
   purged_at: Date | null;
@@ -25,6 +27,7 @@ export async function findRecordingPlaybackPolicy(
   pool: Pool,
   organisationId: string,
   recordingId: string,
+  scope: RecordingAccessScope,
 ): Promise<RecordingPlaybackPolicy> {
   const result = await pool.query<PolicyRow>(
     `select
@@ -36,6 +39,7 @@ export async function findRecordingPlaybackPolicy(
        recordings.checksum_sha256,
        broadcasts.status as broadcast_status,
        channels.status as channel_status,
+       channels.visibility as channel_visibility,
        controls.deletion_requested_at,
        controls.purge_started_at,
        controls.purged_at,
@@ -60,12 +64,18 @@ export async function findRecordingPlaybackPolicy(
       : typeof row.size_bytes === 'number'
         ? row.size_bytes
         : Number(row.size_bytes);
+  const scopeAllowed =
+    scope === 'public'
+      ? row.recording_status === 'published' &&
+        (row.channel_visibility === 'public' ||
+          row.channel_visibility === 'unlisted')
+      : row.recording_status === 'published' ||
+        row.recording_status === 'private';
 
   return {
     exists: true,
     allowed:
-      (row.recording_status === 'published' ||
-        row.recording_status === 'private') &&
+      scopeAllowed &&
       row.ready_at !== null &&
       typeof row.content_type === 'string' &&
       typeof row.media_format === 'string' &&
