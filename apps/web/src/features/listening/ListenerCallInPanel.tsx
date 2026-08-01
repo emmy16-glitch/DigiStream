@@ -5,7 +5,12 @@ import type {
   PublicBroadcast,
   PublicBroadcastResponse,
 } from '@digistream/contracts';
+import { Icon } from '../../design-system/Icon';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
+import {
+  useFixedActionReservation,
+  useMobileOverlayLayout,
+} from '../../lib/use-mobile-overlay-layout';
 import { useModalDialog } from '../../lib/use-modal-dialog';
 import type { ListenerRoute } from './listener-route';
 import './listener-call-ins.css';
@@ -145,6 +150,15 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
   const [error, setError] = useState('');
 
   const dialogRef = useModalDialog<HTMLElement>(open, () => setOpen(false));
+  const overlayStyle = useMobileOverlayLayout(open);
+  const roleActionVisible =
+    relationship === 'production' || relationship === 'moderator';
+  const visitorActionAvailable =
+    relationship === 'visitor' &&
+    broadcastStatus !== null &&
+    (Boolean(statusToken) || acceptsCallIns(broadcastStatus));
+  const fixedActionVisible = roleActionVisible || (visitorActionAvailable && !open);
+  useFixedActionReservation(fixedActionVisible);
 
   const saveTracking = useCallback(
     (tracking: StoredTracking) => {
@@ -164,19 +178,28 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
     setSubmitted(false);
   }, [key]);
 
-  const loadBroadcastStatus = useCallback(async (signal?: AbortSignal) => {
-    try {
-      const response = await apiRequest<PublicBroadcastResponse>(metadataEndpoint, {
-        signal: signal ?? null,
-      });
-      setBroadcastStatus(response.broadcast.status);
-    } catch (requestError) {
-      if (requestError instanceof DOMException && requestError.name === 'AbortError') {
-        return;
+  const loadBroadcastStatus = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const response = await apiRequest<PublicBroadcastResponse>(
+          metadataEndpoint,
+          {
+            signal: signal ?? null,
+          },
+        );
+        setBroadcastStatus(response.broadcast.status);
+      } catch (requestError) {
+        if (
+          requestError instanceof DOMException &&
+          requestError.name === 'AbortError'
+        ) {
+          return;
+        }
+        setBroadcastStatus(null);
       }
-      setBroadcastStatus(null);
-    }
-  }, [metadataEndpoint]);
+    },
+    [metadataEndpoint],
+  );
 
   const refreshStatus = useCallback(async () => {
     if (!statusToken) return;
@@ -245,10 +268,16 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
         );
       })
       .catch((requestError) => {
-        if (requestError instanceof DOMException && requestError.name === 'AbortError') {
+        if (
+          requestError instanceof DOMException &&
+          requestError.name === 'AbortError'
+        ) {
           return;
         }
-        if (requestError instanceof ApiClientError && requestError.status === 401) {
+        if (
+          requestError instanceof ApiClientError &&
+          requestError.status === 401
+        ) {
           setRelationship('visitor');
         } else {
           setRelationship('unknown');
@@ -333,7 +362,11 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
     }
   }
 
-  if (relationship === 'checking' || relationship === 'unknown' || !broadcastStatus) {
+  if (
+    relationship === 'checking' ||
+    relationship === 'unknown' ||
+    !broadcastStatus
+  ) {
     return null;
   }
 
@@ -369,10 +402,14 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
       : 'Request to speak';
 
   return (
-    <aside className={`listener-call-in ${open ? 'open' : ''}`}>
+    <aside
+      className={`listener-call-in ${open ? 'open' : ''}`}
+      style={overlayStyle}
+    >
       {!open ? (
         <button
           aria-expanded="false"
+          aria-haspopup="dialog"
           className="listener-call-in-launcher"
           onClick={() => setOpen(true)}
           type="button"
@@ -409,7 +446,7 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
                 onClick={() => setOpen(false)}
                 type="button"
               >
-                ×
+                <Icon name="close" />
               </button>
             </header>
 
@@ -427,14 +464,20 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
 
             {statusToken ? (
               <div className="listener-call-in-status" aria-live="polite">
-                <div className={`listener-call-in-state ${status?.status ?? 'pending'}`}>
+                <div
+                  className={`listener-call-in-state ${status?.status ?? 'pending'}`}
+                >
                   <i />
                   <div>
                     <strong>
-                      {status ? statusLabel(status.status) : 'Checking your request'}
+                      {status
+                        ? statusLabel(status.status)
+                        : 'Checking your request'}
                     </strong>
                     <span>
-                      {refreshing ? 'Refreshing status…' : 'Status updates automatically'}
+                      {refreshing
+                        ? 'Refreshing status…'
+                        : 'Status updates automatically'}
                     </span>
                   </div>
                 </div>
@@ -447,7 +490,9 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
                     <ul>
                       <li>Use headphones to prevent echo.</li>
                       <li>Move somewhere quiet with a stable connection.</li>
-                      <li>Allow microphone access only after receiving the guest link.</li>
+                      <li>
+                        Allow microphone access only after receiving the guest link.
+                      </li>
                     </ul>
                   </div>
                 ) : null}
@@ -511,7 +556,11 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
                   />
                   <span>{message.length}/500</span>
                 </label>
-                <button className="listener-call-in-submit" disabled={busy} type="submit">
+                <button
+                  className="listener-call-in-submit"
+                  disabled={busy}
+                  type="submit"
+                >
                   {busy ? 'Sending request…' : 'Send request'}
                 </button>
                 <small className="listener-call-in-privacy">

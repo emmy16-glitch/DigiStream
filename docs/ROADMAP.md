@@ -147,12 +147,12 @@ This phase blocks decorative expansion until the existing live product behaves h
 
 ### Call-in, chat and mobile layout
 
-- [ ] Convert the mobile request-to-speak panel into a safe-area-aware bottom sheet
-- [ ] Hide the floating launcher while the panel is open
-- [ ] Prevent fixed launchers and bottom navigation from covering content
-- [ ] Handle virtual keyboards with dynamic viewport layout and `visualViewport` only as fallback
-- [ ] Pre-fill call-in display name and email from the signed-in profile when available
-- [ ] Keep the request panel open through progress, success confirmation and pending-status transition
+- [x] Convert the mobile request-to-speak panel into a safe-area-aware bottom sheet
+- [x] Hide the floating launcher while the panel is open
+- [x] Prevent fixed launchers and bottom navigation from covering content
+- [x] Handle virtual keyboards with dynamic viewport layout and `visualViewport` only as fallback
+- [x] Pre-fill call-in display name and email from the signed-in profile when available
+- [x] Keep the request panel open through progress, success confirmation and pending-status transition
 - [ ] Make the producer-side backstage call-in flow discoverable
 - [ ] Replace scheduled read-only chat composers and counters with a compact `Chat will open when the broadcast starts` state
 - [ ] Rename ambiguous mobile `People` navigation to `Backstage`, `Guests` or another approved explicit label
