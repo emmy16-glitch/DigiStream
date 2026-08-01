@@ -27,10 +27,6 @@ async function mockMobileCallIn(page: Page) {
       configurable: true,
       value: viewport,
     });
-    Object.defineProperty(window, 'innerHeight', {
-      configurable: true,
-      value: 915,
-    });
   });
 
   await page.route(`**${metadataPath}*`, async (route) => {
@@ -46,7 +42,9 @@ async function mockMobileCallIn(page: Page) {
             title: 'Mobile call-in broadcast',
             description: 'A live event for mobile sheet verification.',
             status: 'live',
-            scheduledStartAt: new Date(Date.now() - 20 * 60_000).toISOString(),
+            scheduledStartAt: new Date(
+              Date.now() - 20 * 60_000,
+            ).toISOString(),
             liveStartedAt: new Date(Date.now() - 15 * 60_000).toISOString(),
             endedAt: null,
             organisation: {
@@ -137,7 +135,11 @@ test('mobile request-to-speak sheet follows the visible viewport and preserves s
   const launcher = page.getByRole('button', { name: 'Request to speak' });
   await expect(launcher).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => document.body.classList.contains('ds-listener-fixed-action-visible')))
+    .poll(() =>
+      page.evaluate(() =>
+        document.body.classList.contains('ds-listener-fixed-action-visible'),
+      ),
+    )
     .toBe(true);
 
   await launcher.click();
@@ -146,17 +148,27 @@ test('mobile request-to-speak sheet follows the visible viewport and preserves s
   await expect(dialog).toBeVisible();
   await expect(launcher).toHaveCount(0);
   await expect
-    .poll(() => page.evaluate(() => document.body.classList.contains('ds-listener-fixed-action-visible')))
+    .poll(() =>
+      page.evaluate(() =>
+        document.body.classList.contains('ds-listener-fixed-action-visible'),
+      ),
+    )
     .toBe(false);
-  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+  await expect
+    .poll(() => page.evaluate(() => document.body.style.overflow))
+    .toBe('hidden');
 
   const overlay = page.locator('.listener-call-in.open');
   await expect
     .poll(() =>
       overlay.evaluate((element) => ({
-        height: element.style.getPropertyValue('--ds-overlay-viewport-height'),
+        height: element.style.getPropertyValue(
+          '--ds-overlay-viewport-height',
+        ),
         top: element.style.getPropertyValue('--ds-overlay-viewport-top'),
-        keyboard: element.style.getPropertyValue('--ds-overlay-keyboard-inset'),
+        keyboard: element.style.getPropertyValue(
+          '--ds-overlay-keyboard-inset',
+        ),
       })),
     )
     .toEqual({ height: '520px', top: '16px', keyboard: '379px' });
@@ -177,7 +189,9 @@ test('mobile request-to-speak sheet follows the visible viewport and preserves s
     .fill('I would like to contribute briefly.');
   await dialog.getByRole('button', { name: 'Send request' }).click();
 
-  await expect(page.getByText(/Request sent\. Your status will update here/)).toBeVisible();
+  await expect(
+    page.getByText(/Request sent\. Your status will update here/),
+  ).toBeVisible();
   await expect(page.getByText('Waiting for review', { exact: true })).toBeVisible();
   await expect(dialog).toBeVisible();
 
@@ -185,9 +199,17 @@ test('mobile request-to-speak sheet follows the visible viewport and preserves s
     .getByRole('button', { name: 'Close request-to-speak panel' })
     .click();
   await expect(dialog).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Call-in pending' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Call-in pending' }),
+  ).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => document.body.classList.contains('ds-listener-fixed-action-visible')))
+    .poll(() =>
+      page.evaluate(() =>
+        document.body.classList.contains('ds-listener-fixed-action-visible'),
+      ),
+    )
     .toBe(true);
-  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
+  await expect
+    .poll(() => page.evaluate(() => document.body.style.overflow))
+    .toBe('');
 });
