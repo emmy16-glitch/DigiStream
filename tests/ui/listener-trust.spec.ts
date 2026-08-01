@@ -33,26 +33,7 @@ function broadcastFixture(status: 'scheduled' | 'live') {
 
 async function mockBroadcast(page: Page, status: 'scheduled' | 'live') {
   await page.route(`**${metadataPath}*`, async (route) => {
-    const request = route.request();
-    const url = new URL(request.url());
-
-    if (url.pathname.endsWith('/call-ins') && request.method() === 'POST') {
-      await route.fulfill({
-        contentType: 'application/json',
-        status: 201,
-        body: JSON.stringify({
-          callIn: {
-            id: 'call-in-1',
-            displayName: 'Listener One',
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-          },
-          statusToken: 'test-status-token',
-          statusExpiresAt: new Date(Date.now() + 60 * 60_000).toISOString(),
-        }),
-      });
-      return;
-    }
+    const url = new URL(route.request().url());
 
     if (url.pathname === metadataPath) {
       await route.fulfill({
@@ -64,6 +45,23 @@ async function mockBroadcast(page: Page, status: 'scheduled' | 'live') {
     }
 
     await route.continue();
+  });
+
+  await page.route(`**${metadataPath}/call-ins`, async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      status: 201,
+      body: JSON.stringify({
+        callIn: {
+          id: 'call-in-1',
+          displayName: 'Listener One',
+          status: 'pending',
+          createdAt: new Date().toISOString(),
+        },
+        statusToken: 'test-status-token',
+        statusExpiresAt: new Date(Date.now() + 60 * 60_000).toISOString(),
+      }),
+    });
   });
 
   await page.route('**/api/v1/call-ins/test-status-token', async (route) => {
