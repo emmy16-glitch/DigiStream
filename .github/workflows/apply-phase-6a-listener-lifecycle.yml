@@ -1,0 +1,84 @@
+name: Apply Phase 6A listener lifecycle trust
+
+on:
+  push:
+    branches: [agent/phase-6a-listener-lifecycle-trust]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: phase-6a-listener-lifecycle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apply-validate-and-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AUTH_COOKIE_SECURE: false
+      DATABASE_URL: postgresql://digistream:digistream@127.0.0.1:5432/digistream_test
+      NODE_ENV: test
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: digistream
+          POSTGRES_PASSWORD: digistream
+          POSTGRES_DB: digistream_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U digistream -d digistream_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout implementation branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/phase-6a-listener-lifecycle-trust
+          fetch-depth: 0
+
+      - name: Apply listener lifecycle patch
+        run: python3 scripts/apply-phase-6a-listener-lifecycle.py
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Apply database migrations
+        run: npm run db:migrate
+
+      - name: Validate TypeScript
+        run: npm run typecheck
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run listener trust browser coverage
+        run: npx playwright test tests/ui/listener-trust.spec.ts
+
+      - name: Commit validated implementation
+        run: |
+          set -euo pipefail
+          rm -f scripts/apply-phase-6a-listener-lifecycle.py
+          rm -f .github/workflows/apply-phase-6a-listener-lifecycle.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No implementation changes to commit."
+          else
+            git commit -m "Add truthful listener lifecycle states"
+            git push origin HEAD:agent/phase-6a-listener-lifecycle-trust
+          fi
