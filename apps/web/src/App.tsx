@@ -47,7 +47,7 @@ import { ApiClientError, apiRequest, jsonBody } from './lib/api-client';
 type CreatorPage =
   | 'Overview'
   | 'Broadcasts'
-  | 'Audience'
+  | 'Backstage'
   | 'Recordings'
   | 'Analytics';
 
@@ -61,7 +61,7 @@ type NavigationDefinition = {
 const navigationDefinitions: NavigationDefinition[] = [
   { label: 'Overview', shortLabel: 'Home', icon: 'home', path: '/creator/overview' },
   { label: 'Broadcasts', shortLabel: 'Live', icon: 'broadcast', path: '/creator/broadcasts' },
-  { label: 'Audience', shortLabel: 'People', icon: 'audience', path: '/creator/audience' },
+  { label: 'Backstage', shortLabel: 'Backstage', icon: 'audience', path: '/creator/audience' },
   { label: 'Recordings', shortLabel: 'Replay', icon: 'recording', path: '/creator/recordings' },
   { label: 'Analytics', shortLabel: 'Stats', icon: 'analytics', path: '/creator/analytics' },
 ];
@@ -374,7 +374,7 @@ function CreatorDashboard({
                 Open broadcast studio
               </Button>
               <Button icon="audience" onClick={() => setBackstageOpen(true)}>
-                Manage guests
+                Manage backstage
               </Button>
               <LinkButton href="/listen" icon="headphones">
                 Open listener app
@@ -426,26 +426,26 @@ function CreatorDashboard({
         organisation={primaryOrganisation}
       />
     );
-  } else if (activeNav === 'Audience') {
+  } else if (activeNav === 'Backstage') {
     pageContent = (
       <>
-        <PageIntro title="Audience and guests">
-          Manage guest invitations, waiting participants, call-in requests and live-stage access.
+        <PageIntro title="Backstage and call-ins">
+          Review listener requests, create guest invitations, admit waiting participants and control live-stage access.
         </PageIntro>
         <section className="workspace-action-card">
           <div>
-            <StatusBadge tone="info">Live guest operations</StatusBadge>
-            <h2>Creator backstage</h2>
+            <StatusBadge tone="info">Call-in moderation</StatusBadge>
+            <h2>Open the producer call-in desk</h2>
             <p>
-              Open the authenticated backstage workspace for {primaryOrganisation.name}. No listener counts are invented while no live broadcast is selected.
+              Select a broadcast, review pending listener requests and approve a caller to generate a secure guest link. The same workspace also manages invited guests and connected participants for {primaryOrganisation.name}.
             </p>
           </div>
           <Button icon="audience" onClick={() => setBackstageOpen(true)} variant="primary">
-            Manage backstage
+            Open call-in desk
           </Button>
         </section>
-        <StatePanel kind="empty" title="No active audience context">
-          Listener presence and guest queues appear only after a real broadcast and organisation are selected.
+        <StatePanel kind="empty" title="No broadcast selected for backstage">
+          Open the call-in desk to select a scheduled or active broadcast. Pending requests, guest links and participant controls load only from the selected broadcast.
         </StatePanel>
       </>
     );

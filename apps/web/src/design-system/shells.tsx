@@ -82,7 +82,6 @@ export function CreatorShell({
       <nav className="ds-creator-mobile-nav" aria-label="Creator mobile navigation">
         {visibleNavigation.slice(0, 5).map((item) => {
           const active = item.label === activeLabel;
-          const mobileLabel = item.label === 'Audience' ? 'Backstage' : item.shortLabel;
           return (
             <button
               aria-current={active ? 'page' : undefined}
@@ -92,7 +91,7 @@ export function CreatorShell({
               type="button"
             >
               <Icon name={item.icon} />
-              <span>{mobileLabel}</span>
+              <span>{item.shortLabel}</span>
             </button>
           );
         })}

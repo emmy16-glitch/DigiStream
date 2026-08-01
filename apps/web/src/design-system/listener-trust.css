@@ -49,33 +49,43 @@ body.ds-listener-fixed-action-visible .ds-listener-content {
   padding-bottom: calc(92px + env(safe-area-inset-bottom));
 }
 
-.broadcast-chat-scheduled-state {
-  min-height: 190px;
-}
-
-.broadcast-chat-scheduled-state .broadcast-chat-header {
-  border-bottom: 0;
+.broadcast-chat.broadcast-chat-scheduled-state {
+  grid-template-rows: auto;
+  min-height: 0;
 }
 
 .broadcast-chat-scheduled-copy {
-  margin: 0 28px 28px;
-  padding: 20px;
-  display: grid;
-  gap: 6px;
+  margin: 0 28px 24px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   border: 1px solid rgba(255, 255, 255, .08);
   border-radius: 16px;
   color: #c7d0ca;
   background: rgba(255, 255, 255, .025);
 }
 
+.broadcast-chat-scheduled-copy > .ds-icon {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #42dd8d;
+}
+
+.broadcast-chat-scheduled-copy > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
 .broadcast-chat-scheduled-copy strong {
-  font-size: 1rem;
+  font-size: .92rem;
 }
 
 .broadcast-chat-scheduled-copy span {
   color: #89958e;
-  font-size: .82rem;
-  line-height: 1.5;
+  font-size: .78rem;
+  line-height: 1.45;
 }
 
 /* Lifecycle versions are internal optimistic-concurrency values, not user content. */
@@ -93,6 +103,7 @@ body.ds-listener-fixed-action-visible .ds-listener-content {
   }
 
   .broadcast-chat-scheduled-copy {
-    margin: 0 16px 18px;
+    margin: 0 16px 16px;
+    padding: 14px;
   }
 }

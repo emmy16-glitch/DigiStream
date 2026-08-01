@@ -116,7 +116,10 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await studio.getByRole('button', { name: 'Close broadcast studio' }).click();
 
   await page.goto('/creator/audience');
-  await page.getByRole('button', { name: 'Manage backstage' }).click();
+  await expect(page.getByRole('heading', { name: 'Backstage and call-ins' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Backstage', exact: true }).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'People', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Open call-in desk' }).click();
   const backstage = page.getByRole('dialog', { name: 'Creator backstage' });
   await expect(backstage).toBeVisible();
 

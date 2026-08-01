@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { PublicBroadcast, PublicBroadcastResponse } from '@digistream/contracts';
+import { Icon } from '../../design-system/Icon';
 import { ApiClientError, apiRequest } from '../../lib/api-client';
 import type { ListenerRoute } from '../listening/listener-route';
 import { BroadcastChat } from './BroadcastChat';
@@ -74,24 +75,22 @@ export function PublicBroadcastChat({ route }: PublicBroadcastChatProps) {
     const starting = broadcast.status === 'starting';
     return (
       <section
+        aria-label="Broadcast chat availability"
         aria-live="polite"
         className="broadcast-chat broadcast-chat-listener broadcast-chat-scheduled-state"
       >
-        <header className="broadcast-chat-header">
-          <div>
-            <span className="broadcast-chat-eyebrow">Conversation</span>
-            <h2>Broadcast chat</h2>
-          </div>
-        </header>
         <div className="broadcast-chat-scheduled-copy">
-          <strong>
-            {starting
-              ? 'Chat will open when public audio is ready.'
-              : 'Chat will open when the broadcast starts.'}
-          </strong>
-          <span>
-            Messages and the composer will appear automatically when the broadcast becomes available.
-          </span>
+          <Icon name="chat" size={21} />
+          <div>
+            <strong>
+              {starting
+                ? 'Chat will open when public audio is ready.'
+                : 'Chat will open when the broadcast starts.'}
+            </strong>
+            <span>
+              Messages and the composer will appear automatically when the broadcast becomes available.
+            </span>
+          </div>
         </div>
       </section>
     );

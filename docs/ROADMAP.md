@@ -153,9 +153,9 @@ This phase blocks decorative expansion until the existing live product behaves h
 - [x] Handle virtual keyboards with dynamic viewport layout and `visualViewport` only as fallback
 - [x] Pre-fill call-in display name and email from the signed-in profile when available
 - [x] Keep the request panel open through progress, success confirmation and pending-status transition
-- [ ] Make the producer-side backstage call-in flow discoverable
-- [ ] Replace scheduled read-only chat composers and counters with a compact `Chat will open when the broadcast starts` state
-- [ ] Rename ambiguous mobile `People` navigation to `Backstage`, `Guests` or another approved explicit label
+- [x] Make the producer-side backstage call-in flow discoverable
+- [x] Replace scheduled read-only chat composers and counters with a compact `Chat will open when the broadcast starts` state
+- [x] Rename ambiguous mobile `People` navigation to `Backstage`, `Guests` or another approved explicit label
 
 ### Consistency and accessibility
 
