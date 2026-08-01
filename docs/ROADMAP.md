@@ -77,7 +77,7 @@ All phases are governed by [`PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`](PRODU
 - [x] Add reconnection, source-loss and delivery-loss state
 - [x] Add lifecycle authorization, idempotency and optimistic-concurrency tests
 - [ ] Verify creator and listener screens always agree on lifecycle state
-- [ ] Remove every scheduled-state control or visual that falsely implies live playback
+- [x] Remove every scheduled-state control or visual that falsely implies live playback
 
 ## Phase 6 — Live media foundation
 
@@ -115,12 +115,12 @@ This phase blocks decorative expansion until the existing live product behaves h
 ### Correct state and authorization
 
 - [x] Trace the exact backend, authentication, authorization or configuration cause of **Studio action failed**
-- [ ] Make public listener actions role-aware for organisation owners, admins and broadcasters
-- [ ] Replace owner-facing **Request to speak** with **Manage broadcast**, **Open studio** or **Open backstage** as appropriate
+- [x] Make public listener actions role-aware for organisation owners, admins and broadcasters
+- [x] Replace owner-facing **Request to speak** with **Manage broadcast**, **Open studio** or **Open backstage** as appropriate
 - [ ] Keep the API as the independent authorization boundary and add matching tests
-- [ ] Render distinct scheduled, starting, live, reconnecting, ending, completed, cancelled and failed listener layouts
-- [ ] Remove permanent `LIVE` artwork from scheduled events
-- [ ] Prevent the `Live now` navigation state from appearing active for an upcoming event
+- [x] Render distinct scheduled, starting, live, reconnecting, ending, completed, cancelled and failed listener layouts
+- [x] Remove permanent `LIVE` artwork from scheduled events
+- [x] Prevent the `Live now` navigation state from appearing active for an upcoming event
 - [ ] Remove developer-facing lifecycle values such as `Version 0` from end-user cards
 - [ ] Remove duplicate or competing create-broadcast primary actions in the same state
 
@@ -129,10 +129,10 @@ This phase blocks decorative expansion until the existing live product behaves h
 - [ ] Translate WebRTC, LL-HLS and provider language into listener-friendly connection states
 - [ ] Add evidence-based Stable, Unstable, Buffering, Reconnecting, Offline and Unavailable states
 - [ ] Make manual retry primary only after bounded automatic recovery fails
-- [ ] Hide playback, mute, volume and retry controls while a broadcast is scheduled
-- [ ] Add a text countdown, exact local date/time and optional calendar action for upcoming events
+- [x] Hide playback, mute, volume and retry controls while a broadcast is scheduled
+- [x] Add a text countdown, exact local date/time and optional calendar action for upcoming events
 - [ ] Hide or collapse the full mobile volume slider while preserving mute
-- [ ] Add a contextual route back to discovery from event pages
+- [x] Add a contextual route back to discovery from event pages
 - [ ] Keep technical protocol data available only as secondary diagnostics
 
 ### Creator audio and failure recovery
