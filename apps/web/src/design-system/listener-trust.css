@@ -1,0 +1,101 @@
+/* Phase 6A trust fixes shared by public and member listener routes. */
+
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-orb::after {
+  content: 'UPCOMING';
+  color: rgba(255, 255, 255, .075);
+  font-size: clamp(2.4rem, 8vw, 4.8rem);
+  letter-spacing: -.045em;
+}
+
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-orb {
+  border-color: rgba(153, 167, 159, .22);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(153, 167, 159, .12), transparent 34%),
+    linear-gradient(145deg, #171b19, #0d100f 72%);
+  box-shadow: 0 35px 90px rgba(0, 0, 0, .36);
+}
+
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-orb i {
+  background: #7f8a84;
+  opacity: .25;
+  animation: none !important;
+}
+
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-live-badge {
+  font-size: 0;
+  text-transform: none;
+}
+
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-live-badge::after {
+  content: 'Upcoming';
+  font-size: .75rem;
+}
+
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-live-badge i {
+  background: #9aa59f;
+  box-shadow: none;
+}
+
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-controls {
+  display: none;
+}
+
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-secondary-actions button:first-child {
+  display: none;
+}
+
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-status small {
+  display: none;
+}
+
+.ds-listener-content:has(.listener-call-in) {
+  padding-bottom: calc(92px + env(safe-area-inset-bottom));
+}
+
+.broadcast-chat-scheduled-state {
+  min-height: 190px;
+}
+
+.broadcast-chat-scheduled-state .broadcast-chat-header {
+  border-bottom: 0;
+}
+
+.broadcast-chat-scheduled-copy {
+  margin: 0 28px 28px;
+  padding: 20px;
+  display: grid;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 16px;
+  color: #c7d0ca;
+  background: rgba(255, 255, 255, .025);
+}
+
+.broadcast-chat-scheduled-copy strong {
+  font-size: 1rem;
+}
+
+.broadcast-chat-scheduled-copy span {
+  color: #89958e;
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+/* Lifecycle versions are internal optimistic-concurrency values, not user content. */
+.broadcast-row-actions > span {
+  display: none;
+}
+
+@media (max-width: 620px) {
+  .listener-controls {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .listener-volume {
+    display: none;
+  }
+
+  .broadcast-chat-scheduled-copy {
+    margin: 0 16px 18px;
+  }
+}
