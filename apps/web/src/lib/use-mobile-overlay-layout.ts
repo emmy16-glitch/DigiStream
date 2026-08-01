@@ -85,8 +85,22 @@ export function useMobileOverlayLayout(active: boolean): CSSProperties {
 export function useFixedActionReservation(visible: boolean): void {
   useEffect(() => {
     const className = 'ds-listener-fixed-action-visible';
-    if (visible) document.body.classList.add(className);
-    else document.body.classList.remove(className);
-    return () => document.body.classList.remove(className);
+    const synchronise = () => {
+      const launcherExists = Boolean(
+        document.querySelector('.listener-call-in-launcher'),
+      );
+      document.body.classList.toggle(
+        className,
+        visible && launcherExists,
+      );
+    };
+
+    synchronise();
+    const observer = new MutationObserver(synchronise);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+      document.body.classList.remove(className);
+    };
   }, [visible]);
 }
