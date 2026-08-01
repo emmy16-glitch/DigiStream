@@ -267,15 +267,22 @@ export function registerRecordingRoutes(
   );
 
   app.get<{
-    Params: { token: string };
+    Querystring: { token?: string };
     Headers: { range?: string };
-  }>('/api/v1/recording-media/:token', async (request, reply) => {
+  }>('/api/v1/recording-media', async (request, reply) => {
+    if (typeof request.query.token !== 'string' || request.query.token.length === 0) {
+      throw new ApiError(
+        401,
+        'RECORDING_ACCESS_INVALID',
+        'Valid recording access is required.',
+      );
+    }
     const context = requireDatabase(database);
     const result = await resolveRecordingMedia(
       context.db,
       requireObjectStorage(options.objectStorage),
       requireAccessManager(options.accessManager),
-      request.params.token,
+      request.query.token,
       request.headers.range,
     );
     reply.header('accept-ranges', 'bytes');

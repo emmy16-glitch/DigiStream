@@ -278,7 +278,7 @@ test(
       });
       assert.equal(playbackAccess.statusCode, 200);
       const playbackUrl = playbackAccess.json().access.url as string;
-      assert.ok(playbackUrl.startsWith('/api/v1/recording-media/'));
+      assert.ok(playbackUrl.startsWith('/api/v1/recording-media?token='));
       assert.equal(playbackUrl.includes(stored?.storageKey ?? 'impossible'), false);
 
       const playback = await app.inject({ method: 'GET', url: playbackUrl });

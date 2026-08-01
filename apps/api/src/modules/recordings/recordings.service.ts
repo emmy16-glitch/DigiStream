@@ -698,7 +698,7 @@ export async function createRecordingAccess(
   return {
     access: {
       mode,
-      url: `/api/v1/recording-media/${encodeURIComponent(minted.token)}`,
+      url: `/api/v1/recording-media?token=${encodeURIComponent(minted.token)}`,
       expiresAt: minted.grant.expiresAt,
     },
   };
