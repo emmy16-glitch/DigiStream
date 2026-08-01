@@ -118,9 +118,20 @@ test('scheduled broadcast does not pretend to be live', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Listen live' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Retry playback' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Request to speak' })).toHaveCount(0);
+
+  const scheduledChat = page.locator('.broadcast-chat-scheduled-state');
+  await expect(scheduledChat).toBeVisible();
   await expect(
     page.getByText('Chat will open when the broadcast starts.', { exact: true }),
   ).toBeVisible();
+  await expect(scheduledChat.locator('.broadcast-chat-header')).toHaveCount(0);
+  await expect(scheduledChat.locator('[data-icon="chat"]')).toBeVisible();
+  await expect
+    .poll(() =>
+      scheduledChat.evaluate((element) => getComputedStyle(element).minHeight),
+    )
+    .toBe('0px');
+  await expect(scheduledChat.getByRole('textbox')).toHaveCount(0);
 
   const liveNow = page.getByRole('link', { name: 'Live now' });
   await expect(liveNow).not.toHaveAttribute('aria-current', 'page');
