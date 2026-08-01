@@ -1,0 +1,173 @@
+        lastAudibleAtRef.current = Date.now();
+-          setSilentInput(false);
+-        }
+-      });
++      monitorMicrophoneTrack(track);
++      setupStage = 'microphone-device';
+       await refreshDevices();
+       setPhase('microphone-ready');
+-      setMessage('Microphone ready. Speak normally and keep the meter out of the clipping zone.');
++      setMessage('Microphone opened. Speak normally while DigiStream classifies the signal level.');
+     } catch (requestError) {
+       setPhase('idle');
+-      setError(errorMessage(requestError));
+-      setMessage('Microphone setup failed.');
++      reportStudioFailure(setupStage, requestError);
++      setMessage('Microphone setup did not complete. Follow the recovery guidance and retry.');
+     } finally {
+       setBusy(false);
+     }
+@@ -535,27 +644,31 @@ export function CreatorBroadcastStudio({
+ 
+   async function changeDevice(deviceId: string) {
+     setSelectedDeviceId(deviceId);
+-    setError('');
++    clearStudioFailure();
+     try {
+-      if (trackRef.current) await trackRef.current.setDeviceId(deviceId);
+-      lastAudibleAtRef.current = Date.now();
++      if (trackRef.current) {
++        await trackRef.current.setDeviceId(deviceId);
++        monitorMicrophoneTrack(trackRef.current);
++      }
+       await refreshDevices();
+     } catch (requestError) {
+-      setError(errorMessage(requestError));
++      reportStudioFailure('microphone-device', requestError);
+     }
+   }
+ 
+   async function joinStudio() {
+     if (!organisationId || !selectedBroadcast) return;
+     setBusy(true);
+-    setError('');
++    clearStudioFailure();
+     setPhase('connecting');
+     setMessage('Connecting to the private studio…');
++    let joinStage: StudioFailureStage = 'microphone-device';
+     try {
+       if (!trackRef.current) await prepareMicrophone();
+       const track = trackRef.current;
+       if (!track) throw new Error('The microphone track is not available.');
+ 
++      joinStage = 'contribution-authorisation';
+       const contribution = await apiRequest<ContributionCredentialResponse>(
+         `/api/v1/organisations/${organisationId}/broadcasts/${selectedBroadcast.id}/contribution-token`,
+         {
+@@ -563,6 +676,7 @@ export function CreatorBroadcastStudio({
+           body: jsonBody({ participantRole: 'host' }),
+         },
+       );
++      joinStage = 'livekit-module';
+       const sdk = await loadLiveKitClient();
+       const room = new sdk.Room({
+         adaptiveStream: true,
+@@ -584,7 +698,12 @@ export function CreatorBroadcastStudio({
+         .on(sdk.RoomEvent.Disconnected, () => {
+           if (publicDeliveryActiveRef.current) {
+             setPhase('reconnecting');
+-            setError('Studio audio disconnected while public delivery may still be active. Keep this control open while DigiStream recovers or end the broadcast safely.');
++            reportStudioFailure(
++              'studio-connect',
++              Object.assign(new Error('Studio audio disconnected while public delivery may still be active.'), {
++                code: 'STUDIO_DISCONNECTED_DURING_DELIVERY',
++              }),
++            );
+             setMessage('Studio audio is disconnected. Public delivery state requires recovery or a safe end.');
+           } else {
+             setPhase('microphone-ready');
+@@ -595,7 +714,7 @@ export function CreatorBroadcastStudio({
+           void refreshDevices();
+         })
+         .on(sdk.RoomEvent.MediaDevicesError, (deviceError) => {
+-          setError(errorMessage(deviceError));
++          reportStudioFailure('microphone-device', deviceError);
+         })
+         .on(sdk.RoomEvent.AudioPlaybackStatusChanged, () => {
+           setAudioPlaybackBlocked(!room.canPlaybackAudio);
+@@ -612,7 +731,9 @@ export function CreatorBroadcastStudio({
+           for (const element of trackToDetach.detach()) element.remove();
+         });
+ 
++      joinStage = 'studio-connect';
+       await room.connect(contribution.credential.url, contribution.credential.token);
++      joinStage = 'microphone-publish';
+       await room.localParticipant.publishTrack(track, {
+         source: sdk.Track.Source.Microphone,
+         name: 'digistream-microphone',
+@@ -627,8 +748,8 @@ export function CreatorBroadcastStudio({
+     } catch (requestError) {
+       await stopLocalMedia();
+       setPhase('idle');
+-      setError(errorMessage(requestError));
+-      setMessage('Could not join the private studio. Run the microphone test again before retrying.');
++      reportStudioFailure(joinStage, requestError);
++      setMessage('The private Studio did not connect. Use the diagnostic stage and recovery guidance before retrying.');
+     } finally {
+       setBusy(false);
+     }
+@@ -637,7 +758,7 @@ export function CreatorBroadcastStudio({
+   async function toggleMute() {
+     const track = trackRef.current;
+     if (!track) return;
+-    setError('');
++    clearStudioFailure();
+     try {
+       if (track.isMuted) {
+         await track.unmute();
+@@ -647,11 +768,10 @@ export function CreatorBroadcastStudio({
+       } else {
+         await track.mute();
+         setMuted(true);
+-        setSilentInput(false);
+         setMessage('Microphone muted. Public delivery remains connected.');
+       }
+     } catch (requestError) {
+-      setError(errorMessage(requestError));
++      reportStudioFailure('microphone-device', requestError);
+     }
+   }
+ 
+@@ -661,7 +781,7 @@ export function CreatorBroadcastStudio({
+       setAudioPlaybackBlocked(false);
+       setMessage('Studio guest audio is enabled.');
+     } catch (requestError) {
+-      setError(errorMessage(requestError));
++      reportStudioFailure('studio-audio', requestError);
+     }
+   }
+ 
+@@ -672,13 +792,15 @@ export function CreatorBroadcastStudio({
+       !roomRef.current ||
+       !participantIdentityRef.current
+     ) {
++      setFailure(null);
+       setError('Join the private studio and publish your microphone first.');
+       return;
+     }
+     setBusy(true);
+-    setError('');
++    clearStudioFailure();
+     setPhase('starting-delivery');
+     setMessage('Verifying studio audio and preparing public delivery…');
++    let liveStage: StudioFailureStage = 'broadcast-lifecycle';
+     try {
+       let current = (
+         await apiRequest<BroadcastResponse>(
+@@ -702,6 +824,7 @@ export function CreatorBroadcastStudio({
+         patchBroadcast(current.id, current);
+       }
+ 
++      liveStage = 'contribution-verification';
+       const contribution = await apiRequest<ContributionReadyResponse>(
+         `/api/v1/organisations/${organisationId}/broadcasts/${current.id}/contribution/ready`,
+         {
+@@ -717,6 +840,7 @@ export function CreatorBroadcastStudio({
+         contributionReadyAt: contribution.contribution.broadcast.contributionReadyAt,
+       });
+ 
++      liveStage = 'delivery-start';
+       let delivery = await apiRequest<DeliveryResponse>(
+         `/api/v1/organisations/${organisationId}/broadcasts/${current.id}/delivery/start`,
+         { method: 'POST' },
+@@ -726,6 +850
