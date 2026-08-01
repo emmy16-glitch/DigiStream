@@ -21,6 +21,16 @@ function markerState(
   return state;
 }
 
+function stateWithoutMarker(
+  currentState: unknown,
+  stateKey: string,
+): Record<string, unknown> | null {
+  if (!currentState || typeof currentState !== 'object') return null;
+  const state = { ...(currentState as Record<string, unknown>) };
+  delete state[stateKey];
+  return Object.keys(state).length ? state : null;
+}
+
 function stateHasMarker(
   currentState: unknown,
   stateKey: string,
@@ -97,10 +107,14 @@ export function useModalHistoryDismiss({
         markerRef.current === marker &&
         stateHasMarker(window.history.state, stateKey, marker)
       ) {
-        markerRef.current = null;
-        backRequestedRef.current = true;
-        window.history.back();
+        window.history.replaceState(
+          stateWithoutMarker(window.history.state, stateKey),
+          '',
+          window.location.href,
+        );
       }
+      if (markerRef.current === marker) markerRef.current = null;
+      backRequestedRef.current = false;
     };
   }, [active, pushMarker, stateKey]);
 
