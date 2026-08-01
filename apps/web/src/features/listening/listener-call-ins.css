@@ -1,7 +1,7 @@
 .listener-call-in {
   position: fixed;
   right: clamp(16px, 3vw, 34px);
-  bottom: clamp(16px, 3vw, 32px);
+  bottom: calc(clamp(16px, 3vw, 32px) + env(safe-area-inset-bottom));
   z-index: 50;
   display: grid;
   justify-items: end;
@@ -9,11 +9,18 @@
   font-family: inherit;
 }
 
+.listener-call-in.open {
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
 .listener-call-in-launcher {
   min-height: 48px;
-  padding: 0 17px;
+  padding: 0 20px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 9px;
   border: 1px solid rgba(104, 244, 166, .34);
   border-radius: 999px;
@@ -24,30 +31,60 @@
   font: inherit;
   font-size: .84rem;
   font-weight: 850;
+  text-decoration: none;
+  transition: transform 100ms ease, background 100ms ease;
 }
 
 .listener-call-in-launcher:hover { background: #68efa9; }
-.listener-call-in-launcher span { font-size: .75rem; }
+.listener-call-in-launcher:active { transform: scale(.985); }
+.listener-call-in-launcher:focus-visible {
+  outline: 3px solid rgba(104, 244, 166, .45);
+  outline-offset: 3px;
+}
+
+.listener-call-in-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  background: rgba(0, 0, 0, .72);
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+  cursor: default;
+}
 
 .listener-call-in-panel {
-  width: min(390px, calc(100vw - 32px));
-  max-height: min(700px, calc(100vh - 94px));
+  position: fixed;
+  right: clamp(16px, 3vw, 34px);
+  bottom: calc(clamp(16px, 3vw, 32px) + env(safe-area-inset-bottom));
+  z-index: 1;
+  width: min(430px, calc(100vw - 32px));
+  max-height: min(760px, calc(100dvh - 40px - env(safe-area-inset-bottom)));
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 21px;
   border: 1px solid #334039;
   border-radius: 22px;
   color: #f3f7f4;
-  background: rgba(15, 20, 17, .98);
+  background: rgba(15, 20, 17, .985);
   box-shadow: 0 26px 80px rgba(0, 0, 0, .52);
-  backdrop-filter: blur(18px);
+  pointer-events: auto;
 }
 
+.listener-call-in-panel:focus { outline: none; }
+
 .listener-call-in-panel > header {
+  position: sticky;
+  top: -21px;
+  z-index: 2;
+  margin: -21px -21px 18px;
+  padding: 21px;
   display: flex;
   justify-content: space-between;
   gap: 20px;
   align-items: flex-start;
-  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  background: rgba(15, 20, 17, .98);
 }
 
 .listener-call-in-panel > header span {
@@ -65,14 +102,23 @@
 }
 
 .listener-call-in-panel > header button {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
   border: 1px solid #38443e;
-  border-radius: 11px;
+  border-radius: 12px;
   color: #eaf0ec;
   background: #1b221e;
   cursor: pointer;
   font-size: 1.25rem;
+}
+
+.listener-call-in-panel > header button:focus-visible,
+.listener-call-in-panel button:focus-visible,
+.listener-call-in-panel input:focus-visible,
+.listener-call-in-panel textarea:focus-visible {
+  outline: 3px solid rgba(66, 221, 141, .34);
+  outline-offset: 2px;
 }
 
 .listener-call-in-panel form { display: grid; gap: 14px; }
@@ -101,8 +147,8 @@
 .listener-call-in-panel input,
 .listener-call-in-panel textarea {
   width: 100%;
-  padding: 11px 12px;
-  border: 1px solid #35423b;
+  padding: 12px 13px;
+  border: 1px solid #4a5850;
   border-radius: 11px;
   color: #f3f7f4;
   background: #111613;
@@ -112,7 +158,6 @@
 
 .listener-call-in-panel input:focus,
 .listener-call-in-panel textarea:focus {
-  outline: 2px solid rgba(66, 221, 141, .32);
   border-color: #42dd8d;
 }
 
@@ -124,7 +169,7 @@
 }
 
 .listener-call-in-submit {
-  min-height: 46px;
+  min-height: 48px;
   border: 0;
   border-radius: 12px;
   color: #06120b;
@@ -137,7 +182,9 @@
 .listener-call-in-submit:disabled,
 .listener-call-in-actions button:disabled {
   cursor: wait;
-  opacity: .62;
+  color: #8c9891;
+  background: #29312d;
+  opacity: 1;
 }
 
 .listener-call-in-privacy {
@@ -146,15 +193,25 @@
   line-height: 1.5;
 }
 
-.listener-call-in-error {
+.listener-call-in-error,
+.listener-call-in-success {
   margin-bottom: 14px;
-  padding: 11px 12px;
-  border: 1px solid rgba(255, 111, 111, .35);
+  padding: 12px 13px;
   border-radius: 11px;
-  color: #ffd3d3;
-  background: rgba(124, 31, 31, .2);
   font-size: .78rem;
   line-height: 1.5;
+}
+
+.listener-call-in-error {
+  border: 1px solid rgba(255, 111, 111, .35);
+  color: #ffd3d3;
+  background: rgba(124, 31, 31, .2);
+}
+
+.listener-call-in-success {
+  border: 1px solid rgba(66, 221, 141, .35);
+  color: #d8ffe9;
+  background: rgba(66, 221, 141, .1);
 }
 
 .listener-call-in-status { display: grid; gap: 15px; }
@@ -208,8 +265,8 @@
 
 .listener-call-in-actions { display: flex; flex-wrap: wrap; gap: 9px; }
 .listener-call-in-actions button {
-  min-height: 40px;
-  padding: 0 13px;
+  min-height: 42px;
+  padding: 0 14px;
   border: 0;
   border-radius: 10px;
   color: #06120b;
@@ -228,19 +285,55 @@
 @media (max-width: 640px) {
   .listener-call-in {
     right: 12px;
-    bottom: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
     left: 12px;
     justify-items: stretch;
   }
-  .listener-call-in-launcher { justify-content: center; }
-  .listener-call-in-panel {
+
+  .listener-call-in-launcher {
     width: 100%;
-    max-height: min(72vh, 680px);
-    border-radius: 19px;
+    min-height: 52px;
+  }
+
+  .listener-call-in.open {
+    inset: 0;
+  }
+
+  .listener-call-in-panel {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 100dvh;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 22px 22px 0 0;
+  }
+
+  .listener-call-in-panel > header {
+    top: -20px;
+    margin: -20px -20px 18px;
+    padding: 20px;
+  }
+
+  .listener-call-in-submit {
+    position: sticky;
+    bottom: 0;
+    box-shadow: 0 -14px 28px rgba(15, 20, 17, .92);
+  }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .listener-call-in-panel {
+    max-height: 100dvh;
+    border-radius: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .listener-call-in-launcher,
-  .listener-call-in-panel { scroll-behavior: auto; }
+  .listener-call-in-launcher {
+    transition: none;
+  }
 }
