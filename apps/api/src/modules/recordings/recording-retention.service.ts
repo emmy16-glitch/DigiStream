@@ -198,7 +198,10 @@ function validateRetentionUntil(value: unknown): Date | null {
 
 function validatePurgeAfter(value: unknown): Date {
   const now = Date.now();
-  const parsed = value === undefined ? new Date(now + 7 * 24 * 60 * 60 * 1000) : parseDate(value);
+  const parsed =
+    value === undefined
+      ? new Date(now + 7 * 24 * 60 * 60 * 1000)
+      : parseDate(value);
   if (!(parsed instanceof Date)) {
     throw new ApiError(
       400,
@@ -216,6 +219,30 @@ function validatePurgeAfter(value: unknown): Date {
     );
   }
   return parsed;
+}
+
+function purgeMutationBlocked(
+  current: RecordingRetentionRecord,
+  action: RetentionAction,
+): boolean {
+  if (current.purgeStartedAt === null || current.purgedAt !== null) return false;
+  return (
+    action === 'set_retention' ||
+    action === 'request_deletion' ||
+    action === 'cancel_deletion' ||
+    action === 'set_legal_hold' ||
+    action === 'set_moderation_hold'
+  );
+}
+
+function effectivePurgeAfter(
+  requested: Date,
+  retentionUntil: Date | null,
+): Date {
+  if (retentionUntil && retentionUntil.getTime() > requested.getTime()) {
+    return retentionUntil;
+  }
+  return requested;
 }
 
 export async function getRecordingRetention(
@@ -269,7 +296,11 @@ export async function manageRecordingRetention(
     organisationId,
     recordingId,
     async (client, current) => {
-      if (current.purgedAt !== null && action !== 'clear_legal_hold' && action !== 'clear_moderation_hold') {
+      if (
+        current.purgedAt !== null &&
+        action !== 'clear_legal_hold' &&
+        action !== 'clear_moderation_hold'
+      ) {
         throw new ApiError(
           409,
           'RECORDING_ALREADY_PURGED',
@@ -277,13 +308,27 @@ export async function manageRecordingRetention(
         );
       }
 
+      if (purgeMutationBlocked(current, action)) {
+        throw new ApiError(
+          409,
+          'RECORDING_PURGE_IN_PROGRESS',
+          'Cleanup has already started. Retention, deletion cancellation and new holds cannot be changed until this attempt finishes.',
+        );
+      }
+
       if (action === 'set_retention') {
         const retentionUntil = validateRetentionUntil(body.retentionUntil);
+        const purgeAfter =
+          retentionUntil && current.purgeAfter
+            ? effectivePurgeAfter(current.purgeAfter, retentionUntil)
+            : current.purgeAfter;
         await client.query(
           `update recording_retention_controls
-           set retention_until = $2, updated_at = now()
+           set retention_until = $2,
+               purge_after = $3,
+               updated_at = now()
            where recording_id = $1`,
-          [recordingId, retentionUntil],
+          [recordingId, retentionUntil, purgeAfter],
         );
         return;
       }
@@ -303,7 +348,11 @@ export async function manageRecordingRetention(
             `A recording cannot be scheduled for deletion while it is ${current.status}.`,
           );
         }
-        const purgeAfter = validatePurgeAfter(body.purgeAfter);
+        const requestedPurgeAfter = validatePurgeAfter(body.purgeAfter);
+        const purgeAfter = effectivePurgeAfter(
+          requestedPurgeAfter,
+          current.retentionUntil,
+        );
         await client.query(
           `update recording_retention_controls
            set deletion_requested_at = now(),
@@ -364,7 +413,9 @@ export async function manageRecordingRetention(
       if (action === 'clear_legal_hold') {
         await client.query(
           `update recording_retention_controls
-           set legal_hold_at = null, legal_hold_reason = null, updated_at = now()
+           set legal_hold_at = null,
+               legal_hold_reason = null,
+               updated_at = now()
            where recording_id = $1`,
           [recordingId],
         );
@@ -411,6 +462,42 @@ export async function manageRecordingRetention(
   return updated ? toDto(updated) : recordingNotFound();
 }
 
+async function removeRecordingObject(
+  objectStorage: ObjectStorage,
+  candidate: RecordingRetentionRecord,
+): Promise<'deleted' | 'missing'> {
+  try {
+    if (
+      candidate.sizeBytes !== null &&
+      candidate.sizeBytes > 0 &&
+      candidate.checksumSha256 !== null
+    ) {
+      await objectStorage.verifyObject({
+        key: candidate.storageKey,
+        expectedChecksumSha256: candidate.checksumSha256,
+        expectedSizeBytes: candidate.sizeBytes,
+      });
+      await objectStorage.deleteObject(candidate.storageKey);
+      return 'deleted';
+    }
+
+    const stored = await objectStorage.getObject({
+      key: candidate.storageKey,
+      contentType: candidate.contentType ?? 'application/octet-stream',
+    });
+    stored.body.destroy();
+    throw new ObjectStorageError(
+      'invalid_response',
+      'The recording object exists, but checksum and size metadata are incomplete. Cleanup was not performed.',
+    );
+  } catch (error) {
+    if (error instanceof ObjectStorageError && error.code === 'not_found') {
+      return 'missing';
+    }
+    throw error;
+  }
+}
+
 export async function reconcileRecordingRetention(
   context: DatabaseContext,
   objectStorage: ObjectStorage,
@@ -438,28 +525,7 @@ export async function reconcileRecordingRetention(
 
   for (const candidate of candidates) {
     try {
-      let result: 'deleted' | 'missing' = 'missing';
-      if (
-        candidate.sizeBytes !== null &&
-        candidate.sizeBytes > 0 &&
-        candidate.checksumSha256 !== null
-      ) {
-        try {
-          await objectStorage.verifyObject({
-            key: candidate.storageKey,
-            expectedChecksumSha256: candidate.checksumSha256,
-            expectedSizeBytes: candidate.sizeBytes,
-          });
-          await objectStorage.deleteObject(candidate.storageKey);
-          result = 'deleted';
-        } catch (error) {
-          if (error instanceof ObjectStorageError && error.code === 'not_found') {
-            result = 'missing';
-          } else {
-            throw error;
-          }
-        }
-      }
+      const result = await removeRecordingObject(objectStorage, candidate);
       await completeRecordingPurge(context.pool, candidate.recordingId, result);
       results.push({ recordingId: candidate.recordingId, result });
     } catch (error) {
