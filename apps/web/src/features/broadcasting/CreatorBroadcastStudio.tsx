@@ -27,6 +27,14 @@ import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
 import { startAudioMeter, type AudioMeterController } from './audio-meter';
 import { StudioAudioMeter } from './StudioAudioMeter';
 import {
+  deliveryAttemptKey,
+  publicDeliveryIsLive,
+  publicDeliveryRecoveryFromError,
+  publicDeliveryRecoveryFromSnapshot,
+  type PublicDeliveryRecoveryState,
+  type PublicDeliverySnapshot,
+} from './public-delivery-recovery';
+import {
   classifyMicrophoneSignal,
   diagnoseStudioFailure,
   microphoneSignalPresentation,
@@ -77,14 +85,7 @@ type ContributionReadyResponse = {
 };
 
 type DeliveryResponse = {
-  delivery: {
-    ready: boolean;
-    broadcast: {
-      id: string;
-      status: Broadcast['status'];
-      lifecycleVersion: number;
-    };
-  };
+  delivery: PublicDeliverySnapshot;
 };
 
 type CreatorBroadcastStudioProps = {
@@ -226,6 +227,8 @@ export function CreatorBroadcastStudio({
   const [message, setMessage] = useState('Select a broadcast and test your microphone.');
   const [error, setError] = useState('');
   const [failure, setFailure] = useState<StudioDiagnostic | null>(null);
+  const [deliveryRecovery, setDeliveryRecovery] =
+    useState<PublicDeliveryRecoveryState | null>(null);
   const [busy, setBusy] = useState(false);
   const [endConfirmationOpen, setEndConfirmationOpen] = useState(false);
 
@@ -241,6 +244,7 @@ export function CreatorBroadcastStudio({
   const meterStartedAtRef = useRef<number | null>(null);
   const trackLifecycleCleanupRef = useRef<(() => void) | null>(null);
   const publicDeliveryActiveRef = useRef(false);
+  const deliveryAttemptRef = useRef(0);
 
   const selectedBroadcast = useMemo(
     () => broadcasts.find((item) => item.id === broadcastId) ?? null,
@@ -257,7 +261,7 @@ export function CreatorBroadcastStudio({
     phase === 'starting-delivery' ||
     phase === 'live' ||
     phase === 'reconnecting';
-  const liveCritical = isLiveCriticalPhase(phase);
+  const liveCritical = isLiveCriticalPhase(phase) || deliveryRecovery !== null;
   const phasePresentation = studioPhasePresentation[phase];
   const microphonePrepared = phase === 'microphone-ready' || connected;
   const silenceReference = lastAudibleAtRef.current ?? meterStartedAtRef.current;
@@ -386,6 +390,8 @@ export function CreatorBroadcastStudio({
     lastAudibleAtRef.current = null;
     meterStartedAtRef.current = null;
     publicDeliveryActiveRef.current = false;
+    deliveryAttemptRef.current = 0;
+    setDeliveryRecovery(null);
     if (room && track) {
       try {
         await room.localParticipant.unpublishTrack(track);
@@ -412,13 +418,13 @@ export function CreatorBroadcastStudio({
   }, []);
 
   const requestClose = useCallback(() => {
-    if (isLiveCriticalPhase(phase)) {
+    if (isLiveCriticalPhase(phase) || deliveryRecovery) {
       setFailure(null);
       setError('End the broadcast before closing the studio so public delivery stops safely.');
       return;
     }
     void stopLocalMedia().finally(onClose);
-  }, [onClose, phase, stopLocalMedia]);
+  }, [deliveryRecovery, onClose, phase, stopLocalMedia]);
 
   useEffect(() => {
     if (!open) return;
@@ -706,6 +712,7 @@ export function CreatorBroadcastStudio({
             );
             setMessage('Studio audio is disconnected. Public delivery state requires recovery or a safe end.');
           } else {
+            setDeliveryRecovery(null);
             setPhase('microphone-ready');
             setMessage('Disconnected from the private studio. Your local microphone remains available.');
           }
@@ -742,6 +749,7 @@ export function CreatorBroadcastStudio({
       });
       const alreadyLive = selectedBroadcast.status === 'live';
       publicDeliveryActiveRef.current = alreadyLive;
+      setDeliveryRecovery(null);
       setPhase(alreadyLive ? 'live' : 'connected');
       setMessage(alreadyLive ? 'Studio audio connected to the active broadcast.' : 'Studio audio connected. Start public delivery when you are ready.');
       setAudioPlaybackBlocked(!room.canPlaybackAudio);
@@ -785,6 +793,163 @@ export function CreatorBroadcastStudio({
     }
   }
 
+
+  function patchDeliverySnapshot(delivery: PublicDeliverySnapshot): void {
+    patchBroadcast(delivery.broadcast.id, {
+      status: delivery.broadcast.status,
+      lifecycleVersion: delivery.broadcast.lifecycleVersion,
+    });
+  }
+
+  function completePublicDelivery(delivery: PublicDeliverySnapshot): boolean {
+    patchDeliverySnapshot(delivery);
+    if (!publicDeliveryIsLive(delivery)) return false;
+    publicDeliveryActiveRef.current = true;
+    setDeliveryRecovery(null);
+    clearStudioFailure();
+    setPhase('live');
+    setMessage(
+      'You are live. Listener playback is available through the verified delivery path.',
+    );
+    return true;
+  }
+
+  function enterPublicDeliveryRecovery(
+    delivery: PublicDeliverySnapshot,
+    stage: 'delivery-start' | 'delivery-status' | 'delivery-timeout',
+  ): void {
+    patchDeliverySnapshot(delivery);
+    const recovery = publicDeliveryRecoveryFromSnapshot(delivery, stage);
+    setDeliveryRecovery(recovery);
+    setPhase('connected');
+    setMessage(
+      recovery?.privateStudioPreserved
+        ? 'Private Studio audio remains connected. Retry public delivery or check its current status.'
+        : 'Public delivery is not ready. Check its current status before retrying.',
+    );
+  }
+
+  function handlePublicDeliveryFailure(
+    stage: StudioFailureStage,
+    requestError: unknown,
+  ): void {
+    const diagnostic = diagnoseStudioFailure(stage, requestError);
+    reportStudioFailure(stage, requestError);
+    setDeliveryRecovery(
+      publicDeliveryRecoveryFromError(
+        diagnostic.recovery,
+        diagnostic.code ?? 'DELIVERY_REQUEST_FAILED',
+      ),
+    );
+    setPhase('connected');
+    setMessage(
+      'Private Studio audio remains connected, but public listener delivery needs recovery.',
+    );
+  }
+
+  async function pollPublicDelivery(
+    broadcastId: string,
+    initial: PublicDeliverySnapshot,
+  ): Promise<boolean> {
+    let delivery = initial;
+    const deadline = Date.now() + 90_000;
+
+    while (Date.now() < deadline && !publicDeliveryIsLive(delivery)) {
+      if (delivery.problem) {
+        enterPublicDeliveryRecovery(delivery, 'delivery-start');
+        return false;
+      }
+      await sleep(2_500);
+      delivery = (
+        await apiRequest<DeliveryResponse>(
+          `/api/v1/organisations/${organisationId}/broadcasts/${broadcastId}/delivery/status`,
+          { method: 'POST' },
+        )
+      ).delivery;
+      patchDeliverySnapshot(delivery);
+    }
+
+    if (completePublicDelivery(delivery)) return true;
+    enterPublicDeliveryRecovery(delivery, 'delivery-timeout');
+    return false;
+  }
+
+  async function startAndVerifyPublicDelivery(
+    broadcastId: string,
+    lifecycleVersion: number,
+  ): Promise<boolean> {
+    const attempt = deliveryAttemptRef.current + 1;
+    deliveryAttemptRef.current = attempt;
+    const delivery = (
+      await apiRequest<DeliveryResponse>(
+        `/api/v1/organisations/${organisationId}/broadcasts/${broadcastId}/delivery/start`,
+        {
+          method: 'POST',
+          headers: {
+            'idempotency-key': deliveryAttemptKey(
+              broadcastId,
+              lifecycleVersion,
+              attempt,
+            ),
+          },
+        },
+      )
+    ).delivery;
+
+    patchDeliverySnapshot(delivery);
+    if (completePublicDelivery(delivery)) return true;
+    if (delivery.problem) {
+      enterPublicDeliveryRecovery(delivery, 'delivery-start');
+      return false;
+    }
+    return pollPublicDelivery(broadcastId, delivery);
+  }
+
+  async function retryPublicDelivery() {
+    if (!organisationId || !selectedBroadcast || !roomRef.current) return;
+    setBusy(true);
+    clearStudioFailure();
+    setDeliveryRecovery(null);
+    setPhase('starting-delivery');
+    setMessage('Retrying public listener delivery while private Studio audio stays connected…');
+    try {
+      const current = (
+        await apiRequest<BroadcastResponse>(
+          `/api/v1/organisations/${organisationId}/broadcasts/${selectedBroadcast.id}`,
+        )
+      ).broadcast;
+      await startAndVerifyPublicDelivery(current.id, current.lifecycleVersion);
+    } catch (requestError) {
+      handlePublicDeliveryFailure('delivery-start', requestError);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function checkPublicDeliveryStatus() {
+    if (!organisationId || !selectedBroadcast || !roomRef.current) return;
+    setBusy(true);
+    clearStudioFailure();
+    setPhase('starting-delivery');
+    setMessage('Checking public listener delivery without disconnecting the private Studio…');
+    try {
+      const delivery = (
+        await apiRequest<DeliveryResponse>(
+          `/api/v1/organisations/${organisationId}/broadcasts/${selectedBroadcast.id}/delivery/status`,
+          { method: 'POST' },
+        )
+      ).delivery;
+      patchDeliverySnapshot(delivery);
+      if (!completePublicDelivery(delivery)) {
+        enterPublicDeliveryRecovery(delivery, 'delivery-status');
+      }
+    } catch (requestError) {
+      handlePublicDeliveryFailure('delivery-verification', requestError);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function goLive() {
     if (
       !organisationId ||
@@ -798,6 +963,7 @@ export function CreatorBroadcastStudio({
     }
     setBusy(true);
     clearStudioFailure();
+    setDeliveryRecovery(null);
     setPhase('starting-delivery');
     setMessage('Verifying studio audio and preparing public delivery…');
     let liveStage: StudioFailureStage = 'broadcast-lifecycle';
@@ -841,45 +1007,12 @@ export function CreatorBroadcastStudio({
       });
 
       liveStage = 'delivery-start';
-      let delivery = await apiRequest<DeliveryResponse>(
-        `/api/v1/organisations/${organisationId}/broadcasts/${current.id}/delivery/start`,
-        { method: 'POST' },
+      await startAndVerifyPublicDelivery(
+        current.id,
+        contribution.contribution.broadcast.lifecycleVersion,
       );
-      patchBroadcast(current.id, {
-        status: delivery.delivery.broadcast.status,
-        lifecycleVersion: delivery.delivery.broadcast.lifecycleVersion,
-      });
-
-      liveStage = 'delivery-verification';
-      const deadline = Date.now() + 90_000;
-      while (
-        Date.now() < deadline &&
-        !(delivery.delivery.ready && delivery.delivery.broadcast.status === 'live')
-      ) {
-        if (delivery.delivery.broadcast.status === 'failed') {
-          throw new Error('Public delivery reported a failed broadcast.');
-        }
-        await sleep(2_500);
-        delivery = await apiRequest<DeliveryResponse>(
-          `/api/v1/organisations/${organisationId}/broadcasts/${current.id}/delivery/refresh`,
-          { method: 'POST' },
-        );
-        patchBroadcast(current.id, {
-          status: delivery.delivery.broadcast.status,
-          lifecycleVersion: delivery.delivery.broadcast.lifecycleVersion,
-        });
-      }
-
-      if (!delivery.delivery.ready || delivery.delivery.broadcast.status !== 'live') {
-        throw new Error('Public delivery did not become ready within 90 seconds.');
-      }
-      publicDeliveryActiveRef.current = true;
-      setPhase('live');
-      setMessage('You are live. Listener playback is now available through the verified delivery path.');
     } catch (requestError) {
-      setPhase('connected');
-      reportStudioFailure(liveStage, requestError);
-      setMessage('Studio audio remains connected, but the failed public-delivery stage must be resolved before listeners can hear it.');
+      handlePublicDeliveryFailure(liveStage, requestError);
     } finally {
       setBusy(false);
     }
@@ -1227,8 +1360,26 @@ export function CreatorBroadcastStudio({
                     <span>Step 3</span>
                     <h3 id="studio-delivery-title">Verify and go live</h3>
                   </div>
-                  <StatusBadge tone={phase === 'live' ? 'live' : connected ? 'success' : 'neutral'}>
-                    {phase === 'live' ? 'Public delivery live' : connected ? 'Studio connected' : 'Not connected'}
+                  <StatusBadge
+                    tone={
+                      phase === 'live'
+                        ? 'live'
+                        : deliveryRecovery || phase === 'starting-delivery'
+                          ? 'warning'
+                          : connected
+                            ? 'success'
+                            : 'neutral'
+                    }
+                  >
+                    {phase === 'live'
+                      ? 'Public delivery live'
+                      : deliveryRecovery
+                        ? 'Delivery needs recovery'
+                        : phase === 'starting-delivery'
+                          ? 'Checking delivery'
+                          : connected
+                            ? 'Studio connected'
+                            : 'Not connected'}
                   </StatusBadge>
                 </div>
 
@@ -1247,20 +1398,42 @@ export function CreatorBroadcastStudio({
                       <small>{connected ? 'Microphone is published to the authorised room.' : 'Join the studio after the input is ready.'}</small>
                     </div>
                   </li>
-                  <li className={phase === 'live' ? 'complete live' : phase === 'starting-delivery' ? 'active' : ''}>
+                  <li
+                    className={
+                      phase === 'live'
+                        ? 'complete live'
+                        : phase === 'starting-delivery' || deliveryRecovery
+                          ? 'active'
+                          : ''
+                    }
+                  >
                     <span aria-hidden="true">3</span>
                     <div>
                       <strong>Public listener delivery</strong>
                       <small>
                         {phase === 'live'
                           ? 'Contribution and public delivery are verified.'
-                          : phase === 'starting-delivery'
-                            ? 'DigiStream is waiting for verified delivery readiness.'
-                            : 'Public playback remains unavailable until Go live succeeds.'}
+                          : deliveryRecovery
+                            ? 'Private Studio audio is healthy while public delivery waits for a retry or status check.'
+                            : phase === 'starting-delivery'
+                              ? 'DigiStream is waiting for verified delivery readiness.'
+                              : 'Public playback remains unavailable until Go live succeeds.'}
                       </small>
                     </div>
                   </li>
                 </ol>
+
+                {deliveryRecovery ? (
+                  <div className="studio-inline-alert studio-inline-warning" role="status">
+                    <strong>Private Studio is still connected</strong>
+                    <span>{deliveryRecovery.message}</span>
+                    <small>
+                      Stage: {deliveryRecovery.stage.replaceAll('-', ' ')} · Code:{' '}
+                      {deliveryRecovery.code} · Checked:{' '}
+                      {new Date(deliveryRecovery.checkedAt).toLocaleTimeString()}
+                    </small>
+                  </div>
+                ) : null}
 
                 <div className="studio-primary-actions">
                   {!connected ? (
@@ -1274,6 +1447,38 @@ export function CreatorBroadcastStudio({
                     >
                       Join private studio
                     </Button>
+                  ) : deliveryRecovery ? (
+                    <>
+                      <Button
+                        fullWidth
+                        icon="broadcast"
+                        loading={busy && phase === 'starting-delivery'}
+                        disabled={
+                          busy ||
+                          !microphoneReadyForDelivery ||
+                          !deliveryRecovery.retryable
+                        }
+                        onClick={retryPublicDelivery}
+                        variant="primary"
+                      >
+                        Retry public delivery
+                      </Button>
+                      <Button
+                        fullWidth
+                        disabled={busy}
+                        onClick={checkPublicDeliveryStatus}
+                      >
+                        Check delivery status
+                      </Button>
+                      <Button
+                        fullWidth
+                        disabled={busy}
+                        onClick={leaveStudio}
+                        variant="ghost"
+                      >
+                        Leave private studio
+                      </Button>
+                    </>
                   ) : phase !== 'live' && phase !== 'reconnecting' ? (
                     <>
                       <Button
@@ -1303,7 +1508,11 @@ export function CreatorBroadcastStudio({
                   )}
                 </div>
 
-                {connected && !microphoneReadyForDelivery && phase !== 'live' ? (
+                {deliveryRecovery ? (
+                  <p className="studio-action-note">
+                    Public delivery recovery does not unpublish or disconnect your microphone.
+                  </p>
+                ) : connected && !microphoneReadyForDelivery && phase !== 'live' ? (
                   <p className="studio-action-note">{microphoneSignal.guidance}</p>
                 ) : liveCritical ? (
                   <p className="studio-action-note">Closing the studio is blocked until the broadcast ends safely.</p>

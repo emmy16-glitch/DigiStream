@@ -114,7 +114,7 @@ This phase blocks decorative expansion until the existing live product behaves h
 
 ### Correct state and authorization
 
-- [ ] Trace the exact backend, authentication, authorization or configuration cause of **Studio action failed**
+- [x] Trace the exact backend, authentication, authorization or configuration cause of **Studio action failed**
 - [ ] Make public listener actions role-aware for organisation owners, admins and broadcasters
 - [ ] Replace owner-facing **Request to speak** with **Manage broadcast**, **Open studio** or **Open backstage** as appropriate
 - [ ] Keep the API as the independent authorization boundary and add matching tests
@@ -137,11 +137,11 @@ This phase blocks decorative expansion until the existing live product behaves h
 
 ### Creator audio and failure recovery
 
-- [ ] Add sustained **No signal** detection instead of leaving a zero-level input as neutral `Listening`
-- [ ] Add Quiet, Good, Loud, Clipping, Muted and Device disconnected labels with dBFS as secondary detail
-- [ ] Smooth the underlying meter signal with fast attack, slower release and immediate clipping peaks
-- [ ] Preserve a healthy contribution room when public delivery alone fails, where safe
-- [ ] Add safe retry or status actions to understood studio failures without duplicate dismiss controls
+- [x] Add sustained **No signal** detection instead of leaving a zero-level input as neutral `Listening`
+- [x] Add Quiet, Good, Loud, Clipping, Muted and Device disconnected labels with dBFS as secondary detail
+- [x] Smooth the underlying meter signal with fast attack, slower release and immediate clipping peaks
+- [x] Preserve a healthy contribution room when public delivery alone fails, where safe
+- [x] Add safe retry or status actions to understood studio failures without duplicate dismiss controls
 - [ ] Make browser and Android Back close the studio before leaving the workspace
 
 ### Call-in, chat and mobile layout

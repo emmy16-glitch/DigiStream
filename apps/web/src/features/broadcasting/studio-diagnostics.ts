@@ -296,6 +296,26 @@ export function diagnoseStudioFailure(
         title: 'Application server is unreachable',
         recovery: 'Confirm the API server is running and the browser can reach it, then retry.',
       };
+    case 'DELIVERY_OPERATION_IN_PROGRESS':
+      return {
+        ...diagnostic,
+        title: 'Public delivery is already being checked',
+        recovery: 'Wait for the current operation to finish, then use Check delivery status. Do not disconnect the private Studio.',
+      };
+    case 'MEDIA_RELAY_PROVIDER_ERROR':
+    case 'DELIVERY_PROVIDER_ERROR':
+      return {
+        ...diagnostic,
+        title: 'Public delivery service is unavailable',
+        recovery: 'Keep the private Studio connected, verify the media services and retry public delivery.',
+      };
+    case 'MEDIA_RELAY_NOT_CONFIGURED':
+    case 'OVENMEDIAENGINE_NOT_CONFIGURED':
+      return {
+        ...diagnostic,
+        title: 'Public delivery service is not configured',
+        recovery: 'Start and configure LiveKit Egress and OvenMediaEngine, then retry public delivery.',
+      };
     default:
       break;
   }
