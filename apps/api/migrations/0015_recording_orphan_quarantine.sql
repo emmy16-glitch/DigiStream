@@ -14,7 +14,14 @@ CREATE TABLE recording_orphan_quarantine (
   last_error varchar(1000),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT recording_orphan_status_check CHECK (
-    status IN ('detected', 'quarantined', 'failed', 'resolved')
+    status IN (
+      'detected',
+      'quarantining',
+      'quarantined',
+      'cleaning',
+      'failed',
+      'resolved'
+    )
   ),
   CONSTRAINT recording_orphan_resolution_check CHECK (
     resolution IS NULL OR resolution IN ('deleted', 'restored', 'missing')
@@ -29,7 +36,7 @@ CREATE TABLE recording_orphan_quarantine (
 
 CREATE INDEX recording_orphan_cleanup_due_idx
   ON recording_orphan_quarantine (cleanup_after, original_key)
-  WHERE status = 'quarantined';
+  WHERE status IN ('quarantined', 'failed') AND quarantined_at IS NOT NULL;
 
 CREATE INDEX recording_orphan_unresolved_idx
   ON recording_orphan_quarantine (status, updated_at, original_key)
