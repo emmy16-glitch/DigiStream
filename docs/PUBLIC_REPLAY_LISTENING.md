@@ -48,9 +48,11 @@ Unlisted channels may be opened only through the exact organisation, channel and
 
 The browser never receives an object-storage key or credential. It requests a short-lived playback grant from DigiStream, then uses the existing `/api/v1/recording-media?token=...` delivery path.
 
-Every grant request reloads current database state. Archived, private-to-public, deleted, deletion-scheduled, held or otherwise non-deliverable recordings fail closed even when a stale discovery response remains in a browser cache.
+Every grant request reloads current database state. Archived, made-private, deleted, deletion-scheduled, held or otherwise non-deliverable recordings fail closed even when a stale discovery response remains in a browser cache.
 
-The media route independently rechecks the recording, broadcast, channel and retention policy for every request. A token minted before a moderation hold, legal hold, deletion request, archive action or channel suspension is therefore revoked immediately rather than remaining usable until token expiry.
+Playback grants carry an explicit `public` or `member` scope. A public grant remains valid only while the recording is published and its channel is active with public or unlisted visibility. A member grant remains valid only for an authenticated organisation-member flow and may serve published or private recordings. Public grants cannot silently become member grants after a visibility change.
+
+The media route independently rechecks the grant scope, recording, broadcast, channel and retention policy for every request. A token minted before a recording becomes private, a moderation or legal hold, a deletion request, an archive action or a channel suspension is therefore revoked immediately rather than remaining usable until token expiry.
 
 Playback links remain private, short-lived and `no-store`. Expiry during listening is communicated clearly and is not described as a general application-server failure.
 
@@ -74,7 +76,7 @@ Listener routes:
 
 ## Creator workflow
 
-Published recording cards link to the exact public or unlisted replay page. Private recording cards link to the authenticated member replay page. Archiving or scheduling deletion revokes those playback paths immediately.
+Published recording cards on public or unlisted channels link to the exact listener replay page. Published recordings on private channels and recordings explicitly marked private link to the authenticated member replay page. Archiving, making a recording private, changing a channel to private or scheduling deletion revokes public playback immediately.
 
 ## Validation gate
 
