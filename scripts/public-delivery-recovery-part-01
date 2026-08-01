@@ -1,5 +1,3 @@
-)
-
 studio = replace_exact(
     studio,
     """      publicDeliveryActiveRef.current = alreadyLive;
