@@ -4,7 +4,6 @@ import { ApiError } from '../../http/errors.js';
 import {
   ObjectStorageError,
   type ObjectStorage,
-  type ObjectStorageInventoryItem,
 } from '../storage/object-storage.js';
 import {
   claimDueRecordingOrphanCleanup,
@@ -63,21 +62,30 @@ function parseAction(value: unknown): 'quarantine' | 'cleanup' {
 
 function parseInteger(
   value: unknown,
-  options: { name: string; fallback: number; minimum: number; maximum: number },
+  options: {
+    name: string;
+    fallback: number;
+    minimum: number;
+    maximum: number;
+    allowZeroInTest?: boolean;
+  },
 ): number {
   const parsed = value === undefined
     ? options.fallback
     : Number.parseInt(String(value), 10);
-  const testMinimum = process.env.NODE_ENV === 'test' ? 0 : options.minimum;
+  const minimum =
+    options.allowZeroInTest && process.env.NODE_ENV === 'test'
+      ? 0
+      : options.minimum;
   if (
     !Number.isSafeInteger(parsed) ||
-    parsed < testMinimum ||
+    parsed < minimum ||
     parsed > options.maximum
   ) {
     throw new ApiError(
       400,
       'VALIDATION_ERROR',
-      `${options.name} must be between ${testMinimum} and ${options.maximum}.`,
+      `${options.name} must be between ${minimum} and ${options.maximum}.`,
     );
   }
   return parsed;
@@ -113,7 +121,10 @@ function requireInventoryStorage(storage: ObjectStorage): InventoryStorage {
 
 function quarantineKey(originalKey: string): string {
   const digest = createHash('sha256').update(originalKey).digest('hex');
-  const filename = originalKey.split('/').at(-1)?.replace(/[^a-zA-Z0-9._-]+/g, '-') || 'object';
+  const filename = originalKey
+    .split('/')
+    .at(-1)
+    ?.replace(/[^a-zA-Z0-9._-]+/g, '-') || 'object';
   return `${QUARANTINE_PREFIX}${digest.slice(0, 24)}-${filename}`;
 }
 
@@ -137,12 +148,14 @@ async function quarantineInventoryPage(
     fallback: 86_400,
     minimum: 300,
     maximum: 2_592_000,
+    allowZeroInTest: true,
   });
   const quarantineSeconds = parseInteger(body.quarantineSeconds, {
     name: 'quarantineSeconds',
     fallback: 604_800,
     minimum: 86_400,
     maximum: 7_776_000,
+    allowZeroInTest: true,
   });
   const page = await storage.listObjects({
     prefix: RECORDING_PREFIX,
@@ -211,6 +224,26 @@ async function quarantineInventoryPage(
         destinationKey: claimed.quarantineKey,
         expectedSizeBytes: claimed.sizeBytes,
       });
+
+      const knownAfterMove = await findKnownRecordingStorageKeys(
+        context.pool,
+        [claimed.originalKey],
+      );
+      if (knownAfterMove.has(claimed.originalKey)) {
+        await storage.moveObject({
+          sourceKey: claimed.quarantineKey,
+          destinationKey: claimed.originalKey,
+          expectedSizeBytes: claimed.sizeBytes,
+        });
+        await resolveRecordingOrphan(
+          context.pool,
+          claimed.originalKey,
+          'restored',
+        );
+        result.recordedDuringScan += 1;
+        continue;
+      }
+
       await completeRecordingOrphanQuarantine(context.pool, claimed.originalKey);
       result.quarantined += 1;
     } catch (error) {
