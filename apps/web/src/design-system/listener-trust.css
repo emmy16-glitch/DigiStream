@@ -45,7 +45,7 @@
   display: none;
 }
 
-.ds-listener-content:has(.listener-call-in) {
+body.ds-listener-fixed-action-visible .ds-listener-content {
   padding-bottom: calc(92px + env(safe-area-inset-bottom));
 }
 
