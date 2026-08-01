@@ -126,7 +126,7 @@ test('scheduled broadcast does not pretend to be live', async ({ page }) => {
   await expect(liveNow).not.toHaveAttribute('aria-current', 'page');
 });
 
-test('live lifecycle reveals audio controls without changing scheduled pages', async ({ page }) => {
+test('live lifecycle reveals audio controls without changing scheduled pages', async ({ page }, testInfo) => {
   await mockVisitor(page);
   await mockBroadcast(page, 'live');
   await page.goto(routePath);
@@ -137,7 +137,12 @@ test('live lifecycle reveals audio controls without changing scheduled pages', a
   );
   await expect(page.getByRole('button', { name: 'Listen live' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Mute' })).toBeVisible();
-  await expect(page.getByLabel('Volume')).toBeVisible();
+  const volume = page.getByLabel('Volume');
+  if (testInfo.project.name === 'android-chrome') {
+    await expect(volume).toBeHidden();
+  } else {
+    await expect(volume).toBeVisible();
+  }
   await expect(page.getByRole('link', { name: 'Add to calendar' })).toHaveCount(0);
 });
 
