@@ -1,10 +1,8 @@
 name: Apply PR 29 manual review fixes
 
 on:
-  push:
-    branches: [agent/broadcast-studio-ui]
-    paths:
-      - .github/workflows/apply-pr29-manual-review-fixes.yml
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
@@ -15,6 +13,7 @@ concurrency:
 
 jobs:
   apply-and-validate:
+    if: github.event.pull_request.head.ref == 'agent/broadcast-studio-ui'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
