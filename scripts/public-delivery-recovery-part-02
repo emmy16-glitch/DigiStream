@@ -1,0 +1,110 @@
+  ): Promise<boolean> {
+    const attempt = deliveryAttemptRef.current + 1;
+    deliveryAttemptRef.current = attempt;
+    const delivery = (
+      await apiRequest<DeliveryResponse>(
+        `/api/v1/organisations/${organisationId}/broadcasts/${broadcastId}/delivery/start`,
+        {
+          method: 'POST',
+          headers: {
+            'idempotency-key': deliveryAttemptKey(
+              broadcastId,
+              lifecycleVersion,
+              attempt,
+            ),
+          },
+        },
+      )
+    ).delivery;
+
+    patchDeliverySnapshot(delivery);
+    if (completePublicDelivery(delivery)) return true;
+    if (delivery.problem) {
+      enterPublicDeliveryRecovery(delivery, 'delivery-start');
+      return false;
+    }
+    return pollPublicDelivery(broadcastId, delivery);
+  }
+
+  async function retryPublicDelivery() {
+    if (!organisationId || !selectedBroadcast || !roomRef.current) return;
+    setBusy(true);
+    clearStudioFailure();
+    setDeliveryRecovery(null);
+    setPhase('starting-delivery');
+    setMessage('Retrying public listener delivery while private Studio audio stays connected…');
+    try {
+      const current = (
+        await apiRequest<BroadcastResponse>(
+          `/api/v1/organisations/${organisationId}/broadcasts/${selectedBroadcast.id}`,
+        )
+      ).broadcast;
+      await startAndVerifyPublicDelivery(current.id, current.lifecycleVersion);
+    } catch (requestError) {
+      handlePublicDeliveryFailure('delivery-start', requestError);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function checkPublicDeliveryStatus() {
+    if (!organisationId || !selectedBroadcast || !roomRef.current) return;
+    setBusy(true);
+    clearStudioFailure();
+    setPhase('starting-delivery');
+    setMessage('Checking public listener delivery without disconnecting the private Studio…');
+    try {
+      const delivery = (
+        await apiRequest<DeliveryResponse>(
+          `/api/v1/organisations/${organisationId}/broadcasts/${selectedBroadcast.id}/delivery/status`,
+          { method: 'POST' },
+        )
+      ).delivery;
+      patchDeliverySnapshot(delivery);
+      if (!completePublicDelivery(delivery)) {
+        enterPublicDeliveryRecovery(delivery, 'delivery-status');
+      }
+    } catch (requestError) {
+      handlePublicDeliveryFailure('delivery-verification', requestError);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+"""
+studio = replace_exact(
+    studio,
+    """  async function goLive() {""",
+    helpers + """  async function goLive() {""",
+    'delivery recovery helpers',
+)
+
+old_delivery_flow = """      liveStage = 'delivery-start';
+      let delivery = await apiRequest<DeliveryResponse>(
+        `/api/v1/organisations/${organisationId}/broadcasts/${current.id}/delivery/start`,
+        { method: 'POST' },
+      );
+      patchBroadcast(current.id, {
+        status: delivery.delivery.broadcast.status,
+        lifecycleVersion: delivery.delivery.broadcast.lifecycleVersion,
+      });
+
+      liveStage = 'delivery-verification';
+      const deadline = Date.now() + 90_000;
+      while (
+        Date.now() < deadline &&
+        !(delivery.delivery.ready && delivery.delivery.broadcast.status === 'live')
+      ) {
+        if (delivery.delivery.broadcast.status === 'failed') {
+          throw new Error('Public delivery reported a failed broadcast.');
+        }
+        await sleep(2_500);
+        delivery = await apiRequest<DeliveryResponse>(
+          `/api/v1/organisations/${organisationId}/broadcasts/${current.id}/delivery/refresh`,
+          { method: 'POST' },
+        );
+        patchBroadcast(current.id, {
+          status: delivery.delivery.broadcast.status,
+          lifecycleVersion: delivery.delivery.broadcast.lifecycleVersion,
+        });
+      }
