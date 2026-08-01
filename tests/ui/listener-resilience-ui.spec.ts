@@ -66,11 +66,13 @@ test('live listener page keeps transport details secondary and has one page land
   await expect(page.getByText('Ready', { exact: true })).toBeVisible();
   await expect(page.locator('main')).toHaveCount(1);
   await expect(page.locator('.ds-listener-header')).toHaveCount(1);
+  await expect(page.locator('.listener-status')).not.toContainText(/WebRTC|LL-HLS/);
+  await expect(page.locator('.ds-listener-footer')).not.toContainText(
+    /WebRTC|LL-HLS/,
+  );
 
   const diagnostics = page.getByText('Technical details', { exact: true });
   await expect(diagnostics).toBeVisible();
-  await expect(page.getByText(/WebRTC|LL-HLS/)).toHaveCount(0);
-
   await diagnostics.click();
   await expect(page.getByText(/Automatic WebRTC to LL-HLS selection/)).toBeVisible();
 });
