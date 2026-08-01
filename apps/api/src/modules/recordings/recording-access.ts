@@ -5,11 +5,13 @@ import {
 } from 'node:crypto';
 
 export type RecordingAccessMode = 'playback' | 'download';
+export type RecordingAccessScope = 'public' | 'member';
 
 export type RecordingAccessGrant = {
   organisationId: string;
   recordingId: string;
   mode: RecordingAccessMode;
+  scope: RecordingAccessScope;
   expiresAt: Date;
 };
 
@@ -19,10 +21,11 @@ export type RecordingAccessVerification =
   | { status: 'invalid' };
 
 type TokenPayload = {
-  v: 1;
+  v: 2;
   organisationId: string;
   recordingId: string;
   mode: RecordingAccessMode;
+  scope: RecordingAccessScope;
   exp: number;
   nonce: string;
 };
@@ -42,6 +45,10 @@ function validMode(value: unknown): value is RecordingAccessMode {
   return value === 'playback' || value === 'download';
 }
 
+function validScope(value: unknown): value is RecordingAccessScope {
+  return value === 'public' || value === 'member';
+}
+
 export class RecordingAccessManager {
   readonly ttlSeconds: number;
 
@@ -59,13 +66,15 @@ export class RecordingAccessManager {
     organisationId: string;
     recordingId: string;
     mode: RecordingAccessMode;
+    scope?: RecordingAccessScope;
   }): { token: string; grant: RecordingAccessGrant } {
     const expiresAt = new Date(Date.now() + this.ttlSeconds * 1000);
     const payload: TokenPayload = {
-      v: 1,
+      v: 2,
       organisationId: input.organisationId,
       recordingId: input.recordingId,
       mode: input.mode,
+      scope: input.scope ?? 'member',
       exp: Math.floor(expiresAt.getTime() / 1000),
       nonce: randomBytes(12).toString('base64url'),
     };
@@ -78,6 +87,7 @@ export class RecordingAccessManager {
         organisationId: payload.organisationId,
         recordingId: payload.recordingId,
         mode: payload.mode,
+        scope: payload.scope,
         expiresAt,
       },
     };
@@ -103,10 +113,11 @@ export class RecordingAccessManager {
         Buffer.from(encodedPayload, 'base64url').toString('utf8'),
       ) as Partial<TokenPayload>;
       if (
-        payload.v !== 1 ||
+        payload.v !== 2 ||
         typeof payload.organisationId !== 'string' ||
         typeof payload.recordingId !== 'string' ||
         !validMode(payload.mode) ||
+        !validScope(payload.scope) ||
         typeof payload.exp !== 'number' ||
         !Number.isSafeInteger(payload.exp) ||
         typeof payload.nonce !== 'string' ||
@@ -123,6 +134,7 @@ export class RecordingAccessManager {
           organisationId: payload.organisationId,
           recordingId: payload.recordingId,
           mode: payload.mode,
+          scope: payload.scope,
           expiresAt: new Date(payload.exp * 1000),
         },
       };
