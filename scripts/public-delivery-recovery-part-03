@@ -32,11 +32,15 @@ studio = replace_exact(
 
 studio = replace_exact(
     studio,
-    """    clearStudioFailure();
-    setPhase('starting-delivery');""",
-    """    clearStudioFailure();
+    """    setBusy(true);
+    clearStudioFailure();
+    setPhase('starting-delivery');
+    setMessage('Verifying studio audio and preparing public delivery…');""",
+    """    setBusy(true);
+    clearStudioFailure();
     setDeliveryRecovery(null);
-    setPhase('starting-delivery');""",
+    setPhase('starting-delivery');
+    setMessage('Verifying studio audio and preparing public delivery…');""",
     'clear recovery on go live',
 )
 
