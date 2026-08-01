@@ -58,7 +58,7 @@ jobs:
         run: npm run db:migrate
 
       - name: Validate TypeScript
-        run: npm run typecheck
+        run: timeout 180s npm run typecheck
 
       - name: Install Playwright Chromium
         run: |
@@ -67,7 +67,7 @@ jobs:
 
       - name: Run listener resilience browser coverage
         run: >-
-          npx playwright test
+          timeout --signal=KILL 300s npx playwright test
           tests/ui/listener-connection-presentation.spec.ts
           tests/ui/listener-trust.spec.ts
           tests/ui/listener-lifecycle-states.spec.ts
