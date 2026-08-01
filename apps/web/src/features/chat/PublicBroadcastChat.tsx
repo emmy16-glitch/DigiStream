@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { PublicBroadcast, PublicBroadcastResponse } from '@digistream/contracts';
 import { ApiClientError, apiRequest } from '../../lib/api-client';
 import type { ListenerRoute } from '../listening/listener-route';
@@ -22,25 +22,36 @@ export function PublicBroadcastChat({ route }: PublicBroadcastChatProps) {
     [route],
   );
 
+  const loadBroadcast = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const response = await apiRequest<PublicBroadcastResponse>(metadataPath, {
+        signal,
+      });
+      setBroadcast(response.broadcast);
+      setError('');
+    } catch (requestError) {
+      if (requestError instanceof DOMException && requestError.name === 'AbortError') {
+        return;
+      }
+      setError(
+        requestError instanceof ApiClientError
+          ? requestError.message
+          : 'Live chat metadata could not be loaded.',
+      );
+    }
+  }, [metadataPath]);
+
   useEffect(() => {
     const controller = new AbortController();
-    setError('');
-    void apiRequest<PublicBroadcastResponse>(metadataPath, {
-      signal: controller.signal,
-    })
-      .then((response) => setBroadcast(response.broadcast))
-      .catch((requestError) => {
-        if (requestError instanceof DOMException && requestError.name === 'AbortError') {
-          return;
-        }
-        setError(
-          requestError instanceof ApiClientError
-            ? requestError.message
-            : 'Live chat metadata could not be loaded.',
-        );
-      });
-    return () => controller.abort();
-  }, [metadataPath]);
+    void loadBroadcast(controller.signal);
+    const timer = window.setInterval(() => {
+      void loadBroadcast();
+    }, 8_000);
+    return () => {
+      controller.abort();
+      window.clearInterval(timer);
+    };
+  }, [loadBroadcast]);
 
   if (error) {
     return (
@@ -52,7 +63,34 @@ export function PublicBroadcastChat({ route }: PublicBroadcastChatProps) {
   if (!broadcast) {
     return (
       <section className="broadcast-chat broadcast-chat-listener">
-        <div className="broadcast-chat-empty">Loading live chat…</div>
+        <div className="broadcast-chat-empty">Loading broadcast conversation…</div>
+      </section>
+    );
+  }
+
+  if (broadcast.status === 'scheduled' || broadcast.status === 'starting') {
+    const starting = broadcast.status === 'starting';
+    return (
+      <section
+        aria-live="polite"
+        className="broadcast-chat broadcast-chat-listener broadcast-chat-scheduled-state"
+      >
+        <header className="broadcast-chat-header">
+          <div>
+            <span className="broadcast-chat-eyebrow">Conversation</span>
+            <h2>Broadcast chat</h2>
+          </div>
+        </header>
+        <div className="broadcast-chat-scheduled-copy">
+          <strong>
+            {starting
+              ? 'Chat will open when public audio is ready.'
+              : 'Chat will open when the broadcast starts.'}
+          </strong>
+          <span>
+            Messages and the composer will appear automatically when the broadcast becomes available.
+          </span>
+        </div>
       </section>
     );
   }
