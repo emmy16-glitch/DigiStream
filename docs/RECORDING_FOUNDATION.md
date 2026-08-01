@@ -63,16 +63,26 @@ Authorised media route:
 
 The internal routes require `x-digistream-media-secret`. The artifact route accepts an audio body and validated metadata headers, but never accepts a storage key from the worker or browser.
 
+## Implemented durable processing and retention slices
+
+- PostgreSQL-backed processing jobs with atomic `FOR UPDATE SKIP LOCKED` claims.
+- Short-lived worker leases, heartbeats, bounded exponential retries and dead-letter state.
+- Reconciliation for expired leases and recordings already in terminal artifact states.
+- One retention-control row per recording with migration backfill.
+- Explicit deletion scheduling with a minimum grace period and immediate archive-based access revocation.
+- Legal and moderation holds that prevent destructive cleanup.
+- Protected, bounded cleanup reconciliation with checksum verification, honest missing-object outcomes and idempotent completion.
+
+The worker lifecycle is documented in [`RECORDING_RECONCILIATION.md`](RECORDING_RECONCILIATION.md). Retention and cleanup are documented in [`RECORDING_RETENTION.md`](RECORDING_RETENTION.md).
+
 ## Deliberately not implemented yet
 
-- Queue-backed retry scheduling and durable worker job claiming.
-- Reconciliation of stalled database states with storage contents.
-- Orphan-object detection and cleanup.
-- Retention, deletion, legal hold and moderation hold policies.
-- Public listener replay pages and public published-replay discovery.
+- Listing and quarantining object-store keys that have no database record.
+- Organisation-wide default retention policies.
+- Public listener replay pages and published replay discovery.
 - Production object-storage backup, lifecycle and disaster-recovery policy.
-- Direct browser-to-storage multipart upload; this slice intentionally keeps uploads behind the trusted API boundary.
+- Direct browser-to-storage multipart upload; uploads remain behind the trusted API boundary.
 
 ## Next implementation slice
 
-The next Phase 8 slice should add retry-safe processing jobs and reconciliation. It must define durable claim/lease behaviour, bounded retries, stale-job recovery, database-to-object consistency checks and orphan cleanup before retention or public replay discovery is introduced.
+The next Phase 8 slice should add public and member replay listening pages only after the complete authorised playback, expiry, archived-state and failure behaviour is represented honestly. Object-store orphan discovery and quarantine remains a separate operational slice.

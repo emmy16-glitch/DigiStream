@@ -202,11 +202,12 @@ This phase blocks decorative expansion until the existing live product behaves h
 
 - [x] Add private object storage and generated storage keys
 - [x] Add recording states: recording, uploading, processing, ready, failed, published, private, archived and deleted
-- [ ] Add retry-safe processing jobs and reconciliation
+- [x] Add retry-safe processing jobs and reconciliation
 - [x] Add checksums, duration, size, format and processing errors
 - [x] Add independent playback and download authorization
 - [x] Add HTTP range playback through the delivery path
-- [ ] Add retention, deletion, legal/moderation hold and orphan cleanup
+- [x] Add retention, deletion and legal/moderation hold controls with protected cleanup
+- [ ] Add object-store orphan listing, quarantine and cleanup
 - [x] Add creator recording management APIs and an API-backed Replay workspace
 - [ ] Add public/member replay listening pages and published replay discovery
 - [ ] Expose public Replay navigation only after the complete authorised listener flow works

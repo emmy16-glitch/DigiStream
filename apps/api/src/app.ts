@@ -31,6 +31,7 @@ import {
   type RecordingAccessManager,
 } from './modules/recordings/recording-access.js';
 import { registerRecordingJobRoutes } from './modules/recordings/recording-jobs.routes.js';
+import { registerRecordingRetentionRoutes } from './modules/recordings/recording-retention.routes.js';
 import { registerRecordingRoutes } from './modules/recordings/recordings.routes.js';
 import {
   registerRealtimeServer,
@@ -133,6 +134,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     objectStorage,
     maxUploadBytes: recordingUploadMaxBytes,
   });
+  registerRecordingRetentionRoutes(app, database, mediaControlSecret, {
+    objectStorage,
+  });
   registerBroadcastRoutes(
     app,
     database,
@@ -198,7 +202,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'recording-reconciliation',
+    stage: 'recording-retention',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
       'recording-object-storage',
@@ -207,6 +211,10 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'recording-job-heartbeats',
       'recording-retry-backoff',
       'recording-job-reconciliation',
+      'recording-retention-controls',
+      'recording-legal-and-moderation-holds',
+      'recording-protected-deletion-scheduling',
+      'recording-cleanup-reconciliation',
       'verified-recording-artifact-upload',
       'recording-checksum-verification',
       'short-lived-recording-access',
