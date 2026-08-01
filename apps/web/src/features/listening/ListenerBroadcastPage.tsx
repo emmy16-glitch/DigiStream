@@ -13,12 +13,18 @@ import type {
   PublicBroadcast,
   PublicBroadcastResponse,
 } from '@digistream/contracts';
+import { Icon } from '../../design-system/Icon';
 import { ApiClientError, apiRequest } from '../../lib/api-client';
 import {
   isOverdueBroadcast,
   presentationLabel,
   presentationStatus,
 } from '../../lib/broadcast-lifecycle';
+import {
+  listenerArtLabel,
+  listenerCalendarHref,
+  listenerCountdown,
+} from './listener-lifecycle-presentation';
 import type { ListenerRoute } from './listener-route';
 import {
   loadOvenPlayer,
@@ -27,6 +33,7 @@ import {
   type OvenPlayerStateChanged,
 } from './oven-player';
 import './listener-playback.css';
+import './listener-lifecycle-trust.css';
 
 type PlaybackResponse = {
   playback: {
@@ -165,6 +172,7 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
   const [busy, setBusy] = useState(false);
   const [signedInRequired, setSignedInRequired] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
+  const [clockNow, setClockNow] = useState(() => Date.now());
 
   const playerRef = useRef<OvenPlayerInstance | null>(null);
   const playbackRef = useRef<PlaybackResponse['playback'] | null>(null);
@@ -498,6 +506,11 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
   }, [loadMetadata, removePlayer]);
 
   useEffect(() => {
+    const timer = window.setInterval(() => setClockNow(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     const offlineHandler = () => {
       setOnline(false);
       setPhase('reconnecting');
@@ -534,6 +547,36 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
       window.removeEventListener('online', onlineHandler);
     };
   }, [loadMetadata, scheduleRecovery]);
+
+  async function refreshBroadcastStatus() {
+    if (!online) {
+      setPhase('reconnecting');
+      setMessage('Your device is offline. Broadcast status will refresh when the connection returns.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      const current = await loadMetadata();
+      removePlayer();
+      setPhase(
+        current.status === 'completed' ||
+        current.status === 'cancelled' ||
+        current.status === 'failed'
+          ? 'ended'
+          : playableStatuses.has(current.status)
+            ? 'ready'
+            : 'waiting',
+      );
+      setMessage(statusCopy(current));
+    } catch (requestError) {
+      setError(readableError(requestError));
+      setPhase('error');
+      setMessage('Broadcast details could not be refreshed.');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   function togglePlayback() {
     const player = playerRef.current;
@@ -578,20 +621,38 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
         ? 'Resume'
         : phase === 'reconnecting'
           ? 'Reconnecting…'
-          : isPlayable
-            ? 'Listen live'
-            : 'Check live status';
+          : 'Listen live';
   const displayStatus = broadcast
-    ? presentationStatus(broadcast.status, broadcast.scheduledStartAt)
+    ? presentationStatus(
+        broadcast.status,
+        broadcast.scheduledStartAt,
+        clockNow,
+      )
     : null;
+  const artLabel = listenerArtLabel(displayStatus);
+  const countdown =
+    broadcast &&
+    (displayStatus === 'scheduled' || displayStatus === 'starting')
+      ? listenerCountdown(broadcast.scheduledStartAt, clockNow)
+      : null;
+  const calendarHref =
+    broadcast && displayStatus === 'scheduled' && countdown
+      ? listenerCalendarHref(broadcast, shareUrl)
+      : null;
   const connectionDetail = !online
     ? 'Network unavailable'
     : isPlayable
       ? protocolLabel(activeProtocol)
-      : 'Waiting for the broadcast to enter a playable state';
+      : displayStatus === 'scheduled'
+        ? 'Audio controls will appear after the broadcast is live'
+        : displayStatus === 'starting'
+          ? 'The creator is preparing the listener audio path'
+          : 'No live audio path is available in this lifecycle state';
 
   return (
-    <main className="listener-page">
+    <main
+      className={`listener-page listener-lifecycle-${displayStatus ?? 'loading'}`}
+    >
       <header className="listener-header">
         <a className="listener-brand" href="/">
           <span aria-hidden="true">D</span>
@@ -602,7 +663,11 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
 
       <section className="listener-shell" aria-live="polite">
         <div className="listener-stage">
-          <div className={`listener-orb ${phase === 'playing' ? 'playing' : ''}`} aria-hidden="true">
+          <div
+            aria-hidden="true"
+            className={`listener-orb ${displayStatus ?? 'loading'} ${phase === 'playing' ? 'playing' : ''}`}
+            data-lifecycle-label={artLabel}
+          >
             {Array.from({ length: 24 }, (_, index) => (
               <i key={index} style={{ '--bar-index': index } as React.CSSProperties} />
             ))}
@@ -622,6 +687,14 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
             {broadcast?.description ?? 'Live audio delivered through DigiStream.'}
           </p>
 
+          {countdown ? (
+            <div className="listener-countdown">
+              <Icon name="calendar" />
+              <strong>{countdown}</strong>
+              <span>{formatDate(broadcast?.scheduledStartAt ?? null)}</span>
+            </div>
+          ) : null}
+
           <div className={`listener-status listener-status-${phase}`}>
             <span className="listener-status-dot" />
             <div>
@@ -638,41 +711,94 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
             </div>
           ) : null}
 
-          <div className="listener-controls">
-            <button
-              className="listener-play-button"
-              disabled={busy || signedInRequired || phase === 'reconnecting'}
-              onClick={togglePlayback}
-              type="button"
-            >
-              <span aria-hidden="true">{phase === 'playing' || phase === 'buffering' ? 'Ⅱ' : '▶'}</span>
-              {primaryLabel}
-            </button>
-            <button className="listener-icon-button" onClick={toggleMute} type="button" aria-label={muted ? 'Unmute' : 'Mute'}>
-              {muted || volume === 0 ? '×' : '◖'}
-            </button>
-            <label className="listener-volume">
-              <span className="sr-only">Volume</span>
-              <input
-                aria-label="Volume"
-                max="100"
-                min="0"
-                onChange={(event) => changeVolume(Number(event.target.value))}
-                type="range"
-                value={muted ? 0 : volume}
-              />
-              <output>{muted ? 0 : Math.round(volume)}%</output>
-            </label>
-          </div>
+          {isPlayable ? (
+            <div className="listener-controls">
+              <button
+                className="listener-play-button"
+                disabled={busy || signedInRequired || phase === 'reconnecting'}
+                onClick={togglePlayback}
+                type="button"
+              >
+                <Icon
+                  name={
+                    phase === 'playing' || phase === 'buffering'
+                      ? 'pause'
+                      : 'play'
+                  }
+                />
+                {primaryLabel}
+              </button>
+              <button
+                aria-label={muted ? 'Unmute' : 'Mute'}
+                aria-pressed={muted}
+                className="listener-icon-button"
+                onClick={toggleMute}
+                type="button"
+              >
+                <Icon name={muted || volume === 0 ? 'volume-muted' : 'volume'} />
+              </button>
+              <label className="listener-volume">
+                <span className="sr-only">Volume</span>
+                <input
+                  aria-label="Volume"
+                  max="100"
+                  min="0"
+                  onChange={(event) => changeVolume(Number(event.target.value))}
+                  type="range"
+                  value={muted ? 0 : volume}
+                />
+                <output>{muted ? 0 : Math.round(volume)}%</output>
+              </label>
+            </div>
+          ) : null}
+
+          {!isPlayable &&
+          (displayStatus === 'scheduled' ||
+            displayStatus === 'starting' ||
+            displayStatus === 'overdue' ||
+            displayStatus === 'draft') ? (
+            <div className="listener-waiting-actions">
+              <button
+                disabled={busy}
+                onClick={() => void refreshBroadcastStatus()}
+                type="button"
+              >
+                <Icon name="refresh" />
+                Refresh broadcast status
+              </button>
+              {calendarHref ? (
+                <a download="digistream-broadcast.ics" href={calendarHref}>
+                  <Icon name="calendar" />
+                  Add to calendar
+                </a>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="listener-secondary-actions">
-            <button onClick={() => void startPlayback(true)} type="button">Retry playback</button>
-            <button onClick={() => void copyShareLink()} type="button">Copy listener link</button>
+            {isPlayable && phase === 'error' ? (
+              <button onClick={() => void startPlayback(true)} type="button">
+                <Icon name="refresh" />
+                Retry playback
+              </button>
+            ) : null}
+            <button onClick={() => void copyShareLink()} type="button">
+              <Icon name="copy" />
+              Copy listener link
+            </button>
+            <a href="/listen">
+              <Icon name="arrow-right" />
+              Back to discovery
+            </a>
           </div>
 
           <dl className="listener-details">
             <div>
-              <dt>Scheduled</dt>
+              <dt>
+                {displayStatus === 'scheduled' || displayStatus === 'starting'
+                  ? 'Starts'
+                  : 'Scheduled'}
+              </dt>
               <dd>{formatDate(broadcast?.scheduledStartAt ?? null)}</dd>
             </div>
             <div>

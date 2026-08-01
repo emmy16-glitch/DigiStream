@@ -5,8 +5,10 @@ export type IconName =
   | 'arrow-right'
   | 'audience'
   | 'broadcast'
+  | 'calendar'
   | 'chat'
   | 'check'
+  | 'copy'
   | 'error'
   | 'headphones'
   | 'home'
@@ -14,10 +16,14 @@ export type IconName =
   | 'microphone'
   | 'notification'
   | 'offline'
+  | 'pause'
+  | 'play'
   | 'recording'
   | 'refresh'
   | 'settings'
   | 'user'
+  | 'volume'
+  | 'volume-muted'
   | 'warning';
 
 type IconProps = Omit<HTMLAttributes<HTMLSpanElement>, 'children'> & {
@@ -31,8 +37,10 @@ const glyphs: Record<IconName, string> = {
   'arrow-right': '→',
   audience: '◎',
   broadcast: '◉',
+  calendar: '▦',
   chat: '□',
   check: '✓',
+  copy: '▣',
   error: '×',
   headphones: '∩',
   home: '⌂',
@@ -40,10 +48,14 @@ const glyphs: Record<IconName, string> = {
   microphone: '◍',
   notification: '◌',
   offline: '∅',
+  pause: 'Ⅱ',
+  play: '▶',
   recording: '▤',
   refresh: '↻',
   settings: '⚙',
   user: '○',
+  volume: '◖',
+  'volume-muted': '×',
   warning: '!',
 };
 

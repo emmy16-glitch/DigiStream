@@ -106,6 +106,15 @@ test('scheduled broadcast does not pretend to be live', async ({ page }) => {
   await page.goto(routePath);
 
   await expect(page.locator('.listener-live-badge.scheduled')).toBeVisible();
+  await expect(page.locator('.listener-orb')).toHaveAttribute(
+    'data-lifecycle-label',
+    'UPCOMING',
+  );
+  await expect(page.getByText(/Starts in /)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Add to calendar' })).toHaveAttribute(
+    'download',
+    'digistream-broadcast.ics',
+  );
   await expect(page.getByRole('button', { name: 'Listen live' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Retry playback' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Request to speak' })).toHaveCount(0);
@@ -115,6 +124,21 @@ test('scheduled broadcast does not pretend to be live', async ({ page }) => {
 
   const liveNow = page.getByRole('link', { name: 'Live now' });
   await expect(liveNow).not.toHaveAttribute('aria-current', 'page');
+});
+
+test('live lifecycle reveals audio controls without changing scheduled pages', async ({ page }) => {
+  await mockVisitor(page);
+  await mockBroadcast(page, 'live');
+  await page.goto(routePath);
+
+  await expect(page.locator('.listener-orb')).toHaveAttribute(
+    'data-lifecycle-label',
+    'LIVE',
+  );
+  await expect(page.getByRole('button', { name: 'Listen live' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Mute' })).toBeVisible();
+  await expect(page.getByLabel('Volume')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Add to calendar' })).toHaveCount(0);
 });
 
 test('organisation owner receives creator action instead of listener call-in', async ({ page }) => {
