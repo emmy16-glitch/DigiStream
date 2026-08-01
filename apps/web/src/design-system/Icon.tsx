@@ -8,6 +8,7 @@ export type IconName =
   | 'calendar'
   | 'chat'
   | 'check'
+  | 'close'
   | 'copy'
   | 'error'
   | 'headphones'
@@ -40,6 +41,7 @@ const glyphs: Record<IconName, string> = {
   calendar: '▦',
   chat: '□',
   check: '✓',
+  close: '×',
   copy: '▣',
   error: '×',
   headphones: '∩',
