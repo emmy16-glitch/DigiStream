@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { BrandLockup } from './components';
 import { Icon, type IconName } from './Icon';
+import './listener-trust.css';
 
 export type CreatorNavigationItem = {
   icon: IconName;
@@ -28,6 +29,10 @@ export function CreatorShell({
   workspaceDescription?: string;
   workspaceName?: string;
 }) {
+  const visibleNavigation = navigation.filter(
+    (item) => item.label !== 'Recordings' && item.label !== 'Analytics',
+  );
+
   return (
     <div className="ds-creator-shell">
       <a className="ds-skip-link" href="#ds-main-content">Skip to main content</a>
@@ -38,7 +43,7 @@ export function CreatorShell({
         </a>
 
         <nav className="ds-creator-navigation">
-          {navigation.map((item) => {
+          {visibleNavigation.map((item) => {
             const active = item.label === activeLabel;
             return (
               <button
@@ -75,8 +80,9 @@ export function CreatorShell({
       </main>
 
       <nav className="ds-creator-mobile-nav" aria-label="Creator mobile navigation">
-        {navigation.slice(0, 5).map((item) => {
+        {visibleNavigation.slice(0, 5).map((item) => {
           const active = item.label === activeLabel;
+          const mobileLabel = item.label === 'Audience' ? 'Backstage' : item.shortLabel;
           return (
             <button
               aria-current={active ? 'page' : undefined}
@@ -86,7 +92,7 @@ export function CreatorShell({
               type="button"
             >
               <Icon name={item.icon} />
-              <span>{item.shortLabel}</span>
+              <span>{mobileLabel}</span>
             </button>
           );
         })}
@@ -104,6 +110,10 @@ export function ListenerShell({
   current: 'discover' | 'live';
   footer?: ReactNode;
 }) {
+  const nestedBroadcastRoute =
+    typeof window !== 'undefined' && window.location.pathname.startsWith('/listen/');
+  const resolvedCurrent = nestedBroadcastRoute ? null : current;
+
   return (
     <div className="listener-page ds-listener-shell">
       <a className="ds-skip-link" href="#ds-listener-content">Skip to listener content</a>
@@ -113,10 +123,10 @@ export function ListenerShell({
           <BrandLockup />
         </a>
         <nav aria-label="Listener navigation">
-          <a aria-current={current === 'discover' ? 'page' : undefined} href="/listen">
+          <a aria-current={resolvedCurrent === 'discover' ? 'page' : undefined} href="/listen">
             Discover
           </a>
-          <a aria-current={current === 'live' ? 'page' : undefined} href="/listen?status=live">
+          <a aria-current={resolvedCurrent === 'live' ? 'page' : undefined} href="/listen?status=live">
             Live now
           </a>
         </nav>
