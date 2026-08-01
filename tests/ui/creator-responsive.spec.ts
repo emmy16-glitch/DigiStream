@@ -76,7 +76,11 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await expect(
     page.locator('.creator-broadcasts-intro-actions').getByRole('button', { name: 'Create broadcast', exact: true }),
   ).toBeHidden();
-  await emptyBroadcastState.locator('..').getByRole('button', { name: 'Create broadcast', exact: true }).click();
+  const visibleCreateBroadcast = page
+    .locator('button:visible')
+    .filter({ hasText: /^Create broadcast$/ });
+  await expect(visibleCreateBroadcast).toHaveCount(1);
+  await visibleCreateBroadcast.click();
 
   const broadcastTitleInput = page.getByLabel('Broadcast title');
   await expect(broadcastTitleInput).toBeVisible();
