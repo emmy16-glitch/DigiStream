@@ -1,0 +1,35 @@
+name: Apply Phase 6A studio back navigation
+
+on:
+  push:
+    branches:
+      - agent/phase-6a-studio-back-navigation
+    paths:
+      - scripts/apply-phase-6a-studio-back-navigation.py
+      - apps/web/src/lib/use-modal-history-dismiss.ts
+      - .github/workflows/apply-phase-6a-studio-back-navigation.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/phase-6a-studio-back-navigation
+          fetch-depth: 0
+      - name: Apply implementation patch
+        run: python3 scripts/apply-phase-6a-studio-back-navigation.py
+      - name: Validate patch
+        run: git diff --check
+      - name: Commit implementation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/web/src/features/broadcasting/CreatorBroadcastStudio.tsx tests/ui/creator-responsive.spec.ts docs/ROADMAP.md
+          git diff --cached --quiet && exit 0
+          git commit -m 'feat: close studio with browser back'
+          git push origin HEAD:agent/phase-6a-studio-back-navigation
