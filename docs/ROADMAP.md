@@ -126,14 +126,15 @@ This phase blocks decorative expansion until the existing live product behaves h
 
 ### Listener reliability and plain language
 
-- [ ] Translate WebRTC, LL-HLS and provider language into listener-friendly connection states
-- [ ] Add evidence-based Stable, Unstable, Buffering, Reconnecting, Offline and Unavailable states
-- [ ] Make manual retry primary only after bounded automatic recovery fails
+- [x] Translate WebRTC, LL-HLS and provider language into listener-friendly connection states
+- [x] Add evidence-based Stable, Buffering, Reconnecting, Offline and Unavailable states
+- [ ] Add measured Unstable state from jitter, packet-loss or repeated-buffering evidence
+- [x] Make manual retry primary only after bounded automatic recovery fails
 - [x] Hide playback, mute, volume and retry controls while a broadcast is scheduled
 - [x] Add a text countdown, exact local date/time and optional calendar action for upcoming events
-- [ ] Hide or collapse the full mobile volume slider while preserving mute
+- [x] Hide or collapse the full mobile volume slider while preserving mute
 - [x] Add a contextual route back to discovery from event pages
-- [ ] Keep technical protocol data available only as secondary diagnostics
+- [x] Keep technical protocol data available only as secondary diagnostics
 
 ### Creator audio and failure recovery
 
