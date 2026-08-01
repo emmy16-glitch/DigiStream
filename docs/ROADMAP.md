@@ -207,7 +207,7 @@ This phase blocks decorative expansion until the existing live product behaves h
 - [x] Add independent playback and download authorization
 - [x] Add HTTP range playback through the delivery path
 - [x] Add retention, deletion and legal/moderation hold controls with protected cleanup
-- [ ] Add object-store orphan listing, quarantine and cleanup
+- [x] Add object-store orphan listing, quarantine and cleanup
 - [x] Add creator recording management APIs and an API-backed Replay workspace
 - [x] Add public/member replay listening pages and published replay discovery
 - [x] Expose public Replay navigation only after the complete authorised listener flow works
