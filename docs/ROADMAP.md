@@ -143,7 +143,7 @@ This phase blocks decorative expansion until the existing live product behaves h
 - [x] Smooth the underlying meter signal with fast attack, slower release and immediate clipping peaks
 - [x] Preserve a healthy contribution room when public delivery alone fails, where safe
 - [x] Add safe retry or status actions to understood studio failures without duplicate dismiss controls
-- [ ] Make browser and Android Back close the studio before leaving the workspace
+- [x] Make browser and Android Back close the studio before leaving the workspace
 
 ### Call-in, chat and mobile layout
 

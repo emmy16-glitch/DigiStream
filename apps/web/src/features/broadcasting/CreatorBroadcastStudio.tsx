@@ -24,6 +24,7 @@ import {
   type StatusTone,
 } from '../../design-system/components';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
+import { useModalHistoryDismiss } from '../../lib/use-modal-history-dismiss';
 import { startAudioMeter, type AudioMeterController } from './audio-meter';
 import { StudioAudioMeter } from './StudioAudioMeter';
 import {
@@ -417,14 +418,26 @@ export function CreatorBroadcastStudio({
     setAudioPlaybackBlocked(false);
   }, []);
 
-  const requestClose = useCallback(() => {
-    if (isLiveCriticalPhase(phase) || deliveryRecovery) {
-      setFailure(null);
-      setError('End the broadcast before closing the studio so public delivery stops safely.');
+  const closeStudio = useCallback(() => {
+    void stopLocalMedia().finally(onClose);
+  }, [onClose, stopLocalMedia]);
+
+  const explainBlockedClose = useCallback(() => {
+    if (endConfirmationOpen) {
+      setEndConfirmationOpen(false);
       return;
     }
-    void stopLocalMedia().finally(onClose);
-  }, [deliveryRecovery, onClose, phase, stopLocalMedia]);
+    setFailure(null);
+    setError('End the broadcast before closing the studio so public delivery stops safely.');
+  }, [endConfirmationOpen]);
+
+  const requestClose = useModalHistoryDismiss({
+    active: open,
+    blocked: liveCritical || endConfirmationOpen,
+    onBlocked: explainBlockedClose,
+    onDismiss: closeStudio,
+    stateKey: 'digistream.broadcast-studio',
+  });
 
   useEffect(() => {
     if (!open) return;
