@@ -1,0 +1,121 @@
+name: Validate recording retention implementation
+
+on:
+  push:
+    branches: [agent/recording-retention]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: recording-retention-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AUTH_COOKIE_SECURE: false
+      DATABASE_URL: postgresql://digistream:digistream@127.0.0.1:5432/digistream_test
+      NODE_ENV: test
+      OBJECT_STORAGE_ENDPOINT: http://127.0.0.1:8333
+      OBJECT_STORAGE_REGION: us-east-1
+      OBJECT_STORAGE_BUCKET: digistream-recordings
+      OBJECT_STORAGE_ACCESS_KEY_ID: digistream
+      OBJECT_STORAGE_SECRET_ACCESS_KEY: digistream-retention-storage-secret
+      OBJECT_STORAGE_FORCE_PATH_STYLE: true
+      RECORDING_ACCESS_SECRET: digistream-retention-access-secret-at-least-32-bytes
+      RECORDING_ACCESS_TTL_SECONDS: 120
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: digistream
+          POSTGRES_PASSWORD: digistream
+          POSTGRES_DB: digistream_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U digistream -d digistream_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      object-storage:
+        image: chrislusf/seaweedfs:4.29
+        env:
+          AWS_ACCESS_KEY_ID: digistream
+          AWS_SECRET_ACCESS_KEY: digistream-retention-storage-secret
+          S3_BUCKET: digistream-recordings
+        ports:
+          - 8333:8333
+
+    steps:
+      - name: Checkout implementation branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/recording-retention
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Apply route, status and documentation wiring
+        run: python3 scripts/apply-recording-retention-wiring.py
+
+      - name: Wait for S3-compatible storage
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            if timeout 1 bash -c '</dev/tcp/127.0.0.1/8333' 2>/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo 'Object storage did not become reachable.' >&2
+          exit 1
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Apply database migrations
+        run: npm run db:migrate
+
+      - name: Validate TypeScript
+        run: timeout 180s npm run typecheck
+
+      - name: Run recording retention integration coverage
+        run: timeout --signal=KILL 120s npx tsx --test apps/api/test/recording-retention.integration.test.ts
+
+      - name: Run complete API integration suite
+        run: timeout --signal=KILL 300s npm run test
+
+      - name: Build production workspaces
+        run: timeout 180s npm run build
+
+      - name: Install Playwright runner and Chromium
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run responsive browser regressions
+        run: timeout --signal=KILL 300s npx playwright test
+
+      - name: Commit validated implementation and remove one-time automation
+        run: |
+          set -euo pipefail
+          rm -f scripts/apply-recording-retention-wiring.py
+          rm -f .github/workflows/validate-recording-retention.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No validation changes to commit."
+          else
+            git commit -m "Add recording retention and protected cleanup"
+            git push origin HEAD:agent/recording-retention
+          fi
