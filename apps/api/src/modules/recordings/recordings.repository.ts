@@ -12,6 +12,26 @@ export type RecordingBroadcastContext = {
   status: string;
 };
 
+export type RecordingArtifactRecord = {
+  id: string;
+  organisationId: string;
+  channelId: string;
+  broadcastId: string;
+  status: RecordingStatus;
+  storageKey: string;
+  provider: string;
+  providerArtifactId: string | null;
+  mediaFormat: string | null;
+  contentType: string | null;
+  sizeBytes: number | null;
+  durationMs: number | null;
+  checksumSha256: string | null;
+  readyAt: Date | null;
+  broadcastTitle: string;
+  broadcastSlug: string;
+  channelSlug: string;
+};
+
 export type RecordingTransitionResult =
   | { status: 'updated'; recording: RecordingDto }
   | { status: 'not_found' }
@@ -204,6 +224,48 @@ export async function findRecordingByBroadcastRecord(
     .limit(1);
 
   return row ? toRecordingDto(row as JoinedRecordingRow) : null;
+}
+
+export async function findRecordingArtifactRecord(
+  db: DigiStreamDatabase,
+  organisationId: string,
+  recordingId: string,
+): Promise<RecordingArtifactRecord | null> {
+  const [row] = await db
+    .select({
+      id: recordingRecords.id,
+      organisationId: recordingRecords.organisationId,
+      channelId: recordingRecords.channelId,
+      broadcastId: recordingRecords.broadcastId,
+      status: recordingRecords.status,
+      storageKey: recordingRecords.storageKey,
+      provider: recordingRecords.provider,
+      providerArtifactId: recordingRecords.providerArtifactId,
+      mediaFormat: recordingRecords.mediaFormat,
+      contentType: recordingRecords.contentType,
+      sizeBytes: recordingRecords.sizeBytes,
+      durationMs: recordingRecords.durationMs,
+      checksumSha256: recordingRecords.checksumSha256,
+      readyAt: recordingRecords.readyAt,
+      broadcastTitle: broadcastRecords.title,
+      broadcastSlug: broadcastRecords.slug,
+      channelSlug: channelRecords.slug,
+    })
+    .from(recordingRecords)
+    .innerJoin(
+      broadcastRecords,
+      eq(recordingRecords.broadcastId, broadcastRecords.id),
+    )
+    .innerJoin(channelRecords, eq(recordingRecords.channelId, channelRecords.id))
+    .where(
+      and(
+        eq(recordingRecords.id, recordingId),
+        eq(recordingRecords.organisationId, organisationId),
+      ),
+    )
+    .limit(1);
+
+  return row ?? null;
 }
 
 export async function transitionRecordingRecord(
