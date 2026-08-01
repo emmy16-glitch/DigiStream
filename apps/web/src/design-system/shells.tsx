@@ -118,6 +118,10 @@ export function ListenerShell({
   const nestedBroadcastRoute =
     pathname.startsWith('/listen/') && !replayRoute;
   const resolvedCurrent = replayRoute ? 'replay' : nestedBroadcastRoute ? null : current;
+  const resolvedFooter = nestedBroadcastRoute
+    ? 'DigiStream automatically selects a healthy playback path and recovers short interruptions when possible.'
+    : footer ??
+      'DigiStream delivers professional live audio for creators, churches and communities.';
 
   return (
     <div className="listener-page ds-listener-shell">
@@ -148,9 +152,7 @@ export function ListenerShell({
         {children}
       </main>
 
-      <footer className="ds-listener-footer">
-        {footer ?? 'DigiStream delivers professional live audio for creators, churches and communities.'}
-      </footer>
+      <footer className="ds-listener-footer">{resolvedFooter}</footer>
     </div>
   );
 }
