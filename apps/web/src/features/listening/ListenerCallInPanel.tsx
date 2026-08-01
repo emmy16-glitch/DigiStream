@@ -167,7 +167,7 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
   const loadBroadcastStatus = useCallback(async (signal?: AbortSignal) => {
     try {
       const response = await apiRequest<PublicBroadcastResponse>(metadataEndpoint, {
-        signal,
+        signal: signal ?? null,
       });
       setBroadcastStatus(response.broadcast.status);
     } catch (requestError) {
