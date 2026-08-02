@@ -21,13 +21,23 @@ export type CreatorOverviewDerivation = {
   canOpenBackstage: boolean;
 };
 
-const OPERATIONAL_BROADCAST_STATES: readonly Broadcast['status'][] = [
+const STUDIO_BROADCAST_STATES: readonly Broadcast['status'][] = [
   'draft',
   'scheduled',
   'starting',
   'live',
   'reconnecting',
   'ending',
+];
+
+// Keep this aligned with CreatorBackstageWorkspace's real selectable states.
+// Draft broadcasts have no active backstage session yet, while an ending
+// broadcast is already past the point where invitations or call-ins are safe.
+const BACKSTAGE_BROADCAST_STATES: readonly Broadcast['status'][] = [
+  'scheduled',
+  'starting',
+  'live',
+  'reconnecting',
 ];
 
 const BROADCAST_PRIORITY: readonly Broadcast['status'][] = [
@@ -91,9 +101,6 @@ export function creatorOverviewDerivation({
     channelStatus,
     broadcastStatus,
   });
-  const hasOperationalBroadcast = Boolean(
-    selectedBroadcast && OPERATIONAL_BROADCAST_STATES.includes(selectedBroadcast.status),
-  );
 
   return {
     channelStatus,
@@ -101,7 +108,11 @@ export function creatorOverviewDerivation({
     setupState,
     selectedChannel,
     selectedBroadcast,
-    canOpenStudio: hasOperationalBroadcast,
-    canOpenBackstage: hasOperationalBroadcast,
+    canOpenStudio: Boolean(
+      selectedBroadcast && STUDIO_BROADCAST_STATES.includes(selectedBroadcast.status),
+    ),
+    canOpenBackstage: Boolean(
+      selectedBroadcast && BACKSTAGE_BROADCAST_STATES.includes(selectedBroadcast.status),
+    ),
   };
 }
