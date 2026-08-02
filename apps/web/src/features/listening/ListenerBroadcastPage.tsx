@@ -214,6 +214,7 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
   }, [metadataPath, route]);
 
   const resetPlaybackQuality = useCallback(() => {
+    hasPlayedRef.current = false;
     playbackStartedAtRef.current = null;
     bufferingEventsRef.current = [];
     lastPlayerStateRef.current = null;
