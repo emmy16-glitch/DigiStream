@@ -50,18 +50,13 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await expect(page.getByRole('heading', { name: 'Broadcasts', exact: true }).last()).toBeVisible();
 
   const channelNameInput = page.getByLabel('Channel name');
-  const channelToggle = page.locator('.creator-broadcasts-intro-actions button').first();
   await expect.poll(async () => {
     const loading = await page.getByText('Loading channels', { exact: true }).isVisible();
-    const formVisible = await channelNameInput.isVisible();
-    const toggleVisible = await channelToggle.isVisible();
-    return !loading && (formVisible || toggleVisible);
+    return !loading && await channelNameInput.isVisible();
   }).toBe(true);
-
-  if (!(await channelNameInput.isVisible())) {
-    await channelToggle.click();
-  }
-  await expect(channelNameInput).toBeVisible();
+  await expect(
+    page.locator('.creator-broadcasts-intro-actions').getByRole('button', { name: 'Create channel', exact: true }),
+  ).toBeHidden();
 
   const channelForm = page.locator('form.creator-form-grid').filter({ has: channelNameInput });
   await channelNameInput.fill(channelName);
@@ -76,10 +71,17 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await channelStrip.getByRole('button', { name: 'Activate channel' }).click();
   await expect(channelStrip).toContainText('Active');
 
-  await page
-    .locator('.creator-broadcasts-intro-actions')
-    .getByRole('button', { name: 'Create broadcast', exact: true })
-    .click();
+  const emptyBroadcastState = page.getByText('No broadcasts in this channel', { exact: true });
+  await expect(emptyBroadcastState).toBeVisible();
+  await expect(
+    page.locator('.creator-broadcasts-intro-actions').getByRole('button', { name: 'Create broadcast', exact: true }),
+  ).toBeHidden();
+  const visibleCreateBroadcast = page
+    .locator('button:visible')
+    .filter({ hasText: /^Create broadcast$/ });
+  await expect(visibleCreateBroadcast).toHaveCount(1);
+  await visibleCreateBroadcast.click();
+
   const broadcastTitleInput = page.getByLabel('Broadcast title');
   await expect(broadcastTitleInput).toBeVisible();
   const broadcastForm = page.locator('form.creator-form-grid').filter({ has: broadcastTitleInput });
@@ -90,6 +92,9 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
 
   const broadcastRow = page.locator('.broadcast-row').filter({ hasText: broadcastTitle });
   await expect(broadcastRow).toBeVisible();
+  await expect(
+    page.locator('.creator-broadcasts-intro-actions').getByRole('button', { name: 'Create broadcast', exact: true }),
+  ).toBeVisible();
   await expectNoHorizontalOverflow(page);
   if (testInfo.project.name === 'android-desktop-site') {
     const headingFontSize = await page
