@@ -15,17 +15,12 @@ export type CreatorOverviewDerivation = {
   channelStatus: CreatorChannelSetupStatus;
   broadcastStatus: CreatorBroadcastSetupStatus;
   setupState: CreatorSetupState;
+  selectedChannel: Channel | null;
+  selectedBroadcast: Broadcast | null;
   canOpenStudio: boolean;
   canOpenBackstage: boolean;
 };
 
-/**
- * Broadcast states that represent a live-capable resource the creator can
- * operate on inside Broadcast Studio or Backstage.
- *
- * A broadcast in a final state (completed, cancelled, failed) is no longer an
- * operational resource and must not expose a dead Studio or Backstage action.
- */
 const OPERATIONAL_BROADCAST_STATES: readonly Broadcast['status'][] = [
   'draft',
   'scheduled',
@@ -35,10 +30,6 @@ const OPERATIONAL_BROADCAST_STATES: readonly Broadcast['status'][] = [
   'ending',
 ];
 
-/**
- * Most-significant broadcast first, so the overview reflects the strongest
- * live/public state rather than an arbitrary list ordering.
- */
 const BROADCAST_PRIORITY: readonly Broadcast['status'][] = [
   'live',
   'reconnecting',
@@ -60,41 +51,57 @@ function deriveChannelStatus(channels: Channel[]): CreatorChannelSetupStatus {
   return channels[0]!.status;
 }
 
-function deriveBroadcastStatus(broadcasts: Broadcast[]): CreatorBroadcastSetupStatus {
-  if (broadcasts.length === 0) return 'none';
+function selectBroadcast(broadcasts: Broadcast[]): Broadcast | null {
   for (const status of BROADCAST_PRIORITY) {
     const found = broadcasts.find((broadcast) => broadcast.status === status);
-    if (found) return found.status as CreatorBroadcastSetupStatus;
+    if (found) return found;
   }
-  return broadcasts[0]!.status as CreatorBroadcastSetupStatus;
+  return broadcasts[0] ?? null;
 }
 
 /**
- * Derives the creator Overview state and the allowed next action from the real
- * API-backed organisation channel and broadcast resources.
+ * Derives the creator Overview state and exact contextual resources from real
+ * API-backed channel and broadcast data.
  *
- * This module deliberately contains no routing, rendering or API mutation
- * logic. Existing creator surfaces consume the result so the Overview does not
- * become a second dashboard or duplicate organisation/channel/broadcast flow.
+ * Broadcasts belonging to missing or inactive channels are deliberately not
+ * treated as actionable. This prevents an orphaned/stale response from opening
+ * Studio or Backstage with a context that the current workspace cannot safely
+ * operate. Existing creator surfaces remain responsible for routing, resource
+ * re-verification and mutations.
  */
 export function creatorOverviewDerivation({
   channels,
   broadcasts,
 }: CreatorOverviewResources): CreatorOverviewDerivation {
   const channelStatus = deriveChannelStatus(channels);
-  const broadcastStatus = deriveBroadcastStatus(broadcasts);
+  const activeChannelIds = new Set(
+    channels.filter((channel) => channel.status === 'active').map((channel) => channel.id),
+  );
+  const actionableBroadcasts = broadcasts.filter((broadcast) =>
+    activeChannelIds.has(broadcast.channelId),
+  );
+  const selectedBroadcast = selectBroadcast(actionableBroadcasts);
+  const selectedChannel = selectedBroadcast
+    ? channels.find((channel) => channel.id === selectedBroadcast.channelId) ?? null
+    : channels.find((channel) => channel.status === 'active') ?? channels[0] ?? null;
+  const broadcastStatus = (selectedBroadcast?.status ?? 'none') as CreatorBroadcastSetupStatus;
   const setupState = creatorSetupState({
     intentChosen: true,
     hasOrganisation: true,
     channelStatus,
     broadcastStatus,
   });
-  const hasActiveChannel = channelStatus === 'active';
-  const canOpenStudio =
-    hasActiveChannel &&
-    broadcasts.some((broadcast) => OPERATIONAL_BROADCAST_STATES.includes(broadcast.status));
-  const canOpenBackstage =
-    hasActiveChannel &&
-    broadcasts.some((broadcast) => OPERATIONAL_BROADCAST_STATES.includes(broadcast.status));
-  return { channelStatus, broadcastStatus, setupState, canOpenStudio, canOpenBackstage };
+  const hasOperationalBroadcast = Boolean(
+    selectedBroadcast && OPERATIONAL_BROADCAST_STATES.includes(selectedBroadcast.status),
+  );
+
+  return {
+    channelStatus,
+    broadcastStatus,
+    setupState,
+    selectedChannel,
+    selectedBroadcast,
+    canOpenStudio: hasOperationalBroadcast,
+    canOpenBackstage: hasOperationalBroadcast,
+  };
 }
