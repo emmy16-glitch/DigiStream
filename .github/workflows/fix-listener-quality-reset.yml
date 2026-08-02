@@ -1,0 +1,24 @@
+name: Fix listener quality reset
+on:
+  push:
+    branches: [agent/phase-6a-next-production-readiness]
+    paths: [.github/workflows/fix-listener-quality-reset.yml]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/phase-6a-next-production-readiness
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/fix-listener-quality-reset.py
+      - run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Reset listener quality across player replacement"
+          git push origin HEAD:agent/phase-6a-next-production-readiness
