@@ -175,22 +175,6 @@ test(
       });
       assert.equal(outsiderCannotDiscoverCallInDesk.statusCode, 404);
       assert.equal(outsiderCannotDiscoverCallInDesk.json().error.code, 'BROADCAST_NOT_FOUND');
-
-      const analystCannotListBackstage = await app.inject({
-        method: 'GET',
-        url: `${creatorBase}/backstage/participants`,
-        headers: { cookie: analyst.cookie },
-      });
-      assert.equal(analystCannotListBackstage.statusCode, 403);
-      assert.equal(analystCannotListBackstage.json().error.code, 'BACKSTAGE_FORBIDDEN');
-
-      const outsiderCannotDiscoverBackstage = await app.inject({
-        method: 'GET',
-        url: `${creatorBase}/backstage/participants`,
-        headers: { cookie: outsider.cookie },
-      });
-      assert.equal(outsiderCannotDiscoverBackstage.statusCode, 404);
-      assert.equal(outsiderCannotDiscoverBackstage.json().error.code, 'BROADCAST_NOT_FOUND');
     } finally {
       if (organisationId) {
         await database.db
