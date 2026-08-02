@@ -7,12 +7,13 @@ Before changing DigiStream, read and follow these sources in this order:
 1. `docs/PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`
 2. `docs/CREATOR_ONBOARDING_AND_ACTIVATION.md`
 3. `docs/PRODUCT_DESIGN_AND_FLOW_HARDENING.md`
-4. `docs/PRODUCT_SPECIFICATION.md`
-5. `docs/ROADMAP.md`
-6. `docs/ARCHITECTURE.md`
-7. feature-specific documents and the current implementation
+4. `docs/PREMIUM_INTERACTION_MOTION_AND_PRODUCT_POLISH.md`
+5. `docs/PRODUCT_SPECIFICATION.md`
+6. `docs/ROADMAP.md`
+7. `docs/ARCHITECTURE.md`
+8. feature-specific documents and the current implementation
 
-A decorative reference, stale test, generic dashboard pattern or old copy does not override the quality, authorization, lifecycle, onboarding or product-flow contracts above.
+A decorative reference, stale test, generic dashboard pattern, fashionable animation or old copy does not override the quality, authorization, lifecycle, onboarding, product-flow or interaction contracts above.
 
 ## Immediate product priority
 
@@ -22,13 +23,19 @@ Do not interpret that document as a vague design suggestion. Its six-step journe
 
 The current broken journey allows a new creator to create an organisation, land on Overview, open Broadcast Studio and only then discover that no channel exists. Correct the complete journey before adding unrelated decorative expansion.
 
-## Next mandatory programme after onboarding
+## Mandatory programme sequence
 
-After every mandatory onboarding and activation slice is implemented, merged, verified and reconciled with documentation, immediately execute `docs/PRODUCT_DESIGN_AND_FLOW_HARDENING.md` through bounded dependency-ordered pull requests.
+### Programme 1 — Creator onboarding and activation
 
-That document is the authoritative next product-design programme. It is not optional polish and it does not authorize a visual rewrite. It requires agents to connect the existing capable surfaces into one coherent product while preserving DigiStream’s dark design identity, truthful lifecycle communication, backend authority and media reliability.
+Finish every mandatory onboarding and activation slice in `docs/CREATOR_ONBOARDING_AND_ACTIVATION.md` before moving to later product programmes.
 
-The next programme includes:
+### Programme 2 — Product design and flow hardening
+
+After onboarding and activation is implemented, merged, verified and reconciled with documentation, immediately execute `docs/PRODUCT_DESIGN_AND_FLOW_HARDENING.md` through bounded dependency-ordered pull requests.
+
+That document is mandatory product architecture and interaction quality. It requires agents to connect the existing capable surfaces into one coherent product while preserving DigiStream’s dark design identity, truthful lifecycle communication, backend authority and media reliability.
+
+The programme includes:
 
 - replacing hardcoded creator setup inputs with a real API-backed workspace projection;
 - making Overview show the exact next valid action for every returning state;
@@ -44,7 +51,34 @@ The next programme includes:
 - preserving the listener experience and changing it only through conservative, regression-tested polish;
 - running accessibility and non-technical usability acceptance before declaring the programme complete.
 
-Do not begin this second programme while a required onboarding slice remains only documented. Once the onboarding journey is complete, do not skip the hardening programme for unrelated feature expansion unless a real dependency is documented.
+### Programme 3 — Premium interaction, motion and product polish
+
+Only after Programmes 1 and 2 are fully implemented, merged, verified and accurately documented, immediately execute `docs/PREMIUM_INTERACTION_MOTION_AND_PRODUCT_POLISH.md`.
+
+This programme is not permission to add random animation. It defines DigiStream’s complete interaction language: microinteractions, motion tokens, tactile mouse/touch/keyboard feedback, loading patterns, transition choreography, mobile gestures, operational Studio behavior, listener playback feedback, accessibility, reduced motion and low-end Android performance.
+
+Its purpose is to make correct product flows feel immediate, coherent and refined. It must never hide missing functionality, fabricate state, delay actions, weaken authorization or reduce operational clarity.
+
+Agents implementing Programme 3 must:
+
+- inventory existing transitions and interaction states before redesigning them;
+- create semantic duration, easing, distance and reduced-motion tokens in the shared design system;
+- standardize default, hover, focus-visible, pressed, loading, disabled, success and failure states;
+- provide immediate touch/click acknowledgement without showing success before API or media confirmation;
+- preserve stable control width and surrounding layout during loading;
+- use skeletons, inline progress, stage indicators and determinate progress only for the correct type of work;
+- preserve spatial continuity between Overview, Broadcasts, Studio, Backstage, Recordings and listener surfaces;
+- make mobile sheets, Back behavior, focus, scroll locking and keyboard handling feel native and safe;
+- choreograph Studio from microphone preparation through private contribution, public delivery, live, reconnecting, ending and completion using real state;
+- preserve listener playback while chat or call-in surfaces open when technically safe;
+- add haptics only as optional progressive enhancement and avoid general UI sound effects;
+- avoid continuous expensive blur, glow, particle, parallax and list-wide animation;
+- test low-to-mid-range Android performance, constrained networks, background/foreground return and reduced motion;
+- remove motion that does not improve task understanding or perceived responsiveness.
+
+Do not begin Programme 2 while Programme 1 has mandatory documented-only work. Do not begin Programme 3 while Programme 2 still has hardcoded state, dead actions, hidden working features, duplicate navigation, mobile inefficiency, contrast defects or incomplete accessibility foundations.
+
+After a programme is complete, do not skip the next mandatory programme for unrelated feature expansion unless a real dependency is documented.
 
 ## Required onboarding end-to-end sequence
 
@@ -83,6 +117,8 @@ Required existing surfaces:
 
 A lightweight route or state orchestrator may coordinate these surfaces, but it must not copy their forms, APIs or business logic.
 
+A motion or transition wrapper may coordinate presentation but must not become a second state machine or decide whether an operation actually succeeded.
+
 ### Specific onboarding UX requirements
 
 - A listener is never forced to create an organisation.
@@ -118,9 +154,33 @@ After onboarding completion, all agents must follow the complete workstreams and
 - shared overlay behavior must cover focus, Escape, Android/browser Back, scroll lock, keyboard, safe areas and focus restoration;
 - all counts, readiness claims, durations, recording states and replay actions remain evidence-backed.
 
+### Specific premium-interaction requirements
+
+After product-flow hardening, all agents must follow every component, journey, performance and acceptance requirement in `docs/PREMIUM_INTERACTION_MOTION_AND_PRODUCT_POLISH.md`. At minimum:
+
+- animation derives from real product state transitions, never arbitrary success timers;
+- input acknowledgement is immediate, while success waits for real API, lifecycle, browser or media evidence;
+- semantic motion tokens replace arbitrary feature-local durations and easing;
+- reduced motion is a complete tested mode, not a token-duration reduction only;
+- hover enhances but never owns discoverability;
+- keyboard focus is at least as visible as hover;
+- touch receives immediate pressed feedback;
+- loading does not change button width or cause surrounding layout jumps;
+- progress percentage is used only for measurable trustworthy progress;
+- scheduled content never pulses or uses live animation;
+- microphone signal animation represents real audio evidence;
+- public-delivery readiness remains separate from private contribution;
+- Studio becomes calmer, not more animated, while live;
+- bottom-sheet gestures are allowed only when dismissal is safe;
+- Android/browser Back closes the correct top layer before route navigation;
+- general interface sound effects are not introduced;
+- haptics remain optional, restrained and never the only feedback;
+- continuous expensive blur, parallax, particles, permanent glow and list-wide entrance animation are prohibited;
+- physical-device performance and accessibility evidence is required for operational motion.
+
 ## Bounded implementation order
 
-### Onboarding and activation
+### Programme 1 — Onboarding and activation
 
 Work through the authoritative onboarding journey in bounded pull requests when necessary:
 
@@ -133,9 +193,9 @@ Work through the authoritative onboarding journey in bounded pull requests when 
 7. returning-user, recovery, mobile and accessibility hardening;
 8. documentation reconciliation.
 
-### Product design and flow hardening
+### Programme 2 — Product design and flow hardening
 
-Only after the onboarding sequence is complete, follow the dependency order in `docs/PRODUCT_DESIGN_AND_FLOW_HARDENING.md`:
+Only after Programme 1 is complete, follow the dependency order in `docs/PRODUCT_DESIGN_AND_FLOW_HARDENING.md`:
 
 1. authoritative workspace projection and state invariants;
 2. state-aware Overview;
@@ -149,6 +209,25 @@ Only after the onboarding sequence is complete, follow the dependency order in `
 10. conservative listener polish and routing assessment;
 11. accessibility and non-technical usability verification;
 12. obsolete-code and documentation reconciliation.
+
+### Programme 3 — Premium interaction, motion and product polish
+
+Only after Programme 2 is complete, follow the dependency order in `docs/PREMIUM_INTERACTION_MOTION_AND_PRODUCT_POLISH.md`:
+
+1. motion inventory and baseline measurements;
+2. shared motion tokens and reduced-motion foundation;
+3. control-state polish;
+4. overlay and gesture polish;
+5. navigation and spatial continuity;
+6. authentication and onboarding polish;
+7. Broadcasts and Overview polish;
+8. Studio operational choreography;
+9. Backstage operational choreography;
+10. listener discovery and playback polish;
+11. recording and replay polish;
+12. performance, accessibility and physical-device acceptance;
+13. non-technical usability refinement;
+14. obsolete-style and documentation reconciliation.
 
 Do not create one unsafe giant pull request. Do not abandon the required end-to-end journey for unrelated expansion between slices unless a specific dependency is documented.
 
@@ -170,10 +249,17 @@ Before merge:
 - verify new listener, new creator and every returning setup state affected by the pull request;
 - verify one contextual primary action per state;
 - verify focus containment and restoration for affected dialogs/sheets;
+- verify touch, mouse and keyboard parity for affected controls;
+- verify reduced-motion behavior for every added transition;
+- verify animation interruption does not leave scroll locked, focus lost, controls disabled or stale success visible;
+- verify scheduled content has no live animation;
+- verify no fake percentage or premature success is introduced;
+- measure dependency and bundle impact for any new motion library;
+- record physical-device evidence for Studio, playback, gestures or performance-sensitive work;
 - update all relevant authoritative documentation;
 - resolve every review thread and real failure;
 - do not merge failing or unreviewed work;
-- do not fabricate data, readiness, listener counts, analytics, recordings or media evidence.
+- do not fabricate data, readiness, listener counts, analytics, recordings, progress or media evidence.
 
 ## Anti-duplication gate
 
@@ -188,10 +274,13 @@ Reject a change that introduces any of the following when an existing surface ca
 - a second Backstage workspace;
 - a second Recordings workspace;
 - a disconnected fake completion, replay or analytics page;
+- a separate “premium” version of an existing route or component;
 - multiple competing primary actions for one state;
 - client-side lifecycle or authorization shortcuts;
 - client-only resources presented as durable server state;
 - a new component library that merely renames existing design-system primitives;
+- a large animation dependency for simple opacity/transform effects;
+- a motion state machine that competes with real API or lifecycle state;
 - a route migration that rewrites feature business logic without a demonstrated routing need.
 
 ## Anti-rubbish implementation check
@@ -208,7 +297,16 @@ Before approving any product-facing change, confirm:
 - a physical-size phone remains efficient, not merely overflow-free;
 - long names, descriptions, URLs and slugs remain usable;
 - fixed controls reserve content space;
-- no count, metric, readiness or replay capability is fabricated;
+- no count, metric, readiness, progress or replay capability is fabricated;
+- each animation has a specific feedback, hierarchy, continuity or state purpose;
+- the interaction remains understandable with motion disabled;
+- input acknowledgement is immediate without showing premature success;
+- hover is not required to discover a necessary action;
+- touch and keyboard behavior are complete;
+- loading and transition layout remains stable;
+- scheduled content does not look live;
+- Studio motion becomes restrained during live operation;
+- the change performs acceptably on a realistic Android profile;
 - regression tests and documentation are aligned.
 
 ## Reporting
@@ -217,10 +315,13 @@ Report only meaningful completed behavior, validation evidence or a specific blo
 
 - implemented and automated-test verified;
 - manually verified with a physical microphone or real media stack;
+- manually verified on a physical low-to-mid-range Android device;
 - manually verified through accessibility or non-technical usability testing;
 - documented but not implemented;
-- blocked by a missing real data or provider foundation.
+- blocked by a missing real data, provider or device-testing foundation.
 
 Never describe the complete onboarding or post-broadcast journey as finished while a mandatory step in `docs/CREATOR_ONBOARDING_AND_ACTIVATION.md` remains only documented.
 
 Never describe the product-design and flow-hardening programme as complete while a supported creator state still uses hardcoded setup status, a working feature remains undiscoverable, a contextual action reopens an unnecessary selector, mobile controls remain covered or excessively inefficient, contrast makes enabled actions look disabled, or modal/accessibility acceptance remains unverified.
+
+Never describe the premium interaction and motion programme as complete while controls lack complete hover/focus/press/loading/disabled behavior, success appears before real confirmation, scheduled content uses live animation, reduced motion is incomplete, overlays break Back/focus/scroll behavior, Studio motion distracts live operation, listener overlays interrupt playback unnecessarily, or realistic Android performance and accessibility acceptance remains unverified.
