@@ -42,6 +42,8 @@ async function createCreatorWorkspace(page: Page, suffix: string) {
 
   await expect(page).toHaveURL(/\/creator\/broadcasts$/);
   await expect(page.getByRole('heading', { name: 'Broadcasts', exact: true }).last()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Create your first channel' })).toBeVisible();
+  await expect(page.getByText('Step 2 of 3', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Channel name')).toBeVisible();
 }
 
@@ -71,12 +73,13 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await channelForm.getByLabel('Category').fill('community');
   await channelForm.getByLabel('Visibility').selectOption('public');
   await channelForm.getByLabel('Description').fill('Responsive Playwright channel');
-  await channelForm.getByRole('button', { name: 'Create channel', exact: true }).click();
+  await channelForm.getByRole('button', { name: 'Create and activate channel', exact: true }).click();
 
   const channelStrip = page.locator('.channel-strip');
   await expect(channelStrip).toContainText(channelName);
-  await channelStrip.getByRole('button', { name: 'Activate channel' }).click();
   await expect(channelStrip).toContainText('Active');
+  await expect(channelStrip.getByRole('button', { name: 'Activate channel' })).toHaveCount(0);
+  await expect(channelStrip.getByRole('button', { name: 'Try activation again' })).toHaveCount(0);
 
   const emptyBroadcastState = page.getByText('No broadcasts in this channel', { exact: true });
   await expect(emptyBroadcastState).toBeVisible();

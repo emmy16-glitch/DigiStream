@@ -128,6 +128,7 @@ export function CreatorBroadcastsPage({
   const [channelSlugEdited, setChannelSlugEdited] = useState(false);
   const [creatingChannel, setCreatingChannel] = useState(false);
   const [activatingChannelId, setActivatingChannelId] = useState<string | null>(null);
+  const [activationRetryChannelId, setActivationRetryChannelId] = useState<string | null>(null);
 
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
   const [loadingBroadcasts, setLoadingBroadcasts] = useState(false);
@@ -144,6 +145,13 @@ export function CreatorBroadcastsPage({
 
   const canApproveChannel =
     organisation.role === 'owner' || organisation.role === 'admin';
+  const firstChannelSetup = !loadingChannels && channels.length === 0;
+
+  const replaceChannel = useCallback((channel: Channel) => {
+    setChannels((current) => current.map((item) => (
+      item.id === channel.id ? channel : item
+    )));
+  }, []);
 
   const loadChannels = useCallback(async () => {
     setLoadingChannels(true);
@@ -192,10 +200,38 @@ export function CreatorBroadcastsPage({
     void loadBroadcasts(selectedChannelId);
   }, [loadBroadcasts, selectedChannelId]);
 
+  async function activateChannelLifecycle(channel: Channel): Promise<Channel> {
+    let updated = channel;
+    if (updated.status === 'draft') {
+      const reviewResponse = await apiRequest<ChannelResponse>(
+        `/api/v1/organisations/${organisation.id}/channels/${channel.id}`,
+        {
+          method: 'PATCH',
+          body: jsonBody({ status: 'pending_review' }),
+        },
+      );
+      updated = reviewResponse.channel;
+      replaceChannel(updated);
+    }
+    if (updated.status === 'pending_review') {
+      const activeResponse = await apiRequest<ChannelResponse>(
+        `/api/v1/organisations/${organisation.id}/channels/${channel.id}`,
+        {
+          method: 'PATCH',
+          body: jsonBody({ status: 'active' }),
+        },
+      );
+      updated = activeResponse.channel;
+      replaceChannel(updated);
+    }
+    return updated;
+  }
+
   async function createChannel(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setCreatingChannel(true);
     setChannelError('');
+    setActivationRetryChannelId(null);
     try {
       const response = await apiRequest<ChannelResponse>(
         `/api/v1/organisations/${organisation.id}/channels`,
@@ -212,10 +248,24 @@ export function CreatorBroadcastsPage({
       );
       setChannels((current) => [...current, response.channel]);
       setSelectedChannelId(response.channel.id);
+      setBroadcasts([]);
       setChannelForm(emptyChannelForm);
       setChannelSlugEdited(false);
       setShowChannelForm(false);
-      setBroadcasts([]);
+
+      if (canApproveChannel) {
+        setActivatingChannelId(response.channel.id);
+        try {
+          await activateChannelLifecycle(response.channel);
+        } catch (activationError) {
+          setActivationRetryChannelId(response.channel.id);
+          setChannelError(
+            `The channel was created, but activation did not finish. ${readableError(activationError)}`,
+          );
+        } finally {
+          setActivatingChannelId(null);
+        }
+      }
     } catch (requestError) {
       setChannelError(readableError(requestError));
     } finally {
@@ -228,32 +278,13 @@ export function CreatorBroadcastsPage({
     setActivatingChannelId(channel.id);
     setChannelError('');
     try {
-      let updated = channel;
-      if (updated.status === 'draft') {
-        const reviewResponse = await apiRequest<ChannelResponse>(
-          `/api/v1/organisations/${organisation.id}/channels/${channel.id}`,
-          {
-            method: 'PATCH',
-            body: jsonBody({ status: 'pending_review' }),
-          },
-        );
-        updated = reviewResponse.channel;
-      }
-      if (updated.status === 'pending_review') {
-        const activeResponse = await apiRequest<ChannelResponse>(
-          `/api/v1/organisations/${organisation.id}/channels/${channel.id}`,
-          {
-            method: 'PATCH',
-            body: jsonBody({ status: 'active' }),
-          },
-        );
-        updated = activeResponse.channel;
-      }
-      setChannels((current) => current.map((item) => (
-        item.id === updated.id ? updated : item
-      )));
+      await activateChannelLifecycle(channel);
+      setActivationRetryChannelId(null);
     } catch (requestError) {
-      setChannelError(readableError(requestError));
+      setActivationRetryChannelId(channel.id);
+      setChannelError(
+        `The channel remains ${sentenceCase(channel.status).toLowerCase()}. ${readableError(requestError)}`,
+      );
     } finally {
       setActivatingChannelId(null);
     }
@@ -326,9 +357,20 @@ export function CreatorBroadcastsPage({
       {showChannelForm ? (
         <section className="creator-form-card" aria-labelledby="create-channel-title">
           <div className="creator-form-copy">
-            <StatusBadge tone="info">Channel setup</StatusBadge>
-            <h3 id="create-channel-title">Create a channel</h3>
-            <p>A channel groups related broadcasts and controls public, unlisted or private visibility.</p>
+            <StatusBadge tone="info">
+              {firstChannelSetup ? 'Step 2 of 3' : 'Channel setup'}
+            </StatusBadge>
+            <h3 id="create-channel-title">
+              {firstChannelSetup ? 'Create your first channel' : 'Create a channel'}
+            </h3>
+            <p>
+              {firstChannelSetup
+                ? 'Your organisation contains channels, and each channel contains broadcasts. Set the listener visibility for this channel now.'
+                : 'A channel groups related broadcasts and controls public, unlisted or private visibility.'}
+            </p>
+            {firstChannelSetup ? (
+              <small>Organisation → Channel → Broadcast</small>
+            ) : null}
           </div>
           <form className="creator-form-grid" onSubmit={createChannel}>
             <label>
@@ -368,6 +410,7 @@ export function CreatorBroadcastsPage({
                 type="text"
                 value={channelForm.slug}
               />
+              <small>Public URL: /{organisation.slug}/{channelForm.slug || 'channel-slug'}</small>
             </label>
             <label>
               Category
@@ -410,8 +453,14 @@ export function CreatorBroadcastsPage({
               />
             </label>
             <div className="creator-form-actions creator-form-wide">
-              <Button onClick={() => setShowChannelForm(false)}>Cancel</Button>
-              <Button loading={creatingChannel} type="submit" variant="primary">Create channel</Button>
+              {!firstChannelSetup ? (
+                <Button onClick={() => setShowChannelForm(false)}>Cancel</Button>
+              ) : null}
+              <Button loading={creatingChannel} type="submit" variant="primary">
+                {firstChannelSetup && canApproveChannel
+                  ? 'Create and activate channel'
+                  : 'Create channel'}
+              </Button>
             </div>
           </form>
         </section>
@@ -466,7 +515,9 @@ export function CreatorBroadcastsPage({
                       onClick={() => void activateChannel(selectedChannel)}
                       variant="primary"
                     >
-                      Activate channel
+                      {activationRetryChannelId === selectedChannel.id
+                        ? 'Try activation again'
+                        : 'Activate channel'}
                     </Button>
                   ) : (
                     <p className="channel-approval-note">An owner or administrator must activate this channel before scheduling or going live.</p>
