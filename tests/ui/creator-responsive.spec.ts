@@ -81,24 +81,42 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await expect(channelStrip.getByRole('button', { name: 'Activate channel' })).toHaveCount(0);
   await expect(channelStrip.getByRole('button', { name: 'Try activation again' })).toHaveCount(0);
 
-  const emptyBroadcastState = page.getByText('No broadcasts in this channel', { exact: true });
-  await expect(emptyBroadcastState).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'How would you like to start?' })).toBeVisible();
+  await expect(page.getByText('Step 3 of 3', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Go live now', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Schedule for later', exact: true })).toBeVisible();
   await expect(
-    page.locator('.creator-broadcasts-intro-actions').getByRole('button', { name: 'Create broadcast', exact: true }),
-  ).toBeHidden();
-  const visibleCreateBroadcast = page
-    .locator('button:visible')
-    .filter({ hasText: /^Create broadcast$/ });
-  await expect(visibleCreateBroadcast).toHaveCount(1);
-  await visibleCreateBroadcast.click();
+    page.getByRole('button', { name: 'I’ll create a broadcast later', exact: true }),
+  ).toBeVisible();
 
   const broadcastTitleInput = page.getByLabel('Broadcast title');
-  await expect(broadcastTitleInput).toBeVisible();
   const broadcastForm = page.locator('form.creator-form-grid').filter({ has: broadcastTitleInput });
+  const createAndOpenStudio = broadcastForm.getByRole('button', {
+    name: 'Create broadcast and open Studio',
+  });
+  await expect(createAndOpenStudio).toBeDisabled();
+  await page.getByRole('button', { name: 'Go live now', exact: true }).click();
+  await expect(createAndOpenStudio).toBeEnabled();
+  await expect(broadcastForm.getByLabel('Schedule start')).toHaveCount(0);
+
   await broadcastTitleInput.fill(broadcastTitle);
   await broadcastForm.getByLabel('Public slug').fill(`broadcast-${suffix}`);
   await broadcastForm.getByLabel('Description').fill('Responsive Playwright broadcast');
-  await broadcastForm.getByRole('button', { name: 'Create draft' }).click();
+  await createAndOpenStudio.click();
+
+  const studio = page.getByRole('dialog', { name: 'Broadcast studio' });
+  await expect(studio).toBeVisible();
+  const studioSelects = studio.locator('.studio-field select');
+  await expect(studioSelects.nth(1).locator('option:checked')).toContainText(channelName);
+  await expect(studioSelects.nth(2).locator('option:checked')).toContainText(broadcastTitle);
+  await expect(studio.getByRole('button', { name: 'Join private studio' })).toBeDisabled();
+  await expectNoHorizontalOverflow(page);
+  await attachViewport(page, testInfo, 'studio-after-first-broadcast');
+
+  const studioUrl = page.url();
+  await page.goBack();
+  await expect(studio).toHaveCount(0);
+  expect(page.url()).toBe(studioUrl);
 
   const broadcastRow = page.locator('.broadcast-row').filter({ hasText: broadcastTitle });
   await expect(broadcastRow).toBeVisible();
@@ -120,18 +138,11 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await attachViewport(page, testInfo, 'broadcasts');
 
   await broadcastRow.getByRole('button', { name: 'Open in Studio' }).click();
-  const studio = page.getByRole('dialog', { name: 'Broadcast studio' });
   await expect(studio).toBeVisible();
-  const studioSelects = studio.locator('.studio-field select');
   await expect(studioSelects.nth(1).locator('option:checked')).toContainText(channelName);
   await expect(studioSelects.nth(2).locator('option:checked')).toContainText(broadcastTitle);
-  await expect(studio.getByRole('button', { name: 'Join private studio' })).toBeDisabled();
-  await expectNoHorizontalOverflow(page);
-  await attachViewport(page, testInfo, 'studio');
-  const studioUrl = page.url();
   await page.goBack();
   await expect(studio).toHaveCount(0);
-  expect(page.url()).toBe(studioUrl);
 
   await page.goto('/creator/audience');
   await expect(page.getByRole('heading', { name: 'Backstage and call-ins' })).toBeVisible();
