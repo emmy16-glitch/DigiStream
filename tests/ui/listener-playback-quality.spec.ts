@@ -49,3 +49,19 @@ test('old, future and invalid buffering events cannot affect the result', () => 
     }).unstable,
   ).toBe(false);
 });
+
+
+test('quality returns to stable after buffering evidence ages out', () => {
+  const playbackStartedAt = 100_000;
+  expect(listenerPlaybackQualityEvidence({
+    bufferingEvents: [140_000, 150_000, 160_000],
+    observedAt: 170_000,
+    playbackStartedAt,
+  }).unstable).toBe(true);
+
+  expect(listenerPlaybackQualityEvidence({
+    bufferingEvents: pruneListenerBufferingEvents([140_000, 150_000, 160_000], 300_001),
+    observedAt: 300_001,
+    playbackStartedAt,
+  }).unstable).toBe(false);
+});

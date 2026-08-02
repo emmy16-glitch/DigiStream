@@ -26,6 +26,10 @@ import {
   listenerCountdown,
 } from './listener-lifecycle-presentation';
 import { listenerConnectionPresentation } from './listener-connection-presentation';
+import {
+  listenerPlaybackQualityEvidence,
+  pruneListenerBufferingEvents,
+} from './listener-playback-quality';
 import type { ListenerRoute } from './listener-route';
 import {
   loadOvenPlayer,
@@ -174,6 +178,10 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
   const recoveryTimerRef = useRef<number | null>(null);
   const recoveryAttemptsRef = useRef(0);
   const hasPlayedRef = useRef(false);
+  const playbackStartedAtRef = useRef<number | null>(null);
+  const bufferingEventsRef = useRef<number[]>([]);
+  const lastPlayerStateRef = useRef<string | null>(null);
+  const [unstableConnection, setUnstableConnection] = useState(false);
   const mountedRef = useRef(true);
   const playerContainerIdRef = useRef(
     `digistream-listener-${Math.random().toString(36).slice(2, 12)}`,
@@ -205,6 +213,27 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
     )}/broadcasts/${encodeURIComponent(route.broadcastId)}/playback`;
   }, [metadataPath, route]);
 
+  const resetPlaybackQuality = useCallback(() => {
+    playbackStartedAtRef.current = null;
+    bufferingEventsRef.current = [];
+    lastPlayerStateRef.current = null;
+    setUnstableConnection(false);
+  }, []);
+
+  const updatePlaybackQuality = useCallback((observedAt = Date.now()) => {
+    bufferingEventsRef.current = pruneListenerBufferingEvents(
+      bufferingEventsRef.current,
+      observedAt,
+    );
+    setUnstableConnection(
+      listenerPlaybackQualityEvidence({
+        bufferingEvents: bufferingEventsRef.current,
+        observedAt,
+        playbackStartedAt: playbackStartedAtRef.current,
+      }).unstable,
+    );
+  }, []);
+
   const removePlayer = useCallback(() => {
     if (refreshTimerRef.current !== null) {
       window.clearTimeout(refreshTimerRef.current);
@@ -216,12 +245,13 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
     }
     const player = playerRef.current;
     playerRef.current = null;
+    resetPlaybackQuality();
     try {
       player?.remove();
     } catch {
       // OvenPlayer may already have released its transport after a fatal error.
     }
-  }, []);
+  }, [resetPlaybackQuality]);
 
   const loadMetadata = useCallback(async (): Promise<ListenerBroadcast> => {
     setSignedInRequired(false);
@@ -366,8 +396,14 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
         if (!mountedRef.current) return;
         const state = raw as OvenPlayerStateChanged | undefined;
         const next = state?.newstate ?? player.getState();
+        const previous = lastPlayerStateRef.current;
+        lastPlayerStateRef.current = next;
         if (next === 'playing') {
           hasPlayedRef.current = true;
+          if (playbackStartedAtRef.current === null) {
+            playbackStartedAtRef.current = Date.now();
+          }
+          updatePlaybackQuality();
           recoveryAttemptsRef.current = 0;
           setError('');
           setPhase('playing');
@@ -376,6 +412,14 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
           setPhase('paused');
           setMessage('Playback paused.');
         } else if (next === 'loading' || next === 'stalled') {
+          if (
+            hasPlayedRef.current &&
+            previous !== 'loading' &&
+            previous !== 'stalled'
+          ) {
+            bufferingEventsRef.current.push(Date.now());
+            updatePlaybackQuality();
+          }
           setPhase(hasPlayedRef.current ? 'buffering' : 'loading');
           setMessage(
             hasPlayedRef.current
@@ -408,7 +452,7 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
         scheduleRecovery();
       });
     },
-    [broadcast?.title, muted, removePlayer, scheduleRecovery, volume],
+    [broadcast?.title, muted, removePlayer, scheduleRecovery, updatePlaybackQuality, volume],
   );
 
   const startPlayback = useCallback(
@@ -498,6 +542,12 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
     }, 8_000);
     return () => window.clearInterval(timer);
   }, [loadMetadata, removePlayer]);
+
+  useEffect(() => {
+    if (phase !== 'playing' && phase !== 'paused') return undefined;
+    const timer = window.setInterval(() => updatePlaybackQuality(), 5_000);
+    return () => window.clearInterval(timer);
+  }, [phase, updatePlaybackQuality]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setClockNow(Date.now()), 30_000);
@@ -639,6 +689,7 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
     phase,
     playable: isPlayable,
     status: displayStatus,
+    unstable: unstableConnection,
   });
 
   return (
