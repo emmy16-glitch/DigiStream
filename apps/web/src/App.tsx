@@ -41,6 +41,7 @@ import { ListenerDiscoveryPage } from './features/listening/ListenerDiscoveryPag
 import { ReplayDiscoveryPage } from './features/listening/ReplayDiscoveryPage';
 import { ReplayListeningPage } from './features/listening/ReplayListeningPage';
 import { parseListenerRoute } from './features/listening/listener-route';
+import { creatorSetupState } from './features/onboarding/creator-setup-state';
 import { CreatorRecordingsPage } from './features/recordings/CreatorRecordingsPage';
 import { ApiClientError, apiRequest, jsonBody } from './lib/api-client';
 
@@ -60,7 +61,7 @@ type NavigationDefinition = {
 
 const navigationDefinitions: NavigationDefinition[] = [
   { label: 'Overview', shortLabel: 'Home', icon: 'home', path: '/creator/overview' },
-  { label: 'Broadcasts', shortLabel: 'Live', icon: 'broadcast', path: '/creator/broadcasts' },
+  { label: 'Broadcasts', shortLabel: 'Streams', icon: 'broadcast', path: '/creator/broadcasts' },
   { label: 'Backstage', shortLabel: 'Backstage', icon: 'audience', path: '/creator/audience' },
   { label: 'Recordings', shortLabel: 'Replay', icon: 'recording', path: '/creator/recordings' },
   { label: 'Analytics', shortLabel: 'Stats', icon: 'analytics', path: '/creator/analytics' },
@@ -133,6 +134,28 @@ function PageIntro({ children, title }: { children: ReactNode; title: string }) 
   );
 }
 
+function CreatorIntentChoice({ onBroadcast }: { onBroadcast(): void }) {
+  return (
+    <section className="workspace-onboarding" aria-labelledby="creator-intent-title">
+      <div>
+        <StatusBadge tone="info">Choose how to continue</StatusBadge>
+        <h2 id="creator-intent-title">What would you like to do?</h2>
+        <p>
+          Listen without creating a workspace, or continue into the existing creator setup to broadcast audio.
+        </p>
+      </div>
+      <div className="workspace-welcome-actions">
+        <Button icon="broadcast" onClick={onBroadcast} variant="primary">
+          Broadcast audio
+        </Button>
+        <LinkButton href="/listen" icon="headphones">
+          Listen to broadcasts
+        </LinkButton>
+      </div>
+    </section>
+  );
+}
+
 function OrganisationSetup({
   busy,
   error,
@@ -154,10 +177,10 @@ function OrganisationSetup({
   return (
     <section className="workspace-onboarding" aria-labelledby="workspace-onboarding-title">
       <div>
-        <StatusBadge tone="info">First workspace</StatusBadge>
-        <h2 id="workspace-onboarding-title">Create your organisation</h2>
+        <StatusBadge tone="info">Step 1 of 3</StatusBadge>
+        <h2 id="workspace-onboarding-title">Set up your creator workspace</h2>
         <p>
-          An organisation owns channels, broadcasts, guests and team access. Create one before opening the studio.
+          Your organisation owns its channels, broadcasts, guests and team access. Channel setup comes next.
         </p>
       </div>
       <form onSubmit={submit}>
@@ -196,7 +219,7 @@ function OrganisationSetup({
         </label>
         {error ? <div className="workspace-inline-error" role="alert">{error}</div> : null}
         <Button loading={busy} type="submit" variant="primary">
-          Create organisation
+          Continue to channel setup
         </Button>
       </form>
     </section>
@@ -219,6 +242,7 @@ function CreatorDashboard({
   const [loadingOrganisations, setLoadingOrganisations] = useState(true);
   const [organisationError, setOrganisationError] = useState('');
   const [creatingOrganisation, setCreatingOrganisation] = useState(false);
+  const [creatorIntentChosen, setCreatorIntentChosen] = useState(false);
   const [studioOpen, setStudioOpen] = useState(false);
   const [backstageOpen, setBackstageOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -263,6 +287,10 @@ function CreatorDashboard({
         body: jsonBody({ name: name.trim(), slug }),
       });
       setOrganisations((current) => [response.organisation, ...current]);
+      selectNavigation('Broadcasts');
+      window.requestAnimationFrame(() => {
+        document.getElementById('create-channel-title')?.focus();
+      });
     } catch (requestError) {
       setOrganisationError(readableError(requestError));
     } finally {
@@ -289,6 +317,12 @@ function CreatorDashboard({
 
   const primaryOrganisation = organisations[0] ?? null;
   const firstName = user.displayName.trim().split(/\s+/)[0] || user.displayName;
+  const setupState = creatorSetupState({
+    intentChosen: creatorIntentChosen || Boolean(primaryOrganisation),
+    hasOrganisation: Boolean(primaryOrganisation),
+    channelStatus: 'none',
+    broadcastStatus: 'none',
+  });
 
   const topbarActions = (
     <>
@@ -351,6 +385,8 @@ function CreatorDashboard({
         {organisationError}
       </StatePanel>
     );
+  } else if (setupState === 'choose_intent') {
+    pageContent = <CreatorIntentChoice onBroadcast={() => setCreatorIntentChosen(true)} />;
   } else if (!primaryOrganisation) {
     pageContent = (
       <OrganisationSetup
