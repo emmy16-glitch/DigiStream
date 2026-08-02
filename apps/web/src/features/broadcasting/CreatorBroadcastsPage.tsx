@@ -766,7 +766,7 @@ export function CreatorBroadcastsPage({
                       <div className="broadcast-row-actions">
                         <Button onClick={() => onOpenStudio({
                           organisationId: organisation.id,
-                          channelId: selectedChannel.id,
+                          channelId: selectedChannelId,
                           broadcastId: broadcast.id,
                         })}>
                           {overdue ? 'Open Studio to recover' : 'Open in Studio'}
