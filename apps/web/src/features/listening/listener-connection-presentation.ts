@@ -31,6 +31,7 @@ type ListenerConnectionInput = {
   phase: ListenerPlaybackPhase;
   playable: boolean;
   status: BroadcastPresentationStatus | null;
+  unstable?: boolean;
 };
 
 function technicalTransport(protocol: 'webrtc' | 'llhls' | null): string {
@@ -107,6 +108,7 @@ export function listenerConnectionPresentation({
   phase,
   playable,
   status,
+  unstable = false,
 }: ListenerConnectionInput): ListenerConnectionPresentation {
   if (!online) {
     return {
@@ -129,6 +131,14 @@ export function listenerConnectionPresentation({
   }
 
   if (phase === 'playing' || phase === 'paused') {
+    if (phase === 'playing' && unstable) {
+      return {
+        label: 'Unstable connection',
+        guidance: 'Audio is playing, but repeated buffering was measured recently.',
+        tone: 'warning',
+        technical: `${technicalTransport(activeProtocol)}; repeated buffering threshold reached`,
+      };
+    }
     return {
       label: phase === 'paused' ? 'Paused' : 'Stable',
       guidance:
