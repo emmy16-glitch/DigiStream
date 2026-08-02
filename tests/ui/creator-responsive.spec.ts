@@ -30,11 +30,19 @@ async function createCreatorWorkspace(page: Page, suffix: string) {
   await page.getByLabel('Confirm password').fill(password);
   await page.getByRole('button', { name: 'Create account with email' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Create your organisation' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'What would you like to do?' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Listen to broadcasts' })).toBeVisible();
+  await page.getByRole('button', { name: 'Broadcast audio' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Set up your creator workspace' })).toBeVisible();
+  await expect(page.getByText('Step 1 of 3', { exact: true })).toBeVisible();
   await page.getByLabel('Organisation name').fill(`Playwright Organisation ${suffix}`);
   await page.getByLabel('Public slug').fill(`playwright-${suffix}`);
-  await page.getByRole('button', { name: 'Create organisation' }).click();
-  await expect(page.getByRole('heading', { name: 'Welcome back, Playwright' })).toBeVisible();
+  await page.getByRole('button', { name: 'Continue to channel setup' }).click();
+
+  await expect(page).toHaveURL(/\/creator\/broadcasts$/);
+  await expect(page.getByRole('heading', { name: 'Broadcasts', exact: true }).last()).toBeVisible();
+  await expect(page.getByLabel('Channel name')).toBeVisible();
 }
 
 test('creator workflow stays usable at desktop and Android sizes', async ({ page }, testInfo) => {
@@ -44,9 +52,8 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
 
   await createCreatorWorkspace(page, suffix);
   await expectNoHorizontalOverflow(page);
-  await attachViewport(page, testInfo, 'overview');
+  await attachViewport(page, testInfo, 'channel-onboarding');
 
-  await page.goto('/creator/broadcasts');
   await expect(page.getByRole('heading', { name: 'Broadcasts', exact: true }).last()).toBeVisible();
 
   const channelNameInput = page.getByLabel('Channel name');
