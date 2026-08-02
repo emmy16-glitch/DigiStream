@@ -28,9 +28,15 @@ import {
 } from '../../lib/broadcast-lifecycle';
 import './creator-broadcasts-page.css';
 
+type StudioContext = {
+  organisationId: string;
+  channelId: string;
+  broadcastId: string;
+};
+
 type CreatorBroadcastsPageProps = {
   organisation: Organisation;
-  onOpenStudio(): void;
+  onOpenStudio(context?: StudioContext): void;
 };
 
 type ChannelFormState = {
@@ -47,6 +53,8 @@ type BroadcastFormState = {
   description: string;
   scheduledStartAt: string;
 };
+
+type FirstBroadcastChoice = 'go-live' | 'schedule' | null;
 
 const emptyChannelForm: ChannelFormState = {
   name: '',
@@ -137,6 +145,7 @@ export function CreatorBroadcastsPage({
   const [broadcastForm, setBroadcastForm] = useState<BroadcastFormState>(emptyBroadcastForm);
   const [broadcastSlugEdited, setBroadcastSlugEdited] = useState(false);
   const [creatingBroadcast, setCreatingBroadcast] = useState(false);
+  const [firstBroadcastChoice, setFirstBroadcastChoice] = useState<FirstBroadcastChoice>(null);
 
   const selectedChannel = useMemo(
     () => channels.find((channel) => channel.id === selectedChannelId) ?? null,
@@ -146,6 +155,11 @@ export function CreatorBroadcastsPage({
   const canApproveChannel =
     organisation.role === 'owner' || organisation.role === 'admin';
   const firstChannelSetup = !loadingChannels && channels.length === 0;
+  const firstBroadcastSetup =
+    !loadingBroadcasts &&
+    Boolean(selectedChannel) &&
+    selectedChannel?.status === 'active' &&
+    broadcasts.length === 0;
 
   const replaceChannel = useCallback((channel: Channel) => {
     setChannels((current) => current.map((item) => (
@@ -185,6 +199,7 @@ export function CreatorBroadcastsPage({
         `/api/v1/organisations/${organisation.id}/channels/${channelId}/broadcasts`,
       );
       setBroadcasts(response.broadcasts);
+      if (response.broadcasts.length === 0) setShowBroadcastForm(true);
     } catch (requestError) {
       setBroadcastError(readableError(requestError));
     } finally {
@@ -197,6 +212,9 @@ export function CreatorBroadcastsPage({
   }, [loadChannels]);
 
   useEffect(() => {
+    setFirstBroadcastChoice(null);
+    setBroadcastForm(emptyBroadcastForm);
+    setBroadcastSlugEdited(false);
     void loadBroadcasts(selectedChannelId);
   }, [loadBroadcasts, selectedChannelId]);
 
@@ -256,7 +274,8 @@ export function CreatorBroadcastsPage({
       if (canApproveChannel) {
         setActivatingChannelId(response.channel.id);
         try {
-          await activateChannelLifecycle(response.channel);
+          const activated = await activateChannelLifecycle(response.channel);
+          if (activated.status === 'active') setShowBroadcastForm(true);
         } catch (activationError) {
           setActivationRetryChannelId(response.channel.id);
           setChannelError(
@@ -278,8 +297,9 @@ export function CreatorBroadcastsPage({
     setActivatingChannelId(channel.id);
     setChannelError('');
     try {
-      await activateChannelLifecycle(channel);
+      const activated = await activateChannelLifecycle(channel);
       setActivationRetryChannelId(null);
+      if (activated.status === 'active') setShowBroadcastForm(true);
     } catch (requestError) {
       setActivationRetryChannelId(channel.id);
       setChannelError(
@@ -290,15 +310,29 @@ export function CreatorBroadcastsPage({
     }
   }
 
+  function finishFirstBroadcastLater() {
+    setFirstBroadcastChoice(null);
+    setShowBroadcastForm(false);
+    window.history.pushState({}, '', '/creator/overview');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }
+
   async function createBroadcast(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedChannel) return;
+    if (firstBroadcastSetup && !firstBroadcastChoice) {
+      setBroadcastError('Choose Go live now or Schedule for later before creating the broadcast.');
+      return;
+    }
+
     setCreatingBroadcast(true);
     setBroadcastError('');
     try {
-      const scheduledStartAt = broadcastForm.scheduledStartAt
+      const scheduledStartAt = firstBroadcastChoice === 'schedule'
         ? new Date(broadcastForm.scheduledStartAt).toISOString()
-        : undefined;
+        : broadcastForm.scheduledStartAt
+          ? new Date(broadcastForm.scheduledStartAt).toISOString()
+          : undefined;
       const response = await apiRequest<BroadcastResponse>(
         `/api/v1/organisations/${organisation.id}/channels/${selectedChannel.id}/broadcasts`,
         {
@@ -315,6 +349,16 @@ export function CreatorBroadcastsPage({
       setBroadcastForm(emptyBroadcastForm);
       setBroadcastSlugEdited(false);
       setShowBroadcastForm(false);
+      const chosenAction = firstBroadcastChoice;
+      setFirstBroadcastChoice(null);
+
+      if (firstBroadcastSetup && chosenAction === 'go-live') {
+        onOpenStudio({
+          organisationId: organisation.id,
+          channelId: selectedChannel.id,
+          broadcastId: response.broadcast.id,
+        });
+      }
     } catch (requestError) {
       setBroadcastError(readableError(requestError));
     } finally {
@@ -368,9 +412,7 @@ export function CreatorBroadcastsPage({
                 ? 'Your organisation contains channels, and each channel contains broadcasts. Set the listener visibility for this channel now.'
                 : 'A channel groups related broadcasts and controls public, unlisted or private visibility.'}
             </p>
-            {firstChannelSetup ? (
-              <small>Organisation → Channel → Broadcast</small>
-            ) : null}
+            {firstChannelSetup ? <small>Organisation → Channel → Broadcast</small> : null}
           </div>
           <form className="creator-form-grid" onSubmit={createChannel}>
             <label>
@@ -530,13 +572,43 @@ export function CreatorBroadcastsPage({
           {showBroadcastForm && selectedChannel ? (
             <section className="creator-form-card" aria-labelledby="create-broadcast-title">
               <div className="creator-form-copy">
-                <StatusBadge tone={selectedChannel.status === 'active' ? 'success' : 'warning'}>
-                  {selectedChannel.status === 'active' ? 'Channel active' : 'Draft broadcasts only'}
+                <StatusBadge tone={firstBroadcastSetup ? 'info' : selectedChannel.status === 'active' ? 'success' : 'warning'}>
+                  {firstBroadcastSetup
+                    ? 'Step 3 of 3'
+                    : selectedChannel.status === 'active'
+                      ? 'Channel active'
+                      : 'Draft broadcasts only'}
                 </StatusBadge>
-                <h3 id="create-broadcast-title">Create a broadcast</h3>
+                <h3 id="create-broadcast-title">
+                  {firstBroadcastSetup ? 'How would you like to start?' : 'Create a broadcast'}
+                </h3>
                 <p>
-                  Leave the schedule empty to create a draft. Scheduled broadcasts require an active channel.
+                  {firstBroadcastSetup
+                    ? `Create a draft for Studio preparation, schedule a real future broadcast, or finish setup later. Visibility is inherited from ${selectedChannel.name}: ${sentenceCase(selectedChannel.visibility)}.`
+                    : 'Leave the schedule empty to create a draft. Scheduled broadcasts require an active channel.'}
                 </p>
+                {firstBroadcastSetup ? (
+                  <div className="creator-form-actions" aria-label="First broadcast choices">
+                    <Button
+                      onClick={() => {
+                        setFirstBroadcastChoice('go-live');
+                        setBroadcastForm((current) => ({ ...current, scheduledStartAt: '' }));
+                      }}
+                      variant={firstBroadcastChoice === 'go-live' ? 'primary' : 'secondary'}
+                    >
+                      Go live now
+                    </Button>
+                    <Button
+                      onClick={() => setFirstBroadcastChoice('schedule')}
+                      variant={firstBroadcastChoice === 'schedule' ? 'primary' : 'secondary'}
+                    >
+                      Schedule for later
+                    </Button>
+                    <Button onClick={finishFirstBroadcastLater} variant="ghost">
+                      I’ll create a broadcast later
+                    </Button>
+                  </div>
+                ) : null}
               </div>
               <form className="creator-form-grid" onSubmit={createBroadcast}>
                 <label>
@@ -576,21 +648,25 @@ export function CreatorBroadcastsPage({
                     type="text"
                     value={broadcastForm.slug}
                   />
+                  <small>Listener route: /{organisation.slug}/{selectedChannel.slug}/{broadcastForm.slug || 'broadcast-slug'}</small>
                 </label>
-                <label>
-                  Schedule start
-                  <input
-                    disabled={selectedChannel.status !== 'active'}
-                    min={minimumScheduleValue()}
-                    onChange={(event) => setBroadcastForm((current) => ({
-                      ...current,
-                      scheduledStartAt: event.target.value,
-                    }))}
-                    type="datetime-local"
-                    value={broadcastForm.scheduledStartAt}
-                  />
-                  <small>{selectedChannel.status === 'active' ? 'Optional. Times use your device timezone.' : 'Activate the channel to schedule.'}</small>
-                </label>
+                {(!firstBroadcastSetup || firstBroadcastChoice === 'schedule') ? (
+                  <label>
+                    Schedule start
+                    <input
+                      disabled={selectedChannel.status !== 'active'}
+                      min={minimumScheduleValue()}
+                      onChange={(event) => setBroadcastForm((current) => ({
+                        ...current,
+                        scheduledStartAt: event.target.value,
+                      }))}
+                      required={firstBroadcastChoice === 'schedule'}
+                      type="datetime-local"
+                      value={broadcastForm.scheduledStartAt}
+                    />
+                    <small>{selectedChannel.status === 'active' ? 'Times use your device timezone.' : 'Activate the channel to schedule.'}</small>
+                  </label>
+                ) : null}
                 <label className="creator-form-wide">
                   Description
                   <textarea
@@ -605,9 +681,20 @@ export function CreatorBroadcastsPage({
                   />
                 </label>
                 <div className="creator-form-actions creator-form-wide">
-                  <Button onClick={() => setShowBroadcastForm(false)}>Cancel</Button>
-                  <Button loading={creatingBroadcast} type="submit" variant="primary">
-                    {broadcastForm.scheduledStartAt ? 'Schedule broadcast' : 'Create draft'}
+                  {!firstBroadcastSetup ? (
+                    <Button onClick={() => setShowBroadcastForm(false)}>Cancel</Button>
+                  ) : null}
+                  <Button
+                    disabled={firstBroadcastSetup && !firstBroadcastChoice}
+                    loading={creatingBroadcast}
+                    type="submit"
+                    variant="primary"
+                  >
+                    {firstBroadcastSetup && firstBroadcastChoice === 'go-live'
+                      ? 'Create broadcast and open Studio'
+                      : broadcastForm.scheduledStartAt
+                        ? 'Schedule broadcast'
+                        : 'Create draft'}
                   </Button>
                 </div>
               </form>
@@ -645,7 +732,7 @@ export function CreatorBroadcastsPage({
                   <span>Real broadcast data</span>
                   <h3 id="broadcast-list-title">{selectedChannel?.name} broadcasts</h3>
                 </div>
-                <Button onClick={onOpenStudio} variant="primary">Open Broadcast Studio</Button>
+                <Button onClick={() => onOpenStudio()} variant="primary">Open Broadcast Studio</Button>
               </header>
               <div className="broadcast-list-items">
                 {broadcasts.map((broadcast) => {
@@ -677,7 +764,11 @@ export function CreatorBroadcastsPage({
                         <small>/{organisation.slug}/{selectedChannel?.slug}/{broadcast.slug}</small>
                       </div>
                       <div className="broadcast-row-actions">
-                        <Button onClick={onOpenStudio}>
+                        <Button onClick={() => onOpenStudio({
+                          organisationId: organisation.id,
+                          channelId: selectedChannelId,
+                          broadcastId: broadcast.id,
+                        })}>
                           {overdue ? 'Open Studio to recover' : 'Open in Studio'}
                         </Button>
                       </div>
