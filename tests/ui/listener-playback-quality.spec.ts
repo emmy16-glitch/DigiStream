@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { listenerConnectionPresentation } from '../../apps/web/src/features/listening/listener-connection-presentation';
 import {
   LISTENER_QUALITY_BUFFERING_THRESHOLD,
   LISTENER_QUALITY_MIN_OBSERVATION_MS,
@@ -50,18 +51,59 @@ test('old, future and invalid buffering events cannot affect the result', () => 
   ).toBe(false);
 });
 
-
 test('quality returns to stable after buffering evidence ages out', () => {
   const playbackStartedAt = 100_000;
-  expect(listenerPlaybackQualityEvidence({
-    bufferingEvents: [140_000, 150_000, 160_000],
-    observedAt: 170_000,
-    playbackStartedAt,
-  }).unstable).toBe(true);
+  expect(
+    listenerPlaybackQualityEvidence({
+      bufferingEvents: [140_000, 150_000, 160_000],
+      observedAt: 170_000,
+      playbackStartedAt,
+    }).unstable,
+  ).toBe(true);
 
-  expect(listenerPlaybackQualityEvidence({
-    bufferingEvents: pruneListenerBufferingEvents([140_000, 150_000, 160_000], 300_001),
-    observedAt: 300_001,
-    playbackStartedAt,
-  }).unstable).toBe(false);
+  expect(
+    listenerPlaybackQualityEvidence({
+      bufferingEvents: pruneListenerBufferingEvents(
+        [140_000, 150_000, 160_000],
+        300_001,
+      ),
+      observedAt: 300_001,
+      playbackStartedAt,
+    }).unstable,
+  ).toBe(false);
+});
+
+test('measured instability is secondary to active playback failure states', () => {
+  expect(
+    listenerConnectionPresentation({
+      activeProtocol: 'webrtc',
+      online: true,
+      phase: 'playing',
+      playable: true,
+      status: 'live',
+      unstable: true,
+    }).label,
+  ).toBe('Unstable connection');
+
+  expect(
+    listenerConnectionPresentation({
+      activeProtocol: 'webrtc',
+      online: true,
+      phase: 'buffering',
+      playable: true,
+      status: 'live',
+      unstable: true,
+    }).label,
+  ).toBe('Buffering');
+
+  expect(
+    listenerConnectionPresentation({
+      activeProtocol: 'webrtc',
+      online: false,
+      phase: 'playing',
+      playable: true,
+      status: 'live',
+      unstable: true,
+    }).label,
+  ).toBe('Offline');
 });
