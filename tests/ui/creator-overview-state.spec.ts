@@ -99,6 +99,26 @@ test('active channel with a live broadcast derives a manage-live state', () => {
   expect(result.canOpenBackstage).toBe(true);
 });
 
+test('draft broadcast opens Studio but not Backstage before a backstage-capable lifecycle exists', () => {
+  const result = creatorOverviewDerivation({
+    channels: [channel('active')],
+    broadcasts: [broadcast('draft')],
+  });
+  expect(result.setupState).toBe('prepare_broadcast');
+  expect(result.canOpenStudio).toBe(true);
+  expect(result.canOpenBackstage).toBe(false);
+});
+
+test('ending broadcast remains manageable in Studio without exposing an unsafe Backstage action', () => {
+  const result = creatorOverviewDerivation({
+    channels: [channel('active')],
+    broadcasts: [broadcast('ending')],
+  });
+  expect(result.setupState).toBe('manage_live_broadcast');
+  expect(result.canOpenStudio).toBe(true);
+  expect(result.canOpenBackstage).toBe(false);
+});
+
 test('a broadcast in a final state is selected for truthful completion but not Studio or Backstage', () => {
   for (const status of ['completed', 'cancelled', 'failed'] as const) {
     const result = creatorOverviewDerivation({
