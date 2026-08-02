@@ -2,12 +2,12 @@ import { expect, test } from '@playwright/test';
 import type { Broadcast, Channel } from '@digistream/contracts';
 import { creatorOverviewDerivation } from '../../apps/web/src/features/onboarding/overview-state';
 
-function channel(status: Channel['status']): Channel {
+function channel(status: Channel['status'], id = 'c1'): Channel {
   return {
-    id: 'c1',
+    id,
     organisationId: 'o1',
-    name: 'Main channel',
-    slug: 'main-channel',
+    name: `Channel ${id}`,
+    slug: `channel-${id}`,
     description: null,
     category: null,
     status,
@@ -18,14 +18,14 @@ function channel(status: Channel['status']): Channel {
   };
 }
 
-function broadcast(status: Broadcast['status']): Broadcast {
+function broadcast(status: Broadcast['status'], channelId = 'c1', id = 'b1'): Broadcast {
   return {
-    id: 'b1',
+    id,
     organisationId: 'o1',
-    channelId: 'c1',
+    channelId,
     createdByUserId: 'u1',
-    title: 'Sunday broadcast',
-    slug: 'sunday-broadcast',
+    title: `Broadcast ${id}`,
+    slug: `broadcast-${id}`,
     description: null,
     status,
     scheduledStartAt: null,
@@ -51,6 +51,8 @@ test('active channel with no broadcast derives a create-broadcast next action an
     broadcasts: [],
   });
   expect(result.setupState).toBe('create_broadcast');
+  expect(result.selectedChannel?.id).toBe('c1');
+  expect(result.selectedBroadcast).toBeNull();
   expect(result.canOpenStudio).toBe(false);
   expect(result.canOpenBackstage).toBe(false);
 });
@@ -58,6 +60,8 @@ test('active channel with no broadcast derives a create-broadcast next action an
 test('organisation with no channel derives a create-channel next action', () => {
   const result = creatorOverviewDerivation({ channels: [], broadcasts: [] });
   expect(result.setupState).toBe('create_channel');
+  expect(result.selectedChannel).toBeNull();
+  expect(result.selectedBroadcast).toBeNull();
   expect(result.canOpenStudio).toBe(false);
   expect(result.canOpenBackstage).toBe(false);
 });
@@ -72,12 +76,14 @@ test('insufficient permission leaves the channel awaiting activation without exp
   expect(result.canOpenBackstage).toBe(false);
 });
 
-test('active channel with a scheduled broadcast derives a prepare-broadcast state with a valid studio and backstage action', () => {
+test('active channel with a scheduled broadcast derives a prepare-broadcast state with exact context', () => {
   const result = creatorOverviewDerivation({
     channels: [channel('active')],
     broadcasts: [broadcast('scheduled')],
   });
   expect(result.setupState).toBe('prepare_broadcast');
+  expect(result.selectedChannel?.id).toBe('c1');
+  expect(result.selectedBroadcast?.id).toBe('b1');
   expect(result.canOpenStudio).toBe(true);
   expect(result.canOpenBackstage).toBe(true);
 });
@@ -88,17 +94,19 @@ test('active channel with a live broadcast derives a manage-live state', () => {
     broadcasts: [broadcast('live')],
   });
   expect(result.setupState).toBe('manage_live_broadcast');
+  expect(result.selectedBroadcast?.status).toBe('live');
   expect(result.canOpenStudio).toBe(true);
   expect(result.canOpenBackstage).toBe(true);
 });
 
-test('a broadcast in a final state is not a valid studio or backstage broadcast', () => {
+test('a broadcast in a final state is selected for truthful completion but not Studio or Backstage', () => {
   for (const status of ['completed', 'cancelled', 'failed'] as const) {
     const result = creatorOverviewDerivation({
       channels: [channel('active')],
       broadcasts: [broadcast(status)],
     });
     expect(result.setupState).toBe('view_completed_broadcast');
+    expect(result.selectedBroadcast?.status).toBe(status);
     expect(result.canOpenStudio).toBe(false);
     expect(result.canOpenBackstage).toBe(false);
   }
@@ -110,6 +118,7 @@ test('inactive channel cannot derive a broadcast action even when a broadcast st
     broadcasts: [broadcast('live')],
   });
   expect(result.setupState).toBe('finish_channel_activation');
+  expect(result.selectedBroadcast).toBeNull();
   expect(result.canOpenStudio).toBe(false);
   expect(result.canOpenBackstage).toBe(false);
 });
@@ -117,8 +126,34 @@ test('inactive channel cannot derive a broadcast action even when a broadcast st
 test('live broadcast is prioritised over a lower-significance broadcast in the same channel', () => {
   const result = creatorOverviewDerivation({
     channels: [channel('active')],
-    broadcasts: [broadcast('completed'), broadcast('live')],
+    broadcasts: [broadcast('completed', 'c1', 'completed'), broadcast('live', 'c1', 'live')],
   });
   expect(result.setupState).toBe('manage_live_broadcast');
+  expect(result.selectedBroadcast?.id).toBe('live');
   expect(result.canOpenStudio).toBe(true);
+});
+
+test('exact channel is selected when the strongest broadcast belongs to a later active channel', () => {
+  const result = creatorOverviewDerivation({
+    channels: [channel('active', 'c1'), channel('active', 'c2')],
+    broadcasts: [
+      broadcast('scheduled', 'c1', 'scheduled'),
+      broadcast('live', 'c2', 'live-second-channel'),
+    ],
+  });
+  expect(result.setupState).toBe('manage_live_broadcast');
+  expect(result.selectedChannel?.id).toBe('c2');
+  expect(result.selectedBroadcast?.id).toBe('live-second-channel');
+});
+
+test('orphaned broadcasts are ignored instead of exposing an invalid contextual action', () => {
+  const result = creatorOverviewDerivation({
+    channels: [channel('active', 'c1')],
+    broadcasts: [broadcast('live', 'missing-channel', 'orphaned')],
+  });
+  expect(result.setupState).toBe('create_broadcast');
+  expect(result.selectedChannel?.id).toBe('c1');
+  expect(result.selectedBroadcast).toBeNull();
+  expect(result.canOpenStudio).toBe(false);
+  expect(result.canOpenBackstage).toBe(false);
 });
