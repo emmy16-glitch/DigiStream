@@ -91,11 +91,13 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
 
   const broadcastTitleInput = page.getByLabel('Broadcast title');
   const broadcastForm = page.locator('form.creator-form-grid').filter({ has: broadcastTitleInput });
+  const initialSubmit = broadcastForm.locator('button[type="submit"]');
+  await expect(initialSubmit).toBeDisabled();
+  await expect(initialSubmit).toHaveText('Create draft');
+  await page.getByRole('button', { name: 'Go live now', exact: true }).click();
   const createAndOpenStudio = broadcastForm.getByRole('button', {
     name: 'Create broadcast and open Studio',
   });
-  await expect(createAndOpenStudio).toBeDisabled();
-  await page.getByRole('button', { name: 'Go live now', exact: true }).click();
   await expect(createAndOpenStudio).toBeEnabled();
   await expect(broadcastForm.getByLabel('Schedule start')).toHaveCount(0);
 
