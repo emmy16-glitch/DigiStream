@@ -21,6 +21,30 @@ const STUDIO_BROADCAST_STATES: ReadonlySet<Broadcast['status']> = new Set([
   'reconnecting',
 ]);
 
+function newestPersisted<T extends { id: string; createdAt: string; updatedAt: string }>(
+  resources: T[],
+): T | null {
+  return [...resources].sort((left, right) => {
+    const updatedDifference = Date.parse(right.updatedAt) - Date.parse(left.updatedAt);
+    if (updatedDifference !== 0) return updatedDifference;
+    const createdDifference = Date.parse(right.createdAt) - Date.parse(left.createdAt);
+    if (createdDifference !== 0) return createdDifference;
+    return left.id.localeCompare(right.id);
+  })[0] ?? null;
+}
+
+function strongestBroadcast(broadcasts: Broadcast[]): Broadcast | null {
+  return [...broadcasts].sort((left, right) => {
+    const lifecycleDifference = right.lifecycleVersion - left.lifecycleVersion;
+    if (lifecycleDifference !== 0) return lifecycleDifference;
+    const updatedDifference = Date.parse(right.updatedAt) - Date.parse(left.updatedAt);
+    if (updatedDifference !== 0) return updatedDifference;
+    const createdDifference = Date.parse(right.createdAt) - Date.parse(left.createdAt);
+    if (createdDifference !== 0) return createdDifference;
+    return left.id.localeCompare(right.id);
+  })[0] ?? null;
+}
+
 /**
  * Resolves an optional contextual Studio request against API-backed resources.
  *
@@ -43,7 +67,7 @@ export function resolveStudioContextSelection({
   const requestedOrganisation = organisations.find(
     (organisation) => organisation.id === requested.organisationId,
   );
-  const organisation = requestedOrganisation ?? organisations[0] ?? null;
+  const organisation = requestedOrganisation ?? newestPersisted(organisations);
 
   if (!organisation) {
     return {
@@ -55,12 +79,13 @@ export function resolveStudioContextSelection({
   }
 
   const organisationChannels = channels.filter(
-    (channel) => channel.organisationId === organisation.id,
+    (channel) =>
+      channel.organisationId === organisation.id && channel.status === 'active',
   );
   const requestedChannel = organisationChannels.find(
     (channel) => channel.id === requested.channelId,
   );
-  const channel = requestedChannel ?? organisationChannels[0] ?? null;
+  const channel = requestedChannel ?? newestPersisted(organisationChannels);
 
   if (!channel) {
     return {
@@ -80,7 +105,7 @@ export function resolveStudioContextSelection({
   const requestedBroadcast = availableBroadcasts.find(
     (broadcast) => broadcast.id === requested.broadcastId,
   );
-  const broadcast = requestedBroadcast ?? availableBroadcasts[0] ?? null;
+  const broadcast = requestedBroadcast ?? strongestBroadcast(availableBroadcasts);
 
   const requestedContextPreserved = Boolean(
     requestedOrganisation &&
