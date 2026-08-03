@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
 } from 'react';
@@ -14,6 +15,7 @@ import type {
   OrganisationListResponse,
 } from '@digistream/contracts';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
+import { useModalHistoryDismiss } from '../../lib/use-modal-history-dismiss';
 import './creator-backstage.css';
 
 type GuestInvitationStatus = 'pending' | 'accepted' | 'admitted' | 'revoked';
@@ -89,6 +91,14 @@ function invitationLink(token: string): string {
   return `${window.location.origin}/guest/${encodeURIComponent(token)}`;
 }
 
+function focusableElements(container: HTMLElement): HTMLElement[] {
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter((element) => !element.hasAttribute('hidden') && element.offsetParent !== null);
+}
+
 export function CreatorBackstageWorkspace({
   open,
   onClose,
@@ -114,8 +124,13 @@ export function CreatorBackstageWorkspace({
   const [inviteTtl, setInviteTtl] = useState('3600');
   const [error, setError] = useState('');
   const [mediaWarning, setMediaWarning] = useState('');
-  const [message, setMessage] = useState('Select a broadcast to manage its backstage area.');
+  const [message, setMessage] = useState(
+    'Select a broadcast to manage its backstage area.',
+  );
   const [busyAction, setBusyAction] = useState('');
+
+  const dialogRef = useRef<HTMLElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const selectedOrganisation = useMemo(
     () => organisations.find((item) => item.id === organisationId) ?? null,
@@ -130,14 +145,50 @@ export function CreatorBackstageWorkspace({
     selectedOrganisation?.role === 'admin' ||
     selectedOrganisation?.role === 'broadcaster';
 
+  const requestClose = useModalHistoryDismiss({
+    active: open,
+    onDismiss: onClose,
+    stateKey: 'digistream.creator-backstage',
+  });
+
   useEffect(() => {
     if (!open) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    const frame = window.requestAnimationFrame(() => {
+      focusableElements(dialogRef.current ?? document.body)[0]?.focus();
+    });
+    return () => {
+      window.cancelAnimationFrame(frame);
+      const previous = previousFocusRef.current;
+      if (previous?.isConnected) previous.focus();
+      previousFocusRef.current = null;
     };
-    window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [onClose, open]);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        requestClose();
+        return;
+      }
+      if (event.key !== 'Tab' || !dialogRef.current) return;
+      const focusable = focusableElements(dialogRef.current);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [open, requestClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -212,7 +263,9 @@ export function CreatorBackstageWorkspace({
     const base = `/api/v1/organisations/${organisationId}/broadcasts/${broadcastId}`;
     const [invitationResult, participantResult, callInResult] = await Promise.allSettled([
       apiRequest<{ invitations: GuestInvitation[] }>(`${base}/guest-invitations`),
-      apiRequest<{ participants: BackstageParticipant[] }>(`${base}/backstage/participants`),
+      apiRequest<{ participants: BackstageParticipant[] }>(
+        `${base}/backstage/participants`,
+      ),
       apiRequest<{ callIns: CallInRequest[] }>(`${base}/call-ins`),
     ]);
 
@@ -290,7 +343,9 @@ export function CreatorBackstageWorkspace({
       }));
       setInviteName('');
       setInviteEmail('');
-      setMessage('Guest invitation created. Copy the link now; the raw token is not stored by the server.');
+      setMessage(
+        'Guest invitation created. Copy the link now; the raw token is not stored by the server.',
+      );
       await refreshBackstage();
     } catch (requestError) {
       setError(readableError(requestError));
@@ -396,9 +451,13 @@ export function CreatorBackstageWorkspace({
       if (response.invitation) {
         setCreatedLinks((current) => ({
           ...current,
-          [response.invitation!.id]: invitationLink(response.invitation!.acceptanceToken),
+          [response.invitation!.id]: invitationLink(
+            response.invitation!.acceptanceToken,
+          ),
         }));
-        setMessage('Call-in approved. Copy the generated guest link and send it to the caller.');
+        setMessage(
+          'Call-in approved. Copy the generated guest link and send it to the caller.',
+        );
       } else {
         setMessage('Call-in request rejected.');
       }
@@ -414,14 +473,27 @@ export function CreatorBackstageWorkspace({
 
   return (
     <div className="backstage-backdrop" role="presentation">
-      <section className="backstage-workspace" role="dialog" aria-modal="true" aria-labelledby="backstage-title">
+      <section
+        aria-labelledby="backstage-title"
+        aria-modal="true"
+        className="backstage-workspace"
+        ref={dialogRef}
+        role="dialog"
+      >
         <header className="backstage-header">
           <div>
             <span className="eyebrow">Live guest operations</span>
             <h2 id="backstage-title">Creator backstage</h2>
             <p>Create secure guest links, admit waiting guests and manage LiveKit participants.</p>
           </div>
-          <button className="backstage-close" onClick={onClose} type="button" aria-label="Close backstage workspace">×</button>
+          <button
+            aria-label="Close backstage workspace"
+            className="backstage-close"
+            onClick={requestClose}
+            type="button"
+          >
+            ×
+          </button>
         </header>
 
         {error ? <div className="backstage-alert error" role="alert">{error}</div> : null}
@@ -432,13 +504,32 @@ export function CreatorBackstageWorkspace({
             <h3>Sign in to manage backstage</h3>
             <label>
               Email
-              <input autoComplete="email" onChange={(event) => setEmail(event.target.value)} required type="email" value={email} />
+              <input
+                autoComplete="email"
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                type="email"
+                value={email}
+              />
             </label>
             <label>
               Password
-              <input autoComplete="current-password" minLength={12} onChange={(event) => setPassword(event.target.value)} required type="password" value={password} />
+              <input
+                autoComplete="current-password"
+                minLength={12}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+                type="password"
+                value={password}
+              />
             </label>
-            <button className="primary-button" disabled={busyAction === 'sign-in'} type="submit">Sign in</button>
+            <button
+              className="primary-button"
+              disabled={busyAction === 'sign-in'}
+              type="submit"
+            >
+              Sign in
+            </button>
           </form>
         ) : (
           <div className="backstage-body">
@@ -450,16 +541,25 @@ export function CreatorBackstageWorkspace({
               </div>
               <label>
                 Organisation
-                <select onChange={(event) => setOrganisationId(event.target.value)} value={organisationId}>
+                <select
+                  onChange={(event) => setOrganisationId(event.target.value)}
+                  value={organisationId}
+                >
                   <option value="">Select organisation</option>
                   {organisations.map((organisation) => (
-                    <option key={organisation.id} value={organisation.id}>{organisation.name} · {organisation.role}</option>
+                    <option key={organisation.id} value={organisation.id}>
+                      {organisation.name} · {organisation.role}
+                    </option>
                   ))}
                 </select>
               </label>
               <label>
                 Channel
-                <select disabled={!organisationId} onChange={(event) => setChannelId(event.target.value)} value={channelId}>
+                <select
+                  disabled={!organisationId}
+                  onChange={(event) => setChannelId(event.target.value)}
+                  value={channelId}
+                >
                   <option value="">Select channel</option>
                   {channels.map((channel) => (
                     <option key={channel.id} value={channel.id}>{channel.name}</option>
@@ -468,10 +568,16 @@ export function CreatorBackstageWorkspace({
               </label>
               <label>
                 Broadcast
-                <select disabled={!channelId} onChange={(event) => setBroadcastId(event.target.value)} value={broadcastId}>
+                <select
+                  disabled={!channelId}
+                  onChange={(event) => setBroadcastId(event.target.value)}
+                  value={broadcastId}
+                >
                   <option value="">Select active broadcast</option>
                   {broadcasts.map((broadcast) => (
-                    <option key={broadcast.id} value={broadcast.id}>{broadcast.title} · {broadcast.status}</option>
+                    <option key={broadcast.id} value={broadcast.id}>
+                      {broadcast.title} · {broadcast.status}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -489,22 +595,49 @@ export function CreatorBackstageWorkspace({
                         <span className="backstage-label">Invitation desk</span>
                         <h3>{selectedBroadcast.title}</h3>
                       </div>
-                      <button className="backstage-refresh" onClick={() => void refreshBackstage()} type="button">Refresh</button>
+                      <button
+                        className="backstage-refresh"
+                        onClick={() => void refreshBackstage()}
+                        type="button"
+                      >
+                        Refresh
+                      </button>
                     </header>
                     {canCreateInvitations ? (
                       <form className="backstage-invite-form" onSubmit={createInvitation}>
-                        <input maxLength={80} onChange={(event) => setInviteName(event.target.value)} placeholder="Guest display name (optional)" value={inviteName} />
-                        <input onChange={(event) => setInviteEmail(event.target.value)} placeholder="Guest email (optional)" type="email" value={inviteEmail} />
-                        <select onChange={(event) => setInviteTtl(event.target.value)} value={inviteTtl}>
+                        <input
+                          maxLength={80}
+                          onChange={(event) => setInviteName(event.target.value)}
+                          placeholder="Guest display name (optional)"
+                          value={inviteName}
+                        />
+                        <input
+                          onChange={(event) => setInviteEmail(event.target.value)}
+                          placeholder="Guest email (optional)"
+                          type="email"
+                          value={inviteEmail}
+                        />
+                        <select
+                          onChange={(event) => setInviteTtl(event.target.value)}
+                          value={inviteTtl}
+                        >
                           <option value="900">15 minutes</option>
                           <option value="3600">1 hour</option>
                           <option value="14400">4 hours</option>
                           <option value="86400">24 hours</option>
                         </select>
-                        <button className="primary-button" disabled={busyAction === 'create-invitation'} type="submit">Create guest link</button>
+                        <button
+                          className="primary-button"
+                          disabled={busyAction === 'create-invitation'}
+                          type="submit"
+                        >
+                          Create guest link
+                        </button>
                       </form>
                     ) : (
-                      <p className="backstage-muted-copy">Moderators can admit and control guests but cannot create new invitations.</p>
+                      <p className="backstage-muted-copy">
+                        Moderators can admit and control guests but cannot create new invitations.
+                      </p>
                     )}
                     <div className="backstage-list">
                       {invitations.length ? invitations.map((invitation) => {
@@ -512,14 +645,39 @@ export function CreatorBackstageWorkspace({
                         return (
                           <article className="backstage-row" key={invitation.id}>
                             <div>
-                              <strong>{invitation.displayName || invitation.invitedEmail || 'Unnamed guest'}</strong>
-                              <span>{invitation.status} · expires {formatTime(invitation.expiresAt)}</span>
+                              <strong>
+                                {invitation.displayName || invitation.invitedEmail || 'Unnamed guest'}
+                              </strong>
+                              <span>
+                                {invitation.status} · expires {formatTime(invitation.expiresAt)}
+                              </span>
                               {link ? <code>{link}</code> : null}
                             </div>
                             <div className="backstage-row-actions">
-                              {link ? <button onClick={() => void copyLink(invitation.id)} type="button">Copy link</button> : null}
-                              {invitation.status === 'accepted' ? <button onClick={() => void admitInvitation(invitation.id)} disabled={busyAction === `admit-${invitation.id}`} type="button">Admit</button> : null}
-                              {invitation.status !== 'revoked' ? <button className="danger" onClick={() => void revokeInvitation(invitation.id)} disabled={busyAction === `revoke-${invitation.id}`} type="button">Revoke</button> : null}
+                              {link ? (
+                                <button onClick={() => void copyLink(invitation.id)} type="button">
+                                  Copy link
+                                </button>
+                              ) : null}
+                              {invitation.status === 'accepted' ? (
+                                <button
+                                  disabled={busyAction === `admit-${invitation.id}`}
+                                  onClick={() => void admitInvitation(invitation.id)}
+                                  type="button"
+                                >
+                                  Admit
+                                </button>
+                              ) : null}
+                              {invitation.status !== 'revoked' ? (
+                                <button
+                                  className="danger"
+                                  disabled={busyAction === `revoke-${invitation.id}`}
+                                  onClick={() => void revokeInvitation(invitation.id)}
+                                  type="button"
+                                >
+                                  Revoke
+                                </button>
+                              ) : null}
                             </div>
                           </article>
                         );
@@ -535,21 +693,48 @@ export function CreatorBackstageWorkspace({
                       </div>
                       <span className="backstage-count">{participants.length}</span>
                     </header>
-                    {mediaWarning ? <div className="backstage-alert warning">{mediaWarning}</div> : null}
+                    {mediaWarning ? (
+                      <div className="backstage-alert warning">{mediaWarning}</div>
+                    ) : null}
                     <div className="backstage-list">
                       {participants.length ? participants.map((participant) => {
-                        const microphone = participant.tracks.find((track) => track.source === 'microphone');
+                        const microphone = participant.tracks.find(
+                          (track) => track.source === 'microphone',
+                        );
                         const controllable = participant.role === 'guest';
                         return (
                           <article className="backstage-row" key={participant.identity}>
                             <div>
                               <strong>{participant.name}</strong>
-                              <span>{participant.role} · {participant.connected ? 'connected' : 'disconnected'} · {microphone ? (microphone.muted ? 'muted' : 'microphone live') : 'no microphone'}</span>
+                              <span>
+                                {participant.role} ·{' '}
+                                {participant.connected ? 'connected' : 'disconnected'} ·{' '}
+                                {microphone
+                                  ? microphone.muted
+                                    ? 'muted'
+                                    : 'microphone live'
+                                  : 'no microphone'}
+                              </span>
                             </div>
                             {controllable ? (
                               <div className="backstage-row-actions">
-                                {microphone ? <button onClick={() => void setGuestMute(participant, !microphone.muted)} disabled={busyAction === `mute-${participant.identity}`} type="button">{microphone.muted ? 'Unmute' : 'Mute'}</button> : null}
-                                <button className="danger" onClick={() => void removeGuest(participant)} disabled={busyAction === `remove-${participant.identity}`} type="button">Remove</button>
+                                {microphone ? (
+                                  <button
+                                    disabled={busyAction === `mute-${participant.identity}`}
+                                    onClick={() => void setGuestMute(participant, !microphone.muted)}
+                                    type="button"
+                                  >
+                                    {microphone.muted ? 'Unmute' : 'Mute'}
+                                  </button>
+                                ) : null}
+                                <button
+                                  className="danger"
+                                  disabled={busyAction === `remove-${participant.identity}`}
+                                  onClick={() => void removeGuest(participant)}
+                                  type="button"
+                                >
+                                  Remove
+                                </button>
                               </div>
                             ) : null}
                           </article>
@@ -564,20 +749,37 @@ export function CreatorBackstageWorkspace({
                         <span className="backstage-label">Listener requests</span>
                         <h3>Call-ins</h3>
                       </div>
-                      <span className="backstage-count">{callIns.filter((item) => item.status === 'pending').length}</span>
+                      <span className="backstage-count">
+                        {callIns.filter((item) => item.status === 'pending').length}
+                      </span>
                     </header>
                     <div className="backstage-list">
                       {callIns.length ? callIns.map((callIn) => (
                         <article className="backstage-row" key={callIn.id}>
                           <div>
                             <strong>{callIn.displayName}</strong>
-                            <span>{callIn.contactEmail || 'No contact email'} · {callIn.status}</span>
+                            <span>
+                              {callIn.contactEmail || 'No contact email'} · {callIn.status}
+                            </span>
                             {callIn.message ? <p>{callIn.message}</p> : null}
                           </div>
                           {callIn.status === 'pending' ? (
                             <div className="backstage-row-actions">
-                              <button onClick={() => void decideCallIn(callIn, 'approve')} disabled={busyAction === `approve-${callIn.id}`} type="button">Approve</button>
-                              <button className="danger" onClick={() => void decideCallIn(callIn, 'reject')} disabled={busyAction === `reject-${callIn.id}`} type="button">Reject</button>
+                              <button
+                                disabled={busyAction === `approve-${callIn.id}`}
+                                onClick={() => void decideCallIn(callIn, 'approve')}
+                                type="button"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                className="danger"
+                                disabled={busyAction === `reject-${callIn.id}`}
+                                onClick={() => void decideCallIn(callIn, 'reject')}
+                                type="button"
+                              >
+                                Reject
+                              </button>
                             </div>
                           ) : null}
                         </article>
