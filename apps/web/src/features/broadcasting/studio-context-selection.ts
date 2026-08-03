@@ -6,11 +6,18 @@ export type RequestedStudioContext = {
   broadcastId?: string | null;
 };
 
+export type StudioContextFallbackReason =
+  | 'organisation-unavailable'
+  | 'channel-unavailable'
+  | 'broadcast-unavailable'
+  | null;
+
 export type StudioContextSelection = {
   organisationId: string;
   channelId: string;
   broadcastId: string;
   requestedContextPreserved: boolean;
+  fallbackReason: StudioContextFallbackReason;
 };
 
 const STUDIO_BROADCAST_STATES: ReadonlySet<Broadcast['status']> = new Set([
@@ -72,6 +79,11 @@ function strongestBroadcast(broadcasts: Broadcast[]): Broadcast | null {
   })[0] ?? null;
 }
 
+function requestedValue(value: string | null | undefined): string | null {
+  const normalized = value?.trim();
+  return normalized ? normalized : null;
+}
+
 /**
  * Resolves an optional contextual Studio request against API-backed resources.
  *
@@ -79,6 +91,11 @@ function strongestBroadcast(broadcasts: Broadcast[]): Broadcast | null {
  * re-verified from the loaded organisation, channel and broadcast resources.
  * Stale, unauthorized or private-not-found context therefore falls back to a
  * valid selectable resource instead of being trusted by the client.
+ *
+ * fallbackReason remains null when no contextual identifier was requested. If
+ * a requested resource cannot be preserved, it identifies the earliest failed
+ * relationship so Studio can explain the safe fallback without claiming that
+ * the originally requested workspace opened.
  */
 export function resolveStudioContextSelection({
   requested,
@@ -91,8 +108,15 @@ export function resolveStudioContextSelection({
   channels: Channel[];
   broadcasts: Broadcast[];
 }): StudioContextSelection {
+  const requestedOrganisationId = requestedValue(requested.organisationId);
+  const requestedChannelId = requestedValue(requested.channelId);
+  const requestedBroadcastId = requestedValue(requested.broadcastId);
+  const hasRequestedContext = Boolean(
+    requestedOrganisationId || requestedChannelId || requestedBroadcastId,
+  );
+
   const requestedOrganisation = organisations.find(
-    (organisation) => organisation.id === requested.organisationId,
+    (organisation) => organisation.id === requestedOrganisationId,
   );
   const organisation = requestedOrganisation ?? newestPersisted(organisations);
 
@@ -102,6 +126,7 @@ export function resolveStudioContextSelection({
       channelId: '',
       broadcastId: '',
       requestedContextPreserved: false,
+      fallbackReason: hasRequestedContext ? 'organisation-unavailable' : null,
     };
   }
 
@@ -110,7 +135,7 @@ export function resolveStudioContextSelection({
       channel.organisationId === organisation.id && channel.status === 'active',
   );
   const requestedChannel = organisationChannels.find(
-    (channel) => channel.id === requested.channelId,
+    (channel) => channel.id === requestedChannelId,
   );
   const channel = requestedChannel ?? newestPersisted(organisationChannels);
 
@@ -120,6 +145,12 @@ export function resolveStudioContextSelection({
       channelId: '',
       broadcastId: '',
       requestedContextPreserved: false,
+      fallbackReason:
+        requestedOrganisationId && !requestedOrganisation
+          ? 'organisation-unavailable'
+          : hasRequestedContext
+            ? 'channel-unavailable'
+            : null,
     };
   }
 
@@ -130,7 +161,7 @@ export function resolveStudioContextSelection({
       STUDIO_BROADCAST_STATES.has(broadcast.status),
   );
   const requestedBroadcast = availableBroadcasts.find(
-    (broadcast) => broadcast.id === requested.broadcastId,
+    (broadcast) => broadcast.id === requestedBroadcastId,
   );
   const broadcast = requestedBroadcast ?? strongestBroadcast(availableBroadcasts);
 
@@ -143,10 +174,22 @@ export function resolveStudioContextSelection({
       requestedBroadcast.id === broadcast?.id,
   );
 
+  let fallbackReason: StudioContextFallbackReason = null;
+  if (hasRequestedContext && !requestedContextPreserved) {
+    if (requestedOrganisationId && !requestedOrganisation) {
+      fallbackReason = 'organisation-unavailable';
+    } else if (requestedChannelId && !requestedChannel) {
+      fallbackReason = 'channel-unavailable';
+    } else if (requestedBroadcastId && !requestedBroadcast) {
+      fallbackReason = 'broadcast-unavailable';
+    }
+  }
+
   return {
     organisationId: organisation.id,
     channelId: channel.id,
     broadcastId: broadcast?.id ?? '',
     requestedContextPreserved,
+    fallbackReason,
   };
 }
