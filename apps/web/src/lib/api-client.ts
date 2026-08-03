@@ -8,6 +8,7 @@ export const apiBaseUrl = configuredApiBaseUrl
   : '';
 
 const AUTH_API_PREFIX = '/api/v1/auth/';
+const CREATOR_ROUTE_PREFIX = '/creator';
 const SESSION_EXPIRED_EVENT = 'digistream:session-expired';
 let sessionRecoveryStarted = false;
 
@@ -24,15 +25,23 @@ export class ApiClientError extends Error {
   }
 }
 
-export function shouldRecoverExpiredSession(path: string, status: number): boolean {
-  return status === 401 && !path.startsWith(AUTH_API_PREFIX);
+export function shouldRecoverExpiredSession(
+  path: string,
+  status: number,
+  pathname: string,
+): boolean {
+  return (
+    status === 401 &&
+    pathname.startsWith(CREATOR_ROUTE_PREFIX) &&
+    !path.startsWith(AUTH_API_PREFIX)
+  );
 }
 
 function recoverExpiredSession(path: string, status: number): void {
   if (
-    !shouldRecoverExpiredSession(path, status) ||
-    sessionRecoveryStarted ||
-    typeof window === 'undefined'
+    typeof window === 'undefined' ||
+    !shouldRecoverExpiredSession(path, status, window.location.pathname) ||
+    sessionRecoveryStarted
   ) {
     return;
   }
@@ -44,10 +53,6 @@ function recoverExpiredSession(path: string, status: number): void {
       detail: { path, returnTo: currentPath },
     }),
   );
-
-  if (window.location.pathname === '/login' || window.location.pathname === '/signup') {
-    return;
-  }
 
   const loginUrl = new URL('/login', window.location.origin);
   loginUrl.searchParams.set('reason', 'session-expired');
