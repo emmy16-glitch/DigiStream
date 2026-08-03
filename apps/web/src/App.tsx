@@ -290,18 +290,14 @@ function CreatorDashboard({
         `/api/v1/organisations/${organisation.id}/channels`,
       );
       setChannels(channelResponse.channels);
-      const primaryChannel =
-        channelResponse.channels.find((channel) => channel.status === 'active') ??
-        channelResponse.channels[0] ??
-        null;
-      if (primaryChannel) {
-        const broadcastResponse = await apiRequest<BroadcastListResponse>(
-          `/api/v1/organisations/${organisation.id}/channels/${primaryChannel.id}/broadcasts`,
-        );
-        setBroadcasts(broadcastResponse.broadcasts);
-      } else {
-        setBroadcasts([]);
-      }
+      const broadcastResponses = await Promise.all(
+        channelResponse.channels.map((channel) =>
+          apiRequest<BroadcastListResponse>(
+            `/api/v1/organisations/${organisation.id}/channels/${channel.id}/broadcasts`,
+          ),
+        ),
+      );
+      setBroadcasts(broadcastResponses.flatMap((response) => response.broadcasts));
     } catch (requestError) {
       setOverviewStateError(readableError(requestError));
       setChannels([]);
@@ -393,15 +389,17 @@ function CreatorDashboard({
       >
         Chat
       </Button>
-      <Button
-        aria-label="Open creator backstage"
-        icon="audience"
-        onClick={() => setBackstageOpen(true)}
-        title="Backstage"
-        variant="ghost"
-      >
-        Backstage
-      </Button>
+      {overviewState.canOpenBackstage ? (
+        <Button
+          aria-label="Open creator backstage"
+          icon="audience"
+          onClick={() => setBackstageOpen(true)}
+          title="Backstage"
+          variant="ghost"
+        >
+          Backstage
+        </Button>
+      ) : null}
       <LinkButton
         aria-label="Open listener application"
         href="/listen"
@@ -552,11 +550,6 @@ function CreatorDashboard({
                   Open listener app
                 </LinkButton>
               </div>
-            </div>
-            <div className="signal-visual" aria-label="Decorative DigiStream audio waveform">
-              {[34, 58, 82, 44, 96, 64, 40, 74, 52, 86, 36, 66].map((height, index) => (
-                <i key={`${height}-${index}`} style={{ height: `${height}%` }} />
-              ))}
             </div>
           </section>
 
