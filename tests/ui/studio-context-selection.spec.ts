@@ -85,6 +85,7 @@ test('preserves exact requested Studio context only after every relationship is 
     channelId: 'c2',
     broadcastId: 'b2',
     requestedContextPreserved: true,
+    fallbackReason: null,
   });
 });
 
@@ -108,10 +109,11 @@ test('rejects a cross-tenant broadcast even when its identifier was requested', 
     channelId: 'c1',
     broadcastId: 'safe',
     requestedContextPreserved: false,
+    fallbackReason: 'broadcast-unavailable',
   });
 });
 
-test('falls back safely when requested organisation or channel is private-not-found', () => {
+test('reports the earliest unavailable relationship for stale private context', () => {
   const result = resolveStudioContextSelection({
     requested: {
       organisationId: 'missing-organisation',
@@ -128,6 +130,7 @@ test('falls back safely when requested organisation or channel is private-not-fo
     channelId: 'c1',
     broadcastId: 'b1',
     requestedContextPreserved: false,
+    fallbackReason: 'organisation-unavailable',
   });
 });
 
@@ -148,6 +151,7 @@ test('never selects a completed broadcast for Studio contribution', () => {
     channelId: 'c1',
     broadcastId: '',
     requestedContextPreserved: false,
+    fallbackReason: 'broadcast-unavailable',
   });
 });
 
@@ -174,6 +178,7 @@ test('rejects inactive requested channels and does not expose their broadcasts t
     channelId: 'active',
     broadcastId: 'safe',
     requestedContextPreserved: false,
+    fallbackReason: 'channel-unavailable',
   });
 });
 
@@ -199,6 +204,7 @@ test('chooses deterministic persisted fallbacks instead of API list order', () =
     channelId: 'channel-new',
     broadcastId: 'broadcast-old',
     requestedContextPreserved: false,
+    fallbackReason: null,
   });
 });
 
@@ -218,6 +224,7 @@ test('prefers an operational live broadcast over a newer high-version draft', ()
     channelId: 'c1',
     broadcastId: 'live',
     requestedContextPreserved: false,
+    fallbackReason: null,
   });
 });
 
@@ -237,6 +244,7 @@ test('uses persisted recency instead of unrelated lifecycle versions for same-st
     channelId: 'c1',
     broadcastId: 'newer-low-version',
     requestedContextPreserved: false,
+    fallbackReason: null,
   });
 });
 
@@ -262,5 +270,23 @@ test('treats malformed persisted timestamps as oldest instead of trusting API or
     channelId: 'valid-channel',
     broadcastId: 'valid-broadcast',
     requestedContextPreserved: false,
+    fallbackReason: null,
+  });
+});
+
+test('does not claim a fallback when Studio opened without contextual identifiers', () => {
+  const result = resolveStudioContextSelection({
+    requested: {},
+    organisations: [],
+    channels: [],
+    broadcasts: [],
+  });
+
+  expect(result).toEqual({
+    organisationId: '',
+    channelId: '',
+    broadcastId: '',
+    requestedContextPreserved: false,
+    fallbackReason: null,
   });
 });
