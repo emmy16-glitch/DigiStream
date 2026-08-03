@@ -1,5 +1,4 @@
 import type { ApiErrorResponse } from '@digistream/contracts';
-import { prioritiseStudioSelectionPayload } from './studio-context-runtime';
 
 const configuredApiBaseUrl = import.meta.env.VITE_API_URL?.trim();
 
@@ -85,7 +84,7 @@ export async function apiRequest<T>(
     );
   }
 
-  return prioritiseStudioSelectionPayload(path, payload) as T;
+  return payload as T;
 }
 
 export function realtimeEndpoint(path = '/api/v1/realtime'): string {
