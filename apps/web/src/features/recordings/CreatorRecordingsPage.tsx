@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   Broadcast,
   BroadcastListResponse,
@@ -79,6 +79,17 @@ type ReplayDestination = {
   label: string;
 };
 
+type WorkspaceLoadOptions = {
+  background?: boolean;
+};
+
+const PROCESSING_RECORDING_STATUSES: ReadonlySet<RecordingStatus> = new Set([
+  'recording',
+  'uploading',
+  'processing',
+]);
+const RECORDING_REFRESH_INTERVAL_MS = 15_000;
+
 function readableError(error: unknown): string {
   if (error instanceof ApiClientError) return error.message;
   if (error instanceof Error) return error.message;
@@ -91,9 +102,7 @@ function sentenceCase(value: string): string {
 
 function statusTone(status: RecordingStatus): StatusTone {
   if (status === 'published' || status === 'ready') return 'success';
-  if (status === 'recording' || status === 'uploading' || status === 'processing') {
-    return 'info';
-  }
+  if (PROCESSING_RECORDING_STATUSES.has(status)) return 'info';
   if (status === 'failed' || status === 'deleted') return 'danger';
   if (status === 'archived') return 'warning';
   return 'neutral';
@@ -233,15 +242,25 @@ export function CreatorRecordingsPage({
   const [error, setError] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [requestingBroadcastId, setRequestingBroadcastId] = useState<string | null>(null);
+  const loadSequenceRef = useRef(0);
 
   const canManage =
     organisation.role === 'owner' ||
     organisation.role === 'admin' ||
     organisation.role === 'broadcaster';
 
-  const loadWorkspace = useCallback(async () => {
-    setLoading(true);
-    setError('');
+  const loadWorkspace = useCallback(async (
+    options: WorkspaceLoadOptions = {},
+  ) => {
+    const sequence = loadSequenceRef.current + 1;
+    loadSequenceRef.current = sequence;
+    const background = options.background === true;
+
+    if (!background) {
+      setLoading(true);
+      setError('');
+    }
+
     try {
       const [recordingResponse, channelResponse] = await Promise.all([
         apiRequest<RecordingListResponse>(
@@ -263,6 +282,8 @@ export function CreatorRecordingsPage({
         }),
       );
 
+      if (sequence !== loadSequenceRef.current) return;
+
       setRecordings(recordingResponse.recordings);
       setChannels(channelResponse.channels);
       setCompletedSources(
@@ -274,21 +295,49 @@ export function CreatorRecordingsPage({
             return new Date(rightDate).getTime() - new Date(leftDate).getTime();
           }),
       );
+      setError('');
     } catch (requestError) {
-      setError(readableError(requestError));
+      if (sequence !== loadSequenceRef.current) return;
+      if (!background) setError(readableError(requestError));
     } finally {
-      setLoading(false);
+      if (!background && sequence === loadSequenceRef.current) setLoading(false);
     }
   }, [organisation.id]);
 
   useEffect(() => {
     void loadWorkspace();
+    return () => {
+      loadSequenceRef.current += 1;
+    };
   }, [loadWorkspace]);
+
+  const hasProcessingRecordings = recordings.some((recording) =>
+    PROCESSING_RECORDING_STATUSES.has(recording.status));
+
+  useEffect(() => {
+    if (!hasProcessingRecordings) return undefined;
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void loadWorkspace({ background: true });
+      }
+    };
+    const intervalId = window.setInterval(
+      refreshWhenVisible,
+      RECORDING_REFRESH_INTERVAL_MS,
+    );
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, [hasProcessingRecordings, loadWorkspace]);
 
   const counts = useMemo(() => ({
     total: recordings.length,
     processing: recordings.filter((recording) =>
-      ['recording', 'uploading', 'processing'].includes(recording.status)).length,
+      PROCESSING_RECORDING_STATUSES.has(recording.status)).length,
     ready: recordings.filter((recording) => recording.artifactReady).length,
     published: recordings.filter((recording) => recording.status === 'published').length,
   }), [recordings]);
