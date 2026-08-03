@@ -239,3 +239,28 @@ test('uses persisted recency instead of unrelated lifecycle versions for same-st
     requestedContextPreserved: false,
   });
 });
+
+test('treats malformed persisted timestamps as oldest instead of trusting API order', () => {
+  const result = resolveStudioContextSelection({
+    requested: {},
+    organisations: [
+      organisation('malformed', 'not-a-date'),
+      organisation('valid', '2026-04-01T00:00:00Z'),
+    ],
+    channels: [
+      channel('malformed-channel', 'valid', 'active', 'invalid'),
+      channel('valid-channel', 'valid', 'active', '2026-04-02T00:00:00Z'),
+    ],
+    broadcasts: [
+      broadcast('malformed-broadcast', 'valid', 'valid-channel', 'scheduled', 1, 'invalid'),
+      broadcast('valid-broadcast', 'valid', 'valid-channel', 'scheduled', 1, '2026-04-03T00:00:00Z'),
+    ],
+  });
+
+  expect(result).toEqual({
+    organisationId: 'valid',
+    channelId: 'valid-channel',
+    broadcastId: 'valid-broadcast',
+    requestedContextPreserved: false,
+  });
+});
