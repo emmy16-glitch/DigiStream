@@ -21,6 +21,14 @@ const STUDIO_BROADCAST_STATES: ReadonlySet<Broadcast['status']> = new Set([
   'reconnecting',
 ]);
 
+const STUDIO_STATUS_PRIORITY: Partial<Record<Broadcast['status'], number>> = {
+  live: 5,
+  reconnecting: 4,
+  starting: 3,
+  scheduled: 2,
+  draft: 1,
+};
+
 function newestPersisted<T extends { id: string; createdAt: string; updatedAt: string }>(
   resources: T[],
 ): T | null {
@@ -35,6 +43,13 @@ function newestPersisted<T extends { id: string; createdAt: string; updatedAt: s
 
 function strongestBroadcast(broadcasts: Broadcast[]): Broadcast | null {
   return [...broadcasts].sort((left, right) => {
+    const statusDifference =
+      (STUDIO_STATUS_PRIORITY[right.status] ?? 0) -
+      (STUDIO_STATUS_PRIORITY[left.status] ?? 0);
+    if (statusDifference !== 0) return statusDifference;
+
+    // lifecycleVersion is authoritative only between snapshots of the same
+    // broadcast. Status priority must win across different broadcasts.
     const lifecycleDifference = right.lifecycleVersion - left.lifecycleVersion;
     if (lifecycleDifference !== 0) return lifecycleDifference;
     const updatedDifference = Date.parse(right.updatedAt) - Date.parse(left.updatedAt);
