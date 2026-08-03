@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useState,
   type FormEvent,
 } from 'react';
@@ -29,6 +30,29 @@ function readableError(error: unknown): string {
   return 'The account request could not be completed.';
 }
 
+export function creatorReturnPath(
+  search: string,
+  origin: string,
+): string | null {
+  const parameters = new URLSearchParams(search);
+  if (parameters.get('reason') !== 'session-expired') return null;
+
+  const requestedPath = parameters.get('returnTo');
+  if (!requestedPath || !requestedPath.startsWith('/') || requestedPath.startsWith('//')) {
+    return null;
+  }
+
+  try {
+    const destination = new URL(requestedPath, origin);
+    if (destination.origin !== origin || !destination.pathname.startsWith('/creator')) {
+      return null;
+    }
+    return `${destination.pathname}${destination.search}${destination.hash}`;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthScreen({
   initialMode = 'login',
   onAuthenticated,
@@ -49,6 +73,10 @@ export function AuthScreen({
     google: { enabled: false, clientId: null },
   });
   const [checkingProviders, setCheckingProviders] = useState(true);
+  const returnPath = useMemo(
+    () => creatorReturnPath(window.location.search, window.location.origin),
+    [],
+  );
 
   useEffect(() => {
     let active = true;
@@ -71,6 +99,11 @@ export function AuthScreen({
       active = false;
     };
   }, []);
+
+  function finishAuthentication(user: AuthUser) {
+    if (returnPath) window.history.replaceState({}, '', returnPath);
+    onAuthenticated(user);
+  }
 
   function switchMode(nextMode: AuthMode) {
     setMode(nextMode);
@@ -101,7 +134,7 @@ export function AuthScreen({
           ),
         },
       );
-      onAuthenticated(response.user);
+      finishAuthentication(response.user);
     } catch (requestError) {
       setError(readableError(requestError));
     } finally {
@@ -118,6 +151,7 @@ export function AuthScreen({
           method: 'POST',
           body: jsonBody({ credential, nonce }),
         });
+        if (returnPath) window.history.replaceState({}, '', returnPath);
         onAuthenticated(response.user);
       } catch (requestError) {
         setError(readableError(requestError));
@@ -125,7 +159,7 @@ export function AuthScreen({
         setBusy(false);
       }
     },
-    [onAuthenticated],
+    [onAuthenticated, returnPath],
   );
 
   const googleReady =
@@ -184,6 +218,12 @@ export function AuthScreen({
               : 'Continue with the same email or Google identity connected to your account.'}
           </p>
         </header>
+
+        {returnPath ? (
+          <div className="auth-provider-note" role="status">
+            Your creator session expired. Sign in again to return to the same DigiStream workspace.
+          </div>
+        ) : null}
 
         {googleReady && providers.google.clientId ? (
           <GoogleIdentityButton
