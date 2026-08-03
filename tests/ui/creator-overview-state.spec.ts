@@ -177,3 +177,41 @@ test('orphaned broadcasts are ignored instead of exposing an invalid contextual 
   expect(result.canOpenStudio).toBe(false);
   expect(result.canOpenBackstage).toBe(false);
 });
+
+test('same-status selection prefers the highest persisted lifecycle version independent of API ordering', () => {
+  const older = broadcast('live', 'c1', 'older-version');
+  older.lifecycleVersion = 3;
+  older.updatedAt = '2026-02-03T00:00:00Z';
+  const authoritative = broadcast('live', 'c1', 'authoritative-version');
+  authoritative.lifecycleVersion = 4;
+  authoritative.updatedAt = '2026-02-01T00:00:00Z';
+
+  for (const broadcasts of [
+    [older, authoritative],
+    [authoritative, older],
+  ]) {
+    const result = creatorOverviewDerivation({
+      channels: [channel('active')],
+      broadcasts,
+    });
+    expect(result.selectedBroadcast?.id).toBe('authoritative-version');
+  }
+});
+
+test('same-status and version selection prefers the newest persisted resource independent of API ordering', () => {
+  const older = broadcast('scheduled', 'c1', 'older');
+  older.updatedAt = '2026-02-01T00:00:00Z';
+  const newer = broadcast('scheduled', 'c1', 'newer');
+  newer.updatedAt = '2026-02-02T00:00:00Z';
+
+  for (const broadcasts of [
+    [older, newer],
+    [newer, older],
+  ]) {
+    const result = creatorOverviewDerivation({
+      channels: [channel('active')],
+      broadcasts,
+    });
+    expect(result.selectedBroadcast?.id).toBe('newer');
+  }
+});
