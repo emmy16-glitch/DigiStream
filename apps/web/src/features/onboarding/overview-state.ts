@@ -101,11 +101,11 @@ function selectBroadcast(broadcasts: Broadcast[]): Broadcast | null {
  * Derives the creator Overview state and exact contextual resources from real
  * API-backed channel and broadcast data.
  *
- * Broadcasts belonging to missing or inactive channels are deliberately not
- * treated as actionable. This prevents an orphaned/stale response from opening
- * Studio or Backstage with a context that the current workspace cannot safely
- * operate. Existing creator surfaces remain responsible for routing, resource
- * re-verification and mutations.
+ * Broadcasts belonging to missing, inactive or different-organisation channels
+ * are deliberately not treated as actionable. This prevents an orphaned,
+ * cross-tenant or stale response from opening Studio or Backstage with context
+ * that the current workspace cannot safely operate. Existing creator surfaces
+ * remain responsible for routing, resource re-verification and mutations.
  *
  * When multiple channels or broadcasts share the same lifecycle significance,
  * selection is deterministic and prefers the newest persisted resource. For
@@ -118,15 +118,18 @@ export function creatorOverviewDerivation({
   broadcasts,
 }: CreatorOverviewResources): CreatorOverviewDerivation {
   const channelStatus = deriveChannelStatus(channels);
-  const activeChannelIds = new Set(
-    channels.filter((channel) => channel.status === 'active').map((channel) => channel.id),
+  const activeChannelsById = new Map(
+    channels
+      .filter((channel) => channel.status === 'active')
+      .map((channel) => [channel.id, channel] as const),
   );
-  const actionableBroadcasts = broadcasts.filter((broadcast) =>
-    activeChannelIds.has(broadcast.channelId),
-  );
+  const actionableBroadcasts = broadcasts.filter((broadcast) => {
+    const channel = activeChannelsById.get(broadcast.channelId);
+    return Boolean(channel && channel.organisationId === broadcast.organisationId);
+  });
   const selectedBroadcast = selectBroadcast(actionableBroadcasts);
   const selectedChannel = selectedBroadcast
-    ? channels.find((channel) => channel.id === selectedBroadcast.channelId) ?? null
+    ? activeChannelsById.get(selectedBroadcast.channelId) ?? null
     : selectChannel(channels, 'active') ?? selectChannel(channels);
   const broadcastStatus = (selectedBroadcast?.status ?? 'none') as CreatorBroadcastSetupStatus;
   const setupState = creatorSetupState({
