@@ -197,7 +197,26 @@ test('chooses deterministic persisted fallbacks instead of API list order', () =
   expect(result).toEqual({
     organisationId: 'newer',
     channelId: 'channel-new',
-    broadcastId: 'broadcast-strong',
+    broadcastId: 'broadcast-old',
+    requestedContextPreserved: false,
+  });
+});
+
+test('prefers an operational live broadcast over a newer high-version draft', () => {
+  const result = resolveStudioContextSelection({
+    requested: {},
+    organisations: [organisation('o1')],
+    channels: [channel('c1', 'o1')],
+    broadcasts: [
+      broadcast('draft', 'o1', 'c1', 'draft', 99, '2026-03-03T00:00:00Z'),
+      broadcast('live', 'o1', 'c1', 'live', 1, '2026-03-01T00:00:00Z'),
+    ],
+  });
+
+  expect(result).toEqual({
+    organisationId: 'o1',
+    channelId: 'c1',
+    broadcastId: 'live',
     requestedContextPreserved: false,
   });
 });
