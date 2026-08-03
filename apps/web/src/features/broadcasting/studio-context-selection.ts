@@ -29,13 +29,20 @@ const STUDIO_STATUS_PRIORITY: Partial<Record<Broadcast['status'], number>> = {
   draft: 1,
 };
 
+function persistedTimestamp(value: string): number {
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : Number.NEGATIVE_INFINITY;
+}
+
 function newestPersisted<T extends { id: string; createdAt: string; updatedAt: string }>(
   resources: T[],
 ): T | null {
   return [...resources].sort((left, right) => {
-    const updatedDifference = Date.parse(right.updatedAt) - Date.parse(left.updatedAt);
+    const updatedDifference =
+      persistedTimestamp(right.updatedAt) - persistedTimestamp(left.updatedAt);
     if (updatedDifference !== 0) return updatedDifference;
-    const createdDifference = Date.parse(right.createdAt) - Date.parse(left.createdAt);
+    const createdDifference =
+      persistedTimestamp(right.createdAt) - persistedTimestamp(left.createdAt);
     if (createdDifference !== 0) return createdDifference;
     return left.id.localeCompare(right.id);
   })[0] ?? null;
@@ -55,9 +62,11 @@ function strongestBroadcast(broadcasts: Broadcast[]): Broadcast | null {
       const lifecycleDifference = right.lifecycleVersion - left.lifecycleVersion;
       if (lifecycleDifference !== 0) return lifecycleDifference;
     }
-    const updatedDifference = Date.parse(right.updatedAt) - Date.parse(left.updatedAt);
+    const updatedDifference =
+      persistedTimestamp(right.updatedAt) - persistedTimestamp(left.updatedAt);
     if (updatedDifference !== 0) return updatedDifference;
-    const createdDifference = Date.parse(right.createdAt) - Date.parse(left.createdAt);
+    const createdDifference =
+      persistedTimestamp(right.createdAt) - persistedTimestamp(left.createdAt);
     if (createdDifference !== 0) return createdDifference;
     return left.id.localeCompare(right.id);
   })[0] ?? null;
