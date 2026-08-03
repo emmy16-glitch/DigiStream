@@ -34,6 +34,7 @@ import {
 import type { IconName } from './design-system/Icon';
 import { CreatorBroadcastsPage } from './features/broadcasting/CreatorBroadcastsPage';
 import { CreatorBroadcastStudio } from './features/broadcasting/CreatorBroadcastStudio';
+import type { RequestedStudioContext } from './features/broadcasting/studio-context-selection';
 import { BroadcastChat } from './features/chat/BroadcastChat';
 import { CreatorChatWorkspace } from './features/chat/CreatorChatWorkspace';
 import { PublicBroadcastChat } from './features/chat/PublicBroadcastChat';
@@ -254,6 +255,7 @@ function CreatorDashboard({
   const [creatingOrganisation, setCreatingOrganisation] = useState(false);
   const [creatorIntentChosen, setCreatorIntentChosen] = useState(false);
   const [studioOpen, setStudioOpen] = useState(false);
+  const [studioContext, setStudioContext] = useState<RequestedStudioContext>({});
   const [backstageOpen, setBackstageOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -331,6 +333,16 @@ function CreatorDashboard({
     });
   }
 
+  function openStudio(context?: RequestedStudioContext) {
+    setStudioContext(context ?? {});
+    setStudioOpen(true);
+  }
+
+  function closeStudio() {
+    setStudioOpen(false);
+    setStudioContext({});
+  }
+
   async function createOrganisation(name: string, slug: string) {
     setCreatingOrganisation(true);
     setOrganisationError('');
@@ -377,6 +389,14 @@ function CreatorDashboard({
     channelStatus: overviewState.channelStatus,
     broadcastStatus: overviewState.broadcastStatus,
   });
+  const overviewStudioContext: RequestedStudioContext | undefined =
+    primaryOrganisation && overviewState.selectedChannel && overviewState.selectedBroadcast
+      ? {
+          organisationId: primaryOrganisation.id,
+          channelId: overviewState.selectedChannel.id,
+          broadcastId: overviewState.selectedBroadcast.id,
+        }
+      : undefined;
 
   const topbarActions = (
     <>
@@ -492,13 +512,13 @@ function CreatorDashboard({
             );
           case 'manage_live_broadcast':
             return (
-              <Button icon="broadcast" onClick={() => setStudioOpen(true)} variant="primary">
+              <Button icon="broadcast" onClick={() => openStudio(overviewStudioContext)} variant="primary">
                 Open live studio
               </Button>
             );
           case 'prepare_broadcast':
             return (
-              <Button icon="broadcast" onClick={() => setStudioOpen(true)} variant="primary">
+              <Button icon="broadcast" onClick={() => openStudio(overviewStudioContext)} variant="primary">
                 Open broadcast studio
               </Button>
             );
@@ -562,12 +582,12 @@ function CreatorDashboard({
 
           {overviewState.canOpenStudio ? (
             <div className="content-grid">
-              <Panel title="Broadcast studio" action="Open studio" onAction={() => setStudioOpen(true)}>
+              <Panel title="Broadcast studio" action="Open studio" onAction={() => openStudio(overviewStudioContext)}>
                 <StatePanel kind="empty" title="No broadcast selected">
                   Open the studio to select an organisation, channel and draft or scheduled broadcast.
                 </StatePanel>
               </Panel>
-              <Panel title="Audio readiness" action="Run sound check" onAction={() => setStudioOpen(true)}>
+              <Panel title="Audio readiness" action="Run sound check" onAction={() => openStudio(overviewStudioContext)}>
                 <div className="audio-device">
                   <div className="device-icon" aria-hidden="true">◍</div>
                   <div>
@@ -578,7 +598,7 @@ function CreatorDashboard({
                 <div className="level-meter" aria-label="Inactive audio level meter">
                   {Array.from({ length: 18 }, (_, index) => <i key={index} />)}
                 </div>
-                <Button fullWidth icon="microphone" onClick={() => setStudioOpen(true)}>
+                <Button fullWidth icon="microphone" onClick={() => openStudio(overviewStudioContext)}>
                   Run sound check
                 </Button>
               </Panel>
@@ -590,7 +610,7 @@ function CreatorDashboard({
   } else if (activeNav === 'Broadcasts') {
     pageContent = (
       <CreatorBroadcastsPage
-        onOpenStudio={() => setStudioOpen(true)}
+        onOpenStudio={openStudio}
         organisation={primaryOrganisation}
       />
     );
@@ -644,7 +664,11 @@ function CreatorDashboard({
     >
       {pageContent}
       {studioOpen ? (
-        <CreatorBroadcastStudio onClose={() => setStudioOpen(false)} open />
+        <CreatorBroadcastStudio
+          onClose={closeStudio}
+          open
+          requestedContext={studioContext}
+        />
       ) : null}
       {backstageOpen ? (
         <CreatorBackstageWorkspace onClose={() => setBackstageOpen(false)} open />
