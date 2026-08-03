@@ -52,13 +52,28 @@ const BROADCAST_PRIORITY: readonly Broadcast['status'][] = [
   'failed',
 ];
 
+function compareChannelRecency(left: Channel, right: Channel): number {
+  const updatedComparison = right.updatedAt.localeCompare(left.updatedAt);
+  if (updatedComparison !== 0) return updatedComparison;
+  const createdComparison = right.createdAt.localeCompare(left.createdAt);
+  if (createdComparison !== 0) return createdComparison;
+  return left.id.localeCompare(right.id);
+}
+
+function selectChannel(channels: Channel[], status?: Channel['status']): Channel | null {
+  const candidates = status
+    ? channels.filter((channel) => channel.status === status)
+    : channels;
+  return [...candidates].sort(compareChannelRecency)[0] ?? null;
+}
+
 function deriveChannelStatus(channels: Channel[]): CreatorChannelSetupStatus {
   if (channels.length === 0) return 'none';
   if (channels.some((channel) => channel.status === 'active')) return 'active';
   if (channels.some((channel) => channel.status === 'pending_review')) {
     return 'pending_review';
   }
-  return channels[0]!.status;
+  return selectChannel(channels)?.status ?? 'none';
 }
 
 function compareBroadcastRecency(left: Broadcast, right: Broadcast): number {
@@ -92,10 +107,11 @@ function selectBroadcast(broadcasts: Broadcast[]): Broadcast | null {
  * operate. Existing creator surfaces remain responsible for routing, resource
  * re-verification and mutations.
  *
- * When multiple broadcasts share the same lifecycle significance, selection is
- * deterministic and prefers the highest lifecycle version and newest persisted
- * resource. The Overview therefore does not change its primary action merely
- * because an API response arrives in a different list order.
+ * When multiple channels or broadcasts share the same lifecycle significance,
+ * selection is deterministic and prefers the newest persisted resource. For
+ * broadcasts, the highest lifecycle version remains authoritative before
+ * persisted recency. The Overview therefore does not change its primary action
+ * merely because an API response arrives in a different list order.
  */
 export function creatorOverviewDerivation({
   channels,
@@ -111,7 +127,7 @@ export function creatorOverviewDerivation({
   const selectedBroadcast = selectBroadcast(actionableBroadcasts);
   const selectedChannel = selectedBroadcast
     ? channels.find((channel) => channel.id === selectedBroadcast.channelId) ?? null
-    : channels.find((channel) => channel.status === 'active') ?? channels[0] ?? null;
+    : selectChannel(channels, 'active') ?? selectChannel(channels);
   const broadcastStatus = (selectedBroadcast?.status ?? 'none') as CreatorBroadcastSetupStatus;
   const setupState = creatorSetupState({
     intentChosen: true,
