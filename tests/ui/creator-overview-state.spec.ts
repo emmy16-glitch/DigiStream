@@ -215,3 +215,37 @@ test('same-status and version selection prefers the newest persisted resource in
     expect(result.selectedBroadcast?.id).toBe('newer');
   }
 });
+
+test('active channel selection is deterministic when no broadcast exists and API ordering changes', () => {
+  const older = channel('active', 'older-channel');
+  older.updatedAt = '2026-02-01T00:00:00Z';
+  const newer = channel('active', 'newer-channel');
+  newer.updatedAt = '2026-02-02T00:00:00Z';
+
+  for (const channels of [
+    [older, newer],
+    [newer, older],
+  ]) {
+    const result = creatorOverviewDerivation({ channels, broadcasts: [] });
+    expect(result.setupState).toBe('create_broadcast');
+    expect(result.selectedChannel?.id).toBe('newer-channel');
+    expect(result.selectedBroadcast).toBeNull();
+  }
+});
+
+test('inactive channel fallback is deterministic when API ordering changes', () => {
+  const older = channel('draft', 'older-draft');
+  older.updatedAt = '2026-02-01T00:00:00Z';
+  const newer = channel('archived', 'newer-archived');
+  newer.updatedAt = '2026-02-02T00:00:00Z';
+
+  for (const channels of [
+    [older, newer],
+    [newer, older],
+  ]) {
+    const result = creatorOverviewDerivation({ channels, broadcasts: [] });
+    expect(result.setupState).toBe('finish_channel_activation');
+    expect(result.channelStatus).toBe('archived');
+    expect(result.selectedChannel?.id).toBe('newer-archived');
+  }
+});
