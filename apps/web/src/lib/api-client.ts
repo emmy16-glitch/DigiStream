@@ -1,4 +1,5 @@
 import type { ApiErrorResponse } from '@digistream/contracts';
+import { reconcileCreatorContext } from './backstage-context-runtime';
 
 const configuredApiBaseUrl = import.meta.env.VITE_API_URL?.trim();
 
@@ -84,7 +85,7 @@ export async function apiRequest<T>(
     );
   }
 
-  return payload as T;
+  return reconcileCreatorContext(path, payload) as T;
 }
 
 export function realtimeEndpoint(path = '/api/v1/realtime'): string {
