@@ -7,9 +7,13 @@ const apiClientSource = readFileSync(
   'utf8',
 );
 
-test('protected API 401 responses start one truthful sign-in recovery', () => {
+test('creator API 401 responses start one truthful sign-in recovery', () => {
+  expect(apiClientSource).toContain("const CREATOR_ROUTE_PREFIX = '/creator'");
   expect(apiClientSource).toContain(
-    "return status === 401 && !path.startsWith(AUTH_API_PREFIX)",
+    'pathname.startsWith(CREATOR_ROUTE_PREFIX)',
+  );
+  expect(apiClientSource).toContain(
+    '!path.startsWith(AUTH_API_PREFIX)',
   );
   expect(apiClientSource).toContain('sessionRecoveryStarted');
   expect(apiClientSource).toContain("new CustomEvent(SESSION_EXPIRED_EVENT");
@@ -19,9 +23,11 @@ test('protected API 401 responses start one truthful sign-in recovery', () => {
   expect(apiClientSource).toContain('recoverExpiredSession(path, response.status)');
 });
 
-test('normal authentication checks never trigger redirect recovery', () => {
+test('auth and listener routes never trigger creator redirect recovery', () => {
   expect(apiClientSource).toContain("const AUTH_API_PREFIX = '/api/v1/auth/'");
   expect(apiClientSource).toContain(
-    "window.location.pathname === '/login' || window.location.pathname === '/signup'",
+    'shouldRecoverExpiredSession(path, status, window.location.pathname)',
   );
+  expect(apiClientSource).not.toContain("window.location.pathname === '/login'");
+  expect(apiClientSource).not.toContain("window.location.pathname === '/signup'");
 });
