@@ -61,12 +61,25 @@ function deriveChannelStatus(channels: Channel[]): CreatorChannelSetupStatus {
   return channels[0]!.status;
 }
 
+function compareBroadcastRecency(left: Broadcast, right: Broadcast): number {
+  if (left.lifecycleVersion !== right.lifecycleVersion) {
+    return right.lifecycleVersion - left.lifecycleVersion;
+  }
+  const updatedComparison = right.updatedAt.localeCompare(left.updatedAt);
+  if (updatedComparison !== 0) return updatedComparison;
+  const createdComparison = right.createdAt.localeCompare(left.createdAt);
+  if (createdComparison !== 0) return createdComparison;
+  return left.id.localeCompare(right.id);
+}
+
 function selectBroadcast(broadcasts: Broadcast[]): Broadcast | null {
   for (const status of BROADCAST_PRIORITY) {
-    const found = broadcasts.find((broadcast) => broadcast.status === status);
-    if (found) return found;
+    const matching = broadcasts
+      .filter((broadcast) => broadcast.status === status)
+      .sort(compareBroadcastRecency);
+    if (matching[0]) return matching[0];
   }
-  return broadcasts[0] ?? null;
+  return [...broadcasts].sort(compareBroadcastRecency)[0] ?? null;
 }
 
 /**
@@ -78,6 +91,11 @@ function selectBroadcast(broadcasts: Broadcast[]): Broadcast | null {
  * Studio or Backstage with a context that the current workspace cannot safely
  * operate. Existing creator surfaces remain responsible for routing, resource
  * re-verification and mutations.
+ *
+ * When multiple broadcasts share the same lifecycle significance, selection is
+ * deterministic and prefers the highest lifecycle version and newest persisted
+ * resource. The Overview therefore does not change its primary action merely
+ * because an API response arrives in a different list order.
  */
 export function creatorOverviewDerivation({
   channels,
