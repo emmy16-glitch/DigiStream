@@ -7,6 +7,11 @@ export const apiBaseUrl = configuredApiBaseUrl
   ? configuredApiBaseUrl.replace(/\/$/, '')
   : '';
 
+const AUTH_API_PREFIX = '/api/v1/auth/';
+const CREATOR_ROUTE_PREFIX = '/creator';
+const SESSION_EXPIRED_EVENT = 'digistream:session-expired';
+let sessionRecoveryStarted = false;
+
 export class ApiClientError extends Error {
   constructor(
     readonly status: number,
@@ -18,6 +23,41 @@ export class ApiClientError extends Error {
     super(message);
     this.name = 'ApiClientError';
   }
+}
+
+export function shouldRecoverExpiredSession(
+  path: string,
+  status: number,
+  pathname: string,
+): boolean {
+  return (
+    status === 401 &&
+    pathname.startsWith(CREATOR_ROUTE_PREFIX) &&
+    !path.startsWith(AUTH_API_PREFIX)
+  );
+}
+
+function recoverExpiredSession(path: string, status: number): void {
+  if (
+    typeof window === 'undefined' ||
+    !shouldRecoverExpiredSession(path, status, window.location.pathname) ||
+    sessionRecoveryStarted
+  ) {
+    return;
+  }
+
+  sessionRecoveryStarted = true;
+  const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  window.dispatchEvent(
+    new CustomEvent(SESSION_EXPIRED_EVENT, {
+      detail: { path, returnTo: currentPath },
+    }),
+  );
+
+  const loginUrl = new URL('/login', window.location.origin);
+  loginUrl.searchParams.set('reason', 'session-expired');
+  loginUrl.searchParams.set('returnTo', currentPath);
+  window.location.assign(loginUrl.toString());
 }
 
 export async function apiRequest<T>(
@@ -59,6 +99,7 @@ export async function apiRequest<T>(
   }
 
   if (!response.ok) {
+    recoverExpiredSession(path, response.status);
     const apiError = payload as ApiErrorResponse | null;
     if (apiError?.error) {
       throw new ApiClientError(
