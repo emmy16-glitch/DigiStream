@@ -48,10 +48,13 @@ function strongestBroadcast(broadcasts: Broadcast[]): Broadcast | null {
       (STUDIO_STATUS_PRIORITY[left.status] ?? 0);
     if (statusDifference !== 0) return statusDifference;
 
-    // lifecycleVersion is authoritative only between snapshots of the same
-    // broadcast. Status priority must win across different broadcasts.
-    const lifecycleDifference = right.lifecycleVersion - left.lifecycleVersion;
-    if (lifecycleDifference !== 0) return lifecycleDifference;
+    // lifecycleVersion compares snapshots of one broadcast, not two distinct
+    // broadcasts. API list entries are separate resources, so persisted update
+    // and creation times decide between broadcasts with the same status.
+    if (left.id === right.id) {
+      const lifecycleDifference = right.lifecycleVersion - left.lifecycleVersion;
+      if (lifecycleDifference !== 0) return lifecycleDifference;
+    }
     const updatedDifference = Date.parse(right.updatedAt) - Date.parse(left.updatedAt);
     if (updatedDifference !== 0) return updatedDifference;
     const createdDifference = Date.parse(right.createdAt) - Date.parse(left.createdAt);
