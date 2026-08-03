@@ -116,7 +116,10 @@ export function reconcileCreatorContext(path: string, payload: unknown): unknown
     return {
       ...record,
       channels: moveFirst(
-        channels.filter((channel) => channel.status === 'active'),
+        channels.filter(
+          (channel) =>
+            channel.organisationId === organisationId && channel.status === 'active',
+        ),
         context.channelId,
       ),
     };
@@ -145,7 +148,12 @@ export function reconcileCreatorContext(path: string, payload: unknown): unknown
     return {
       ...record,
       broadcasts: moveFirst(
-        broadcasts.filter((broadcast) => backstageStates.has(broadcast.status)),
+        broadcasts.filter(
+          (broadcast) =>
+            broadcast.organisationId === organisationId &&
+            broadcast.channelId === channelId &&
+            backstageStates.has(broadcast.status),
+        ),
         context.broadcastId,
       ),
     };
