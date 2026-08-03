@@ -48,6 +48,10 @@ import {
   type LiveKitRemoteTrack,
   type LiveKitRoom,
 } from './livekit-client';
+import {
+  resolveStudioContextSelection,
+  type RequestedStudioContext,
+} from './studio-context-selection';
 import './creator-broadcast-studio.css';
 
 type StudioPhase =
@@ -92,6 +96,7 @@ type DeliveryResponse = {
 type CreatorBroadcastStudioProps = {
   open: boolean;
   onClose(): void;
+  requestedContext?: RequestedStudioContext;
 };
 
 type StudioPhasePresentation = {
@@ -199,6 +204,7 @@ function focusableElements(container: HTMLElement): HTMLElement[] {
 export function CreatorBroadcastStudio({
   open,
   onClose,
+  requestedContext,
 }: CreatorBroadcastStudioProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [checkingSession, setCheckingSession] = useState(false);
@@ -521,11 +527,22 @@ export function CreatorBroadcastStudio({
     void apiRequest<OrganisationListResponse>('/api/v1/organisations')
       .then((response) => {
         setOrganisations(response.organisations);
-        setOrganisationId((current) => current || response.organisations[0]?.id || '');
+        const requestedOrganisationId = requestedContext?.organisationId?.trim();
+        setOrganisationId((current) => {
+          if (
+            requestedOrganisationId &&
+            response.organisations.some((item) => item.id === requestedOrganisationId)
+          ) {
+            return requestedOrganisationId;
+          }
+          return response.organisations.some((item) => item.id === current)
+            ? current
+            : response.organisations[0]?.id || '';
+        });
       })
       .catch((requestError) => reportStudioFailure('workspace', requestError))
       .finally(() => setLoadingOrganisations(false));
-  }, [open, user]);
+  }, [open, requestedContext, user]);
 
   useEffect(() => {
     if (!organisationId) {
@@ -541,15 +558,25 @@ export function CreatorBroadcastStudio({
     )
       .then((response) => {
         setChannels(response.channels);
-        setChannelId((current) =>
-          response.channels.some((item) => item.id === current)
-            ? current
-            : response.channels[0]?.id || '',
+        const requestedChannelId = requestedContext?.channelId?.trim();
+        const activeChannels = response.channels.filter(
+          (item) => item.status === 'active',
         );
+        setChannelId((current) => {
+          if (
+            requestedChannelId &&
+            activeChannels.some((item) => item.id === requestedChannelId)
+          ) {
+            return requestedChannelId;
+          }
+          return activeChannels.some((item) => item.id === current)
+            ? current
+            : activeChannels[0]?.id || '';
+        });
       })
       .catch((requestError) => reportStudioFailure('workspace', requestError))
       .finally(() => setLoadingChannels(false));
-  }, [organisationId]);
+  }, [organisationId, requestedContext]);
 
   useEffect(() => {
     if (!organisationId || !channelId) {
@@ -565,18 +592,77 @@ export function CreatorBroadcastStudio({
     )
       .then((response) => {
         setBroadcasts(response.broadcasts);
+        const requestedBroadcastId = requestedContext?.broadcastId?.trim();
         const available = response.broadcasts.filter((item) =>
           contributionStates.has(item.status),
         );
-        setBroadcastId((current) =>
-          available.some((item) => item.id === current)
+        setBroadcastId((current) => {
+          if (
+            requestedBroadcastId &&
+            available.some((item) => item.id === requestedBroadcastId)
+          ) {
+            return requestedBroadcastId;
+          }
+          return available.some((item) => item.id === current)
             ? current
-            : available[0]?.id || '',
-        );
+            : available[0]?.id || '';
+        });
       })
       .catch((requestError) => reportStudioFailure('workspace', requestError))
       .finally(() => setLoadingBroadcasts(false));
-  }, [channelId, organisationId]);
+  }, [channelId, organisationId, requestedContext]);
+
+  useEffect(() => {
+    if (
+      !open ||
+      loadingOrganisations ||
+      loadingChannels ||
+      loadingBroadcasts
+    ) {
+      return;
+    }
+
+    const selection = resolveStudioContextSelection({
+      requested: requestedContext ?? {},
+      organisations,
+      channels,
+      broadcasts,
+    });
+
+    if (
+      selection.organisationId &&
+      selection.organisationId !== organisationId
+    ) {
+      setOrganisationId(selection.organisationId);
+      return;
+    }
+    if (selection.channelId && selection.channelId !== channelId) {
+      setChannelId(selection.channelId);
+      return;
+    }
+    if (selection.broadcastId !== broadcastId) {
+      setBroadcastId(selection.broadcastId);
+      return;
+    }
+
+    if (selection.fallbackReason) {
+      setMessage(
+        'The requested Studio selection was no longer available. DigiStream opened the safest available broadcast instead.',
+      );
+    }
+  }, [
+    broadcastId,
+    broadcasts,
+    channelId,
+    channels,
+    loadingBroadcasts,
+    loadingChannels,
+    loadingOrganisations,
+    open,
+    organisationId,
+    organisations,
+    requestedContext,
+  ]);
 
   useEffect(() => {
     if (!open || !microphonePrepared || muted) return;
@@ -805,7 +891,6 @@ export function CreatorBroadcastStudio({
       reportStudioFailure('studio-audio', requestError);
     }
   }
-
 
   function patchDeliverySnapshot(delivery: PublicDeliverySnapshot): void {
     patchBroadcast(delivery.broadcast.id, {

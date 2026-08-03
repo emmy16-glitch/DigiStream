@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type FormEvent,
@@ -9,6 +10,10 @@ import {
 import type {
   AuthUser,
   AuthUserResponse,
+  Broadcast,
+  BroadcastListResponse,
+  Channel,
+  ChannelListResponse,
   Organisation,
   OrganisationListResponse,
   OrganisationResponse,
@@ -29,6 +34,7 @@ import {
 import type { IconName } from './design-system/Icon';
 import { CreatorBroadcastsPage } from './features/broadcasting/CreatorBroadcastsPage';
 import { CreatorBroadcastStudio } from './features/broadcasting/CreatorBroadcastStudio';
+import type { RequestedStudioContext } from './features/broadcasting/studio-context-selection';
 import { BroadcastChat } from './features/chat/BroadcastChat';
 import { CreatorChatWorkspace } from './features/chat/CreatorChatWorkspace';
 import { PublicBroadcastChat } from './features/chat/PublicBroadcastChat';
@@ -42,6 +48,7 @@ import { ReplayDiscoveryPage } from './features/listening/ReplayDiscoveryPage';
 import { ReplayListeningPage } from './features/listening/ReplayListeningPage';
 import { parseListenerRoute } from './features/listening/listener-route';
 import { creatorSetupState } from './features/onboarding/creator-setup-state';
+import { creatorOverviewDerivation } from './features/onboarding/overview-state';
 import { CreatorRecordingsPage } from './features/recordings/CreatorRecordingsPage';
 import { ApiClientError, apiRequest, jsonBody } from './lib/api-client';
 
@@ -241,9 +248,14 @@ function CreatorDashboard({
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
   const [loadingOrganisations, setLoadingOrganisations] = useState(true);
   const [organisationError, setOrganisationError] = useState('');
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
+  const [loadingOverviewState, setLoadingOverviewState] = useState(false);
+  const [overviewStateError, setOverviewStateError] = useState('');
   const [creatingOrganisation, setCreatingOrganisation] = useState(false);
   const [creatorIntentChosen, setCreatorIntentChosen] = useState(false);
   const [studioOpen, setStudioOpen] = useState(false);
+  const [studioContext, setStudioContext] = useState<RequestedStudioContext>({});
   const [backstageOpen, setBackstageOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -265,6 +277,42 @@ function CreatorDashboard({
     void loadOrganisations();
   }, [loadOrganisations]);
 
+  const loadOverviewState = useCallback(async () => {
+    const organisation = organisations[0] ?? null;
+    if (!organisation) {
+      setChannels([]);
+      setBroadcasts([]);
+      setLoadingOverviewState(false);
+      return;
+    }
+    setLoadingOverviewState(true);
+    setOverviewStateError('');
+    try {
+      const channelResponse = await apiRequest<ChannelListResponse>(
+        `/api/v1/organisations/${organisation.id}/channels`,
+      );
+      setChannels(channelResponse.channels);
+      const broadcastResponses = await Promise.all(
+        channelResponse.channels.map((channel) =>
+          apiRequest<BroadcastListResponse>(
+            `/api/v1/organisations/${organisation.id}/channels/${channel.id}/broadcasts`,
+          ),
+        ),
+      );
+      setBroadcasts(broadcastResponses.flatMap((response) => response.broadcasts));
+    } catch (requestError) {
+      setOverviewStateError(readableError(requestError));
+      setChannels([]);
+      setBroadcasts([]);
+    } finally {
+      setLoadingOverviewState(false);
+    }
+  }, [organisations]);
+
+  useLayoutEffect(() => {
+    if (activeNav === 'Overview') void loadOverviewState();
+  }, [activeNav, loadOverviewState]);
+
   useEffect(() => {
     const onPopState = () => setActiveNav(creatorPageFromPath(window.location.pathname));
     window.addEventListener('popstate', onPopState);
@@ -276,6 +324,23 @@ function CreatorDashboard({
     const path = creatorPath(label);
     if (window.location.pathname !== path) window.history.pushState({}, '', path);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function openBroadcastsSetup() {
+    selectNavigation('Broadcasts');
+    window.requestAnimationFrame(() => {
+      document.getElementById('create-broadcast-title')?.focus();
+    });
+  }
+
+  function openStudio(context?: RequestedStudioContext) {
+    setStudioContext(context ?? {});
+    setStudioOpen(true);
+  }
+
+  function closeStudio() {
+    setStudioOpen(false);
+    setStudioContext({});
   }
 
   async function createOrganisation(name: string, slug: string) {
@@ -317,12 +382,21 @@ function CreatorDashboard({
 
   const primaryOrganisation = organisations[0] ?? null;
   const firstName = user.displayName.trim().split(/\s+/)[0] || user.displayName;
+  const overviewState = creatorOverviewDerivation({ channels, broadcasts });
   const setupState = creatorSetupState({
     intentChosen: creatorIntentChosen || Boolean(primaryOrganisation),
     hasOrganisation: Boolean(primaryOrganisation),
-    channelStatus: 'none',
-    broadcastStatus: 'none',
+    channelStatus: overviewState.channelStatus,
+    broadcastStatus: overviewState.broadcastStatus,
   });
+  const overviewStudioContext: RequestedStudioContext | undefined =
+    primaryOrganisation && overviewState.selectedChannel && overviewState.selectedBroadcast
+      ? {
+          organisationId: primaryOrganisation.id,
+          channelId: overviewState.selectedChannel.id,
+          broadcastId: overviewState.selectedBroadcast.id,
+        }
+      : undefined;
 
   const topbarActions = (
     <>
@@ -335,15 +409,17 @@ function CreatorDashboard({
       >
         Chat
       </Button>
-      <Button
-        aria-label="Open creator backstage"
-        icon="audience"
-        onClick={() => setBackstageOpen(true)}
-        title="Backstage"
-        variant="ghost"
-      >
-        Backstage
-      </Button>
+      {overviewState.canOpenBackstage ? (
+        <Button
+          aria-label="Open creator backstage"
+          icon="audience"
+          onClick={() => setBackstageOpen(true)}
+          title="Backstage"
+          variant="ghost"
+        >
+          Backstage
+        </Button>
+      ) : null}
       <LinkButton
         aria-label="Open listener application"
         href="/listen"
@@ -396,69 +472,145 @@ function CreatorDashboard({
       />
     );
   } else if (activeNav === 'Overview') {
-    pageContent = (
-      <>
-        <section className="workspace-welcome">
-          <div>
-            <StatusBadge tone="success">Workspace connected</StatusBadge>
-            <h2>Welcome back, {firstName}</h2>
-            <p>
-              Prepare your next broadcast, check studio audio and manage listeners from DigiStream.
-            </p>
-            <div className="workspace-welcome-actions">
-              <Button icon="broadcast" onClick={() => setStudioOpen(true)} variant="primary">
+    if (loadingOverviewState) {
+      pageContent = (
+        <StatePanel kind="loading" title="Loading creator overview">
+          DigiStream is loading your real channel and broadcast state.
+        </StatePanel>
+      );
+    } else if (overviewStateError) {
+      pageContent = (
+        <StatePanel
+          actionLabel="Retry"
+          kind="error"
+          onAction={() => void loadOverviewState()}
+          title="Creator overview could not load"
+        >
+          {overviewStateError}
+        </StatePanel>
+      );
+    } else {
+      const primaryAction = (() => {
+        switch (setupState) {
+          case 'create_channel':
+            return (
+              <Button icon="broadcast" onClick={openBroadcastsSetup} variant="primary">
+                Create your first channel
+              </Button>
+            );
+          case 'finish_channel_activation':
+            return (
+              <Button icon="broadcast" onClick={openBroadcastsSetup} variant="primary">
+                Finish channel activation
+              </Button>
+            );
+          case 'create_broadcast':
+            return (
+              <Button icon="broadcast" onClick={openBroadcastsSetup} variant="primary">
+                Create your first broadcast
+              </Button>
+            );
+          case 'manage_live_broadcast':
+            return (
+              <Button icon="broadcast" onClick={() => openStudio(overviewStudioContext)} variant="primary">
+                Open live studio
+              </Button>
+            );
+          case 'prepare_broadcast':
+            return (
+              <Button icon="broadcast" onClick={() => openStudio(overviewStudioContext)} variant="primary">
                 Open broadcast studio
               </Button>
-              <Button icon="audience" onClick={() => setBackstageOpen(true)}>
-                Manage backstage
+            );
+          case 'view_completed_broadcast':
+            return (
+              <Button icon="broadcast" onClick={openBroadcastsSetup} variant="primary">
+                Manage broadcasts
               </Button>
-              <LinkButton href="/listen" icon="headphones">
-                Open listener app
-              </LinkButton>
-            </div>
-          </div>
-          <div className="signal-visual" aria-label="Decorative DigiStream audio waveform">
-            {[34, 58, 82, 44, 96, 64, 40, 74, 52, 86, 36, 66].map((height, index) => (
-              <i key={`${height}-${index}`} style={{ height: `${height}%` }} />
-            ))}
-          </div>
-        </section>
+            );
+          default:
+            return null;
+        }
+      })();
 
-        <section className="metrics-grid" aria-label="Creator workspace summary">
-          <MetricCard label="Organisation" value={primaryOrganisation.name} note={`${primaryOrganisation.role} access · /${primaryOrganisation.slug}`} />
-          <MetricCard label="Live listeners" value="—" note="Available during verified live delivery" />
-          <MetricCard label="Published recordings" value="—" note="Open Replay to manage real recording jobs" />
-          <MetricCard label="API" value="Online" note={`${apiStatus.product} application server connected`} />
-        </section>
+      const welcomeCopy = (() => {
+        switch (setupState) {
+          case 'create_channel':
+            return 'Create and activate your first channel, then prepare a broadcast from the connected broadcasts workspace.';
+          case 'finish_channel_activation':
+            return 'An owner or administrator must activate the channel before a broadcast can start.';
+          case 'create_broadcast':
+            return 'Your channel is active. Create your first broadcast now, or return to the broadcasts workspace to manage channels.';
+          case 'manage_live_broadcast':
+            return 'Your broadcast is live. Open the studio to monitor delivery and end safely.';
+          case 'prepare_broadcast':
+            return 'Prepare your next broadcast, check studio audio and manage listeners from DigiStream.';
+          case 'view_completed_broadcast':
+            return 'Review your completed broadcast, manage its recording and prepare the next one.';
+          default:
+            return 'Prepare your next broadcast, check studio audio and manage listeners from DigiStream.';
+        }
+      })();
 
-        <div className="content-grid">
-          <Panel title="Broadcast studio" action="Open studio" onAction={() => setStudioOpen(true)}>
-            <StatePanel kind="empty" title="No broadcast selected">
-              Open the studio to select an organisation, channel and draft or scheduled broadcast.
-            </StatePanel>
-          </Panel>
-          <Panel title="Audio readiness" action="Run sound check" onAction={() => setStudioOpen(true)}>
-            <div className="audio-device">
-              <div className="device-icon" aria-hidden="true">◍</div>
-              <div>
-                <strong>Microphone not prepared</strong>
-                <span>Permission is requested only when you open Broadcast Studio.</span>
+      pageContent = (
+        <>
+          <section className="workspace-welcome">
+            <div>
+              <StatusBadge tone="success">Workspace connected</StatusBadge>
+              <h2>Welcome back, {firstName}</h2>
+              <p>{welcomeCopy}</p>
+              <div className="workspace-welcome-actions">
+                {primaryAction}
+                {overviewState.canOpenBackstage ? (
+                  <Button icon="audience" onClick={() => setBackstageOpen(true)}>
+                    Manage backstage
+                  </Button>
+                ) : null}
+                <LinkButton href="/listen" icon="headphones">
+                  Open listener app
+                </LinkButton>
               </div>
             </div>
-            <div className="level-meter" aria-label="Inactive audio level meter">
-              {Array.from({ length: 18 }, (_, index) => <i key={index} />)}
+          </section>
+
+          <section className="metrics-grid" aria-label="Creator workspace summary">
+            <MetricCard label="Organisation" value={primaryOrganisation.name} note={`${primaryOrganisation.role} access · /${primaryOrganisation.slug}`} />
+            <MetricCard label="Live listeners" value="—" note="Available during verified live delivery" />
+            <MetricCard label="Published recordings" value="—" note="Open Replay to manage real recording jobs" />
+            <MetricCard label="API" value="Online" note={`${apiStatus.product} application server connected`} />
+          </section>
+
+          {overviewState.canOpenStudio ? (
+            <div className="content-grid">
+              <Panel title="Broadcast studio" action="Open studio" onAction={() => openStudio(overviewStudioContext)}>
+                <StatePanel kind="empty" title="No broadcast selected">
+                  Open the studio to select an organisation, channel and draft or scheduled broadcast.
+                </StatePanel>
+              </Panel>
+              <Panel title="Audio readiness" action="Run sound check" onAction={() => openStudio(overviewStudioContext)}>
+                <div className="audio-device">
+                  <div className="device-icon" aria-hidden="true">◍</div>
+                  <div>
+                    <strong>Microphone not prepared</strong>
+                    <span>Permission is requested only when you open Broadcast Studio.</span>
+                  </div>
+                </div>
+                <div className="level-meter" aria-label="Inactive audio level meter">
+                  {Array.from({ length: 18 }, (_, index) => <i key={index} />)}
+                </div>
+                <Button fullWidth icon="microphone" onClick={() => openStudio(overviewStudioContext)}>
+                  Run sound check
+                </Button>
+              </Panel>
             </div>
-            <Button fullWidth icon="microphone" onClick={() => setStudioOpen(true)}>
-              Run sound check
-            </Button>
-          </Panel>
-        </div>
-      </>
-    );
+          ) : null}
+        </>
+      );
+    }
   } else if (activeNav === 'Broadcasts') {
     pageContent = (
       <CreatorBroadcastsPage
-        onOpenStudio={() => setStudioOpen(true)}
+        onOpenStudio={openStudio}
         organisation={primaryOrganisation}
       />
     );
@@ -512,7 +664,11 @@ function CreatorDashboard({
     >
       {pageContent}
       {studioOpen ? (
-        <CreatorBroadcastStudio onClose={() => setStudioOpen(false)} open />
+        <CreatorBroadcastStudio
+          onClose={closeStudio}
+          open
+          requestedContext={studioContext}
+        />
       ) : null}
       {backstageOpen ? (
         <CreatorBackstageWorkspace onClose={() => setBackstageOpen(false)} open />
