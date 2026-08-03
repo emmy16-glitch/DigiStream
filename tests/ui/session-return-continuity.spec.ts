@@ -8,8 +8,15 @@ test('restores only a verified creator route after session expiry', () => {
   expect(authSource).toContain("requestedPath.startsWith('/')");
   expect(authSource).toContain("requestedPath.startsWith('//')");
   expect(authSource).toContain('destination.origin !== origin');
-  expect(authSource).toContain("destination.pathname.startsWith('/creator')");
+  expect(authSource).toContain("destination.pathname === '/creator'");
+  expect(authSource).toContain("destination.pathname.startsWith('/creator/')");
   expect(authSource).toContain('`${destination.pathname}${destination.search}${destination.hash}`');
+});
+
+test('rejects lookalike paths outside the creator route boundary', () => {
+  expect(authSource).toContain('const isCreatorRoute =');
+  expect(authSource).toContain('!isCreatorRoute');
+  expect(authSource).not.toContain("destination.pathname.startsWith('/creator'))");
 });
 
 test('email and Google authentication restore before mounting creator state', () => {

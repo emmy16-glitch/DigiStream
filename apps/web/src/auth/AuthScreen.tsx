@@ -44,7 +44,10 @@ export function creatorReturnPath(
 
   try {
     const destination = new URL(requestedPath, origin);
-    if (destination.origin !== origin || !destination.pathname.startsWith('/creator')) {
+    const isCreatorRoute =
+      destination.pathname === '/creator' ||
+      destination.pathname.startsWith('/creator/');
+    if (destination.origin !== origin || !isCreatorRoute) {
       return null;
     }
     return `${destination.pathname}${destination.search}${destination.hash}`;
