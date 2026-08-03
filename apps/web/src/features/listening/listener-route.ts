@@ -24,13 +24,36 @@ export type ListenerRoute =
       broadcastId: string;
     };
 
+const UNSAFE_ROUTE_SEGMENT = /[\u0000-\u001f\u007f/\\?#]/;
+
 function decodeSegment(segment: string): string | null {
   try {
     const value = decodeURIComponent(segment).trim();
-    return value || null;
+    if (
+      !value ||
+      value === '.' ||
+      value === '..' ||
+      UNSAFE_ROUTE_SEGMENT.test(value)
+    ) {
+      return null;
+    }
+    return value;
   } catch {
     return null;
   }
+}
+
+function encodeSegment(value: string): string {
+  const normalized = value.trim();
+  if (
+    !normalized ||
+    normalized === '.' ||
+    normalized === '..' ||
+    UNSAFE_ROUTE_SEGMENT.test(normalized)
+  ) {
+    throw new TypeError('Listener route segments must be non-empty path-safe values.');
+  }
+  return encodeURIComponent(normalized);
 }
 
 export function parseListenerRoute(pathname: string): ListenerRoute | null {
@@ -93,9 +116,9 @@ export function publicListenerPath(input: {
   channelSlug: string;
   broadcastSlug: string;
 }): string {
-  return `/listen/${encodeURIComponent(input.organisationSlug)}/${encodeURIComponent(
+  return `/listen/${encodeSegment(input.organisationSlug)}/${encodeSegment(
     input.channelSlug,
-  )}/${encodeURIComponent(input.broadcastSlug)}`;
+  )}/${encodeSegment(input.broadcastSlug)}`;
 }
 
 export function publicReplayPath(input: {
@@ -103,16 +126,16 @@ export function publicReplayPath(input: {
   channelSlug: string;
   broadcastSlug: string;
 }): string {
-  return `/listen/replay/${encodeURIComponent(input.organisationSlug)}/${encodeURIComponent(
+  return `/listen/replay/${encodeSegment(input.organisationSlug)}/${encodeSegment(
     input.channelSlug,
-  )}/${encodeURIComponent(input.broadcastSlug)}`;
+  )}/${encodeSegment(input.broadcastSlug)}`;
 }
 
 export function memberReplayPath(input: {
   organisationId: string;
   recordingId: string;
 }): string {
-  return `/listen/member-replay/${encodeURIComponent(input.organisationId)}/${encodeURIComponent(
+  return `/listen/member-replay/${encodeSegment(input.organisationId)}/${encodeSegment(
     input.recordingId,
   )}`;
 }
