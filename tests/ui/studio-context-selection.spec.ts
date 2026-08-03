@@ -220,3 +220,22 @@ test('prefers an operational live broadcast over a newer high-version draft', ()
     requestedContextPreserved: false,
   });
 });
+
+test('uses persisted recency instead of unrelated lifecycle versions for same-status broadcasts', () => {
+  const result = resolveStudioContextSelection({
+    requested: {},
+    organisations: [organisation('o1')],
+    channels: [channel('c1', 'o1')],
+    broadcasts: [
+      broadcast('older-high-version', 'o1', 'c1', 'scheduled', 99, '2026-03-01T00:00:00Z'),
+      broadcast('newer-low-version', 'o1', 'c1', 'scheduled', 1, '2026-03-02T00:00:00Z'),
+    ],
+  });
+
+  expect(result).toEqual({
+    organisationId: 'o1',
+    channelId: 'c1',
+    broadcastId: 'newer-low-version',
+    requestedContextPreserved: false,
+  });
+});
