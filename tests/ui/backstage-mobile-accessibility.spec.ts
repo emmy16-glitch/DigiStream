@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
 
 const backstageCss = readFileSync(
-  new URL(
-    '../../apps/web/src/features/guests/creator-backstage.css',
-    import.meta.url,
+  resolve(
+    process.cwd(),
+    'apps/web/src/features/guests/creator-backstage.css',
   ),
   'utf8',
 );
