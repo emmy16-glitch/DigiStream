@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { LandingPage } from './landing/LandingPage';
 import './design-system/tokens.css';
 import './design-system/base.css';
 import './design-system/components.css';
@@ -12,6 +13,7 @@ import './features/broadcasting/creator-broadcast-studio-landscape.css';
 import './styles.css';
 import './design-system/responsive-operations.css';
 import './design-system/manual-review-fixes.css';
+import './landing/landing-page.css';
 
 const root = document.getElementById('root');
 
@@ -19,8 +21,10 @@ if (!root) {
   throw new Error('DigiStream root element was not found');
 }
 
+const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
+
 createRoot(root).render(
   <StrictMode>
-    <App />
+    {normalizedPath === '/' ? <LandingPage /> : <App />}
   </StrictMode>,
 );
