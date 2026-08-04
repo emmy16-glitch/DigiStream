@@ -71,7 +71,14 @@ export function CreatorShell({
           <span>{eyebrow}</span>
           <h1>{title}</h1>
         </div>
-        {actions ? <div className="ds-topbar-actions">{actions}</div> : null}
+        {actions ? (
+          <div className="ds-creator-account-area" aria-label="Signed-in account actions">
+            <span className="ds-creator-account-identity" title={workspaceDescription}>
+              Signed in as {workspaceDescription}
+            </span>
+            <div className="ds-topbar-actions">{actions}</div>
+          </div>
+        ) : null}
       </header>
 
       <main className="ds-creator-content" id="ds-main-content">
