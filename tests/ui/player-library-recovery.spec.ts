@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
-const sourcePath = new URL(
-  '../../apps/web/src/features/listening/oven-player.ts',
-  import.meta.url,
+const sourcePath = resolve(
+  process.cwd(),
+  'apps/web/src/features/listening/oven-player.ts',
 );
 
 test('failed player bundle initialization is not cached permanently', async () => {
