@@ -66,18 +66,28 @@ function loadScript(url: string, globalReady: () => boolean): Promise<void> {
   const existing = scriptPromises.get(url);
   if (existing) return existing;
 
-  const promise = new Promise<void>((resolve, reject) => {
+  let promise: Promise<void>;
+  promise = new Promise<void>((resolve, reject) => {
     const script = document.createElement('script');
     script.src = url;
     script.async = true;
     script.crossOrigin = 'anonymous';
+
+    const fail = (error: Error) => {
+      if (scriptPromises.get(url) === promise) scriptPromises.delete(url);
+      script.remove();
+      reject(error);
+    };
+
     script.addEventListener('load', () => {
-      if (globalReady()) resolve();
-      else reject(new Error(`The player library loaded from ${url} but did not initialize.`));
+      if (globalReady()) {
+        resolve();
+        return;
+      }
+      fail(new Error(`The player library loaded from ${url} but did not initialize.`));
     });
     script.addEventListener('error', () => {
-      scriptPromises.delete(url);
-      reject(new Error(`The player library could not be loaded from ${url}.`));
+      fail(new Error(`The player library could not be loaded from ${url}.`));
     });
     document.head.append(script);
   });
