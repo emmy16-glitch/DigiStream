@@ -54,6 +54,8 @@
 }
 .ds-page-heading span { color: var(--ds-accent); font-size: var(--ds-text-xs); font-weight: var(--ds-weight-bold); letter-spacing: .12em; text-transform: uppercase; }
 .ds-page-heading h1 { margin: 5px 0 0; font-size: clamp(1.7rem, 3vw, 2.35rem); letter-spacing: -.04em; }
+.ds-creator-account-area { min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: var(--ds-space-3); }
+.ds-creator-account-identity { max-width: 240px; overflow: hidden; color: var(--ds-text-muted); font-size: var(--ds-text-xs); text-overflow: ellipsis; white-space: nowrap; }
 .ds-topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--ds-space-2); }
 .ds-creator-content { width: min(100%, var(--ds-page-max)); margin: 0 auto; padding: clamp(20px, 4vw, 48px); }
 .ds-creator-mobile-nav { display: none; }
@@ -63,15 +65,29 @@
   .ds-creator-sidebar { width: 82px; padding-inline: 12px; }
   .ds-creator-sidebar .ds-brand > span:last-child, .ds-shell-nav-item > span:last-child, .ds-workspace-summary { display: none; }
   .ds-shell-nav-item { justify-content: center; padding: 0; }
+  .ds-creator-account-identity { max-width: 180px; }
 }
 
 @media (max-width: 640px) {
   .ds-creator-shell { padding-left: 0; }
   .ds-creator-sidebar { display: none; }
-  .ds-creator-topbar { min-height: 72px; padding: 14px 16px; }
+  .ds-creator-topbar {
+    min-height: 112px;
+    padding: 12px 14px;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ds-page-heading { display: flex; align-items: center; justify-content: space-between; }
   .ds-page-heading span { display: none; }
-  .ds-page-heading h1 { margin: 0; font-size: 1.55rem; }
+  .ds-page-heading h1 { margin: 0; font-size: 1.45rem; }
+  .ds-creator-account-area { width: 100%; justify-content: space-between; gap: 8px; }
+  .ds-creator-account-identity { min-width: 0; max-width: none; flex: 1; font-size: .72rem; }
+  .ds-topbar-actions { flex: 0 0 auto; gap: 4px; }
+  .ds-topbar-actions .ds-button { min-width: 44px; min-height: 44px; padding-inline: 10px; }
   .ds-topbar-actions .ds-button span { display: none; }
+  .ds-topbar-actions > :last-child { min-width: auto; padding-inline: 12px; }
+  .ds-topbar-actions > :last-child span { display: inline; }
   .ds-creator-content { padding: 18px 14px 34px; }
   .ds-creator-mobile-nav {
     position: fixed;
@@ -97,4 +113,11 @@
     font-size: .66rem;
   }
   .ds-creator-mobile-nav button.active { color: var(--ds-accent); background: var(--ds-accent-soft); }
+}
+
+@media (max-width: 380px) {
+  .ds-creator-account-area { align-items: stretch; flex-direction: column; }
+  .ds-creator-account-identity { width: 100%; }
+  .ds-topbar-actions { width: 100%; justify-content: space-between; }
+  .ds-topbar-actions > :last-child { margin-left: auto; }
 }
