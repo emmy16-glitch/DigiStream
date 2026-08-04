@@ -36,7 +36,7 @@ function writeSessionMessage(
     at: Date.now(),
     nonce: crypto.randomUUID(),
     reason,
-    sourcePath,
+    ...(sourcePath === undefined ? {} : { sourcePath }),
   };
 
   try {
