@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { BrandLockup } from './components';
 import { visibleCreatorNavigation } from './creator-navigation-visibility';
 import { Icon, type IconName } from './Icon';
@@ -31,6 +31,17 @@ export function CreatorShell({
   workspaceName?: string;
 }) {
   const visibleNavigation = visibleCreatorNavigation(navigation);
+  const mainContentRef = useRef<HTMLElement>(null);
+  const previousActiveLabel = useRef(activeLabel);
+
+  useEffect(() => {
+    if (previousActiveLabel.current === activeLabel) return;
+
+    previousActiveLabel.current = activeLabel;
+    window.requestAnimationFrame(() => {
+      mainContentRef.current?.focus({ preventScroll: true });
+    });
+  }, [activeLabel]);
 
   return (
     <div className="ds-creator-shell">
@@ -71,6 +82,9 @@ export function CreatorShell({
           <span>{eyebrow}</span>
           <h1>{title}</h1>
         </div>
+        <p className="sr-only" aria-live="polite" aria-atomic="true">
+          {activeLabel} page opened
+        </p>
         {actions ? (
           <div className="ds-creator-account-area" aria-label="Signed-in account actions">
             <span className="ds-creator-account-identity" title={workspaceDescription}>
@@ -81,7 +95,12 @@ export function CreatorShell({
         ) : null}
       </header>
 
-      <main className="ds-creator-content" id="ds-main-content">
+      <main
+        className="ds-creator-content"
+        id="ds-main-content"
+        ref={mainContentRef}
+        tabIndex={-1}
+      >
         {children}
       </main>
 
