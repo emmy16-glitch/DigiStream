@@ -24,34 +24,37 @@ export type ListenerRoute =
       broadcastId: string;
     };
 
-const UNSAFE_ROUTE_SEGMENT = /[\u0000-\u001f\u007f/\\?#]/;
+const MAX_ROUTE_SEGMENT_CODE_POINTS = 128;
+const UNSAFE_ROUTE_SEGMENT = /[\u0000-\u001f\u007f/\\?#%]|\p{Cf}/u;
+
+function normalizeSegment(value: string): string | null {
+  const normalized = value.trim().normalize('NFC');
+  if (
+    !normalized ||
+    normalized === '.' ||
+    normalized === '..' ||
+    Array.from(normalized).length > MAX_ROUTE_SEGMENT_CODE_POINTS ||
+    UNSAFE_ROUTE_SEGMENT.test(normalized)
+  ) {
+    return null;
+  }
+  return normalized;
+}
 
 function decodeSegment(segment: string): string | null {
   try {
-    const value = decodeURIComponent(segment).trim();
-    if (
-      !value ||
-      value === '.' ||
-      value === '..' ||
-      UNSAFE_ROUTE_SEGMENT.test(value)
-    ) {
-      return null;
-    }
-    return value;
+    return normalizeSegment(decodeURIComponent(segment));
   } catch {
     return null;
   }
 }
 
 function encodeSegment(value: string): string {
-  const normalized = value.trim();
-  if (
-    !normalized ||
-    normalized === '.' ||
-    normalized === '..' ||
-    UNSAFE_ROUTE_SEGMENT.test(normalized)
-  ) {
-    throw new TypeError('Listener route segments must be non-empty path-safe values.');
+  const normalized = normalizeSegment(value);
+  if (!normalized) {
+    throw new TypeError(
+      'Listener route segments must be short, visible, non-empty path-safe values.',
+    );
   }
   return encodeURIComponent(normalized);
 }
