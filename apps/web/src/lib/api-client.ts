@@ -1,5 +1,6 @@
 import type { ApiErrorResponse } from '@digistream/contracts';
 import { reconcileCreatorContext } from './backstage-context-runtime';
+import { announceSignedOut, installSessionCoordination } from './session-coordination';
 
 const configuredApiBaseUrl = import.meta.env.VITE_API_URL?.trim();
 
@@ -8,9 +9,12 @@ export const apiBaseUrl = configuredApiBaseUrl
   : '';
 
 const AUTH_API_PREFIX = '/api/v1/auth/';
+const LOGOUT_API_PATH = '/api/v1/auth/logout';
 const CREATOR_ROUTE_PREFIX = '/creator';
 const SESSION_EXPIRED_EVENT = 'digistream:session-expired';
 let sessionRecoveryStarted = false;
+
+installSessionCoordination();
 
 export class ApiClientError extends Error {
   constructor(
@@ -124,6 +128,10 @@ export async function apiRequest<T>(
       'DigiStream received an invalid response from the application server.',
       { contentType: response.headers.get('content-type') },
     );
+  }
+
+  if (path === LOGOUT_API_PATH && (options.method ?? 'GET').toUpperCase() === 'POST') {
+    announceSignedOut();
   }
 
   return reconcileCreatorContext(path, payload) as T;
