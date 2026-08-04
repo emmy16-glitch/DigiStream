@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { LandingPage } from './landing/LandingPage';
+import { resolveInitialRoute } from './routing/initial-route';
 import './design-system/tokens.css';
 import './design-system/base.css';
 import './design-system/components.css';
@@ -21,18 +22,14 @@ if (!root) {
   throw new Error('DigiStream root element was not found');
 }
 
-let normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
+const route = resolveInitialRoute(window.location.pathname);
 
-// Analytics remains unavailable until real, authorised metrics and complete
-// loading, empty and failure states exist. Keep direct or stale bookmarks from
-// exposing the placeholder route while preserving a safe creator destination.
-if (normalizedPath === '/creator/analytics') {
-  normalizedPath = '/creator/overview';
-  window.history.replaceState({}, '', normalizedPath);
+if (route.replaceHistory) {
+  window.history.replaceState({}, '', route.path);
 }
 
 createRoot(root).render(
   <StrictMode>
-    {normalizedPath === '/' ? <LandingPage /> : <App />}
+    {route.path === '/' ? <LandingPage /> : <App />}
   </StrictMode>,
 );
