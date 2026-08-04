@@ -55,6 +55,39 @@ test('decoded separators, traversal markers and control characters are rejected'
   }
 });
 
+test('double encoding, invisible formatting and oversized context are rejected', () => {
+  const oversized = 'a'.repeat(129);
+  const invalidRoutes = [
+    '/listen/replay/org/channel/broadcast%252Fother',
+    '/listen/replay/org/channel/broad%E2%80%8Bcast',
+    `/listen/replay/org/channel/${oversized}`,
+  ];
+
+  for (const route of invalidRoutes) {
+    expect(parseListenerRoute(route), route).toBeNull();
+  }
+
+  expect(() => memberReplayPath({
+    organisationId: 'org_123',
+    recordingId: `rec_${oversized}`,
+  })).toThrow(TypeError);
+});
+
+test('route builders normalize equivalent Unicode context before encoding', () => {
+  const decomposed = 'cafe\u0301';
+  const path = publicListenerPath({
+    organisationSlug: decomposed,
+    channelSlug: 'main-stage',
+    broadcastSlug: 'evening-service',
+  });
+
+  expect(path).toContain('caf%C3%A9');
+  expect(parseListenerRoute(path)).toMatchObject({
+    kind: 'public-broadcast',
+    organisationSlug: 'café',
+  });
+});
+
 test('route builders fail closed instead of generating ambiguous listener URLs', () => {
   expect(() => publicReplayPath({
     organisationSlug: 'org/other',
