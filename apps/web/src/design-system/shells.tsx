@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { BrandLockup } from './components';
+import { visibleCreatorNavigation } from './creator-navigation-visibility';
 import { Icon, type IconName } from './Icon';
 import './listener-trust.css';
 
@@ -29,9 +30,7 @@ export function CreatorShell({
   workspaceDescription?: string;
   workspaceName?: string;
 }) {
-  const visibleNavigation = navigation.filter(
-    (item) => item.label !== 'Recordings' && item.label !== 'Analytics',
-  );
+  const visibleNavigation = visibleCreatorNavigation(navigation);
 
   return (
     <div className="ds-creator-shell">
