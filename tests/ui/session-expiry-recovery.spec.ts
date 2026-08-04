@@ -17,9 +17,15 @@ test('creator API 401 responses start one truthful sign-in recovery', () => {
   );
   expect(apiClientSource).toContain('sessionRecoveryStarted');
   expect(apiClientSource).toContain("new CustomEvent(SESSION_EXPIRED_EVENT");
-  expect(apiClientSource).toContain("loginUrl.searchParams.set('reason', 'session-expired')");
-  expect(apiClientSource).toContain("loginUrl.searchParams.set('returnTo', currentPath)");
-  expect(apiClientSource).toContain('window.location.assign(loginUrl.toString())');
+  expect(apiClientSource).toContain('window.sessionStorage.clear();');
+  expect(apiClientSource).toContain('announceSessionExpired(path);');
+  expect(apiClientSource).toContain(
+    "sessionLoginPath('session-expired', currentPath)",
+  );
+  expect(apiClientSource).toContain('window.location.replace(');
+  expect(apiClientSource).not.toContain(
+    'window.location.assign(loginUrl.toString())',
+  );
   expect(apiClientSource).toContain('recoverExpiredSession(path, response.status)');
 });
 

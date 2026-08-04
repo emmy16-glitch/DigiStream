@@ -1,6 +1,11 @@
 import type { ApiErrorResponse } from '@digistream/contracts';
 import { reconcileCreatorContext } from './backstage-context-runtime';
-import { announceSignedOut, installSessionCoordination } from './session-coordination';
+import {
+  announceSessionExpired,
+  announceSignedOut,
+  installSessionCoordination,
+  sessionLoginPath,
+} from './session-coordination';
 
 const configuredApiBaseUrl = import.meta.env.VITE_API_URL?.trim();
 
@@ -52,16 +57,14 @@ function recoverExpiredSession(path: string, status: number): void {
 
   sessionRecoveryStarted = true;
   const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  window.sessionStorage.clear();
+  announceSessionExpired(path);
   window.dispatchEvent(
     new CustomEvent(SESSION_EXPIRED_EVENT, {
       detail: { path, returnTo: currentPath },
     }),
   );
-
-  const loginUrl = new URL('/login', window.location.origin);
-  loginUrl.searchParams.set('reason', 'session-expired');
-  loginUrl.searchParams.set('returnTo', currentPath);
-  window.location.assign(loginUrl.toString());
+  window.location.replace(sessionLoginPath('session-expired', currentPath));
 }
 
 export async function apiRequest<T>(
@@ -85,7 +88,7 @@ export async function apiRequest<T>(
     throw new ApiClientError(
       0,
       'API_UNREACHABLE',
-      'DigiStream could not connect to the application server.',
+      "We couldn't reach the server. Check your connection and try again.",
       error,
     );
   }
@@ -125,7 +128,7 @@ export async function apiRequest<T>(
     throw new ApiClientError(
       response.status,
       'INVALID_API_RESPONSE',
-      'DigiStream received an invalid response from the application server.',
+      'The server returned a response this page could not read.',
       { contentType: response.headers.get('content-type') },
     );
   }
