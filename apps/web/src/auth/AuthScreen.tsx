@@ -177,14 +177,12 @@ export function AuthScreen({
           <BrandLockup />
         </a>
         <div className="auth-brand-copy">
-          <StatusBadge tone="success">Audio-first creator workspace</StatusBadge>
+          <StatusBadge tone="success">Creator workspace</StatusBadge>
           <h1 id="auth-product-title">DigiStream</h1>
-          <p>
-            Create an account, organise your channel and control professional live audio from one responsive workspace.
-          </p>
+          <p>Create live audio and manage your broadcasts in one place.</p>
         </div>
         <LinkButton href="/listen" icon="headphones" variant="ghost">
-          Explore listener app
+          Listen to broadcasts
         </LinkButton>
       </section>
 
@@ -211,20 +209,20 @@ export function AuthScreen({
         </div>
 
         <header className="auth-card-header">
-          <span>{mode === 'register' ? 'New creator account' : 'Welcome back'}</span>
+          <span>{mode === 'register' ? 'New account' : 'Welcome back'}</span>
           <h2 id="auth-heading">
-            {mode === 'register' ? 'Create your DigiStream account' : 'Sign in to DigiStream'}
+            {mode === 'register' ? 'Create your account' : 'Sign in'}
           </h2>
           <p>
             {mode === 'register'
-              ? 'Use email or Google. Your account receives creator access and can create its first organisation.'
-              : 'Continue with the same email or Google identity connected to your account.'}
+              ? 'Use email or Google to get started.'
+              : 'Use the email or Google account linked to DigiStream.'}
           </p>
         </header>
 
         {returnPath ? (
           <div className="auth-provider-note" role="status">
-            Your creator session expired. Sign in again to return to the same DigiStream workspace.
+            Your session ended. Sign in to continue.
           </div>
         ) : null}
 
@@ -241,11 +239,11 @@ export function AuthScreen({
           </div>
         ) : (
           <div className="auth-provider-note">
-            Google sign-in is not configured in this environment. Email authentication remains available.
+            Google sign-in is unavailable here. Use email instead.
           </div>
         )}
 
-        <div className="auth-divider"><span>or continue with email</span></div>
+        <div className="auth-divider"><span>or use email</span></div>
 
         <form className="auth-form" onSubmit={submitEmail}>
           {mode === 'register' ? (
