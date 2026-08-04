@@ -22,7 +22,7 @@ async function expectNoHorizontalOverflow(page: Page) {
 }
 
 async function createCreatorWorkspace(page: Page, suffix: string) {
-  await page.goto('/');
+  await page.goto('/login');
   await page.getByRole('tab', { name: 'Create account' }).click();
   await page.getByLabel('Display name').fill('Playwright Creator');
   await page.getByLabel('Email').fill(`playwright-${suffix}@example.test`);
