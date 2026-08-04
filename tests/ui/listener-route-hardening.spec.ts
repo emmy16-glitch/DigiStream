@@ -55,6 +55,22 @@ test('decoded separators, traversal markers and control characters are rejected'
   }
 });
 
+test('duplicate separators and trailing slashes are rejected instead of changing route meaning', () => {
+  const invalidRoutes = [
+    '//listen/community-radio/main-stage/evening-service',
+    '/listen//community-radio/main-stage/evening-service',
+    '/listen/community-radio//main-stage/evening-service',
+    '/listen/community-radio/main-stage//evening-service',
+    '/listen/community-radio/main-stage/evening-service/',
+    '/listen/replays/',
+    '/listen/',
+  ];
+
+  for (const route of invalidRoutes) {
+    expect(parseListenerRoute(route), route).toBeNull();
+  }
+});
+
 test('double encoding, invisible formatting and oversized context are rejected', () => {
   const oversized = 'a'.repeat(129);
   const invalidRoutes = [
