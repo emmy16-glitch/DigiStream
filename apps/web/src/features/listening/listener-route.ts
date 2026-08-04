@@ -59,9 +59,19 @@ function encodeSegment(value: string): string {
   return encodeURIComponent(normalized);
 }
 
+function canonicalPathParts(pathname: string): string[] | null {
+  if (!pathname.startsWith('/') || pathname === '/' || pathname.endsWith('/')) {
+    return null;
+  }
+
+  const parts = pathname.slice(1).split('/');
+  if (parts.some((part) => part.length === 0)) return null;
+  return parts;
+}
+
 export function parseListenerRoute(pathname: string): ListenerRoute | null {
-  const parts = pathname.split('/').filter(Boolean);
-  if (parts[0] !== 'listen') return null;
+  const parts = canonicalPathParts(pathname);
+  if (!parts || parts[0] !== 'listen') return null;
   if (parts.length === 1) return { kind: 'discovery' };
   if (parts[1] === 'replays' && parts.length === 2) {
     return { kind: 'replay-discovery' };
