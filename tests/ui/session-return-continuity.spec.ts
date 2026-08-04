@@ -23,7 +23,7 @@ test('email and Google authentication restore before mounting creator state', ()
   expect(authSource).toContain("window.history.replaceState({}, '', returnPath)");
   expect(authSource).toContain('finishAuthentication(response.user)');
   expect(authSource).toContain('onAuthenticated(response.user)');
-  expect(authSource).toContain('Your creator session expired. Sign in again');
+  expect(authSource).toContain('Your session ended. Sign in to continue.');
 });
 
 test('the return path is ignored without the session-expiry reason', () => {
