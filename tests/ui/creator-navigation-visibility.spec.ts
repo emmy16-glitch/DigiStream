@@ -1,0 +1,32 @@
+import { expect, test } from '@playwright/test';
+import { visibleCreatorNavigation } from '../../apps/web/src/design-system/creator-navigation-visibility';
+
+const navigation = [
+  { label: 'Overview', shortLabel: 'Home' },
+  { label: 'Broadcasts', shortLabel: 'Streams' },
+  { label: 'Backstage', shortLabel: 'Backstage' },
+  { label: 'Recordings', shortLabel: 'Replay' },
+  { label: 'Analytics', shortLabel: 'Stats' },
+];
+
+test('authorized Replay navigation is exposed while unimplemented Stats remains hidden', () => {
+  const visible = visibleCreatorNavigation(navigation);
+
+  expect(visible.map((item) => item.label)).toEqual([
+    'Overview',
+    'Broadcasts',
+    'Backstage',
+    'Recordings',
+  ]);
+  expect(visible.find((item) => item.shortLabel === 'Replay')).toBeTruthy();
+  expect(visible.find((item) => item.shortLabel === 'Stats')).toBeUndefined();
+});
+
+test('navigation filtering is non-mutating and preserves authoritative order', () => {
+  const before = navigation.map((item) => item.label);
+  const visible = visibleCreatorNavigation(navigation);
+
+  expect(navigation.map((item) => item.label)).toEqual(before);
+  expect(visible).not.toBe(navigation);
+  expect(visible[3]?.label).toBe('Recordings');
+});
