@@ -21,7 +21,15 @@ if (!root) {
   throw new Error('DigiStream root element was not found');
 }
 
-const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
+let normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/';
+
+// Analytics remains unavailable until real, authorised metrics and complete
+// loading, empty and failure states exist. Keep direct or stale bookmarks from
+// exposing the placeholder route while preserving a safe creator destination.
+if (normalizedPath === '/creator/analytics') {
+  normalizedPath = '/creator/overview';
+  window.history.replaceState({}, '', normalizedPath);
+}
 
 createRoot(root).render(
   <StrictMode>
