@@ -82,7 +82,7 @@ export function CreatorShell({
           <span>{eyebrow}</span>
           <h1>{title}</h1>
         </div>
-        <p className="ds-visually-hidden" aria-live="polite" aria-atomic="true">
+        <p className="sr-only" aria-live="polite" aria-atomic="true">
           {activeLabel} page opened
         </p>
         {actions ? (
