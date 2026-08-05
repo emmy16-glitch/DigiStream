@@ -1,0 +1,95 @@
+/* Shared content resilience for creator, listener and authentication surfaces. */
+
+:where(
+  .creator-shell,
+  .listener-shell,
+  .auth-screen,
+  .workspace-page-intro,
+  .workspace-welcome,
+  .workspace-action-card,
+  .panel,
+  .state-panel
+) {
+  min-inline-size: 0;
+}
+
+:where(
+  .creator-shell,
+  .listener-shell,
+  .auth-screen,
+  .workspace-page-intro,
+  .workspace-welcome,
+  .workspace-action-card,
+  .panel,
+  .state-panel
+) :where(h1, h2, h3, p, strong, span, small, a, button, label) {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+:where(.workspace-page-intro, .workspace-welcome, .workspace-action-card, .panel, .state-panel) h1,
+:where(.workspace-page-intro, .workspace-welcome, .workspace-action-card, .panel, .state-panel) h2,
+:where(.workspace-page-intro, .workspace-welcome, .workspace-action-card, .panel, .state-panel) h3 {
+  text-wrap: balance;
+  max-inline-size: 100%;
+}
+
+:where(.workspace-page-intro, .workspace-welcome, .workspace-action-card, .panel, .state-panel) p {
+  text-wrap: pretty;
+  max-inline-size: 68ch;
+}
+
+:where(.creator-shell, .listener-shell, .auth-screen) {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+
+:where(.creator-shell, .listener-shell, .auth-screen) button,
+:where(.creator-shell, .listener-shell, .auth-screen) a {
+  min-block-size: 44px;
+}
+
+@media (max-width: 52rem) {
+  :where(.workspace-welcome-actions, .panel-header, .workspace-action-card) {
+    min-inline-size: 0;
+  }
+
+  :where(.workspace-welcome-actions, .panel-header, .workspace-action-card) > * {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+  }
+}
+
+@media (max-height: 32rem) and (orientation: landscape) {
+  :where(.creator-shell, .listener-shell, .auth-screen) {
+    min-block-size: 100dvb;
+  }
+
+  :where(.workspace-page-intro, .workspace-welcome, .workspace-action-card, .panel, .state-panel) {
+    scroll-margin-block-start: 0.75rem;
+  }
+
+  :where(.workspace-welcome-actions, .panel-header) {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-resolution: 2dppx) and (max-width: 40rem) {
+  :where(.workspace-page-intro, .workspace-welcome, .workspace-action-card, .panel, .state-panel) {
+    max-inline-size: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.creator-shell, .listener-shell, .auth-screen) {
+    scroll-behavior: auto;
+  }
+
+  :where(.creator-shell, .listener-shell, .auth-screen) *,
+  :where(.creator-shell, .listener-shell, .auth-screen) *::before,
+  :where(.creator-shell, .listener-shell, .auth-screen) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
