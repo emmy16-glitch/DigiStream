@@ -1,0 +1,21 @@
+.creator-broadcasts-page:has(#create-channel-title)
+  .creator-broadcasts-intro-actions
+  button:first-child,
+.creator-broadcasts-page:has(#create-broadcast-title)
+  .creator-broadcasts-intro-actions
+  button:last-child {
+  display: none;
+}
+
+.creator-broadcasts-page:has(#create-channel-title)
+  .creator-broadcasts-intro-actions,
+.creator-broadcasts-page:has(#create-broadcast-title)
+  .creator-broadcasts-intro-actions {
+  align-items: flex-start;
+}
+
+@supports not selector(:has(*)) {
+  .creator-broadcasts-intro-actions button[aria-expanded='true'] {
+    display: none;
+  }
+}
