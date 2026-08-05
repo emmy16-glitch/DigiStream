@@ -13,8 +13,19 @@ test('authentication screen uses concise human copy', async () => {
   expect(source).toContain('Create live audio and manage your broadcasts in one place.');
   expect(source).toContain("mode === 'register' ? 'Create your account' : 'Sign in'");
   expect(source).toContain('Your session ended. Sign in to continue.');
-  expect(source).toContain('Google sign-in is unavailable here. Use email instead.');
+  expect(source).toContain("? 'Use your email to create an account.'");
+  expect(source).toContain(": 'Use your email to sign in.'");
+  expect(source).toContain('Checking available sign-in methods…');
+});
+
+test('Google copy and divider appear only when Google is ready', async () => {
+  const source = await readFile(authSourcePath, 'utf8');
+
+  expect(source).toContain("googleReady && providers.google.clientId ? (");
+  expect(source).toContain('Use email or Google to get started.');
+  expect(source).toContain('Use the email or Google account linked to DigiStream.');
   expect(source).toContain('<div className="auth-divider"><span>or use email</span></div>');
+  expect(source).not.toContain('Google sign-in is unavailable here. Use email instead.');
 });
 
 test('authentication screen excludes removed generic product copy', async () => {
