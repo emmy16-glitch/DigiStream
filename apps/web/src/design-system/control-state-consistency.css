@@ -1,0 +1,57 @@
+.ds-button:disabled,
+.ds-button[aria-disabled='true'],
+.ds-icon-button:disabled,
+.ds-icon-button[aria-disabled='true'] {
+  color: var(--ds-text-muted);
+  background: var(--ds-surface-2);
+  border-color: var(--ds-border-subtle);
+  opacity: 1;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: saturate(.55);
+}
+
+.ds-button:disabled .ds-icon,
+.ds-button[aria-disabled='true'] .ds-icon,
+.ds-icon-button:disabled .ds-icon,
+.ds-icon-button[aria-disabled='true'] .ds-icon {
+  opacity: .72;
+}
+
+.ds-button[aria-busy='true'],
+.ds-icon-button[aria-busy='true'] {
+  cursor: wait;
+  transform: none;
+  box-shadow: none;
+}
+
+.ds-button[aria-busy='true'] {
+  position: relative;
+}
+
+.ds-button:disabled:focus-visible,
+.ds-button[aria-disabled='true']:focus-visible,
+.ds-icon-button:disabled:focus-visible,
+.ds-icon-button[aria-disabled='true']:focus-visible {
+  outline-color: var(--ds-border-strong);
+  box-shadow: 0 0 0 2px var(--ds-canvas);
+}
+
+@media (forced-colors: active) {
+  .ds-button:disabled,
+  .ds-button[aria-disabled='true'],
+  .ds-icon-button:disabled,
+  .ds-icon-button[aria-disabled='true'] {
+    color: GrayText;
+    border-color: GrayText;
+    forced-color-adjust: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-button,
+  .ds-icon-button {
+    transition-duration: 0.01ms;
+  }
+}
