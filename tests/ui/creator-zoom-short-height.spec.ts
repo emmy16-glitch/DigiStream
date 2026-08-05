@@ -25,10 +25,11 @@ async function expectNoHorizontalOverflow(page: Page) {
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
 }
 
-test('account access remains discoverable at 200% zoom and short landscape height', async ({ page }, testInfo) => {
+test('signed-in identity and sign out remain discoverable at 200% zoom and short landscape height', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'CSS zoom verification is Chromium-specific.');
 
   const suffix = randomUUID().slice(0, 8);
+  const email = `zoom-${suffix}@example.test`;
   await registerCreator(page, suffix);
 
   await page.setViewportSize({ width: 640, height: 360 });
@@ -36,24 +37,16 @@ test('account access remains discoverable at 200% zoom and short landscape heigh
     document.documentElement.style.zoom = '2';
   });
 
-  const accountButton = page.getByRole('button', { name: 'Account' });
-  await expect(accountButton).toBeVisible();
-  const accountBox = await accountButton.boundingBox();
-  expect(accountBox).not.toBeNull();
-  expect(accountBox!.height).toBeGreaterThanOrEqual(44);
+  const accountArea = page.getByLabel('Signed-in account actions');
+  await expect(accountArea).toBeVisible();
+  await expect(accountArea.getByText(`Signed in as ${email}`, { exact: true })).toBeVisible();
 
-  await accountButton.click();
-  const accountDialog = page.getByRole('dialog', { name: 'Account' });
-  await expect(accountDialog).toBeVisible();
-  await expect(accountDialog.getByText(`zoom-${suffix}@example.test`, { exact: true })).toBeVisible();
-  await expect(accountDialog.getByRole('button', { name: 'Sign out' })).toBeVisible();
+  const signOutButton = accountArea.getByRole('button', { name: 'Sign out Zoom Test Creator' });
+  await expect(signOutButton).toBeVisible();
+  await expect(signOutButton).toContainText('Sign out');
 
-  const signOutBox = await accountDialog.getByRole('button', { name: 'Sign out' }).boundingBox();
+  const signOutBox = await signOutButton.boundingBox();
   expect(signOutBox).not.toBeNull();
   expect(signOutBox!.height).toBeGreaterThanOrEqual(44);
   await expectNoHorizontalOverflow(page);
-
-  await page.keyboard.press('Escape');
-  await expect(accountDialog).toHaveCount(0);
-  await expect(accountButton).toBeFocused();
 });
