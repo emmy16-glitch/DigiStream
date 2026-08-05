@@ -36,8 +36,8 @@ test('account access remains discoverable at 200% zoom and short landscape heigh
     document.documentElement.style.zoom = '2';
   });
 
-  await expect(page.getByRole('button', { name: 'Account' })).toBeVisible();
   const accountButton = page.getByRole('button', { name: 'Account' });
+  await expect(accountButton).toBeVisible();
   const accountBox = await accountButton.boundingBox();
   expect(accountBox).not.toBeNull();
   expect(accountBox!.height).toBeGreaterThanOrEqual(44);
@@ -56,4 +56,4 @@ test('account access remains discoverable at 200% zoom and short landscape heigh
   await page.keyboard.press('Escape');
   await expect(accountDialog).toHaveCount(0);
   await expect(accountButton).toBeFocused();
-}
+});
