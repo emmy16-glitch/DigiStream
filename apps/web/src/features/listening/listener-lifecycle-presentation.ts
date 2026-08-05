@@ -4,6 +4,7 @@ type CalendarBroadcast = {
   id: string;
   title: string;
   description: string | null;
+  status: BroadcastPresentationStatus;
   scheduledStartAt: string | null;
   organisation: { name: string };
   channel: { name: string };
@@ -77,7 +78,7 @@ export function listenerCalendarHref(
   pageUrl: string,
   now: number = Date.now(),
 ): string | null {
-  if (!broadcast.scheduledStartAt) return null;
+  if (broadcast.status !== 'scheduled' || !broadcast.scheduledStartAt) return null;
   const start = new Date(broadcast.scheduledStartAt);
   if (Number.isNaN(start.getTime()) || start.getTime() <= now) return null;
   const end = new Date(start.getTime() + 60 * 60_000);
