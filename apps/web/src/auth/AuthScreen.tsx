@@ -169,6 +169,13 @@ export function AuthScreen({
     !checkingProviders &&
     providers.google.enabled &&
     Boolean(providers.google.clientId);
+  const supportingCopy = googleReady
+    ? mode === 'register'
+      ? 'Use email or Google to get started.'
+      : 'Use the email or Google account linked to DigiStream.'
+    : mode === 'register'
+      ? 'Use your email to create an account.'
+      : 'Use your email to sign in.';
 
   return (
     <main className="auth-page">
@@ -213,11 +220,7 @@ export function AuthScreen({
           <h2 id="auth-heading">
             {mode === 'register' ? 'Create your account' : 'Sign in'}
           </h2>
-          <p>
-            {mode === 'register'
-              ? 'Use email or Google to get started.'
-              : 'Use the email or Google account linked to DigiStream.'}
-          </p>
+          <p>{supportingCopy}</p>
         </header>
 
         {returnPath ? (
@@ -227,23 +230,20 @@ export function AuthScreen({
         ) : null}
 
         {googleReady && providers.google.clientId ? (
-          <GoogleIdentityButton
-            clientId={providers.google.clientId}
-            disabled={busy}
-            mode={mode}
-            onCredential={authenticateWithGoogle}
-          />
+          <>
+            <GoogleIdentityButton
+              clientId={providers.google.clientId}
+              disabled={busy}
+              mode={mode}
+              onCredential={authenticateWithGoogle}
+            />
+            <div className="auth-divider"><span>or use email</span></div>
+          </>
         ) : checkingProviders ? (
           <div className="auth-google-placeholder" aria-busy="true">
-            Checking Google sign-in…
+            Checking available sign-in methods…
           </div>
-        ) : (
-          <div className="auth-provider-note">
-            Google sign-in is unavailable here. Use email instead.
-          </div>
-        )}
-
-        <div className="auth-divider"><span>or use email</span></div>
+        ) : null}
 
         <form className="auth-form" onSubmit={submitEmail}>
           {mode === 'register' ? (
