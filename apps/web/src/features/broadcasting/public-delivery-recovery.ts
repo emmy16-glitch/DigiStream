@@ -44,6 +44,22 @@ export type PublicDeliveryRecoveryState = {
   retryable: boolean;
 };
 
+const terminalBroadcastStatuses = new Set<Broadcast['status']>([
+  'completed',
+  'cancelled',
+  'failed',
+]);
+
+function terminalDeliveryMessage(status: Broadcast['status']): string {
+  if (status === 'completed') {
+    return 'This broadcast has ended. Public delivery cannot be restarted from this Studio session.';
+  }
+  if (status === 'cancelled') {
+    return 'This broadcast was cancelled. Public delivery cannot be started.';
+  }
+  return 'This broadcast failed and public delivery cannot be retried from this Studio session.';
+}
+
 export function publicDeliveryIsLive(
   delivery: PublicDeliverySnapshot,
 ): boolean {
@@ -55,6 +71,17 @@ export function publicDeliveryRecoveryFromSnapshot(
   stage: PublicDeliveryRecoveryStage,
 ): PublicDeliveryRecoveryState | null {
   if (publicDeliveryIsLive(delivery)) return null;
+
+  if (terminalBroadcastStatuses.has(delivery.broadcast.status)) {
+    return {
+      stage,
+      code: `BROADCAST_${delivery.broadcast.status.toUpperCase()}`,
+      message: terminalDeliveryMessage(delivery.broadcast.status),
+      checkedAt: delivery.recovery.checkedAt,
+      privateStudioPreserved: false,
+      retryable: false,
+    };
+  }
 
   const timedOut = stage === 'delivery-timeout';
   return {
