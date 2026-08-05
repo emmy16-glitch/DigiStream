@@ -75,10 +75,11 @@ export function listenerCountdown(
 export function listenerCalendarHref(
   broadcast: CalendarBroadcast,
   pageUrl: string,
+  now: number = Date.now(),
 ): string | null {
   if (!broadcast.scheduledStartAt) return null;
   const start = new Date(broadcast.scheduledStartAt);
-  if (Number.isNaN(start.getTime())) return null;
+  if (Number.isNaN(start.getTime()) || start.getTime() <= now) return null;
   const end = new Date(start.getTime() + 60 * 60_000);
   const description = [
     broadcast.description,
@@ -96,7 +97,7 @@ export function listenerCalendarHref(
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
     `UID:${escapeCalendarText(broadcast.id)}@digistream`,
-    `DTSTAMP:${calendarTimestamp(new Date())}`,
+    `DTSTAMP:${calendarTimestamp(new Date(now))}`,
     `DTSTART:${calendarTimestamp(start)}`,
     `DTEND:${calendarTimestamp(end)}`,
     `SUMMARY:${escapeCalendarText(broadcast.title)}`,
