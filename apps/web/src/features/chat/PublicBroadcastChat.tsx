@@ -71,6 +71,24 @@ export function PublicBroadcastChat({ route }: PublicBroadcastChatProps) {
     );
   }
 
+  if (broadcast.status === 'draft') {
+    return (
+      <section
+        aria-label="Broadcast chat availability"
+        aria-live="polite"
+        className="broadcast-chat broadcast-chat-listener broadcast-chat-scheduled-state"
+      >
+        <div className="broadcast-chat-scheduled-copy">
+          <Icon name="chat" size={21} />
+          <div>
+            <strong>Chat is not open for this draft.</strong>
+            <span>The creator must prepare the broadcast before listeners can join the conversation.</span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   if (broadcast.status === 'scheduled' || broadcast.status === 'starting') {
     const starting = broadcast.status === 'starting';
     return (
