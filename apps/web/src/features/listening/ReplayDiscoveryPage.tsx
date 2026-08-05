@@ -63,7 +63,7 @@ function ReplayCard({ replay }: { replay: PublicReplay }) {
           ) : null}
         </div>
         <h2>{replay.title}</h2>
-        <p>{replay.description ?? 'Recorded audio published on DigiStream.'}</p>
+        <p>{replay.description ?? 'Listen to this completed broadcast.'}</p>
         <div className="replay-card-source">
           <strong>{replay.channel.name}</strong>
           <span>{replay.organisation.name}</span>
@@ -112,10 +112,8 @@ export function ReplayDiscoveryPage() {
     <div className="replay-discovery-page">
       <section className="replay-discovery-hero">
         <span className="listener-kicker">Listen again</span>
-        <h1>Published audio replays, ready when you are.</h1>
-        <p>
-          Replay completed broadcasts without exposing private storage. DigiStream creates a short-lived listening link only after you choose a recording.
-        </p>
+        <h1>Replay completed broadcasts.</h1>
+        <p>Choose a published recording and continue listening at your own pace.</p>
       </section>
 
       <section className="replay-discovery-section" aria-labelledby="published-replays-title">
@@ -140,13 +138,13 @@ export function ReplayDiscoveryPage() {
 
         {loading ? (
           <StatePanel kind="loading" title="Loading published replays">
-            DigiStream is checking verified recording and visibility state.
+            Checking for recordings you can listen to.
           </StatePanel>
         ) : null}
 
         {!loading && !error && replays.length === 0 ? (
-          <StatePanel kind="empty" title="No public replay has been published yet">
-            Completed recordings appear here only after a creator publishes a verified artifact.
+          <StatePanel kind="empty" title="No public replays yet">
+            Published recordings will appear here.
           </StatePanel>
         ) : null}
 
