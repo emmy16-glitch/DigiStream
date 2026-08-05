@@ -3,7 +3,11 @@
 .ds-brand-wave { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; gap: 3px; }
 .ds-brand-wave i { width: 3px; height: 20px; border-radius: 999px; background: var(--ds-accent); }
 
-.ds-creator-shell { min-height: 100vh; padding-left: var(--ds-sidebar-width); }
+.ds-creator-shell {
+  --ds-mobile-nav-clearance: 0px;
+  min-height: 100vh;
+  padding-left: var(--ds-sidebar-width);
+}
 .ds-creator-sidebar {
   position: fixed;
   inset: 0 auto 0 0;
@@ -57,7 +61,13 @@
 .ds-creator-account-area { min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: var(--ds-space-3); }
 .ds-creator-account-identity { max-width: 240px; overflow: hidden; color: var(--ds-text-muted); font-size: var(--ds-text-xs); text-overflow: ellipsis; white-space: nowrap; }
 .ds-topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--ds-space-2); }
-.ds-creator-content { width: min(100%, var(--ds-page-max)); margin: 0 auto; padding: clamp(20px, 4vw, 48px); }
+.ds-creator-content {
+  width: min(100%, var(--ds-page-max));
+  margin: 0 auto;
+  padding: clamp(20px, 4vw, 48px);
+  scroll-padding-bottom: var(--ds-mobile-nav-clearance);
+}
+.ds-creator-content > :last-child { scroll-margin-bottom: var(--ds-mobile-nav-clearance); }
 .ds-creator-mobile-nav { display: none; }
 
 @media (max-width: 900px) {
@@ -69,7 +79,10 @@
 }
 
 @media (max-width: 640px) {
-  .ds-creator-shell { padding-left: 0; }
+  .ds-creator-shell {
+    --ds-mobile-nav-clearance: calc(84px + env(safe-area-inset-bottom));
+    padding-left: 0;
+  }
   .ds-creator-sidebar { display: none; }
   .ds-creator-topbar {
     min-height: 112px;
@@ -88,7 +101,9 @@
   .ds-topbar-actions .ds-button span { display: none; }
   .ds-topbar-actions > :last-child { min-width: auto; padding-inline: 12px; }
   .ds-topbar-actions > :last-child span { display: inline; }
-  .ds-creator-content { padding: 18px 14px 34px; }
+  .ds-creator-content {
+    padding: 18px 14px calc(34px + var(--ds-mobile-nav-clearance));
+  }
   .ds-creator-mobile-nav {
     position: fixed;
     inset: auto 0 0;
@@ -120,4 +135,10 @@
   .ds-creator-account-identity { width: 100%; }
   .ds-topbar-actions { width: 100%; justify-content: space-between; }
   .ds-topbar-actions > :last-child { margin-left: auto; }
+}
+
+@media (orientation: landscape) and (max-height: 620px) {
+  .ds-creator-content {
+    padding-bottom: calc(24px + var(--ds-mobile-nav-clearance));
+  }
 }
