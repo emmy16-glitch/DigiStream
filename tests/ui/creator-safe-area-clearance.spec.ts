@@ -1,10 +1,10 @@
 import { readFile } from 'node:fs/promises';
-import { describe, expect, it } from 'vitest';
+import { expect, test } from '@playwright/test';
 
 const cssPath = new URL('../../apps/web/src/design-system/creator-shell.css', import.meta.url);
 
-describe('creator mobile safe-area clearance', () => {
-  it('reserves dynamic viewport, top safe area and bottom navigation clearance', async () => {
+test.describe('creator mobile safe-area clearance', () => {
+  test('reserves dynamic viewport, top safe area and bottom navigation clearance', async () => {
     const css = await readFile(cssPath, 'utf8');
 
     expect(css).toContain('min-height: 100dvh');
@@ -14,7 +14,7 @@ describe('creator mobile safe-area clearance', () => {
     expect(css).toContain('scroll-padding-block: var(--ds-creator-top-clearance) var(--ds-mobile-nav-clearance)');
   });
 
-  it('keeps focused fields, validation and actions clear of fixed creator chrome', async () => {
+  test('keeps focused fields, validation and actions clear of fixed creator chrome', async () => {
     const css = await readFile(cssPath, 'utf8');
 
     expect(css).toContain('[role="alert"]');
