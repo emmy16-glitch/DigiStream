@@ -50,7 +50,7 @@ export const microphoneSignalPresentation: Record<
   },
   'no-signal': {
     label: 'No signal',
-    guidance: 'No usable audio energy is reaching DigiStream. Check the selected input, hardware mute and operating-system input level.',
+    guidance: 'No usable audio is reaching DigiStream. Check the selected input, hardware mute and device input level.',
     tone: 'danger',
     blocksPublicDelivery: true,
   },
@@ -144,7 +144,7 @@ const stageNames: Record<StudioFailureStage, string> = {
   'contribution-authorisation': 'Contribution access',
   'studio-connect': 'Private studio connection',
   'microphone-publish': 'Microphone publishing',
-  'broadcast-lifecycle': 'Broadcast lifecycle',
+  'broadcast-lifecycle': 'Broadcast state',
   'contribution-verification': 'Microphone verification',
   'delivery-start': 'Public delivery start',
   'delivery-verification': 'Public delivery verification',
@@ -173,8 +173,8 @@ function baseDiagnostic(
   const value = shape(error);
   return {
     title: `${stageNames[stage]} failed`,
-    message: text(value.message) ?? 'DigiStream could not complete this Studio step.',
-    recovery: 'Retry the step. If it fails again, use the diagnostic reference when reporting the problem.',
+    message: text(value.message) ?? 'This Studio step could not finish.',
+    recovery: 'Try the step again. Technical details are available when support needs them.',
     stage: stageNames[stage],
     code: text(value.code),
     status: status(value.status),
@@ -214,7 +214,7 @@ export function diagnoseStudioFailure(
       ...diagnostic,
       title: 'No microphone found',
       message: 'The browser could not find an audio input device.',
-      recovery: 'Connect a microphone or headset, confirm the operating system can see it, then retry.',
+      recovery: 'Connect a microphone or headset, confirm the device can see it, then try again.',
       code: code ?? 'MICROPHONE_NOT_FOUND',
     };
   }
@@ -222,7 +222,7 @@ export function diagnoseStudioFailure(
     return {
       ...diagnostic,
       title: 'Selected microphone unavailable',
-      message: 'The selected microphone no longer satisfies the requested audio settings.',
+      message: 'The selected microphone no longer supports the requested audio settings.',
       recovery: 'Choose System default or another input and run the sound check again.',
       code: code ?? 'MICROPHONE_CONSTRAINT_FAILED',
     };
@@ -231,8 +231,8 @@ export function diagnoseStudioFailure(
     return {
       ...diagnostic,
       title: 'Microphone is busy',
-      message: 'The operating system could not open the selected microphone.',
-      recovery: 'Close other apps using the microphone, reconnect the device and retry.',
+      message: 'The selected microphone could not be opened.',
+      recovery: 'Close other apps using the microphone, reconnect the device and try again.',
       code: code ?? 'MICROPHONE_NOT_READABLE',
     };
   }
@@ -240,8 +240,8 @@ export function diagnoseStudioFailure(
     return {
       ...diagnostic,
       title: 'Secure microphone access required',
-      message: 'The browser blocked microphone capture in this page context.',
-      recovery: 'Open DigiStream through its HTTPS address and allow microphone access.',
+      message: 'The browser blocked microphone capture on this page.',
+      recovery: 'Open DigiStream through its secure address and allow microphone access.',
       code: code ?? 'MICROPHONE_SECURITY_BLOCKED',
     };
   }
@@ -251,7 +251,7 @@ export function diagnoseStudioFailure(
       return {
         ...diagnostic,
         title: 'Creator session expired',
-        recovery: 'Sign in again, reselect the broadcast and retry this Studio step.',
+        recovery: 'Sign in again, reselect the broadcast and try this Studio step again.',
       };
     case 'BROADCAST_NOT_FOUND':
       return {
@@ -262,59 +262,52 @@ export function diagnoseStudioFailure(
     case 'BROADCAST_NOT_READY_FOR_CONTRIBUTION':
       return {
         ...diagnostic,
-        title: 'Broadcast state is not ready for Studio access',
+        title: 'Broadcast is not ready for Studio access',
         recovery: 'Refresh the selected broadcast. Completed, cancelled and failed broadcasts cannot re-enter the Studio.',
       };
     case 'BROADCAST_CONTRIBUTION_FORBIDDEN':
       return {
         ...diagnostic,
         title: 'Your role cannot host this broadcast',
-        recovery: 'Use an owner, administrator or broadcaster account for the organisation.',
+        recovery: 'Ask an organisation owner or administrator for Creator access.',
       };
     case 'LIVEKIT_NOT_CONFIGURED':
     case 'LIVEKIT_VERIFICATION_UNAVAILABLE':
-      return {
-        ...diagnostic,
-        title: 'Live Studio service is not configured',
-        recovery: 'Start the configured LiveKit media services before retrying Studio access.',
-      };
     case 'LIVEKIT_UNAVAILABLE':
       return {
         ...diagnostic,
-        title: 'Live Studio service is unavailable',
-        recovery: 'Keep the Studio open, verify the LiveKit service is healthy and retry.',
+        title: 'Private Studio is unavailable',
+        message: 'The private Studio could not connect. Your broadcast has not started.',
+        recovery: 'Keep this page open and try joining the private Studio again. Return to Broadcasts if it remains unavailable.',
       };
     case 'MICROPHONE_NOT_PUBLISHED':
       return {
         ...diagnostic,
-        title: 'Published microphone was not verified',
-        recovery: 'Confirm the private Studio is connected and the microphone is unmuted, then retry Go live.',
+        title: 'Microphone was not verified',
+        recovery: 'Confirm the private Studio is connected and the microphone is unmuted, then try Go live again.',
       };
     case 'API_UNREACHABLE':
       return {
         ...diagnostic,
-        title: 'Application server is unreachable',
-        recovery: 'Confirm the API server is running and the browser can reach it, then retry.',
+        title: 'DigiStream is temporarily unreachable',
+        message: 'The Studio could not contact DigiStream. Your broadcast has not started.',
+        recovery: 'Check your connection and try again. Return to Broadcasts if the problem continues.',
       };
     case 'DELIVERY_OPERATION_IN_PROGRESS':
       return {
         ...diagnostic,
         title: 'Public delivery is already being checked',
-        recovery: 'Wait for the current operation to finish, then use Check delivery status. Do not disconnect the private Studio.',
+        recovery: 'Wait for the current check to finish, then use Check delivery status. Keep the private Studio connected.',
       };
     case 'MEDIA_RELAY_PROVIDER_ERROR':
     case 'DELIVERY_PROVIDER_ERROR':
-      return {
-        ...diagnostic,
-        title: 'Public delivery service is unavailable',
-        recovery: 'Keep the private Studio connected, verify the media services and retry public delivery.',
-      };
     case 'MEDIA_RELAY_NOT_CONFIGURED':
     case 'OVENMEDIAENGINE_NOT_CONFIGURED':
       return {
         ...diagnostic,
-        title: 'Public delivery service is not configured',
-        recovery: 'Start and configure LiveKit Egress and OvenMediaEngine, then retry public delivery.',
+        title: 'Listener delivery is unavailable',
+        message: 'The private Studio can stay connected, but listeners cannot receive audio yet.',
+        recovery: 'Keep the private Studio connected and try public delivery again. Return to Broadcasts if it remains unavailable.',
       };
     default:
       break;
@@ -323,8 +316,8 @@ export function diagnoseStudioFailure(
   if (stage === 'livekit-module') {
     return {
       ...diagnostic,
-      title: 'Studio software could not load',
-      recovery: 'Check the network and content-blocking settings, then reload DigiStream and retry.',
+      title: 'Studio could not load',
+      recovery: 'Check your connection, reload DigiStream and try again.',
       code: code ?? 'LIVEKIT_CLIENT_LOAD_FAILED',
     };
   }
@@ -332,23 +325,25 @@ export function diagnoseStudioFailure(
     return {
       ...diagnostic,
       title: 'Private Studio connection failed',
-      recovery: 'Check the network and LiveKit service, then retry joining the private Studio.',
+      message: 'The private Studio could not connect. Your broadcast has not started.',
+      recovery: 'Check your connection and try joining the private Studio again.',
       code: code ?? 'STUDIO_CONNECT_FAILED',
     };
   }
   if (stage === 'microphone-publish') {
     return {
       ...diagnostic,
-      title: 'Microphone could not be published',
-      recovery: 'Run the sound check again, confirm the input is not disconnected, then retry joining.',
+      title: 'Microphone could not join the Studio',
+      recovery: 'Run the sound check again, confirm the input is connected, then try joining again.',
       code: code ?? 'MICROPHONE_PUBLISH_FAILED',
     };
   }
   if (stage === 'delivery-verification') {
     return {
       ...diagnostic,
-      title: 'Public listener delivery was not verified',
-      recovery: 'Keep the private Studio connected, check the delivery services and retry Go live.',
+      title: 'Listener delivery was not verified',
+      message: 'The private Studio remains connected, but listener audio is not ready.',
+      recovery: 'Keep the private Studio connected and try Go live again.',
       code: code ?? 'DELIVERY_VERIFICATION_FAILED',
     };
   }
