@@ -24,19 +24,20 @@ export function StudioAudioMeter({
   const percentage = Math.round(normalizedLevel * 100);
   const finiteDecibels = Number.isFinite(decibels);
   const silent = state === 'no-signal' || state === 'disconnected';
+  const statusLabel = state === 'clipping' ? 'Recent clipping' : presentation.label;
 
   return (
     <div className={`studio-signal-meter studio-signal-${state}`}>
       <div className="studio-signal-meter-header">
         <strong>{label}</strong>
-        <StatusBadge tone={presentation.tone}>{presentation.label}</StatusBadge>
+        <StatusBadge tone={presentation.tone}>{statusLabel}</StatusBadge>
       </div>
       <div
         aria-label={label}
         aria-valuemax={100}
         aria-valuemin={0}
         aria-valuenow={percentage}
-        aria-valuetext={`${presentation.label}. ${presentation.guidance}`}
+        aria-valuetext={`${statusLabel}. ${presentation.guidance}`}
         className="studio-signal-meter-bars"
         role="meter"
         style={{ gridTemplateColumns: `repeat(${segments}, minmax(3px, 1fr))` }}
@@ -48,7 +49,7 @@ export function StudioAudioMeter({
         })}
       </div>
       <div className="studio-signal-meter-readout">
-        <span>{presentation.label}</span>
+        <span>Current level</span>
         <span>{finiteDecibels ? `${decibels.toFixed(1)} dBFS` : 'No reading'}</span>
       </div>
       <p>{presentation.guidance}</p>
