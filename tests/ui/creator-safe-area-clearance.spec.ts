@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
 
-const cssPath = new URL('../../apps/web/src/design-system/creator-shell.css', import.meta.url);
+const cssPath = resolve(process.cwd(), 'apps/web/src/design-system/creator-shell.css');
 
 test.describe('creator mobile safe-area clearance', () => {
   test('reserves dynamic viewport, top safe area and bottom navigation clearance', async () => {
