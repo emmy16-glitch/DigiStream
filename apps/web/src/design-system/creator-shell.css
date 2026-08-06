@@ -59,6 +59,8 @@
 .ds-page-heading span { color: var(--ds-accent); font-size: var(--ds-text-xs); font-weight: var(--ds-weight-bold); letter-spacing: .12em; text-transform: uppercase; }
 .ds-page-heading h1 { margin: 5px 0 0; font-size: clamp(1.7rem, 3vw, 2.35rem); letter-spacing: -.04em; }
 .ds-creator-account-area { min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: var(--ds-space-3); }
+.ds-creator-account-summary { min-width: 0; display: grid; gap: 2px; }
+.ds-creator-account-label { color: var(--ds-text-primary); font-size: var(--ds-text-xs); font-weight: var(--ds-weight-bold); }
 .ds-creator-account-identity { max-width: 240px; overflow: hidden; color: var(--ds-text-muted); font-size: var(--ds-text-xs); text-overflow: ellipsis; white-space: nowrap; }
 .ds-topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--ds-space-2); }
 .ds-creator-content {
@@ -95,7 +97,8 @@
   .ds-page-heading span { display: none; }
   .ds-page-heading h1 { margin: 0; font-size: 1.45rem; }
   .ds-creator-account-area { width: 100%; justify-content: space-between; gap: 8px; }
-  .ds-creator-account-identity { min-width: 0; max-width: none; flex: 1; font-size: .72rem; }
+  .ds-creator-account-summary { min-width: 0; flex: 1; }
+  .ds-creator-account-identity { min-width: 0; max-width: none; font-size: .72rem; }
   .ds-topbar-actions { flex: 0 0 auto; gap: 4px; }
   .ds-topbar-actions .ds-button { min-width: 44px; min-height: 44px; padding-inline: 10px; }
   .ds-topbar-actions .ds-button span { display: none; }
@@ -132,6 +135,7 @@
 
 @media (max-width: 380px) {
   .ds-creator-account-area { align-items: stretch; flex-direction: column; }
+  .ds-creator-account-summary { width: 100%; }
   .ds-creator-account-identity { width: 100%; }
   .ds-topbar-actions { width: 100%; justify-content: space-between; }
   .ds-topbar-actions > :last-child { margin-left: auto; }
