@@ -119,7 +119,7 @@ export function ListenerDiscoveryPage() {
         <span className="listener-kicker">Listen anywhere</span>
         <h1>Live audio without the heavy video.</h1>
         <p>
-          Join public broadcasts from churches, organisations, communities and creators. DigiStream starts with WebRTC for minimal delay and falls back automatically when the network needs a steadier path.
+          Join public broadcasts from churches, organisations, communities and creators.
         </p>
       </section>
 
@@ -148,12 +148,12 @@ export function ListenerDiscoveryPage() {
           {live.map((broadcast) => <BroadcastTile broadcast={broadcast} key={broadcast.id} />)}
           {loading ? (
             <StatePanel kind="loading" title="Loading live broadcasts">
-              DigiStream is checking public channels for active audio.
+              Checking for public broadcasts.
             </StatePanel>
           ) : null}
           {!loading && !error && live.length === 0 ? (
             <StatePanel kind="empty" title="No public broadcast is live right now">
-              Upcoming events appear below and this page refreshes automatically.
+              Upcoming events appear below. This page refreshes automatically.
             </StatePanel>
           ) : null}
         </div>
@@ -171,7 +171,7 @@ export function ListenerDiscoveryPage() {
           {upcoming.map((broadcast) => <BroadcastTile broadcast={broadcast} key={broadcast.id} />)}
           {!loading && !error && upcoming.length === 0 ? (
             <StatePanel kind="empty" title="No public events are scheduled yet">
-              Creators can schedule future broadcasts from Broadcast Studio.
+              Scheduled broadcasts will appear here.
             </StatePanel>
           ) : null}
         </div>
