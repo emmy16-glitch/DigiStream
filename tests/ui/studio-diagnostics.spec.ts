@@ -30,7 +30,7 @@ test('microphone signal classification uses measured dBFS and persistent silence
   expect(microphoneSignalPresentation.clipping.blocksPublicDelivery).toBe(true);
 });
 
-test('studio diagnostics preserve the failed stage, API code and request reference', () => {
+test('studio diagnostics preserve technical references for secondary details', () => {
   const diagnostic = diagnoseStudioFailure('contribution-authorisation', {
     name: 'ApiClientError',
     status: 409,
@@ -39,7 +39,7 @@ test('studio diagnostics preserve the failed stage, API code and request referen
     message: 'Contribution access is unavailable for this state.',
   });
 
-  expect(diagnostic.title).toBe('Broadcast state is not ready for Studio access');
+  expect(diagnostic.title).toBe('Broadcast is not ready for Studio access');
   expect(diagnostic.stage).toBe('Contribution access');
   expect(diagnostic.code).toBe('BROADCAST_NOT_READY_FOR_CONTRIBUTION');
   expect(diagnostic.status).toBe(409);
@@ -61,4 +61,39 @@ test('studio diagnostics explain permission and disconnected-device failures', (
   expect(permission.recovery).toContain('Allow microphone access');
   expect(disconnected.title).toBe('Microphone disconnected');
   expect(disconnected.code).toBe('MICROPHONE_DISCONNECTED');
+});
+
+test('Studio service failures use creator-facing recovery and preserve broadcast truth', () => {
+  const unavailable = diagnoseStudioFailure('studio-connect', {
+    name: 'ApiClientError',
+    status: 503,
+    code: 'LIVEKIT_UNAVAILABLE',
+    requestId: 'request-livekit-503',
+    message: 'upstream unavailable',
+  });
+
+  expect(unavailable.title).toBe('Private Studio is unavailable');
+  expect(unavailable.message).toBe(
+    'The private Studio could not connect. Your broadcast has not started.',
+  );
+  expect(unavailable.recovery).toContain('try joining the private Studio again');
+  expect(unavailable.recovery).toContain('Return to Broadcasts');
+  expect(unavailable.recovery).not.toContain('LiveKit');
+  expect(unavailable.recovery).not.toContain('service is healthy');
+  expect(unavailable.code).toBe('LIVEKIT_UNAVAILABLE');
+  expect(unavailable.status).toBe(503);
+  expect(unavailable.requestId).toBe('request-livekit-503');
+});
+
+test('public delivery failures preserve a healthy private Studio', () => {
+  const unavailable = diagnoseStudioFailure('delivery-start', {
+    status: 503,
+    code: 'DELIVERY_PROVIDER_ERROR',
+    message: 'provider unavailable',
+  });
+
+  expect(unavailable.title).toBe('Listener delivery is unavailable');
+  expect(unavailable.message).toContain('private Studio can stay connected');
+  expect(unavailable.recovery).toContain('Keep the private Studio connected');
+  expect(unavailable.recovery).not.toContain('media services');
 });
