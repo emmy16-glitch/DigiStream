@@ -48,7 +48,7 @@ export function CreatorShell({
       <a className="ds-skip-link" href="#ds-main-content">Skip to main content</a>
 
       <aside className="ds-creator-sidebar" aria-label="Creator workspace navigation">
-        <a className="ds-shell-brand-link" href="/" aria-label="DigiStream creator home">
+        <a className="ds-shell-brand-link" href="/" aria-label="Echoo creator home">
           <BrandLockup />
         </a>
 
@@ -146,16 +146,16 @@ export function ListenerShell({
     pathname.startsWith('/listen/') && !replayRoute;
   const resolvedCurrent = replayRoute ? 'replay' : nestedBroadcastRoute ? null : current;
   const resolvedFooter = nestedBroadcastRoute
-    ? 'DigiStream automatically selects a healthy playback path and recovers short interruptions when possible.'
+    ? 'Echoo automatically selects a healthy playback path and recovers short interruptions when possible.'
     : footer ??
-      'DigiStream delivers professional live audio for creators, churches and communities.';
+      'Echoo delivers professional live audio for creators, churches and communities.';
 
   return (
     <div className="listener-page ds-listener-shell">
       <a className="ds-skip-link" href="#ds-listener-content">Skip to listener content</a>
 
       <header className="ds-listener-header">
-        <a className="ds-shell-brand-link" href="/listen" aria-label="DigiStream listener home">
+        <a className="ds-shell-brand-link" href="/listen" aria-label="Echoo listener home">
           <BrandLockup />
         </a>
         <nav aria-label="Listener navigation">
