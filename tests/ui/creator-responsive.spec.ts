@@ -126,9 +126,7 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
 
   const broadcastRow = page.locator('.broadcast-row').filter({ hasText: broadcastTitle });
   await expect(broadcastRow).toBeVisible();
-  await expect(
-    page.locator('.creator-broadcasts-intro-actions').getByRole('button', { name: 'Create broadcast', exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'New broadcast', exact: true })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   if (testInfo.project.name === 'android-desktop-site') {
     const headingFontSize = await page
@@ -136,14 +134,14 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
       .last()
       .evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
     expect(headingFontSize).toBeGreaterThanOrEqual(20);
-    const studioButton = broadcastRow.getByRole('button', { name: 'Open in Studio' });
+    const studioButton = broadcastRow.getByRole('button', { name: 'Continue setup' });
     const studioButtonBox = await studioButton.boundingBox();
     expect(studioButtonBox).not.toBeNull();
     expect(studioButtonBox!.height).toBeGreaterThanOrEqual(44);
   }
   await attachViewport(page, testInfo, 'broadcasts');
 
-  await broadcastRow.getByRole('button', { name: 'Open in Studio' }).click();
+  await broadcastRow.getByRole('button', { name: 'Continue setup' }).click();
   await expect(studio).toBeVisible();
   await expect(studioSelects.nth(1).locator('option:checked')).toContainText(channelName);
   await expect(studioSelects.nth(2).locator('option:checked')).toContainText(broadcastTitle);
