@@ -46,6 +46,13 @@ type RealtimeEvent = {
 
 const REALTIME_PROTOCOL = 'digistream.realtime.v1';
 const MAX_MESSAGE_LENGTH = 1000;
+const REALTIME_CHAT_STATES = new Set<BroadcastState>([
+  'scheduled',
+  'starting',
+  'live',
+  'reconnecting',
+  'ending',
+]);
 
 function readableError(error: unknown): string {
   if (error instanceof ApiClientError) return error.message;
@@ -148,6 +155,7 @@ export function BroadcastChat({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [realtimeState, setRealtimeState] = useState<RealtimeState>('offline');
+  const [realtimeNotice, setRealtimeNotice] = useState('');
 
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<number | null>(null);
@@ -213,6 +221,7 @@ export function BroadcastChat({
         if (requestError instanceof ApiClientError && requestError.status === 401) {
           userRef.current = null;
           setUser(null);
+          setAuthError('Your session ended. Sign in again to continue chatting.');
         } else if (mountedRef.current && mode === 'initial') {
           setCanSend(false);
           setBroadcastStatus(null);
@@ -282,14 +291,24 @@ export function BroadcastChat({
     setHistoryState(user ? 'loading' : 'idle');
     setHistoryError('');
     setHistoryRetryable(false);
+    setRealtimeNotice('');
     setError('');
     if (user) void loadLatest('initial');
   }, [broadcastId, loadLatest, messagesPath, user]);
 
   useEffect(() => {
-    if (!user || historyState !== 'ready') return;
+    if (
+      !user ||
+      historyState !== 'ready' ||
+      !broadcastStatus ||
+      !REALTIME_CHAT_STATES.has(broadcastStatus)
+    ) {
+      setRealtimeState('offline');
+      return;
+    }
     let stopped = false;
     let reconnectAttempt = 0;
+    let roomDenied = false;
 
     const clearReconnectTimer = () => {
       if (reconnectTimerRef.current !== null) {
@@ -299,7 +318,7 @@ export function BroadcastChat({
     };
 
     const connect = () => {
-      if (stopped || !userRef.current) return;
+      if (stopped || roomDenied || !userRef.current) return;
       clearReconnectTimer();
       setRealtimeState(reconnectAttempt > 0 ? 'recovering' : 'connecting');
       const socket = new WebSocket(realtimeEndpoint(), REALTIME_PROTOCOL);
@@ -330,7 +349,18 @@ export function BroadcastChat({
         ) {
           reconnectAttempt = 0;
           setRealtimeState('connected');
+          setRealtimeNotice('');
           void loadLatest('latest');
+          return;
+        }
+        if (
+          message.type === 'realtime.error' &&
+          message.error?.code === 'REALTIME_ROOM_NOT_AVAILABLE'
+        ) {
+          roomDenied = true;
+          setRealtimeState('offline');
+          setRealtimeNotice('Live updates are unavailable. Stored chat history remains available.');
+          socket.close(1000);
           return;
         }
         if (message.type === 'chat.message.created' && message.message) {
@@ -348,7 +378,7 @@ export function BroadcastChat({
 
       socket.addEventListener('close', () => {
         if (socketRef.current === socket) socketRef.current = null;
-        if (stopped || !userRef.current) {
+        if (stopped || roomDenied || !userRef.current) {
           setRealtimeState('offline');
           return;
         }
@@ -373,7 +403,7 @@ export function BroadcastChat({
       if (socket && socket.readyState < WebSocket.CLOSING) socket.close(1000);
       setRealtimeState('offline');
     };
-  }, [appendMessage, broadcastId, historyState, loadLatest, roomRequest, user]);
+  }, [appendMessage, broadcastId, broadcastStatus, historyState, loadLatest, roomRequest, user]);
 
   useEffect(() => {
     if (!messages.length) return;
@@ -413,7 +443,13 @@ export function BroadcastChat({
       if (requestError instanceof ApiClientError && requestError.code === 'CHAT_READ_ONLY') {
         setCanSend(false);
       }
-      setError(readableError(requestError));
+      if (requestError instanceof ApiClientError && requestError.status === 401) {
+        userRef.current = null;
+        setUser(null);
+        setAuthError('Your session ended. Sign in again to continue chatting.');
+      } else {
+        setError(readableError(requestError));
+      }
     } finally {
       setSending(false);
     }
@@ -526,6 +562,7 @@ export function BroadcastChat({
             <div ref={messagesEndRef} />
           </div>
 
+          {realtimeNotice ? <div className="broadcast-chat-empty" role="status">{realtimeNotice}</div> : null}
           {error ? <div className="broadcast-chat-error" role="alert">{error}</div> : null}
 
           {canSend && !recoveringHistory ? (
