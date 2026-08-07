@@ -115,21 +115,18 @@ export function registerLoginAbuseControls(
     }
   });
 
-  app.addHook('onResponse', async (request, reply) => {
-    if (request.routeOptions.url !== '/api/v1/auth/login' || request.method !== 'POST') return;
+  app.addHook('onSend', async (request, reply, payload) => {
+    if (request.routeOptions.url !== '/api/v1/auth/login' || request.method !== 'POST') return payload;
     const context = contexts.get(request);
-    if (!context || context.blocked) return;
+    if (!context || context.blocked) return payload;
 
     let outcome: 'success' | 'invalid_credentials' | 'account_unavailable' | null = null;
     if (reply.statusCode >= 200 && reply.statusCode < 300) outcome = 'success';
     else if (reply.statusCode === 401) outcome = 'invalid_credentials';
     else if (reply.statusCode === 403) outcome = 'account_unavailable';
-    if (!outcome) return;
+    if (!outcome) return payload;
 
-    try {
-      await recordAttempt(database, request, context, outcome);
-    } catch (error) {
-      request.log.error({ error }, 'Failed to record authentication audit attempt');
-    }
+    await recordAttempt(database, request, context, outcome);
+    return payload;
   });
 }
