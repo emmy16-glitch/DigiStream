@@ -27,17 +27,17 @@ test('Echoo Backstage preserves the real call-in, invitation and participant API
 test('Backstage keeps the complete producer flow without inventing audience data', async () => {
   const source = await readFile(backstageUrl, 'utf8');
 
-  assert.match(source, />Call-ins</);
+  assert.match(source, />\s*Call-ins\s*</);
   assert.match(source, /Create guest link/);
-  assert.match(source, />Connected participants</);
-  assert.match(source, />Approve</);
-  assert.match(source, />Reject</);
-  assert.match(source, />Admit</);
-  assert.match(source, />Revoke</);
-  assert.match(source, />Mute</);
-  assert.match(source, />Remove</);
+  assert.match(source, />\s*Connected participants\s*</);
+  assert.match(source, />\s*Approve\s*</);
+  assert.match(source, />\s*Reject\s*</);
+  assert.match(source, />\s*Admit\s*</);
+  assert.match(source, />\s*Revoke\s*</);
+  assert.match(source, /microphone\.muted \? 'Unmute' : 'Mute'/);
+  assert.match(source, />\s*Remove\s*</);
   assert.doesNotMatch(source, /\b\d+(?:\.\d+)?K?\+?\s+(?:listeners|fans|speakers)\b/i);
-  assert.doesNotMatch(source, />Analytics</);
+  assert.doesNotMatch(source, />\s*Analytics\s*</);
 });
 
 test('Echoo Backstage presents Call-ins before invited guests and on-stage participants', async () => {
