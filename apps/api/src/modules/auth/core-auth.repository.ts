@@ -148,7 +148,7 @@ export async function authenticateGoogleIdentity(
           [identity.email, identity.displayName, placeholderPasswordHash],
         );
         user = created.rows[0] ?? null;
-      } else if (!user.email_verified_at) {
+      } else if (user.status === 'active' && !user.email_verified_at) {
         const verified = await client.query<PublicAuthUserRow>(
           `UPDATE users
               SET email_verified_at = now(), updated_at = now()
@@ -161,6 +161,10 @@ export async function authenticateGoogleIdentity(
       }
 
       if (!user) throw new Error('Google user creation returned no row.');
+      if (user.status !== 'active') {
+        await client.query('ROLLBACK');
+        return user;
+      }
 
       const linked = await client.query<{ user_id: string }>(
         `INSERT INTO auth_identities
@@ -187,6 +191,10 @@ export async function authenticateGoogleIdentity(
     }
 
     if (!user) throw new Error('Google identity resolved to a missing user.');
+    if (user.status !== 'active') {
+      await client.query('ROLLBACK');
+      return user;
+    }
 
     await client.query(
       `INSERT INTO user_platform_capabilities
