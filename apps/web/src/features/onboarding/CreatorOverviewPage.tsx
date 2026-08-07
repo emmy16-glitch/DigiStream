@@ -19,7 +19,7 @@ type CreatorOverviewPageProps = {
   onOpenBackstage(): void;
   onOpenBroadcasts(): void;
   onOpenRecordings(): void;
-  onOpenStudio(broadcast?: Broadcast): void;
+  onOpenStudio(): void;
 };
 
 function formatDateTime(value: string | null): string {
@@ -129,9 +129,9 @@ export function CreatorOverviewPage({
       case 'create_broadcast':
         return { label: 'Create broadcast', onClick: onOpenBroadcasts };
       case 'manage_live_broadcast':
-        return { label: 'Manage live broadcast', onClick: () => onOpenStudio() };
+        return { label: 'Manage live broadcast', onClick: onOpenStudio };
       case 'prepare_broadcast':
-        return { label: 'Prepare broadcast', onClick: () => onOpenStudio() };
+        return { label: 'Prepare broadcast', onClick: onOpenStudio };
       case 'view_completed_broadcast':
         return { label: 'Manage broadcasts', onClick: onOpenBroadcasts };
       default:
@@ -143,7 +143,7 @@ export function CreatorOverviewPage({
     {
       icon: 'broadcast' as const,
       label: overview.canOpenStudio ? 'Open Studio' : 'Broadcasts',
-      onClick: overview.canOpenStudio ? () => onOpenStudio() : onOpenBroadcasts,
+      onClick: overview.canOpenStudio ? onOpenStudio : onOpenBroadcasts,
     },
     ...(overview.canOpenBackstage
       ? [{ icon: 'audience' as const, label: 'Backstage', onClick: onOpenBackstage }]
@@ -182,7 +182,7 @@ export function CreatorOverviewPage({
                 {liveBroadcast?.liveStartedAt ? <small>Started {formatTime(liveBroadcast.liveStartedAt)}</small> : null}
                 {recoveringBroadcast ? <small>Echoo is recovering the public delivery path.</small> : null}
               </div>
-              <Button onClick={() => onOpenStudio(currentBroadcast)} variant="secondary">
+              <Button onClick={onOpenStudio} variant="secondary">
                 Open Studio
               </Button>
             </div>
@@ -210,8 +210,8 @@ export function CreatorOverviewPage({
                 <span>{formatDateTime(scheduledBroadcast.scheduledStartAt)}</span>
                 <small className="echoo-overview-starts">{relativeStart(scheduledBroadcast.scheduledStartAt)}</small>
               </div>
-              <Button onClick={() => onOpenStudio(scheduledBroadcast)} variant="secondary">
-                Prepare
+              <Button onClick={onOpenBroadcasts} variant="secondary">
+                Manage schedule
               </Button>
             </div>
           ) : (
@@ -255,14 +255,6 @@ export function CreatorOverviewPage({
               const status = presentationStatus(broadcast.status, broadcast.scheduledStartAt);
               const duration = durationLabel(broadcast);
               const date = broadcast.liveStartedAt ?? broadcast.scheduledStartAt ?? broadcast.createdAt;
-              const canOpenInStudio = [
-                'draft',
-                'scheduled',
-                'starting',
-                'live',
-                'reconnecting',
-                'ending',
-              ].includes(broadcast.status);
 
               return (
                 <article className="echoo-overview-recent-row" key={broadcast.id}>
@@ -278,8 +270,8 @@ export function CreatorOverviewPage({
                   <StatusBadge tone={status === 'live' ? 'live' : status === 'completed' ? 'success' : status === 'failed' || status === 'cancelled' ? 'danger' : status === 'overdue' || status === 'ending' ? 'warning' : 'info'}>
                     {presentationLabel(status)}
                   </StatusBadge>
-                  <Button onClick={canOpenInStudio ? () => onOpenStudio(broadcast) : onOpenBroadcasts} variant="secondary">
-                    {canOpenInStudio ? 'Open' : 'View'}
+                  <Button onClick={onOpenBroadcasts} variant="secondary">
+                    View
                   </Button>
                 </article>
               );
