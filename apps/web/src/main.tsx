@@ -16,6 +16,7 @@ import './features/broadcasting/creator-broadcast-studio-landscape.css';
 import './features/broadcasting/creator-broadcast-studio-mobile-clearance.css';
 import './features/broadcasting/creator-broadcast-action-truth.css';
 import './styles.css';
+import './features/onboarding/echoo-onboarding.css';
 import './design-system/responsive-operations.css';
 import './design-system/manual-review-fixes.css';
 import './landing/landing-page.css';
@@ -23,7 +24,7 @@ import './landing/landing-page.css';
 const root = document.getElementById('root');
 
 if (!root) {
-  throw new Error('DigiStream root element was not found');
+  throw new Error('Echoo root element was not found');
 }
 
 const route = resolveInitialRoute(window.location.pathname);
