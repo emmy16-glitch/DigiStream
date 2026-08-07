@@ -31,7 +31,7 @@ All phases are governed by [`PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`](PRODU
 - [ ] Refactor remaining backend features into route/controller/service/repository modules
 - [x] Add public user profiles and explicit public DTO projections
 - [x] Add unique usernames, biography and discoverability preferences
-- [ ] Add storage-backed avatar metadata and controlled public URLs
+- [x] Add storage-backed avatar metadata and controlled public URLs
 - [x] Add platform broadcaster capability and platform-administrator authority
 - [x] Add an operator CLI for the first platform-administrator bootstrap
 - [x] Add login rate limiting, suspicious-attempt controls and audit events
