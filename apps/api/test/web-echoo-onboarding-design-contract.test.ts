@@ -24,7 +24,7 @@ test('focused onboarding reuses the existing intent and organisation flow', asyn
   const app = await readFile(appUrl, 'utf8');
 
   assert.match(app, /id="creator-intent-title">What would you like to do\?/);
-  assert.match(app, />Broadcast audio<\/Button>/);
+  assert.match(app, />\s*Broadcast audio\s*<\/Button>/);
   assert.match(app, /href="\/listen"[\s\S]*Listen to broadcasts/);
   assert.match(app, /Step 1 of 3/);
   assert.match(app, /Set up your creator workspace/);
