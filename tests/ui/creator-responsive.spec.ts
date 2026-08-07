@@ -148,12 +148,13 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await page.goBack();
   await expect(studio).toHaveCount(0);
 
-  await page.goto('/creator/audience');
-  await expect(page.getByRole('heading', { name: 'Backstage and call-ins' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Backstage', exact: true }).first()).toBeVisible();
+  await page.goto('/creator/studio-lobby');
+  await expect(page.getByRole('heading', { name: 'Studio Lobby and call-ins' })).toBeVisible();
+  const lobbyNavigationLabel = testInfo.project.name.includes('android') ? 'Lobby' : 'Studio Lobby';
+  await expect(page.getByRole('button', { name: lobbyNavigationLabel, exact: true }).first()).toBeVisible();
   await expect(page.getByRole('button', { name: 'People', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Open call-in desk' }).click();
-  const backstage = page.getByRole('dialog', { name: 'Creator backstage' });
+  await page.getByRole('button', { name: 'Open Studio Lobby' }).click();
+  const backstage = page.getByRole('dialog', { name: 'Studio Lobby' });
   await expect(backstage).toBeVisible();
 
   if (testInfo.project.name.includes('android')) {
@@ -168,8 +169,8 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   }
 
   await expectNoHorizontalOverflow(page);
-  await attachViewport(page, testInfo, 'backstage');
-  await backstage.getByRole('button', { name: 'Close backstage workspace' }).click();
+  await attachViewport(page, testInfo, 'studio-lobby');
+  await backstage.getByRole('button', { name: 'Close Studio Lobby' }).click();
 
   await page.getByRole('button', { name: 'Open creator chat' }).click();
   const chat = page.getByRole('dialog', { name: 'Creator live chat' });

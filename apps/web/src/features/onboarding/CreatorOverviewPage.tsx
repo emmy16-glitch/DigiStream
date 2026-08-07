@@ -162,7 +162,7 @@ export function CreatorOverviewPage({
       onClick: overview.canOpenStudio ? onOpenStudio : onOpenBroadcasts,
     },
     ...(overview.canOpenBackstage
-      ? [{ icon: 'audience' as const, label: 'Backstage', onClick: onOpenBackstage }]
+      ? [{ icon: 'audience' as const, label: 'Studio Lobby', onClick: onOpenBackstage }]
       : []),
     { icon: 'recording' as const, label: 'Recordings', onClick: onOpenRecordings },
   ];

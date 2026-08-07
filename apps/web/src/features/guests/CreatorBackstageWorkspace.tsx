@@ -76,7 +76,7 @@ type CreatorBackstageWorkspaceProps = {
 function readableError(error: unknown): string {
   if (error instanceof ApiClientError) return error.message;
   if (error instanceof Error) return error.message;
-  return 'The backstage workspace could not continue.';
+  return 'The Studio Lobby could not continue.';
 }
 
 function formatTime(value: string | null): string {
@@ -125,7 +125,7 @@ export function CreatorBackstageWorkspace({
   const [error, setError] = useState('');
   const [mediaWarning, setMediaWarning] = useState('');
   const [message, setMessage] = useState(
-    'Select a broadcast to manage its backstage area.',
+    'Select a broadcast to manage its Studio Lobby.',
   );
   const [busyAction, setBusyAction] = useState('');
 
@@ -295,7 +295,7 @@ export function CreatorBackstageWorkspace({
       setCallIns([]);
       return;
     }
-    setMessage('Backstage status refreshes automatically.');
+    setMessage('Studio Lobby status refreshes automatically.');
     void refreshBackstage();
     const timer = window.setInterval(() => void refreshBackstage(), 4_000);
     return () => window.clearInterval(timer);
@@ -483,11 +483,11 @@ export function CreatorBackstageWorkspace({
         <header className="backstage-header">
           <div>
             <span className="eyebrow">Live guest operations</span>
-            <h2 id="backstage-title">Creator backstage</h2>
+            <h2 id="backstage-title">Studio Lobby</h2>
             <p>Create secure guest links, admit waiting guests and manage LiveKit participants.</p>
           </div>
           <button
-            aria-label="Close backstage workspace"
+            aria-label="Close Studio Lobby"
             className="backstage-close"
             onClick={requestClose}
             type="button"
@@ -501,7 +501,7 @@ export function CreatorBackstageWorkspace({
           <div className="backstage-loading">Checking your session…</div>
         ) : !user ? (
           <form className="backstage-login" onSubmit={signIn}>
-            <h3>Sign in to manage backstage</h3>
+            <h3>Sign in to manage the Studio Lobby</h3>
             <label>
               Email
               <input

@@ -4,7 +4,7 @@ import { visibleCreatorNavigation } from '../../apps/web/src/design-system/creat
 const navigation = [
   { label: 'Overview', shortLabel: 'Home' },
   { label: 'Broadcasts', shortLabel: 'Streams' },
-  { label: 'Backstage', shortLabel: 'Backstage' },
+  { label: 'Studio Lobby', shortLabel: 'Lobby' },
   { label: 'Recordings', shortLabel: 'Replay' },
   { label: 'Analytics', shortLabel: 'Stats' },
 ];
@@ -15,7 +15,7 @@ test('authorized Replay navigation is exposed while unimplemented Stats remains 
   expect(visible.map((item) => item.label)).toEqual([
     'Overview',
     'Broadcasts',
-    'Backstage',
+    'Studio Lobby',
     'Recordings',
   ]);
   expect(visible.find((item) => item.shortLabel === 'Replay')).toBeTruthy();
