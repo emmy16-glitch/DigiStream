@@ -2,6 +2,7 @@ import cors from '@fastify/cors';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { ServiceHealth } from '@digistream/contracts';
 import { registerAuthRoutes } from './auth/routes.js';
+import { registerSessionManagementRoutes } from './auth/session-management.routes.js';
 import {
   createDatabase,
   type DatabaseContext,
@@ -123,6 +124,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   }
 
   registerAuthRoutes(app, database);
+  registerSessionManagementRoutes(app, database);
   registerProfileRoutes(app, database);
   registerOrganisationRoutes(app, database);
   registerOrganisationMembershipRoutes(app, database);
@@ -311,6 +313,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'postgresql-data-model',
       'versioned-database-migrations',
       'cookie-session-authentication',
+      'session-listing-and-remote-revocation',
       'public-user-profiles',
       'platform-capability-authorization',
       'request-correlation',
