@@ -6,6 +6,10 @@ const replaySourcePath = resolve(
   process.cwd(),
   'apps/web/src/features/listening/ReplayDiscoveryPage.tsx',
 );
+const replayListeningSourcePath = resolve(
+  process.cwd(),
+  'apps/web/src/features/listening/ReplayListeningPage.tsx',
+);
 
 test('Replay discovery uses concise listener-facing copy', async () => {
   const source = await readFile(replaySourcePath, 'utf8');
@@ -25,4 +29,17 @@ test('Replay discovery does not expose storage or artifact terminology', async (
   expect(source).not.toContain('short-lived listening link');
   expect(source).not.toContain('verified recording');
   expect(source).not.toContain('verified artifact');
+});
+
+test('Replay listening keeps implementation details out of primary copy', async () => {
+  const source = await readFile(replayListeningSourcePath, 'utf8');
+
+  expect(source).toContain('DigiStream is checking whether this replay is available.');
+  expect(source).toContain('Start listening when you’re ready.');
+  expect(source).toContain('Your playback access expired. Start listening again to continue.');
+  expect(source).toContain('Try playback again');
+  expect(source).not.toContain('private playback link');
+  expect(source).not.toContain('protected object storage');
+  expect(source).not.toContain('short-lived private link');
+  expect(source).not.toContain('Request a fresh playback link');
 });

@@ -103,13 +103,13 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
     const remaining = new Date(accessExpiresAt).getTime() - Date.now();
     if (remaining <= 0) {
       setPlaybackUrl('');
-      setPlaybackError('Your private playback link expired. Start listening again to create a fresh link.');
+      setPlaybackError('Your playback access expired. Start listening again to continue.');
       return undefined;
     }
     const timer = window.setTimeout(() => {
       audioRef.current?.pause();
       setPlaybackUrl('');
-      setPlaybackError('Your private playback link expired. Start listening again to create a fresh link.');
+      setPlaybackError('Your playback access expired. Start listening again to continue.');
     }, remaining);
     return () => window.clearTimeout(timer);
   }, [accessExpiresAt]);
@@ -147,7 +147,7 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
     return (
       <div className="replay-listening-page">
         <StatePanel kind="loading" title="Loading replay">
-          DigiStream is checking the recording, channel visibility and retention state.
+          DigiStream is checking whether this replay is available.
         </StatePanel>
       </div>
     );
@@ -162,7 +162,7 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
           onAction={() => void loadReplay()}
           title="Replay unavailable"
         >
-          {error || 'This replay may be private, archived, under review or no longer published.'}
+          {error || 'This replay is unavailable or you may not have access.'}
         </StatePanel>
       </div>
     );
@@ -183,7 +183,7 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
           </div>
           <span>{replay.channel.name} · {replay.organisation.name}</span>
           <h1>{replay.title}</h1>
-          <p>{replay.description ?? 'Recorded audio published through DigiStream.'}</p>
+          <p>{replay.description ?? 'Listen again to this completed broadcast.'}</p>
         </div>
       </header>
 
@@ -191,9 +191,7 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
         <div>
           <span className="listener-kicker">Audio replay</span>
           <h2 id="replay-player-title">Listen to the recording</h2>
-          <p>
-            Playback uses a short-lived private link. The recording stays in protected object storage.
-          </p>
+          <p>Start listening when you’re ready.</p>
         </div>
 
         {playbackUrl ? (
@@ -202,7 +200,7 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
               controls
               onError={() => {
                 setPlaybackError(
-                  'The recording stopped loading. The link may have expired or storage may be temporarily unavailable.',
+                  'The recording stopped loading. Playback access may have expired or the service may be temporarily unavailable.',
                 );
               }}
               preload="metadata"
@@ -212,7 +210,7 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
               Your browser does not support HTML audio playback.
             </audio>
             <small>
-              Access expires {formatDate(accessExpiresAt)}. Restart listening to create a fresh link.
+              Playback access expires {formatDate(accessExpiresAt)}. Start listening again to continue if it expires.
             </small>
           </div>
         ) : (
@@ -231,7 +229,7 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
             <strong>Playback is not ready</strong>
             <span>{playbackError}</span>
             <Button onClick={() => void startListening()} variant="secondary">
-              Request a fresh playback link
+              Try playback again
             </Button>
           </div>
         ) : null}
