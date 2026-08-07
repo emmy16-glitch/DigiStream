@@ -13,23 +13,31 @@ async function mountStudioClearanceFixture(page: Page, width: number, height: nu
   const css = await readFile(cssPath, 'utf8');
   await page.setViewportSize({ width, height });
   await page.setContent(`
-    <style>
-      :root { --ds-space-4: 16px; }
-      * { box-sizing: border-box; }
-      ${css}
-    </style>
-    <main class="creator-studio">
-      <section class="studio-workspace">
-        <h3>Step 3</h3>
-        <p>Prepare the private Studio before starting public delivery.</p>
-        <label for="studio-input">Studio input</label>
-        <input id="studio-input" />
-        <div role="alert">Example validation message</div>
-      </section>
-      <div class="studio-primary-actions">
-        <button type="button">Try again</button>
-      </div>
-    </main>
+    <!doctype html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+          :root { --ds-space-4: 16px; }
+          * { box-sizing: border-box; }
+          ${css}
+        </style>
+      </head>
+      <body>
+        <main class="creator-studio">
+          <section class="studio-workspace">
+            <h3>Step 3</h3>
+            <p>Prepare the private Studio before starting public delivery.</p>
+            <label for="studio-input">Studio input</label>
+            <input id="studio-input" />
+            <div role="alert">Example validation message</div>
+          </section>
+          <div class="studio-primary-actions">
+            <button type="button">Try again</button>
+          </div>
+        </main>
+      </body>
+    </html>
   `);
 }
 
