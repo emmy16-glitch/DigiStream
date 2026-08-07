@@ -242,10 +242,11 @@ export function StatePanel({
 export function BrandLockup({ compact = false }: { compact?: boolean }) {
   return (
     <span className={`ds-brand ${compact ? 'ds-brand-compact' : ''}`}>
-      <span className="ds-brand-wave" aria-hidden="true">
-        <i /><i /><i /><i /><i />
+      <span className="ds-brand-mark" aria-hidden="true">
+        <i className="ds-brand-petal ds-brand-petal-primary" />
+        <i className="ds-brand-petal ds-brand-petal-secondary" />
       </span>
-      <span>DigiStream</span>
+      <span className="ds-brand-wordmark">Echoo</span>
     </span>
   );
 }
