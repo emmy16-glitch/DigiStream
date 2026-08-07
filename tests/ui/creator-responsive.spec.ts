@@ -83,18 +83,20 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
 
   await expect(page.getByRole('heading', { name: 'How would you like to start?' })).toBeVisible();
   await expect(page.getByText('Step 3 of 3', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Go live now', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Start now', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Schedule for later', exact: true })).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: 'I’ll create a broadcast later', exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Finish setup later', exact: true })).toBeVisible();
 
-  const broadcastTitleInput = page.getByLabel('Broadcast title');
-  const broadcastForm = page.locator('form.creator-form-grid').filter({ has: broadcastTitleInput });
+  const broadcastSection = page.locator('section[aria-labelledby="create-broadcast-title"]');
+  const broadcastForm = broadcastSection.locator('form.creator-form-grid');
   const initialSubmit = broadcastForm.locator('button[type="submit"]');
+  await expect(page.getByLabel('Broadcast title')).toHaveCount(0);
   await expect(initialSubmit).toBeDisabled();
-  await expect(initialSubmit).toHaveText('Create draft');
-  await page.getByRole('button', { name: 'Go live now', exact: true }).click();
+  await expect(initialSubmit).toHaveText('Choose how to continue');
+
+  await page.getByRole('button', { name: 'Start now', exact: true }).click();
+  const broadcastTitleInput = page.getByLabel('Broadcast title');
+  await expect(broadcastTitleInput).toBeVisible();
   const createAndOpenStudio = broadcastForm.getByRole('button', {
     name: 'Create broadcast and open Studio',
   });
