@@ -20,6 +20,7 @@ import './features/onboarding/echoo-onboarding.css';
 import './design-system/responsive-operations.css';
 import './design-system/manual-review-fixes.css';
 import './landing/landing-page.css';
+import './features/guests/echoo-backstage.css';
 
 const root = document.getElementById('root');
 
