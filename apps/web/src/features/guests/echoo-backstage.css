@@ -372,7 +372,7 @@
   .backstage-selection {
     position: static;
     min-height: 0;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     padding: 18px;
     border-bottom: 0;
   }
@@ -380,7 +380,7 @@
   .backstage-selection::before,
   .backstage-user,
   .backstage-selection-note {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 
   .backstage-panels {
