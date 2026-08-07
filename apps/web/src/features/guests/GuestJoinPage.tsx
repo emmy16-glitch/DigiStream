@@ -116,7 +116,7 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
   const [message, setMessage] = useState(
     session
       ? 'Your invitation was accepted. Waiting for the host to admit you.'
-      : 'Enter the name the host should see backstage.',
+      : 'Enter the name the host should see in the Studio Lobby.',
   );
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -229,7 +229,7 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
       setPhase(credential ? 'admitted' : 'microphone-ready');
       setMessage(
         credential
-          ? 'The host admitted you. Your microphone is ready to join backstage.'
+          ? 'The host admitted you. Your microphone is ready to join the Studio Lobby.'
           : 'Microphone ready. Waiting for the host to admit you.',
       );
     } catch (requestError) {
@@ -265,8 +265,8 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
       setPhase(trackRef.current ? 'admitted' : 'waiting');
       setMessage(
         trackRef.current
-          ? 'You were admitted. Join backstage when ready.'
-          : 'You were admitted. Prepare your microphone to join backstage.',
+          ? 'You were admitted. Join the Studio Lobby when ready.'
+          : 'You were admitted. Prepare your microphone to join the Studio Lobby.',
       );
     } catch (requestError) {
       if (
@@ -300,7 +300,7 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
     setBusy(true);
     setError('');
     setPhase('connecting');
-    setMessage('Connecting to the LiveKit backstage room…');
+    setMessage('Connecting to the private Studio Lobby…');
     try {
       const sdk = await loadLiveKitClient();
       const room = new sdk.Room({
@@ -312,15 +312,15 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
       room
         .on(sdk.RoomEvent.Reconnecting, () => {
           setPhase('reconnecting');
-          setMessage('Connection interrupted. Reconnecting backstage…');
+          setMessage('Connection interrupted. Reconnecting to the Studio Lobby…');
         })
         .on(sdk.RoomEvent.Reconnected, () => {
           setPhase('connected');
-          setMessage('Backstage connection restored.');
+          setMessage('Studio Lobby connection restored.');
         })
         .on(sdk.RoomEvent.Disconnected, () => {
           setPhase('left');
-          setMessage('You left the backstage room.');
+          setMessage('You left the Studio Lobby.');
         })
         .on(sdk.RoomEvent.AudioPlaybackStatusChanged, () => {
           setAudioPlaybackBlocked(!room.canPlaybackAudio);
@@ -345,13 +345,13 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
         red: true,
       });
       setPhase('connected');
-      setMessage('You are backstage. The host can hear and manage your microphone.');
+      setMessage('You are in the Studio Lobby. The host can hear and manage your microphone.');
       setAudioPlaybackBlocked(!room.canPlaybackAudio);
     } catch (requestError) {
       await stopMedia();
       setPhase('admitted');
       setError(errorMessage(requestError));
-      setMessage('Could not join the backstage room.');
+      setMessage('Could not join the Studio Lobby.');
     } finally {
       setBusy(false);
     }
@@ -376,7 +376,7 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
   async function leaveBackstage() {
     await stopMedia();
     setPhase('left');
-    setMessage('You left backstage. This invitation session remains valid until it expires or is revoked.');
+    setMessage('You left the Studio Lobby. This invitation session remains valid until it expires or is revoked.');
   }
 
   const activeBars = Math.round(level * 20);
@@ -389,13 +389,13 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
           <span aria-hidden="true">D</span>
           DigiStream
         </a>
-        <span>External guest backstage</span>
+        <span>External guest Studio Lobby</span>
       </header>
 
       <section className="guest-shell" aria-live="polite">
         <div className="guest-intro">
           <span className="guest-kicker">Private contribution room</span>
-          <h1>Join the broadcast backstage</h1>
+          <h1>Join the Studio Lobby</h1>
           <p>
             Your microphone is sent through LiveKit only after you accept the invitation,
             prepare your device and the host admits you.
@@ -471,7 +471,7 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
                   onClick={() => void roomRef.current?.startAudio().then(() => setAudioPlaybackBlocked(false))}
                   type="button"
                 >
-                  Enable backstage audio
+                  Enable Studio Lobby audio
                 </button>
               ) : null}
 
@@ -488,7 +488,7 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
                     onClick={joinBackstage}
                     type="button"
                   >
-                    {phase === 'connecting' ? 'Connecting…' : 'Join backstage'}
+                    {phase === 'connecting' ? 'Connecting…' : 'Join Studio Lobby'}
                   </button>
                 ) : (
                   <>
@@ -496,7 +496,7 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
                       {muted ? 'Unmute microphone' : 'Mute microphone'}
                     </button>
                     <button className="guest-danger" disabled={busy} onClick={leaveBackstage} type="button">
-                      Leave backstage
+                      Leave Studio Lobby
                     </button>
                   </>
                 )}
