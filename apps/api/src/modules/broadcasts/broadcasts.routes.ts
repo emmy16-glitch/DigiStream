@@ -180,7 +180,10 @@ export function registerBroadcastRoutes(
         // for a broadcast that actually reached live/reconnecting. Treat an
         // `/end` request against `starting` as the existing idempotent cancel
         // command so the broadcast truthfully becomes cancelled rather than
-        // pretending that listener delivery had been live.
+        // pretending that listener delivery had been live. Keep the same
+        // mapping after that cancellation so a lost successful response can
+        // replay the exact persisted idempotency record instead of becoming a
+        // false terminal-state conflict.
         if (command === 'end') {
           const current = await getOrganisationBroadcast(
             context.db,
@@ -188,7 +191,9 @@ export function registerBroadcastRoutes(
             request.params.broadcastId,
             user.id,
           );
-          if (current.status === 'starting') lifecycleCommand = 'cancel';
+          if (current.status === 'starting' || current.status === 'cancelled') {
+            lifecycleCommand = 'cancel';
+          }
         }
 
         return {
