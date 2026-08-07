@@ -512,7 +512,7 @@ export function CreatorBroadcastsPage({
         <StatePanel kind="loading" title="Loading channels">
           DigiStream is loading the real channels for {organisation.name}.
         </StatePanel>
-      ) : channels.length === 0 ? (
+      ) : channels.length === 0 && !showChannelForm ? (
         <StatePanel
           actionLabel="Create channel"
           kind="empty"
@@ -521,7 +521,7 @@ export function CreatorBroadcastsPage({
         >
           A channel is required before a broadcast can be created or opened in the Studio.
         </StatePanel>
-      ) : (
+      ) : channels.length > 0 ? (
         <>
           <section className="channel-strip" aria-label="Organisation channels">
             <div className="channel-strip-heading">
@@ -779,7 +779,7 @@ export function CreatorBroadcastsPage({
             </section>
           )}
         </>
-      )}
+      ) : null}
     </div>
   );
 }
