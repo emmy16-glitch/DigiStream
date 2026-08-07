@@ -20,6 +20,7 @@ import {
   StatusBadge,
   type StatusTone,
 } from '../../design-system/components';
+import { Icon } from '../../design-system/Icon';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
 import {
   presentationLabel,
@@ -55,6 +56,8 @@ type BroadcastFormState = {
 };
 
 type FirstBroadcastChoice = 'go-live' | 'schedule' | 'finish-later' | null;
+type BroadcastFilter = 'all' | 'live' | 'scheduled' | 'ended';
+type RowAction = 'studio' | 'recordings' | 'create-another';
 
 const emptyChannelForm: ChannelFormState = {
   name: '',
@@ -70,6 +73,13 @@ const emptyBroadcastForm: BroadcastFormState = {
   description: '',
   scheduledStartAt: '',
 };
+
+const broadcastFilters: Array<{ label: string; value: BroadcastFilter }> = [
+  { label: 'All', value: 'all' },
+  { label: 'Live', value: 'live' },
+  { label: 'Scheduled', value: 'scheduled' },
+  { label: 'Ended', value: 'ended' },
+];
 
 function readableError(error: unknown): string {
   if (error instanceof ApiClientError) return error.message;
@@ -110,7 +120,7 @@ function sentenceCase(value: string): string {
 }
 
 function formatDate(value: string | null): string {
-  if (!value) return 'Not scheduled';
+  if (!value) return 'Time not set';
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -121,6 +131,92 @@ function minimumScheduleValue(): string {
   const date = new Date(Date.now() + 5 * 60_000);
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
   return local.toISOString().slice(0, 16);
+}
+
+function durationLabel(broadcast: Broadcast): string | null {
+  if (!broadcast.liveStartedAt || !broadcast.endedAt) return null;
+  const durationMs = new Date(broadcast.endedAt).getTime() - new Date(broadcast.liveStartedAt).getTime();
+  if (!Number.isFinite(durationMs) || durationMs < 0) return null;
+
+  const totalMinutes = Math.floor(durationMs / 60_000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function filterMatches(
+  broadcast: Broadcast,
+  filter: BroadcastFilter,
+): boolean {
+  if (filter === 'all') return true;
+  const displayStatus = presentationStatus(broadcast.status, broadcast.scheduledStartAt);
+  if (filter === 'live') return displayStatus === 'live';
+  if (filter === 'scheduled') {
+    return displayStatus === 'scheduled' || displayStatus === 'overdue';
+  }
+  return displayStatus === 'completed' || displayStatus === 'cancelled' || displayStatus === 'failed';
+}
+
+function rowAction(status: BroadcastPresentationStatus): {
+  kind: RowAction;
+  label: string;
+} {
+  if (status === 'draft') return { kind: 'studio', label: 'Continue setup' };
+  if (status === 'scheduled') return { kind: 'studio', label: 'Run sound check' };
+  if (status === 'overdue') return { kind: 'studio', label: 'Open Studio to start' };
+  if (status === 'starting') return { kind: 'studio', label: 'Check start progress' };
+  if (status === 'live' || status === 'reconnecting') {
+    return { kind: 'studio', label: 'Manage live' };
+  }
+  if (status === 'ending') return { kind: 'studio', label: 'View ending status' };
+  if (status === 'completed') return { kind: 'recordings', label: 'View recording' };
+  return { kind: 'create-another', label: 'Create another' };
+}
+
+function broadcastMeta(
+  broadcast: Broadcast,
+  displayStatus: BroadcastPresentationStatus,
+): string {
+  if (displayStatus === 'live') {
+    return broadcast.liveStartedAt
+      ? `Live • Started ${formatDate(broadcast.liveStartedAt)}`
+      : 'Live now';
+  }
+  if (displayStatus === 'reconnecting') return 'Reconnecting public delivery';
+  if (displayStatus === 'starting') {
+    return broadcast.startRequestedAt
+      ? `Starting • Requested ${formatDate(broadcast.startRequestedAt)}`
+      : 'Starting';
+  }
+  if (displayStatus === 'scheduled') return `Scheduled • ${formatDate(broadcast.scheduledStartAt)}`;
+  if (displayStatus === 'overdue') return `Scheduled time passed • ${formatDate(broadcast.scheduledStartAt)}`;
+  if (displayStatus === 'draft') return `Draft • Created ${formatDate(broadcast.createdAt)}`;
+  if (displayStatus === 'ending') {
+    return broadcast.endRequestedAt
+      ? `Ending • Requested ${formatDate(broadcast.endRequestedAt)}`
+      : 'Ending';
+  }
+  if (displayStatus === 'completed') {
+    const duration = durationLabel(broadcast);
+    const ended = formatDate(broadcast.endedAt ?? broadcast.updatedAt);
+    return duration ? `Ended ${ended} • ${duration}` : `Ended ${ended}`;
+  }
+  if (displayStatus === 'cancelled') {
+    return `Cancelled • ${formatDate(broadcast.cancelledAt ?? broadcast.updatedAt)}`;
+  }
+  return `Needs attention • ${formatDate(broadcast.updatedAt)}`;
+}
+
+function BroadcastArtwork({ live = false }: { live?: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={live ? 'echoo-broadcast-artwork is-live' : 'echoo-broadcast-artwork'}
+    >
+      <Icon name="broadcast" size={25} />
+    </span>
+  );
 }
 
 export function CreatorBroadcastsPage({
@@ -146,10 +242,16 @@ export function CreatorBroadcastsPage({
   const [broadcastSlugEdited, setBroadcastSlugEdited] = useState(false);
   const [creatingBroadcast, setCreatingBroadcast] = useState(false);
   const [firstBroadcastChoice, setFirstBroadcastChoice] = useState<FirstBroadcastChoice>(null);
+  const [broadcastFilter, setBroadcastFilter] = useState<BroadcastFilter>('all');
 
   const selectedChannel = useMemo(
     () => channels.find((channel) => channel.id === selectedChannelId) ?? null,
     [channels, selectedChannelId],
+  );
+
+  const filteredBroadcasts = useMemo(
+    () => broadcasts.filter((broadcast) => filterMatches(broadcast, broadcastFilter)),
+    [broadcastFilter, broadcasts],
   );
 
   const canApproveChannel =
@@ -160,6 +262,7 @@ export function CreatorBroadcastsPage({
     Boolean(selectedChannel) &&
     selectedChannel?.status === 'active' &&
     broadcasts.length === 0;
+  const canCreateBroadcast = selectedChannel?.status === 'active';
 
   const replaceChannel = useCallback((channel: Channel) => {
     setChannels((current) => current.map((item) => (
@@ -215,6 +318,8 @@ export function CreatorBroadcastsPage({
     setFirstBroadcastChoice(null);
     setBroadcastForm(emptyBroadcastForm);
     setBroadcastSlugEdited(false);
+    setBroadcastFilter('all');
+    setShowBroadcastForm(false);
     void loadBroadcasts(selectedChannelId);
   }, [loadBroadcasts, selectedChannelId]);
 
@@ -310,11 +415,51 @@ export function CreatorBroadcastsPage({
     }
   }
 
+  function openChannelForm() {
+    setShowChannelForm(true);
+    window.requestAnimationFrame(() => {
+      document.getElementById('create-channel-title')?.focus();
+    });
+  }
+
+  function openBroadcastForm() {
+    if (!selectedChannel || selectedChannel.status !== 'active') return;
+    setBroadcastError('');
+    setShowBroadcastForm(true);
+    window.requestAnimationFrame(() => {
+      document.getElementById('create-broadcast-title')?.focus();
+    });
+  }
+
+  function openRecordings() {
+    window.history.pushState({}, '', '/creator/recordings');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }
+
   function finishFirstBroadcastLater() {
     setFirstBroadcastChoice(null);
     setShowBroadcastForm(false);
     window.history.pushState({}, '', '/creator/overview');
     window.dispatchEvent(new PopStateEvent('popstate'));
+  }
+
+  function runRowAction(
+    action: RowAction,
+    broadcast: Broadcast,
+  ) {
+    if (action === 'recordings') {
+      openRecordings();
+      return;
+    }
+    if (action === 'create-another') {
+      openBroadcastForm();
+      return;
+    }
+    onOpenStudio({
+      organisationId: organisation.id,
+      channelId: selectedChannelId,
+      broadcastId: broadcast.id,
+    });
   }
 
   async function createBroadcast(event: FormEvent<HTMLFormElement>) {
@@ -350,6 +495,7 @@ export function CreatorBroadcastsPage({
         },
       );
       setBroadcasts((current) => [response.broadcast, ...current]);
+      setBroadcastFilter('all');
       setBroadcastForm(emptyBroadcastForm);
       setBroadcastSlugEdited(false);
       setShowBroadcastForm(false);
@@ -371,24 +517,18 @@ export function CreatorBroadcastsPage({
   }
 
   return (
-    <div className="creator-broadcasts-page">
-      <header className="workspace-page-intro creator-broadcasts-intro">
+    <div className="creator-broadcasts-page echoo-broadcasts-page">
+      <header className="echoo-broadcasts-hero">
         <div>
-          <h2>Broadcasts</h2>
-          <p>Create and manage your channels and broadcasts.</p>
+          <span className="echoo-broadcasts-eyebrow">{organisation.name}</span>
+          <h2>Manage broadcasts</h2>
+          <p>Create, schedule and manage broadcasts for your selected channel.</p>
         </div>
-        <div className="creator-broadcasts-intro-actions">
-          <Button onClick={() => setShowChannelForm((current) => !current)}>
-            {showChannelForm ? 'Close channel form' : 'Create channel'}
+        {canCreateBroadcast && !firstBroadcastSetup && !showBroadcastForm ? (
+          <Button onClick={openBroadcastForm} variant="primary">
+            New broadcast
           </Button>
-          <Button
-            disabled={!selectedChannel}
-            onClick={() => setShowBroadcastForm((current) => !current)}
-            variant="primary"
-          >
-            {showBroadcastForm ? 'Close broadcast form' : 'Create broadcast'}
-          </Button>
-        </div>
+        ) : null}
       </header>
 
       {channelError ? (
@@ -403,12 +543,12 @@ export function CreatorBroadcastsPage({
       ) : null}
 
       {showChannelForm ? (
-        <section className="creator-form-card" aria-labelledby="create-channel-title">
+        <section className="creator-form-card echoo-broadcasts-form-card" aria-labelledby="create-channel-title">
           <div className="creator-form-copy">
             <StatusBadge tone="info">
               {firstChannelSetup ? 'Step 2 of 3' : 'Channel setup'}
             </StatusBadge>
-            <h3 id="create-channel-title">
+            <h3 id="create-channel-title" tabIndex={-1}>
               {firstChannelSetup ? 'Create your first channel' : 'Create a channel'}
             </h3>
             <p>
@@ -513,46 +653,58 @@ export function CreatorBroadcastsPage({
 
       {loadingChannels ? (
         <StatePanel kind="loading" title="Loading channels">
-          DigiStream is loading the real channels for {organisation.name}.
+          Echoo is loading the real channels for {organisation.name}.
         </StatePanel>
       ) : channels.length === 0 && !showChannelForm ? (
         <StatePanel
           actionLabel="Create channel"
           kind="empty"
-          onAction={() => setShowChannelForm(true)}
+          onAction={openChannelForm}
           title="Create your first channel"
         >
           A channel is required before a broadcast can be created or opened in the Studio.
         </StatePanel>
       ) : channels.length > 0 ? (
         <>
-          <section className="channel-strip" aria-label="Organisation channels">
-            <div className="channel-strip-heading">
-              <div>
-                <span>Current channel</span>
+          <section className="channel-strip echoo-channel-context" aria-label="Organisation channels">
+            <div className="echoo-channel-context-main">
+              <div className="echoo-channel-context-copy">
+                <span className="echoo-channel-label">Current channel</span>
                 <strong>{selectedChannel?.name ?? 'Select a channel'}</strong>
+                {selectedChannel ? (
+                  <div className="echoo-channel-badges">
+                    <StatusBadge tone={channelTone(selectedChannel.status)}>
+                      {sentenceCase(selectedChannel.status)}
+                    </StatusBadge>
+                    <StatusBadge tone="neutral">{sentenceCase(selectedChannel.visibility)}</StatusBadge>
+                  </div>
+                ) : null}
               </div>
-              <select
-                aria-label="Select channel"
-                onChange={(event) => setSelectedChannelId(event.target.value)}
-                value={selectedChannelId}
-              >
-                {channels.map((channel) => (
-                  <option key={channel.id} value={channel.id}>{channel.name}</option>
-                ))}
-              </select>
+              <div className="echoo-channel-context-controls">
+                <label>
+                  <span>Switch channel</span>
+                  <select
+                    aria-label="Select channel"
+                    onChange={(event) => setSelectedChannelId(event.target.value)}
+                    value={selectedChannelId}
+                  >
+                    {channels.map((channel) => (
+                      <option key={channel.id} value={channel.id}>{channel.name}</option>
+                    ))}
+                  </select>
+                </label>
+                {!showChannelForm ? (
+                  <Button onClick={openChannelForm} variant="secondary">New channel</Button>
+                ) : null}
+              </div>
             </div>
 
             {selectedChannel ? (
-              <div className="channel-summary">
+              <div className="channel-summary echoo-channel-summary">
                 <div>
-                  <StatusBadge tone={channelTone(selectedChannel.status)}>
-                    {sentenceCase(selectedChannel.status)}
-                  </StatusBadge>
-                  <StatusBadge tone="neutral">{sentenceCase(selectedChannel.visibility)}</StatusBadge>
+                  <p>{selectedChannel.description || 'No channel description has been added.'}</p>
+                  <small>/{organisation.slug}/{selectedChannel.slug}</small>
                 </div>
-                <p>{selectedChannel.description || 'No channel description has been added.'}</p>
-                <small>/{organisation.slug}/{selectedChannel.slug}</small>
                 {selectedChannel.status !== 'active' ? (
                   canApproveChannel ? (
                     <Button
@@ -573,7 +725,7 @@ export function CreatorBroadcastsPage({
           </section>
 
           {showBroadcastForm && selectedChannel ? (
-            <section className="creator-form-card" aria-labelledby="create-broadcast-title">
+            <section className="creator-form-card echoo-broadcasts-form-card" aria-labelledby="create-broadcast-title">
               <div className="creator-form-copy">
                 <StatusBadge tone={firstBroadcastSetup ? 'info' : selectedChannel.status === 'active' ? 'success' : 'warning'}>
                   {firstBroadcastSetup
@@ -582,7 +734,7 @@ export function CreatorBroadcastsPage({
                       ? 'Channel active'
                       : 'Draft broadcasts only'}
                 </StatusBadge>
-                <h3 id="create-broadcast-title">
+                <h3 id="create-broadcast-title" tabIndex={-1}>
                   {firstBroadcastSetup ? 'How would you like to start?' : 'Create a broadcast'}
                 </h3>
                 <p>
@@ -742,68 +894,110 @@ export function CreatorBroadcastsPage({
 
           {loadingBroadcasts ? (
             <StatePanel kind="loading" title="Loading broadcasts">
-              DigiStream is loading broadcasts for {selectedChannel?.name ?? 'this channel'}.
+              Echoo is loading broadcasts for {selectedChannel?.name ?? 'this channel'}.
             </StatePanel>
           ) : broadcasts.length === 0 ? (
             <StatePanel
               actionLabel="Create broadcast"
               kind="empty"
-              onAction={() => setShowBroadcastForm(true)}
+              onAction={openBroadcastForm}
               title="No broadcasts in this channel"
             >
-              Create a draft now, then use Broadcast Studio to test the microphone and prepare delivery.
+              Create a draft now, then use Studio to test the microphone and prepare delivery.
             </StatePanel>
           ) : (
-            <section className="broadcast-list" aria-labelledby="broadcast-list-title">
-              <header>
+            <section className="broadcast-list echoo-broadcast-library" aria-labelledby="broadcast-list-title">
+              <header className="echoo-broadcast-library-heading">
                 <div>
-                  <span>Real broadcast data</span>
-                  <h3 id="broadcast-list-title">{selectedChannel?.name} broadcasts</h3>
+                  <span className="echoo-broadcasts-eyebrow">{selectedChannel?.name}</span>
+                  <h3 id="broadcast-list-title">Your broadcasts</h3>
                 </div>
-                <Button onClick={() => onOpenStudio()} variant="primary">Open Broadcast Studio</Button>
               </header>
-              <div className="broadcast-list-items">
-                {broadcasts.map((broadcast) => {
+
+              <div className="echoo-broadcast-tabs" aria-label="Filter broadcasts" role="tablist">
+                {broadcastFilters.map((filter) => (
+                  <button
+                    aria-controls="echoo-broadcast-filter-panel"
+                    aria-selected={broadcastFilter === filter.value}
+                    className={broadcastFilter === filter.value ? 'is-active' : ''}
+                    id={`broadcast-filter-${filter.value}`}
+                    key={filter.value}
+                    onClick={() => setBroadcastFilter(filter.value)}
+                    role="tab"
+                    type="button"
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
+
+              <div
+                aria-labelledby={`broadcast-filter-${broadcastFilter}`}
+                className="broadcast-list-items echoo-broadcast-list-items"
+                id="echoo-broadcast-filter-panel"
+                role="tabpanel"
+              >
+                {filteredBroadcasts.length > 0 ? filteredBroadcasts.map((broadcast) => {
                   const displayStatus = presentationStatus(
                     broadcast.status,
                     broadcast.scheduledStartAt,
                   );
+                  const action = rowAction(displayStatus);
                   const overdue = displayStatus === 'overdue';
                   return (
                     <article
-                      className={overdue ? 'broadcast-row broadcast-row-overdue' : 'broadcast-row'}
+                      className={overdue ? 'broadcast-row echoo-broadcast-row broadcast-row-overdue' : 'broadcast-row echoo-broadcast-row'}
                       key={broadcast.id}
                     >
-                      <div className="broadcast-row-main">
-                        <div className="broadcast-row-status">
-                          <StatusBadge tone={statusTone(displayStatus)}>
-                            {presentationLabel(displayStatus)}
-                          </StatusBadge>
-                          <span>{formatDate(broadcast.scheduledStartAt ?? broadcast.liveStartedAt)}</span>
-                        </div>
+                      <BroadcastArtwork live={displayStatus === 'live'} />
+                      <div className="broadcast-row-main echoo-broadcast-row-main">
                         <h4>{broadcast.title}</h4>
-                        <p>{broadcast.description || 'No description has been added.'}</p>
+                        <div className="echoo-broadcast-row-meta">
+                          <span>{broadcastMeta(broadcast, displayStatus)}</span>
+                          <span>/{organisation.slug}/{selectedChannel?.slug}/{broadcast.slug}</span>
+                        </div>
+                        {broadcast.description ? <p>{broadcast.description}</p> : null}
                         {overdue ? (
                           <p className="broadcast-overdue-note">
                             The scheduled start time passed before this broadcast went live.
-                            Open Studio to start it now, or cancel it before creating a new schedule.
                           </p>
                         ) : null}
-                        <small>/{organisation.slug}/{selectedChannel?.slug}/{broadcast.slug}</small>
                       </div>
-                      <div className="broadcast-row-actions">
-                        <Button onClick={() => onOpenStudio({
-                          organisationId: organisation.id,
-                          channelId: selectedChannelId,
-                          broadcastId: broadcast.id,
-                        })}>
-                          {overdue ? 'Open Studio to recover' : 'Open in Studio'}
+                      <div className="broadcast-row-status echoo-broadcast-row-status">
+                        <StatusBadge tone={statusTone(displayStatus)}>
+                          {presentationLabel(displayStatus)}
+                        </StatusBadge>
+                      </div>
+                      <div className="broadcast-row-actions echoo-broadcast-row-actions">
+                        <Button
+                          onClick={() => runRowAction(action.kind, broadcast)}
+                          variant={displayStatus === 'live' ? 'primary' : 'secondary'}
+                        >
+                          {action.label}
                         </Button>
                       </div>
                     </article>
                   );
-                })}
+                }) : (
+                  <div className="echoo-broadcast-filter-empty">
+                    <BroadcastArtwork />
+                    <div>
+                      <strong>No {broadcastFilter === 'ended' ? 'ended' : broadcastFilter} broadcasts</strong>
+                      <span>Choose another filter to see broadcasts in this channel.</span>
+                    </div>
+                    <Button onClick={() => setBroadcastFilter('all')} variant="secondary">View all</Button>
+                  </div>
+                )}
               </div>
+
+              <footer className="echoo-broadcast-library-footer">
+                <span>
+                  Showing {filteredBroadcasts.length} of {broadcasts.length} {broadcasts.length === 1 ? 'broadcast' : 'broadcasts'}
+                </span>
+                {broadcastFilter !== 'all' ? (
+                  <Button onClick={() => setBroadcastFilter('all')} variant="ghost">View all</Button>
+                ) : null}
+              </footer>
             </section>
           )}
         </>
