@@ -54,7 +54,7 @@ type BroadcastFormState = {
   scheduledStartAt: string;
 };
 
-type FirstBroadcastChoice = 'go-live' | 'schedule' | null;
+type FirstBroadcastChoice = 'go-live' | 'schedule' | 'finish-later' | null;
 
 const emptyChannelForm: ChannelFormState = {
   name: '',
@@ -321,7 +321,11 @@ export function CreatorBroadcastsPage({
     event.preventDefault();
     if (!selectedChannel) return;
     if (firstBroadcastSetup && !firstBroadcastChoice) {
-      setBroadcastError('Choose Go live now or Schedule for later before creating the broadcast.');
+      setBroadcastError('Choose Start now, Schedule for later or Finish setup later before continuing.');
+      return;
+    }
+    if (firstBroadcastSetup && firstBroadcastChoice === 'finish-later') {
+      finishFirstBroadcastLater();
       return;
     }
 
@@ -584,118 +588,143 @@ export function CreatorBroadcastsPage({
                 </h3>
                 <p>
                   {firstBroadcastSetup
-                    ? `Create a draft for Studio preparation, schedule a real future broadcast, or finish setup later. Visibility is inherited from ${selectedChannel.name}: ${sentenceCase(selectedChannel.visibility)}.`
+                    ? `Choose what happens next for ${selectedChannel.name}. You can start now, schedule a future broadcast, or finish setup without creating one.`
                     : 'Leave the schedule empty to create a draft. Scheduled broadcasts require an active channel.'}
                 </p>
                 {firstBroadcastSetup ? (
-                  <div className="creator-form-actions" aria-label="First broadcast choices">
+                  <div className="creator-form-actions" aria-label="First broadcast choices" role="group">
                     <Button
+                      aria-pressed={firstBroadcastChoice === 'go-live'}
                       onClick={() => {
                         setFirstBroadcastChoice('go-live');
                         setBroadcastForm((current) => ({ ...current, scheduledStartAt: '' }));
                       }}
                       variant={firstBroadcastChoice === 'go-live' ? 'primary' : 'secondary'}
                     >
-                      Go live now
+                      Start now
                     </Button>
                     <Button
+                      aria-pressed={firstBroadcastChoice === 'schedule'}
                       onClick={() => setFirstBroadcastChoice('schedule')}
                       variant={firstBroadcastChoice === 'schedule' ? 'primary' : 'secondary'}
                     >
                       Schedule for later
                     </Button>
-                    <Button onClick={finishFirstBroadcastLater} variant="ghost">
-                      I’ll create a broadcast later
+                    <Button
+                      aria-pressed={firstBroadcastChoice === 'finish-later'}
+                      onClick={() => {
+                        setFirstBroadcastChoice('finish-later');
+                        setBroadcastForm(emptyBroadcastForm);
+                        setBroadcastSlugEdited(false);
+                        setBroadcastError('');
+                      }}
+                      variant={firstBroadcastChoice === 'finish-later' ? 'primary' : 'secondary'}
+                    >
+                      Finish setup later
                     </Button>
                   </div>
                 ) : null}
               </div>
               <form className="creator-form-grid" onSubmit={createBroadcast}>
-                <label>
-                  Broadcast title
-                  <input
-                    maxLength={160}
-                    minLength={3}
-                    onChange={(event) => {
-                      const title = event.target.value;
-                      setBroadcastForm((current) => ({
-                        ...current,
-                        title,
-                        slug: broadcastSlugEdited ? current.slug : slugify(title, 100),
-                      }));
-                    }}
-                    placeholder="Sunday worship experience"
-                    required
-                    type="text"
-                    value={broadcastForm.title}
-                  />
-                </label>
-                <label>
-                  Public slug
-                  <input
-                    maxLength={100}
-                    minLength={3}
-                    onChange={(event) => {
-                      setBroadcastSlugEdited(true);
-                      setBroadcastForm((current) => ({
-                        ...current,
-                        slug: slugify(event.target.value, 100),
-                      }));
-                    }}
-                    pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-                    placeholder="sunday-worship-experience"
-                    required
-                    type="text"
-                    value={broadcastForm.slug}
-                  />
-                  <small>Listener route: /{organisation.slug}/{selectedChannel.slug}/{broadcastForm.slug || 'broadcast-slug'}</small>
-                </label>
-                {(!firstBroadcastSetup || firstBroadcastChoice === 'schedule') ? (
-                  <label>
-                    Schedule start
-                    <input
-                      disabled={selectedChannel.status !== 'active'}
-                      min={minimumScheduleValue()}
-                      onChange={(event) => setBroadcastForm((current) => ({
-                        ...current,
-                        scheduledStartAt: event.target.value,
-                      }))}
-                      required={firstBroadcastChoice === 'schedule'}
-                      type="datetime-local"
-                      value={broadcastForm.scheduledStartAt}
-                    />
-                    <small>{selectedChannel.status === 'active' ? 'Times use your device timezone.' : 'Activate the channel to schedule.'}</small>
-                  </label>
+                {(!firstBroadcastSetup || (firstBroadcastChoice && firstBroadcastChoice !== 'finish-later')) ? (
+                  <>
+                    <label>
+                      Broadcast title
+                      <input
+                        maxLength={160}
+                        minLength={3}
+                        onChange={(event) => {
+                          const title = event.target.value;
+                          setBroadcastForm((current) => ({
+                            ...current,
+                            title,
+                            slug: broadcastSlugEdited ? current.slug : slugify(title, 100),
+                          }));
+                        }}
+                        placeholder="Sunday worship experience"
+                        required
+                        type="text"
+                        value={broadcastForm.title}
+                      />
+                    </label>
+                    <label>
+                      Public slug
+                      <input
+                        maxLength={100}
+                        minLength={3}
+                        onChange={(event) => {
+                          setBroadcastSlugEdited(true);
+                          setBroadcastForm((current) => ({
+                            ...current,
+                            slug: slugify(event.target.value, 100),
+                          }));
+                        }}
+                        pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+                        placeholder="sunday-worship-experience"
+                        required
+                        type="text"
+                        value={broadcastForm.slug}
+                      />
+                      <small>Listener route: /{organisation.slug}/{selectedChannel.slug}/{broadcastForm.slug || 'broadcast-slug'}</small>
+                    </label>
+                    {(!firstBroadcastSetup || firstBroadcastChoice === 'schedule') ? (
+                      <label>
+                        Schedule start
+                        <input
+                          disabled={selectedChannel.status !== 'active'}
+                          min={minimumScheduleValue()}
+                          onChange={(event) => setBroadcastForm((current) => ({
+                            ...current,
+                            scheduledStartAt: event.target.value,
+                          }))}
+                          required={firstBroadcastChoice === 'schedule'}
+                          type="datetime-local"
+                          value={broadcastForm.scheduledStartAt}
+                        />
+                        <small>{selectedChannel.status === 'active' ? 'Times use your device timezone.' : 'Activate the channel to schedule.'}</small>
+                      </label>
+                    ) : null}
+                    <label className="creator-form-wide">
+                      Description
+                      <textarea
+                        maxLength={4000}
+                        onChange={(event) => setBroadcastForm((current) => ({
+                          ...current,
+                          description: event.target.value,
+                        }))}
+                        placeholder="Add context for listeners and guests"
+                        rows={3}
+                        value={broadcastForm.description}
+                      />
+                    </label>
+                  </>
                 ) : null}
-                <label className="creator-form-wide">
-                  Description
-                  <textarea
-                    maxLength={4000}
-                    onChange={(event) => setBroadcastForm((current) => ({
-                      ...current,
-                      description: event.target.value,
-                    }))}
-                    placeholder="Add context for listeners and guests"
-                    rows={3}
-                    value={broadcastForm.description}
-                  />
-                </label>
                 <div className="creator-form-actions creator-form-wide">
                   {!firstBroadcastSetup ? (
                     <Button onClick={() => setShowBroadcastForm(false)}>Cancel</Button>
                   ) : null}
-                  <Button
-                    disabled={firstBroadcastSetup && !firstBroadcastChoice}
-                    loading={creatingBroadcast}
-                    type="submit"
-                    variant="primary"
-                  >
-                    {firstBroadcastSetup && firstBroadcastChoice === 'go-live'
-                      ? 'Create broadcast and open Studio'
-                      : broadcastForm.scheduledStartAt
-                        ? 'Schedule broadcast'
-                        : 'Create draft'}
-                  </Button>
+                  {firstBroadcastSetup && firstBroadcastChoice === 'finish-later' ? (
+                    <Button onClick={finishFirstBroadcastLater} type="button" variant="primary">
+                      Finish setup later
+                    </Button>
+                  ) : (
+                    <Button
+                      disabled={firstBroadcastSetup && !firstBroadcastChoice}
+                      loading={creatingBroadcast}
+                      type="submit"
+                      variant="primary"
+                    >
+                      {firstBroadcastSetup && firstBroadcastChoice === 'go-live'
+                        ? 'Create broadcast and open Studio'
+                        : firstBroadcastSetup && firstBroadcastChoice === 'schedule'
+                          ? 'Schedule broadcast'
+                          : firstBroadcastSetup
+                            ? 'Choose how to continue'
+                            : broadcastForm.scheduledStartAt
+                              ? 'Schedule broadcast'
+                              : 'Create draft'}
+                    </Button>
+                  )}
                 </div>
               </form>
             </section>
