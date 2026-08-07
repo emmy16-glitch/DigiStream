@@ -19,7 +19,7 @@ type CreatorOverviewPageProps = {
   onOpenBackstage(): void;
   onOpenBroadcasts(): void;
   onOpenRecordings(): void;
-  onOpenStudio(): void;
+  onOpenStudio(broadcast?: Broadcast): void;
 };
 
 function formatDateTime(value: string | null): string {
@@ -129,9 +129,9 @@ export function CreatorOverviewPage({
       case 'create_broadcast':
         return { label: 'Create broadcast', onClick: onOpenBroadcasts };
       case 'manage_live_broadcast':
-        return { label: 'Manage live broadcast', onClick: onOpenStudio };
+        return { label: 'Manage live broadcast', onClick: () => onOpenStudio() };
       case 'prepare_broadcast':
-        return { label: 'Prepare broadcast', onClick: onOpenStudio };
+        return { label: 'Prepare broadcast', onClick: () => onOpenStudio() };
       case 'view_completed_broadcast':
         return { label: 'Manage broadcasts', onClick: onOpenBroadcasts };
       default:
@@ -143,13 +143,15 @@ export function CreatorOverviewPage({
     {
       icon: 'broadcast' as const,
       label: overview.canOpenStudio ? 'Open Studio' : 'Broadcasts',
-      onClick: overview.canOpenStudio ? onOpenStudio : onOpenBroadcasts,
+      onClick: overview.canOpenStudio ? () => onOpenStudio() : onOpenBroadcasts,
     },
     ...(overview.canOpenBackstage
       ? [{ icon: 'audience' as const, label: 'Backstage', onClick: onOpenBackstage }]
       : []),
     { icon: 'recording' as const, label: 'Recordings', onClick: onOpenRecordings },
   ];
+
+  const currentBroadcast = liveBroadcast ?? recoveringBroadcast;
 
   return (
     <div className="echoo-overview-page">
@@ -171,16 +173,16 @@ export function CreatorOverviewPage({
             {liveBroadcast ? <StatusBadge tone="live">Live</StatusBadge> : null}
             {recoveringBroadcast ? <StatusBadge tone="warning">Reconnecting</StatusBadge> : null}
           </header>
-          {liveBroadcast || recoveringBroadcast ? (
+          {currentBroadcast ? (
             <div className="echoo-overview-feature-body">
               <BroadcastArtwork live={Boolean(liveBroadcast)} />
               <div className="echoo-overview-feature-copy">
-                <strong>{(liveBroadcast ?? recoveringBroadcast)?.title}</strong>
-                <span>{channelName(channels, (liveBroadcast ?? recoveringBroadcast)!)}</span>
+                <strong>{currentBroadcast.title}</strong>
+                <span>{channelName(channels, currentBroadcast)}</span>
                 {liveBroadcast?.liveStartedAt ? <small>Started {formatTime(liveBroadcast.liveStartedAt)}</small> : null}
                 {recoveringBroadcast ? <small>Echoo is recovering the public delivery path.</small> : null}
               </div>
-              <Button onClick={onOpenStudio} variant="secondary">
+              <Button onClick={() => onOpenStudio(currentBroadcast)} variant="secondary">
                 Open Studio
               </Button>
             </div>
@@ -208,7 +210,7 @@ export function CreatorOverviewPage({
                 <span>{formatDateTime(scheduledBroadcast.scheduledStartAt)}</span>
                 <small className="echoo-overview-starts">{relativeStart(scheduledBroadcast.scheduledStartAt)}</small>
               </div>
-              <Button onClick={onOpenStudio} variant="secondary">
+              <Button onClick={() => onOpenStudio(scheduledBroadcast)} variant="secondary">
                 Prepare
               </Button>
             </div>
@@ -276,7 +278,7 @@ export function CreatorOverviewPage({
                   <StatusBadge tone={status === 'live' ? 'live' : status === 'completed' ? 'success' : status === 'failed' || status === 'cancelled' ? 'danger' : status === 'overdue' || status === 'ending' ? 'warning' : 'info'}>
                     {presentationLabel(status)}
                   </StatusBadge>
-                  <Button onClick={canOpenInStudio ? onOpenStudio : onOpenBroadcasts} variant="secondary">
+                  <Button onClick={canOpenInStudio ? () => onOpenStudio(broadcast) : onOpenBroadcasts} variant="secondary">
                     {canOpenInStudio ? 'Open' : 'View'}
                   </Button>
                 </article>
