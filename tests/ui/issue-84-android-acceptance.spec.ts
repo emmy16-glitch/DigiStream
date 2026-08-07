@@ -84,6 +84,42 @@ test('Android portrait and short landscape keep account, forms and creator chrom
   });
 });
 
+test('Android creator form keeps long text and the primary action clear when the keyboard reduces viewport height', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'android-chrome');
+  await createCreatorAtChannelSetup(page, testInfo);
+
+  const longChannelName = `Community voices ${'across every neighbourhood '.repeat(4)}`.slice(0, 120);
+  const longDescription = 'A long creator description used to verify wrapping and keyboard-safe scrolling. '.repeat(12);
+  const channelName = page.getByLabel('Channel name');
+  const description = page.getByLabel('Description');
+  const submit = page.getByRole('button', { name: 'Create and activate channel', exact: true });
+
+  await channelName.fill(longChannelName);
+  await description.fill(longDescription);
+  await expectNoHorizontalOverflow(page);
+
+  // Android's on-screen keyboard reduces the visual layout available to the
+  // page. Playwright cannot summon a physical IME, so shrink the viewport to
+  // the keyboard-constrained height while the final form control is focused.
+  await description.focus();
+  await page.setViewportSize({ width: 412, height: 520 });
+
+  await expectVisibleAboveCreatorChrome(page, description);
+  await expectVisibleAboveCreatorChrome(page, submit);
+  await expect(submit).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  const heading = page.getByRole('heading', { name: 'Create your first channel' });
+  await heading.scrollIntoViewIfNeeded();
+  await expect(heading).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  await testInfo.attach('issue-84-keyboard-long-text-clearance', {
+    body: await page.screenshot({ animations: 'disabled', fullPage: true }),
+    contentType: 'image/png',
+  });
+});
+
 test('Android desktop-site and 200% browser zoom retain obvious account access and readable creator content', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'android-desktop-site');
   await createCreatorAtChannelSetup(page, testInfo);
