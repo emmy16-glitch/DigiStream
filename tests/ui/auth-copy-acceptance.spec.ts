@@ -11,14 +11,16 @@ const authCssPath = resolve(
   'apps/web/src/auth/auth-screen.css',
 );
 
-test('authentication screen uses the Echoo reference hierarchy', async () => {
+test('authentication screen uses the polished Echoo reference hierarchy', async () => {
   const source = await readFile(authSourcePath, 'utf8');
 
   expect(source).toContain('Create an account');
+  expect(source).toContain('Choose how you want to create your account.');
   expect(source).toContain('Continue with Email');
-  expect(source).toContain('Hear every audio detail');
-  expect(source).toContain('clearly with <span>Echoo</span>');
+  expect(source).toContain('Create your account');
+  expect(source).toContain('Get started with your Echoo account.');
   expect(source).toContain('Welcome back');
+  expect(source).toContain('Sign in to your Echoo account.');
   expect(source).toContain("view === 'register-form' ? 'Create account' : 'Login'");
   expect(source).toContain('Your session ended. Sign in to continue.');
 });
@@ -29,7 +31,7 @@ test('authentication stays wired to the existing authoritative backend', async (
   expect(source).toContain("'/api/v1/auth/providers'");
   expect(source).toContain("registering ? '/api/v1/auth/register' : '/api/v1/auth/login'");
   expect(source).toContain("'/api/v1/auth/google'");
-  expect(source).toContain("finishAuthentication(response.user)");
+  expect(source).toContain('finishAuthentication(response.user)');
   expect(source).toContain('creatorReturnPath(window.location.search, window.location.origin)');
 });
 
@@ -51,16 +53,20 @@ test('password recovery is not presented before backend ownership exists', async
   expect(source).not.toContain('Forgot password?');
 });
 
-test('reference styling preserves mobile, safe-area, focus and reduced-motion requirements', async () => {
+test('reference styling preserves the Echoo palette, masked hero and mobile acceptance', async () => {
   const css = await readFile(authCssPath, 'utf8');
 
   expect(css).toContain('background: #eff5fd;');
+  expect(css).toContain('background: #1f4e8c;');
+  expect(css).toContain('auth-provider-pill-primary');
+  expect(css).toContain('mask-image: linear-gradient');
   expect(css).toContain('min-height: 100dvh;');
   expect(css).toContain('env(safe-area-inset-bottom)');
   expect(css).toContain('@media (orientation: landscape) and (max-height: 620px)');
   expect(css).toContain('@media (prefers-reduced-motion: reduce)');
   expect(css).toContain(':focus-visible');
   expect(css).toContain('min-height: 44px;');
+  expect(css).not.toContain("font-family: Georgia");
 });
 
 test('authentication screen excludes the removed legacy creator panel', async () => {
