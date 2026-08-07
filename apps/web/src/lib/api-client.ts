@@ -1,4 +1,9 @@
-import type { ApiErrorResponse } from '@digistream/contracts';
+import type {
+  ApiErrorResponse,
+  Broadcast,
+  BroadcastListResponse,
+  BroadcastResponse,
+} from '@digistream/contracts';
 import { reconcileCreatorContext } from './backstage-context-runtime';
 import {
   announceSessionExpired,
@@ -17,7 +22,12 @@ const AUTH_API_PREFIX = '/api/v1/auth/';
 const LOGOUT_API_PATH = '/api/v1/auth/logout';
 const CREATOR_ROUTE_PREFIX = '/creator';
 const SESSION_EXPIRED_EVENT = 'digistream:session-expired';
+const BROADCAST_CREATE_PATH = /^\/api\/v1\/organisations\/[^/]+\/channels\/[^/]+\/broadcasts$/;
+const BROADCAST_CREATE_PENDING_KEY = 'digistream:pending-broadcast-create';
+const BROADCAST_CREATE_PENDING_TTL_MS = 30 * 60 * 1000;
 let sessionRecoveryStarted = false;
+
+const broadcastCreateRequests = new Map<string, Promise<unknown>>();
 
 installSessionCoordination();
 
@@ -32,6 +42,121 @@ export class ApiClientError extends Error {
     super(message);
     this.name = 'ApiClientError';
   }
+}
+
+type PendingBroadcastCreate = {
+  key: string;
+  path: string;
+  body: string;
+  startedAt: number;
+};
+
+type BroadcastCreateInput = {
+  title?: unknown;
+  slug?: unknown;
+  description?: unknown;
+  scheduledStartAt?: unknown;
+};
+
+function requestMethod(options: RequestInit): string {
+  return (options.method ?? 'GET').toUpperCase();
+}
+
+function requestBodyText(options: RequestInit): string | null {
+  return typeof options.body === 'string' ? options.body : null;
+}
+
+function broadcastCreateKey(path: string, options: RequestInit): string | null {
+  if (requestMethod(options) !== 'POST' || !BROADCAST_CREATE_PATH.test(path)) return null;
+  const body = requestBodyText(options);
+  return body ? `${path}\n${body}` : null;
+}
+
+function parseBroadcastCreateBody(body: string): BroadcastCreateInput | null {
+  try {
+    const parsed = JSON.parse(body) as unknown;
+    return typeof parsed === 'object' && parsed !== null
+      ? parsed as BroadcastCreateInput
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function pendingBroadcastCreate(): PendingBroadcastCreate | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(BROADCAST_CREATE_PENDING_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PendingBroadcastCreate>;
+    if (
+      typeof parsed.key !== 'string' ||
+      typeof parsed.path !== 'string' ||
+      typeof parsed.body !== 'string' ||
+      typeof parsed.startedAt !== 'number'
+    ) {
+      window.sessionStorage.removeItem(BROADCAST_CREATE_PENDING_KEY);
+      return null;
+    }
+    if (Date.now() - parsed.startedAt > BROADCAST_CREATE_PENDING_TTL_MS) {
+      window.sessionStorage.removeItem(BROADCAST_CREATE_PENDING_KEY);
+      return null;
+    }
+    return parsed as PendingBroadcastCreate;
+  } catch {
+    return null;
+  }
+}
+
+function rememberPendingBroadcastCreate(
+  key: string,
+  path: string,
+  body: string,
+): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem(
+      BROADCAST_CREATE_PENDING_KEY,
+      JSON.stringify({ key, path, body, startedAt: Date.now() } satisfies PendingBroadcastCreate),
+    );
+  } catch {
+    // Recovery metadata is best-effort. The server remains authoritative.
+  }
+}
+
+function clearPendingBroadcastCreate(key?: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (key) {
+      const pending = pendingBroadcastCreate();
+      if (pending && pending.key !== key) return;
+    }
+    window.sessionStorage.removeItem(BROADCAST_CREATE_PENDING_KEY);
+  } catch {
+    // Session storage failure must not block the request itself.
+  }
+}
+
+function sameNullableString(actual: string | null, requested: unknown): boolean {
+  if (requested === undefined || requested === null || requested === '') return actual === null;
+  return typeof requested === 'string' && actual === requested;
+}
+
+function matchesPendingBroadcast(broadcast: Broadcast, bodyText: string): boolean {
+  const requested = parseBroadcastCreateBody(bodyText);
+  if (!requested) return false;
+  if (
+    typeof requested.slug !== 'string' ||
+    typeof requested.title !== 'string' ||
+    broadcast.slug !== requested.slug ||
+    broadcast.title !== requested.title
+  ) {
+    return false;
+  }
+  if (!sameNullableString(broadcast.description, requested.description)) return false;
+  if (requested.scheduledStartAt === undefined) return broadcast.scheduledStartAt === null;
+  return typeof requested.scheduledStartAt === 'string' &&
+    broadcast.scheduledStartAt === requested.scheduledStartAt;
 }
 
 export function shouldRecoverExpiredSession(
@@ -67,7 +192,7 @@ function recoverExpiredSession(path: string, status: number): void {
   window.location.replace(sessionLoginPath('session-expired', currentPath));
 }
 
-export async function apiRequest<T>(
+async function performApiRequest<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
@@ -133,11 +258,100 @@ export async function apiRequest<T>(
     );
   }
 
-  if (path === LOGOUT_API_PATH && (options.method ?? 'GET').toUpperCase() === 'POST') {
+  if (path === LOGOUT_API_PATH && requestMethod(options) === 'POST') {
     announceSignedOut();
   }
 
   return reconcileCreatorContext(path, payload) as T;
+}
+
+async function reconcilePendingBroadcastCreate(
+  path: string,
+  body: string,
+): Promise<BroadcastResponse | null> {
+  const response = await performApiRequest<BroadcastListResponse>(path);
+  const broadcast = response.broadcasts.find((item) => matchesPendingBroadcast(item, body));
+  return broadcast ? { broadcast } : null;
+}
+
+function ambiguousBroadcastCreateFailure(error: unknown): boolean {
+  return (
+    (error instanceof ApiClientError && error.status === 0) ||
+    (error instanceof DOMException && error.name === 'AbortError')
+  );
+}
+
+async function recoverableBroadcastCreate<T>(
+  path: string,
+  options: RequestInit,
+  key: string,
+  body: string,
+): Promise<T> {
+  const priorPending = pendingBroadcastCreate();
+  const isRetry = priorPending?.key === key &&
+    priorPending.path === path &&
+    priorPending.body === body;
+
+  if (isRetry) {
+    const recovered = await reconcilePendingBroadcastCreate(path, body);
+    if (recovered) {
+      clearPendingBroadcastCreate(key);
+      return recovered as T;
+    }
+  }
+
+  rememberPendingBroadcastCreate(key, path, body);
+  try {
+    const result = await performApiRequest<T>(path, options);
+    clearPendingBroadcastCreate(key);
+    return result;
+  } catch (error) {
+    if (
+      ambiguousBroadcastCreateFailure(error) ||
+      (isRetry && error instanceof ApiClientError && error.code === 'BROADCAST_SLUG_TAKEN')
+    ) {
+      try {
+        const recovered = await reconcilePendingBroadcastCreate(path, body);
+        if (recovered) {
+          clearPendingBroadcastCreate(key);
+          return recovered as T;
+        }
+      } catch (recoveryError) {
+        if (recoveryError instanceof ApiClientError && recoveryError.status === 401) {
+          clearPendingBroadcastCreate(key);
+          throw recoveryError;
+        }
+      }
+    }
+
+    if (error instanceof ApiClientError && error.status === 401) {
+      clearPendingBroadcastCreate(key);
+    } else if (!ambiguousBroadcastCreateFailure(error)) {
+      clearPendingBroadcastCreate(key);
+    }
+    throw error;
+  }
+}
+
+export function apiRequest<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const key = broadcastCreateKey(path, options);
+  const body = requestBodyText(options);
+  if (!key || !body) return performApiRequest<T>(path, options);
+
+  const existing = broadcastCreateRequests.get(key);
+  if (existing) return existing as Promise<T>;
+
+  const request = recoverableBroadcastCreate<T>(path, options, key, body)
+    .finally(() => {
+      if (broadcastCreateRequests.get(key) === request) {
+        broadcastCreateRequests.delete(key);
+      }
+    });
+  broadcastCreateRequests.set(key, request);
+  return request;
 }
 
 export function realtimeEndpoint(path = '/api/v1/realtime'): string {
