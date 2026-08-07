@@ -25,6 +25,7 @@ test('broadcast creation persists bounded recovery metadata across refresh', asy
   expect(source).toContain('window.sessionStorage.setItem(');
   expect(source).toContain('const priorPending = pendingBroadcastCreate();');
   expect(source).toContain('priorPending?.key === key');
+  expect(source).toContain('const isRetry = priorPending?.key === key');
   expect(source).toContain('reconcilePendingBroadcastCreate(path, body)');
 });
 
@@ -33,7 +34,7 @@ test('ambiguous timeout-after-success reconciles the server before surfacing fai
 
   expect(source).toContain("error instanceof ApiClientError && error.status === 0");
   expect(source).toContain("error instanceof DOMException && error.name === 'AbortError'");
-  expect(source).toContain("error.code === 'BROADCAST_SLUG_TAKEN'");
+  expect(source).toContain("isRetry && error instanceof ApiClientError && error.code === 'BROADCAST_SLUG_TAKEN'");
   expect(source).toContain('performApiRequest<BroadcastListResponse>(path)');
   expect(source).toContain('response.broadcasts.find((item) => matchesPendingBroadcast(item, body))');
   expect(source).toContain('broadcast.slug !== requested.slug');
