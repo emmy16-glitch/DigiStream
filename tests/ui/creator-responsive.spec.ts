@@ -23,12 +23,14 @@ async function expectNoHorizontalOverflow(page: Page) {
 
 async function createCreatorWorkspace(page: Page, suffix: string) {
   await page.goto('/login');
-  await page.getByRole('tab', { name: 'Create account' }).click();
-  await page.getByLabel('Display name').fill('Playwright Creator');
+  await page.getByRole('button', { name: 'Create account', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Create an account' })).toBeVisible();
+  await page.getByRole('button', { name: 'Continue with Email', exact: true }).click();
+  await page.getByLabel('Full name').fill('Playwright Creator');
   await page.getByLabel('Email').fill(`playwright-${suffix}@example.test`);
   await page.getByLabel(/^Password/).fill(password);
   await page.getByLabel('Confirm password').fill(password);
-  await page.getByRole('button', { name: 'Create account with email' }).click();
+  await page.getByRole('button', { name: 'Create account', exact: true }).click();
 
   await expect(page.getByRole('heading', { name: 'What would you like to do?' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Listen to broadcasts' })).toBeVisible();
