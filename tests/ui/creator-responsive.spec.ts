@@ -150,7 +150,8 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
 
   await page.goto('/creator/studio-lobby');
   await expect(page.getByRole('heading', { name: 'Studio Lobby and call-ins' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Studio Lobby', exact: true }).first()).toBeVisible();
+  const lobbyNavigationLabel = testInfo.project.name.includes('android') ? 'Lobby' : 'Studio Lobby';
+  await expect(page.getByRole('button', { name: lobbyNavigationLabel, exact: true }).first()).toBeVisible();
   await expect(page.getByRole('button', { name: 'People', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Open Studio Lobby' }).click();
   const backstage = page.getByRole('dialog', { name: 'Studio Lobby' });
