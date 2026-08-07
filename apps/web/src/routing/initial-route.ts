@@ -4,6 +4,7 @@ const IMPLEMENTED_CREATOR_PATHS = new Set([
   CREATOR_OVERVIEW_PATH,
   '/creator/broadcasts',
   '/creator/audience',
+  '/creator/studio-lobby',
   '/creator/recordings',
 ]);
 
