@@ -154,6 +154,21 @@ function statusCopy(broadcast: ListenerBroadcast | null): string {
   return 'This broadcast is not available to listeners yet.';
 }
 
+function descriptionCopy(broadcast: ListenerBroadcast | null): string {
+  if (!broadcast) return 'Loading broadcast details…';
+  const description = broadcast.description?.trim();
+  if (description) return description;
+  if (broadcast.status === 'draft') return 'This broadcast is still being prepared.';
+  if (broadcast.status === 'scheduled') return 'This broadcast is scheduled and has not started yet.';
+  if (broadcast.status === 'starting') return 'This broadcast is getting ready to go live.';
+  if (broadcast.status === 'live' || broadcast.status === 'reconnecting' || broadcast.status === 'ending') {
+    return 'Listen to this live broadcast.';
+  }
+  if (broadcast.status === 'completed') return 'This live broadcast has ended.';
+  if (broadcast.status === 'cancelled') return 'This broadcast was cancelled.';
+  return 'This broadcast is unavailable.';
+}
+
 export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
   const [broadcast, setBroadcast] = useState<ListenerBroadcast | null>(null);
   const [phase, setPhase] = useState<PlaybackPhase>('loading');
@@ -719,9 +734,7 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
             {broadcast?.organisation.name ?? 'DigiStream'} · {broadcast?.channel.name ?? 'Live audio'}
           </p>
           <h1>{broadcast?.title ?? 'Loading broadcast…'}</h1>
-          <p className="listener-description">
-            {broadcast?.description ?? 'Live audio delivered through DigiStream.'}
-          </p>
+          <p className="listener-description">{descriptionCopy(broadcast)}</p>
 
           {countdown ? (
             <div className="listener-countdown">
