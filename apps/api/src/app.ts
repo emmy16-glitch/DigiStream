@@ -1,6 +1,7 @@
 import cors from '@fastify/cors';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { ServiceHealth } from '@digistream/contracts';
+import { registerLoginAbuseControls } from './auth/login-abuse.js';
 import { registerAuthRoutes } from './auth/routes.js';
 import { registerSessionManagementRoutes } from './auth/session-management.routes.js';
 import {
@@ -64,41 +65,30 @@ function positiveInteger(value: unknown, fallback: number): number {
 }
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
-  const app = Fastify({
-    logger: process.env.NODE_ENV !== 'test',
-  });
-
+  const app = Fastify({ logger: process.env.NODE_ENV !== 'test' });
   registerHttpErrorHandling(app);
 
-  const database =
-    options.database === undefined ? createDatabase() : options.database;
+  const database = options.database === undefined ? createDatabase() : options.database;
   const ownsDatabase = options.database === undefined && database !== null;
-  const contributionProvider =
-    options.contributionProvider === undefined
-      ? createLiveKitContributionProviderFromEnv()
-      : options.contributionProvider;
-  const backstageProvider =
-    options.backstageProvider === undefined
-      ? createLiveKitBackstageProviderFromEnv()
-      : options.backstageProvider;
-  const deliveryProvider =
-    options.deliveryProvider === undefined
-      ? createOvenMediaEngineDeliveryProviderFromEnv()
-      : options.deliveryProvider;
-  const mediaRelayProvider =
-    options.mediaRelayProvider === undefined
-      ? createLiveKitEgressProviderFromEnv()
-      : options.mediaRelayProvider;
-  const objectStorage =
-    options.objectStorage === undefined
-      ? createS3ObjectStorageFromEnv()
-      : options.objectStorage;
-  const recordingAccessManager =
-    options.recordingAccessManager === undefined
-      ? createRecordingAccessManagerFromEnv()
-      : options.recordingAccessManager;
-  const mediaControlSecret =
-    options.mediaControlSecret ?? process.env.MEDIA_CONTROL_SECRET;
+  const contributionProvider = options.contributionProvider === undefined
+    ? createLiveKitContributionProviderFromEnv()
+    : options.contributionProvider;
+  const backstageProvider = options.backstageProvider === undefined
+    ? createLiveKitBackstageProviderFromEnv()
+    : options.backstageProvider;
+  const deliveryProvider = options.deliveryProvider === undefined
+    ? createOvenMediaEngineDeliveryProviderFromEnv()
+    : options.deliveryProvider;
+  const mediaRelayProvider = options.mediaRelayProvider === undefined
+    ? createLiveKitEgressProviderFromEnv()
+    : options.mediaRelayProvider;
+  const objectStorage = options.objectStorage === undefined
+    ? createS3ObjectStorageFromEnv()
+    : options.objectStorage;
+  const recordingAccessManager = options.recordingAccessManager === undefined
+    ? createRecordingAccessManagerFromEnv()
+    : options.recordingAccessManager;
+  const mediaControlSecret = options.mediaControlSecret ?? process.env.MEDIA_CONTROL_SECRET;
   const recordingUploadMaxBytes = Math.min(
     1_073_741_824,
     positiveInteger(
@@ -123,6 +113,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     });
   }
 
+  registerLoginAbuseControls(app, database);
   registerAuthRoutes(app, database);
   registerSessionManagementRoutes(app, database);
   registerProfileRoutes(app, database);
@@ -142,34 +133,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     objectStorage,
     maxUploadBytes: recordingUploadMaxBytes,
   });
-  registerRecordingRetentionRoutes(app, database, mediaControlSecret, {
-    objectStorage,
-  });
-  registerRecordingOrphanRoutes(app, database, mediaControlSecret, {
-    objectStorage,
-  });
-  registerBroadcastRoutes(
-    app,
-    database,
-    mediaControlSecret,
-  );
+  registerRecordingRetentionRoutes(app, database, mediaControlSecret, { objectStorage });
+  registerRecordingOrphanRoutes(app, database, mediaControlSecret, { objectStorage });
+  registerBroadcastRoutes(app, database, mediaControlSecret);
   registerBroadcastContributionRoutes(app, database, contributionProvider);
-  registerBroadcastGuestRoutes(
-    app,
-    database,
-    contributionProvider,
-    backstageProvider,
-  );
-  registerBroadcastDeliveryRoutes(
-    app,
-    database,
-    deliveryProvider,
-    mediaRelayProvider,
-  );
-  const realtimeHub =
-    options.realtime === false
-      ? null
-      : registerRealtimeServer(app, database, options.realtime ?? {});
+  registerBroadcastGuestRoutes(app, database, contributionProvider, backstageProvider);
+  registerBroadcastDeliveryRoutes(app, database, deliveryProvider, mediaRelayProvider);
+  const realtimeHub = options.realtime === false
+    ? null
+    : registerRealtimeServer(app, database, options.realtime ?? {});
   registerBroadcastChatRoutes(app, database, realtimeHub);
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
@@ -179,24 +151,18 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
         service: 'digistream-api',
         timestamp: new Date().toISOString(),
         uptimeSeconds: Math.floor(process.uptime()),
-        database: {
-          status: 'not-configured',
-        },
+        database: { status: 'not-configured' },
       };
     }
 
     try {
       const latencyMs = await database.check();
-
       return {
         status: 'ok',
         service: 'digistream-api',
         timestamp: new Date().toISOString(),
         uptimeSeconds: Math.floor(process.uptime()),
-        database: {
-          status: 'connected',
-          latencyMs,
-        },
+        database: { status: 'connected', latencyMs },
       };
     } catch {
       return reply.code(503).send({
@@ -204,9 +170,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
         service: 'digistream-api',
         timestamp: new Date().toISOString(),
         uptimeSeconds: Math.floor(process.uptime()),
-        database: {
-          status: 'unavailable',
-        },
+        database: { status: 'unavailable' },
       });
     }
   });
@@ -314,6 +278,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'versioned-database-migrations',
       'cookie-session-authentication',
       'session-listing-and-remote-revocation',
+      'login-abuse-controls-and-audit',
       'public-user-profiles',
       'platform-capability-authorization',
       'request-correlation',
