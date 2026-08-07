@@ -82,9 +82,11 @@ test('Overview is state-aware: active channel with no broadcast shows one contex
   await expect(createBroadcast).toHaveCount(1);
   await expect(createBroadcast).toBeVisible();
 
-  // No dead Studio or Backstage actions when no broadcast exists.
-  await expect(page.getByRole('button', { name: 'Open Studio', exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Backstage', exact: true })).toHaveCount(0);
+  // The global shell may expose Backstage navigation, but Overview quick actions
+  // must not offer dead Studio/Backstage actions before a broadcast exists.
+  const quickActions = page.getByRole('region', { name: 'Quick actions' });
+  await expect(quickActions.getByRole('button', { name: 'Open Studio', exact: true })).toHaveCount(0);
+  await expect(quickActions.getByRole('button', { name: 'Backstage', exact: true })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Live now', exact: true })).toBeVisible();
   await expect(page.getByText('No broadcast is live', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Next up', exact: true })).toBeVisible();
@@ -96,8 +98,9 @@ test('Overview is state-aware: active channel with no broadcast shows one contex
   // Refresh reconstructs the same valid next action from real API state.
   await page.reload();
   await expect(page.getByRole('button', { name: 'Create broadcast', exact: true })).toHaveCount(1);
-  await expect(page.getByRole('button', { name: 'Open Studio', exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Backstage', exact: true })).toHaveCount(0);
+  const refreshedQuickActions = page.getByRole('region', { name: 'Quick actions' });
+  await expect(refreshedQuickActions.getByRole('button', { name: 'Open Studio', exact: true })).toHaveCount(0);
+  await expect(refreshedQuickActions.getByRole('button', { name: 'Backstage', exact: true })).toHaveCount(0);
   await expect(page.getByText('No broadcast is live', { exact: true })).toBeVisible();
 
   // The action opens the existing Broadcasts page and existing first-broadcast flow.
