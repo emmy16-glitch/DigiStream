@@ -33,10 +33,10 @@ All phases are governed by [`PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`](PRODU
 - [x] Add unique usernames, biography and discoverability preferences
 - [ ] Add storage-backed avatar metadata and controlled public URLs
 - [x] Add platform broadcaster capability and platform-administrator authority
-- [ ] Add an operator CLI for the first platform-administrator bootstrap
-- [ ] Add login rate limiting, suspicious-attempt controls and audit events
+- [x] Add an operator CLI for the first platform-administrator bootstrap
+- [x] Add login rate limiting, suspicious-attempt controls and audit events
 - [ ] Add email verification and password reset tokens
-- [ ] Add session listing and remote session revocation
+- [x] Add session listing and remote session revocation
 
 ## Phase 3 — Organisations and tenant authorization
 
