@@ -56,16 +56,34 @@ export function registerProfileAvatarRoutes(
   database: DatabaseContext | null,
   storage: ObjectStorage | null,
 ): void {
-  app.addContentTypeParser(/^image\/(?:jpeg|png|webp)$/i, { parseAs: 'buffer', bodyLimit: MAX_AVATAR_BYTES }, (_request, body, done) => {
-    done(null, body);
-  });
+  app.addContentTypeParser(
+    /^image\/(?:jpeg|png|webp)$/i,
+    { parseAs: 'buffer', bodyLimit: MAX_AVATAR_BYTES },
+    (_request, body, done) => done(null, body),
+  );
 
   app.put<{ Body: Buffer }>('/api/v1/profile/avatar', async (request, reply) => {
     const context = requireDependencies(database, storage);
     const user = await requireUser(request, context.database);
-    const contentType = String(request.headers['content-type'] ?? '').split(';', 1)[0]?.toLowerCase();
-    if (!contentType || !ALLOWED_TYPES.has(contentType) || !Buffer.isBuffer(request.body) || request.body.byteLength === 0) {
+    const contentType = String(request.headers['content-type'] ?? '')
+      .split(';', 1)[0]
+      ?.toLowerCase();
+    if (
+      !contentType ||
+      !ALLOWED_TYPES.has(contentType) ||
+      !Buffer.isBuffer(request.body) ||
+      request.body.byteLength === 0
+    ) {
       throw new ApiError(400, 'INVALID_AVATAR', 'Upload a JPEG, PNG or WebP image up to 2 MB.');
+    }
+
+    const profile = await context.database.pool.query<{ username: string }>(
+      'SELECT username FROM user_profiles WHERE user_id = $1 LIMIT 1',
+      [user.id],
+    );
+    const username = profile.rows[0]?.username;
+    if (!username) {
+      throw new ApiError(409, 'PROFILE_REQUIRED', 'Create your public profile before adding a profile image.');
     }
 
     const key = storageKey(user.id);
@@ -85,10 +103,9 @@ export function registerProfileAvatarRoutes(
       reply.header('cache-control', 'no-store');
       return reply.send({
         avatar: {
-          url: `/api/v1/profiles/${encodeURIComponent(user.username ?? user.id)}/avatar`,
+          url: `/api/v1/profiles/${encodeURIComponent(username)}/avatar`,
           contentType: saved.contentType,
           sizeBytes: saved.sizeBytes,
-          updatedAt: new Date().toISOString(),
         },
       });
     } catch (error) {
@@ -134,7 +151,10 @@ export function registerProfileAvatarRoutes(
     }
 
     try {
-      const object = await context.storage.getObject({ key: avatar.storage_key, contentType: avatar.content_type });
+      const object = await context.storage.getObject({
+        key: avatar.storage_key,
+        contentType: avatar.content_type,
+      });
       reply.header('content-type', avatar.content_type);
       reply.header('content-length', String(object.contentLength));
       reply.header('cache-control', 'public, max-age=300');
