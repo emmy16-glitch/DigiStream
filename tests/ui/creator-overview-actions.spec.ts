@@ -62,7 +62,7 @@ async function createAndActivateChannel(page: Page, suffix: string) {
   await expect(page.getByRole('heading', { name: 'How would you like to start?' })).toBeVisible();
 }
 
-test('Overview is state-aware: active channel with no broadcast shows a single create-broadcast action and survives refresh', async ({ page }, testInfo) => {
+test('Overview is state-aware: active channel with no broadcast shows one contextual create action and survives refresh', async ({ page }, testInfo) => {
   const suffix = `${testInfo.project.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-${randomUUID().slice(0, 8)}`;
 
   await createCreatorWorkspace(page, suffix);
@@ -74,30 +74,34 @@ test('Overview is state-aware: active channel with no broadcast shows a single c
   await page.getByRole('button', { name: 'Finish setup later', exact: true }).last().click();
 
   await expect(page).toHaveURL(/\/creator\/overview$/);
-  await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Good (morning|afternoon|evening), Playwright/ })).toBeVisible();
+  await expect(page.getByText('Here’s what’s happening with your broadcasts.', { exact: true })).toBeVisible();
 
-  // Active channel with no broadcast -> the one contextual primary action.
-  await expect(page.getByRole('button', { name: 'Create your first broadcast', exact: true })).toBeVisible();
+  // Active channel with no broadcast -> one contextual hero primary action.
+  const createBroadcast = page.getByRole('button', { name: 'Create broadcast', exact: true });
+  await expect(createBroadcast).toHaveCount(1);
+  await expect(createBroadcast).toBeVisible();
 
   // No dead Studio or Backstage actions when no broadcast exists.
-  await expect(page.getByRole('button', { name: 'Open broadcast studio', exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Manage backstage', exact: true })).toHaveCount(0);
-
-  // Exactly one primary action is exposed.
-  await expect(page.locator('.workspace-welcome-actions .ds-button-primary')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Open Studio', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Backstage', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Live now', exact: true })).toBeVisible();
+  await expect(page.getByText('No broadcast is live', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Next up', exact: true })).toBeVisible();
+  await expect(page.getByText('Nothing scheduled', { exact: true })).toBeVisible();
 
   await expectNoHorizontalOverflow(page);
   await attachViewport(page, testInfo, `overview-after-finish-later-${testInfo.project.name}`);
 
   // Refresh reconstructs the same valid next action from real API state.
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Create your first broadcast', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Open broadcast studio', exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Manage backstage', exact: true })).toHaveCount(0);
-  await expect(page.locator('.workspace-welcome-actions .ds-button-primary')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Create broadcast', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Open Studio', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Backstage', exact: true })).toHaveCount(0);
+  await expect(page.getByText('No broadcast is live', { exact: true })).toBeVisible();
 
   // The action opens the existing Broadcasts page and existing first-broadcast flow.
-  await page.getByRole('button', { name: 'Create your first broadcast', exact: true }).click();
+  await page.getByRole('button', { name: 'Create broadcast', exact: true }).click();
   await expect(page).toHaveURL(/\/creator\/broadcasts$/);
   await expect(page.getByRole('heading', { name: 'How would you like to start?' })).toBeVisible();
 });
