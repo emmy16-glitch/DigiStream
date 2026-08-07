@@ -1,6 +1,6 @@
 .ds-listener-shell {
   min-height: 100vh;
-  background: radial-gradient(circle at 50% -18%, rgba(45, 221, 89, .15), transparent 36%), var(--ds-canvas);
+  background: radial-gradient(circle at 50% -18%, rgba(31, 78, 140, .12), transparent 36%), var(--ds-canvas);
 }
 
 .ds-listener-header {
