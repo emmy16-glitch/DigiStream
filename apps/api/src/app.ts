@@ -1,6 +1,8 @@
 import cors from '@fastify/cors';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { ServiceHealth } from '@digistream/contracts';
+import { registerAccountRecoveryRoutes } from './auth/account-recovery.routes.js';
+import { createAccountTokenDeliveryFromEnv } from './auth/account-token-delivery.js';
 import { registerLoginAbuseControls } from './auth/login-abuse.js';
 import { registerAuthRoutes } from './auth/routes.js';
 import { registerSessionManagementRoutes } from './auth/session-management.routes.js';
@@ -117,6 +119,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   registerLoginAbuseControls(app, database);
   registerAuthRoutes(app, database);
   registerSessionManagementRoutes(app, database);
+  registerAccountRecoveryRoutes(app, database, createAccountTokenDeliveryFromEnv());
   registerProfileRoutes(app, database);
   registerProfileAvatarRoutes(app, database, objectStorage);
   registerOrganisationRoutes(app, database);
@@ -281,6 +284,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'cookie-session-authentication',
       'session-listing-and-remote-revocation',
       'login-abuse-controls-and-audit',
+      'email-verification-and-password-reset',
       'storage-backed-profile-avatars',
       'public-user-profiles',
       'platform-capability-authorization',

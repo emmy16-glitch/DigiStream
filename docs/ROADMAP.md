@@ -35,7 +35,7 @@ All phases are governed by [`PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`](PRODU
 - [x] Add platform broadcaster capability and platform-administrator authority
 - [x] Add an operator CLI for the first platform-administrator bootstrap
 - [x] Add login rate limiting, suspicious-attempt controls and audit events
-- [ ] Add email verification and password reset tokens
+- [x] Add email verification and password reset tokens
 - [x] Add session listing and remote session revocation
 
 ## Phase 3 — Organisations and tenant authorization
