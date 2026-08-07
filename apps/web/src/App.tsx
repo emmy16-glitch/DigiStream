@@ -153,9 +153,7 @@ function CreatorIntentChoice({ onBroadcast }: { onBroadcast(): void }) {
       <div>
         <StatusBadge tone="info">Choose how to continue</StatusBadge>
         <h2 id="creator-intent-title">What would you like to do?</h2>
-        <p>
-          Listen without creating a workspace, or continue into the existing creator setup to broadcast audio.
-        </p>
+        <p>Choose whether you want to listen or create a broadcast.</p>
       </div>
       <div className="workspace-welcome-actions">
         <Button icon="broadcast" onClick={onBroadcast} variant="primary">
@@ -216,9 +214,7 @@ function OrganisationSetup({
       <div>
         <StatusBadge tone="info">Step 1 of 3</StatusBadge>
         <h2 id="workspace-onboarding-title">Set up your creator workspace</h2>
-        <p>
-          Your organisation owns its channels, broadcasts, guests and team access. Channel setup comes next.
-        </p>
+        <p>Create your organisation to continue to channel setup.</p>
       </div>
       <form onSubmit={submit}>
         <label>
@@ -596,19 +592,19 @@ function CreatorDashboard({
       const welcomeCopy = (() => {
         switch (setupState) {
           case 'create_channel':
-            return 'Create and activate your first channel, then prepare a broadcast from the connected broadcasts workspace.';
+            return 'Create a channel to start broadcasting.';
           case 'finish_channel_activation':
             return 'An owner or administrator must activate the channel before a broadcast can start.';
           case 'create_broadcast':
-            return 'Your channel is active. Create your first broadcast now, or return to the broadcasts workspace to manage channels.';
+            return 'Your channel is ready. Create your first broadcast when you are ready.';
           case 'manage_live_broadcast':
-            return 'Your broadcast is live. Open the studio to monitor delivery and end safely.';
+            return 'Your broadcast is live. Open the Studio to monitor it or end it safely.';
           case 'prepare_broadcast':
-            return 'Prepare your next broadcast, check studio audio and manage listeners from DigiStream.';
+            return 'Open the Studio when you are ready to prepare your broadcast.';
           case 'view_completed_broadcast':
-            return 'Review your completed broadcast, manage its recording and prepare the next one.';
+            return 'Review your completed broadcast or prepare the next one.';
           default:
-            return 'Prepare your next broadcast, check studio audio and manage listeners from DigiStream.';
+            return 'Create or manage your next broadcast.';
         }
       })();
 
