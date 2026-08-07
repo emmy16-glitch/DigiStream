@@ -375,7 +375,7 @@ export function CreatorBroadcastsPage({
       <header className="workspace-page-intro creator-broadcasts-intro">
         <div>
           <h2>Broadcasts</h2>
-          <p>Create a channel, prepare a broadcast and open the live studio from one connected workspace.</p>
+          <p>Create and manage your channels and broadcasts.</p>
         </div>
         <div className="creator-broadcasts-intro-actions">
           <Button onClick={() => setShowChannelForm((current) => !current)}>
@@ -413,10 +413,9 @@ export function CreatorBroadcastsPage({
             </h3>
             <p>
               {firstChannelSetup
-                ? 'Your organisation contains channels, and each channel contains broadcasts. Set the listener visibility for this channel now.'
-                : 'A channel groups related broadcasts and controls public, unlisted or private visibility.'}
+                ? 'Choose your channel details and who can find it.'
+                : 'Choose the channel details and visibility.'}
             </p>
-            {firstChannelSetup ? <small>Organisation → Channel → Broadcast</small> : null}
           </div>
           <form className="creator-form-grid" onSubmit={createChannel}>
             <label>
@@ -588,7 +587,7 @@ export function CreatorBroadcastsPage({
                 </h3>
                 <p>
                   {firstBroadcastSetup
-                    ? `Choose what happens next for ${selectedChannel.name}. You can start now, schedule a future broadcast, or finish setup without creating one.`
+                    ? 'Choose whether to start now, schedule for later or finish setup later.'
                     : 'Leave the schedule empty to create a draft. Scheduled broadcasts require an active channel.'}
                 </p>
                 {firstBroadcastSetup ? (
