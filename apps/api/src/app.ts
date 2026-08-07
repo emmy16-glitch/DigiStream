@@ -27,6 +27,7 @@ import { createLiveKitContributionProviderFromEnv } from './modules/media/liveki
 import { createOvenMediaEngineDeliveryProviderFromEnv } from './modules/media/ovenmediaengine-provider.js';
 import { registerOrganisationMembershipRoutes } from './modules/organisations/organisation-memberships.routes.js';
 import { registerOrganisationRoutes } from './modules/organisations/organisations.routes.js';
+import { registerProfileAvatarRoutes } from './modules/profiles/profile-avatar.routes.js';
 import { registerProfileRoutes } from './modules/profiles/profiles.routes.js';
 import {
   createRecordingAccessManagerFromEnv,
@@ -117,6 +118,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   registerAuthRoutes(app, database);
   registerSessionManagementRoutes(app, database);
   registerProfileRoutes(app, database);
+  registerProfileAvatarRoutes(app, database, objectStorage);
   registerOrganisationRoutes(app, database);
   registerOrganisationMembershipRoutes(app, database);
   registerChannelRoutes(app, database);
@@ -279,6 +281,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'cookie-session-authentication',
       'session-listing-and-remote-revocation',
       'login-abuse-controls-and-audit',
+      'storage-backed-profile-avatars',
       'public-user-profiles',
       'platform-capability-authorization',
       'request-correlation',
