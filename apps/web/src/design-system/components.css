@@ -40,7 +40,7 @@
 .ds-button:active:not(:disabled):not([aria-disabled='true']):not([aria-busy='true']) { transform: translateY(0) scale(.98); }
 .ds-button:focus { outline: none; }
 .ds-button:focus-visible {
-  outline: 3px solid var(--ds-focus-ring);
+  outline: 3px solid var(--ds-info);
   outline-offset: 3px;
   box-shadow: 0 0 0 2px var(--ds-canvas);
 }
@@ -93,7 +93,7 @@
 .ds-icon-button:active:not(:disabled):not([aria-disabled='true']):not([aria-busy='true']) { transform: translateY(0) scale(.96); }
 .ds-icon-button:focus { outline: none; }
 .ds-icon-button:focus-visible {
-  outline: 3px solid var(--ds-focus-ring);
+  outline: 3px solid var(--ds-info);
   outline-offset: 3px;
   box-shadow: 0 0 0 2px var(--ds-canvas);
 }
