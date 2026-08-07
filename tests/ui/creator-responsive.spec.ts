@@ -176,7 +176,10 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await expect(page).toHaveURL(/\/creator\/chat$/);
   await expect(page.getByRole('heading', { name: 'Chat', exact: true }).last()).toBeVisible();
   await expect(page.getByText('Real broadcast messages only', { exact: true })).toBeVisible();
-  await expect(page.getByText('No placeholder messages or audience counts are shown.', { exact: true })).toBeVisible();
+  await expect(
+    page.locator('.creator-chat-conversation-heading').getByRole('heading', { name: broadcastTitle }),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Broadcast chat', exact: true })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await attachViewport(page, testInfo, 'chat');
 
