@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { DatabaseContext } from '../../db/client.js';
 import {
   clearSessionCookie,
@@ -50,7 +50,7 @@ function metadataFromRequest(request: FastifyRequest): RequestMetadata {
   };
 }
 
-function sendCoreAuthError(reply: Parameters<FastifyInstance['get']>[1] extends (...args: infer A) => unknown ? A[1] : never, error: CoreAuthError) {
+function sendCoreAuthError(reply: FastifyReply, error: CoreAuthError) {
   return reply.code(error.statusCode).send({
     error: {
       code: error.code,
