@@ -58,6 +58,7 @@ type CreatorPage =
   | 'Overview'
   | 'Broadcasts'
   | 'Studio Lobby'
+  | 'Chat'
   | 'Recordings'
   | 'Analytics';
 
@@ -77,6 +78,7 @@ const navigationDefinitions: NavigationDefinition[] = [
   { label: 'Overview', shortLabel: 'Home', icon: 'home', path: '/creator/overview' },
   { label: 'Broadcasts', shortLabel: 'Streams', icon: 'broadcast', path: '/creator/broadcasts' },
   { label: 'Studio Lobby', shortLabel: 'Lobby', icon: 'audience', path: '/creator/studio-lobby' },
+  { label: 'Chat', shortLabel: 'Chat', icon: 'chat', path: '/creator/chat' },
   { label: 'Recordings', shortLabel: 'Replay', icon: 'recording', path: '/creator/recordings' },
   { label: 'Analytics', shortLabel: 'Stats', icon: 'analytics', path: '/creator/analytics' },
 ];
@@ -269,7 +271,6 @@ function CreatorDashboard({
   const [studioOpen, setStudioOpen] = useState(false);
   const [studioContext, setStudioContext] = useState<RequestedStudioContext>({});
   const [backstageOpen, setBackstageOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   const loadOrganisations = useCallback(async () => {
@@ -426,7 +427,7 @@ function CreatorDashboard({
       <Button
         aria-label="Open creator chat"
         icon="chat"
-        onClick={() => setChatOpen(true)}
+        onClick={() => selectNavigation('Chat')}
         title="Chat"
         variant="ghost"
       >
@@ -557,6 +558,8 @@ function CreatorDashboard({
         </StatePanel>
       </>
     );
+  } else if (activeNav === 'Chat') {
+    pageContent = <CreatorChatWorkspace />;
   } else if (activeNav === 'Recordings') {
     pageContent = <CreatorRecordingsPage organisation={primaryOrganisation} />;
   } else {
@@ -592,9 +595,6 @@ function CreatorDashboard({
       ) : null}
       {backstageOpen ? (
         <CreatorBackstageWorkspace onClose={() => setBackstageOpen(false)} open />
-      ) : null}
-      {chatOpen ? (
-        <CreatorChatWorkspace onClose={() => setChatOpen(false)} open />
       ) : null}
     </CreatorShell>
   );

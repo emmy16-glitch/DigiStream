@@ -173,11 +173,14 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await backstage.getByRole('button', { name: 'Close Studio Lobby' }).click();
 
   await page.getByRole('button', { name: 'Open creator chat' }).click();
-  const chat = page.getByRole('dialog', { name: 'Creator live chat' });
-  await expect(chat).toBeVisible();
+  await expect(page).toHaveURL(/\/creator\/chat$/);
+  await expect(page.getByRole('heading', { name: 'Chat', exact: true }).last()).toBeVisible();
+  await expect(page.getByText('Real broadcast messages only', { exact: true })).toBeVisible();
+  await expect(page.getByText('No chat-capable broadcast selected', { exact: true })).toBeVisible();
+  await expect(page.getByText('No placeholder messages or audience counts are shown.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Broadcast chat', exact: true })).toHaveCount(0);
   await expectNoHorizontalOverflow(page);
   await attachViewport(page, testInfo, 'chat');
-  await chat.getByRole('button', { name: 'Close creator chat' }).click();
 
   await page.goto('/creator/recordings');
   await expect(page.getByRole('heading', { name: 'Recordings and replay' })).toBeVisible();
