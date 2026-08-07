@@ -35,6 +35,8 @@ type RealtimeState =
   | 'connected'
   | 'recovering';
 
+type HistoryState = 'idle' | 'loading' | 'ready' | 'unavailable';
+
 type RealtimeEvent = {
   type?: unknown;
   room?: { kind?: unknown; id?: unknown };
@@ -49,6 +51,29 @@ function readableError(error: unknown): string {
   if (error instanceof ApiClientError) return error.message;
   if (error instanceof Error) return error.message;
   return 'Live chat could not complete that request.';
+}
+
+function canRetryHistory(error: unknown): boolean {
+  if (!(error instanceof ApiClientError)) return true;
+  return error.status === 0 || error.status === 408 || error.status === 429 || error.status >= 500;
+}
+
+function historyUnavailableMessage(error: unknown): string {
+  if (error instanceof ApiClientError && error.code === 'CHAT_NOT_AVAILABLE') {
+    return 'This live chat is not available for this broadcast.';
+  }
+  if (error instanceof ApiClientError && error.status === 403) {
+    return 'This live chat is not available to this account.';
+  }
+  return readableError(error);
+}
+
+function readOnlyMessage(status: BroadcastState | null): string {
+  if (status === 'scheduled') return 'Chat opens when the broadcast starts.';
+  if (status === 'completed') return 'This broadcast has ended. Chat history is read-only.';
+  if (status === 'ending') return 'This broadcast is ending. Chat is now read-only.';
+  if (status === 'starting') return 'Chat will open when the broadcast is ready.';
+  return 'Chat is read-only right now.';
 }
 
 function clientMessageId(): string {
@@ -87,8 +112,10 @@ function realtimeLabel(state: RealtimeState): string {
   return 'History mode';
 }
 
-function statusLabel(status: BroadcastState | null): string {
-  if (!status) return 'Loading';
+function statusLabel(status: BroadcastState | null, historyState: HistoryState): string {
+  if (historyState === 'loading' || historyState === 'idle') return 'Loading';
+  if (historyState === 'unavailable') return 'Chat unavailable';
+  if (!status) return 'Chat';
   if (status === 'completed') return 'Chat history';
   if (status === 'scheduled') return 'Opens when broadcast starts';
   if (status === 'starting') return 'Opening chat';
@@ -112,15 +139,15 @@ export function BroadcastChat({
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [canSend, setCanSend] = useState(false);
-  const [broadcastStatus, setBroadcastStatus] =
-    useState<BroadcastState | null>(null);
+  const [broadcastStatus, setBroadcastStatus] = useState<BroadcastState | null>(null);
   const [draft, setDraft] = useState('');
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historyState, setHistoryState] = useState<HistoryState>('idle');
+  const [historyError, setHistoryError] = useState('');
+  const [historyRetryable, setHistoryRetryable] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-  const [realtimeState, setRealtimeState] =
-    useState<RealtimeState>('offline');
+  const [realtimeState, setRealtimeState] = useState<RealtimeState>('offline');
 
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<number | null>(null);
@@ -147,14 +174,9 @@ export function BroadcastChat({
   );
 
   const applyHistory = useCallback(
-    (
-      response: BroadcastChatHistoryResponse,
-      mode: 'initial' | 'latest' | 'older',
-    ) => {
+    (response: BroadcastChatHistoryResponse, mode: 'initial' | 'latest' | 'older') => {
       setMessages((current) =>
-        mode === 'initial'
-          ? response.messages
-          : mergeMessages(current, response.messages),
+        mode === 'initial' ? response.messages : mergeMessages(current, response.messages),
       );
       setCanSend(response.chat.canSend);
       setBroadcastStatus(response.chat.status);
@@ -170,7 +192,11 @@ export function BroadcastChat({
   const loadLatest = useCallback(
     async (mode: 'initial' | 'latest' = 'latest') => {
       if (!userRef.current) return;
-      if (mode === 'initial') setLoadingHistory(true);
+      if (mode === 'initial') {
+        setHistoryState('loading');
+        setHistoryError('');
+        setHistoryRetryable(false);
+      }
       try {
         const separator = messagesPath.includes('?') ? '&' : '?';
         const response = await apiRequest<BroadcastChatHistoryResponse>(
@@ -178,34 +204,36 @@ export function BroadcastChat({
         );
         if (mountedRef.current) {
           applyHistory(response, mode);
+          setHistoryState('ready');
+          setHistoryError('');
+          setHistoryRetryable(false);
           setError('');
         }
       } catch (requestError) {
-        if (
-          requestError instanceof ApiClientError &&
-          requestError.status === 401
-        ) {
+        if (requestError instanceof ApiClientError && requestError.status === 401) {
           userRef.current = null;
           setUser(null);
+        } else if (mountedRef.current && mode === 'initial') {
+          setCanSend(false);
+          setBroadcastStatus(null);
+          setHistoryState('unavailable');
+          setHistoryError(historyUnavailableMessage(requestError));
+          setHistoryRetryable(canRetryHistory(requestError));
         } else if (mountedRef.current) {
           setError(readableError(requestError));
         }
-      } finally {
-        if (mountedRef.current && mode === 'initial') setLoadingHistory(false);
       }
     },
     [applyHistory, messagesPath],
   );
 
   const loadOlder = useCallback(async () => {
-    if (!nextCursor || loadingOlder) return;
+    if (!nextCursor || loadingOlder || historyState !== 'ready') return;
     setLoadingOlder(true);
     try {
       const separator = messagesPath.includes('?') ? '&' : '?';
       const response = await apiRequest<BroadcastChatHistoryResponse>(
-        `${messagesPath}${separator}limit=50&before=${encodeURIComponent(
-          nextCursor,
-        )}`,
+        `${messagesPath}${separator}limit=50&before=${encodeURIComponent(nextCursor)}`,
       );
       if (mountedRef.current) {
         applyHistory(response, 'older');
@@ -216,7 +244,7 @@ export function BroadcastChat({
     } finally {
       if (mountedRef.current) setLoadingOlder(false);
     }
-  }, [applyHistory, loadingOlder, messagesPath, nextCursor]);
+  }, [applyHistory, historyState, loadingOlder, messagesPath, nextCursor]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -230,10 +258,7 @@ export function BroadcastChat({
       .catch((requestError) => {
         userRef.current = null;
         setUser(null);
-        if (
-          !(requestError instanceof ApiClientError) ||
-          requestError.status !== 401
-        ) {
+        if (!(requestError instanceof ApiClientError) || requestError.status !== 401) {
           setAuthError(readableError(requestError));
         }
       })
@@ -254,11 +279,15 @@ export function BroadcastChat({
     setHasMore(false);
     setCanSend(false);
     setBroadcastStatus(null);
+    setHistoryState(user ? 'loading' : 'idle');
+    setHistoryError('');
+    setHistoryRetryable(false);
+    setError('');
     if (user) void loadLatest('initial');
   }, [broadcastId, loadLatest, messagesPath, user]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || historyState !== 'ready') return;
     let stopped = false;
     let reconnectAttempt = 0;
 
@@ -304,10 +333,7 @@ export function BroadcastChat({
           void loadLatest('latest');
           return;
         }
-        if (
-          message.type === 'chat.message.created' &&
-          message.message
-        ) {
+        if (message.type === 'chat.message.created' && message.message) {
           appendMessage(message.message);
           return;
         }
@@ -328,22 +354,15 @@ export function BroadcastChat({
         }
         reconnectAttempt += 1;
         setRealtimeState('recovering');
-        const delay = Math.min(
-          10_000,
-          750 * 2 ** Math.min(4, reconnectAttempt),
-        );
+        const delay = Math.min(10_000, 750 * 2 ** Math.min(4, reconnectAttempt));
         reconnectTimerRef.current = window.setTimeout(connect, delay);
       });
 
-      socket.addEventListener('error', () => {
-        socket.close();
-      });
+      socket.addEventListener('error', () => socket.close());
     };
 
     connect();
-    const recoveryPoll = window.setInterval(() => {
-      void loadLatest('latest');
-    }, 15_000);
+    const recoveryPoll = window.setInterval(() => void loadLatest('latest'), 15_000);
 
     return () => {
       stopped = true;
@@ -354,7 +373,7 @@ export function BroadcastChat({
       if (socket && socket.readyState < WebSocket.CLOSING) socket.close(1000);
       setRealtimeState('offline');
     };
-  }, [appendMessage, broadcastId, loadLatest, roomRequest, user]);
+  }, [appendMessage, broadcastId, historyState, loadLatest, roomRequest, user]);
 
   useEffect(() => {
     if (!messages.length) return;
@@ -380,27 +399,18 @@ export function BroadcastChat({
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const body = draft.trim();
-    if (!body || sending || !canSend) return;
+    if (!body || sending || !canSend || historyState !== 'ready') return;
     setSending(true);
     setError('');
     try {
-      const response = await apiRequest<BroadcastChatMessageResponse>(
-        messagesPath,
-        {
-          method: 'POST',
-          body: jsonBody({
-            clientMessageId: clientMessageId(),
-            body,
-          }),
-        },
-      );
+      const response = await apiRequest<BroadcastChatMessageResponse>(messagesPath, {
+        method: 'POST',
+        body: jsonBody({ clientMessageId: clientMessageId(), body }),
+      });
       appendMessage(response.message);
       setDraft('');
     } catch (requestError) {
-      if (
-        requestError instanceof ApiClientError &&
-        requestError.code === 'CHAT_READ_ONLY'
-      ) {
+      if (requestError instanceof ApiClientError && requestError.code === 'CHAT_READ_ONLY') {
         setCanSend(false);
       }
       setError(readableError(requestError));
@@ -408,6 +418,11 @@ export function BroadcastChat({
       setSending(false);
     }
   }
+
+  const recoveringHistory = historyState === 'ready' && realtimeState === 'recovering';
+  const showEmptyState = historyState === 'ready' && !recoveringHistory && canSend && messages.length === 0;
+  const showReadOnlyState = historyState === 'ready' && !recoveringHistory && !canSend;
+  const showMessages = historyState === 'ready' && messages.length > 0;
 
   return (
     <section className={`broadcast-chat broadcast-chat-${variant}`}>
@@ -417,9 +432,9 @@ export function BroadcastChat({
           <h2>Broadcast chat</h2>
         </div>
         <div className="broadcast-chat-state">
-          <span className={`broadcast-chat-dot ${realtimeState}`} />
-          <strong>{statusLabel(broadcastStatus)}</strong>
-          <small>{realtimeLabel(realtimeState)}</small>
+          <span className={`broadcast-chat-dot ${historyState === 'ready' ? realtimeState : 'offline'}`} />
+          <strong>{statusLabel(broadcastStatus, historyState)}</strong>
+          {historyState === 'ready' ? <small>{realtimeLabel(realtimeState)}</small> : null}
         </div>
       </header>
 
@@ -455,10 +470,20 @@ export function BroadcastChat({
           {authError ? <div className="broadcast-chat-error" role="alert">{authError}</div> : null}
           <button type="submit">Sign in to chat</button>
         </form>
+      ) : historyState === 'loading' || historyState === 'idle' ? (
+        <div className="broadcast-chat-empty">Loading chat history…</div>
+      ) : historyState === 'unavailable' ? (
+        <div className="broadcast-chat-empty" role="status">
+          <strong>Chat unavailable</strong>
+          <span>{historyError}</span>
+          {historyRetryable ? (
+            <button onClick={() => void loadLatest('initial')} type="button">Try again</button>
+          ) : null}
+        </div>
       ) : (
         <>
           <div className="broadcast-chat-history" role="log" aria-live="polite">
-            {hasMore ? (
+            {hasMore && !recoveringHistory ? (
               <button
                 className="broadcast-chat-older"
                 disabled={loadingOlder}
@@ -469,61 +494,66 @@ export function BroadcastChat({
               </button>
             ) : null}
 
-            {loadingHistory ? (
-              <div className="broadcast-chat-empty">Loading chat history…</div>
-            ) : messages.length === 0 ? (
+            {recoveringHistory ? (
+              <div className="broadcast-chat-empty" role="status">
+                <strong>Recovering missed messages…</strong>
+                <span>DigiStream is reconnecting live updates and checking stored history.</span>
+              </div>
+            ) : showReadOnlyState && messages.length === 0 ? (
+              <div className="broadcast-chat-empty" role="status">
+                <strong>Chat is read-only</strong>
+                <span>{readOnlyMessage(broadcastStatus)}</span>
+              </div>
+            ) : showEmptyState ? (
               <div className="broadcast-chat-empty">
                 <strong>No messages yet.</strong>
                 <span>The first committed message will appear here on every connected screen.</span>
               </div>
-            ) : (
-              messages.map((message) => (
-                <article
-                  className={
-                    message.author.id === user.id
-                      ? 'broadcast-chat-message own'
-                      : 'broadcast-chat-message'
-                  }
-                  key={message.id}
-                >
-                  <div className="broadcast-chat-message-meta">
-                    <strong>{message.author.displayName}</strong>
-                    <time dateTime={message.createdAt}>
-                      {formatMessageTime(message.createdAt)}
-                    </time>
-                  </div>
-                  <p>{message.body}</p>
-                </article>
-              ))
-            )}
+            ) : null}
+
+            {showMessages ? messages.map((message) => (
+              <article
+                className={message.author.id === user.id ? 'broadcast-chat-message own' : 'broadcast-chat-message'}
+                key={message.id}
+              >
+                <div className="broadcast-chat-message-meta">
+                  <strong>{message.author.displayName}</strong>
+                  <time dateTime={message.createdAt}>{formatMessageTime(message.createdAt)}</time>
+                </div>
+                <p>{message.body}</p>
+              </article>
+            )) : null}
             <div ref={messagesEndRef} />
           </div>
 
           {error ? <div className="broadcast-chat-error" role="alert">{error}</div> : null}
 
-          <form className="broadcast-chat-composer" onSubmit={sendMessage}>
-            <label>
-              <span className="sr-only">Chat message</span>
-              <textarea
-                disabled={!canSend || sending}
-                maxLength={MAX_MESSAGE_LENGTH}
-                onChange={(event) => setDraft(event.target.value)}
-                placeholder={
-                  canSend
-                    ? 'Write a message…'
-                    : 'Chat is read-only for this broadcast state.'
-                }
-                rows={2}
-                value={draft}
-              />
-            </label>
-            <div>
-              <small>{draft.length}/{MAX_MESSAGE_LENGTH}</small>
-              <button disabled={!canSend || sending || !draft.trim()} type="submit">
-                {sending ? 'Sending…' : 'Send'}
-              </button>
+          {canSend && !recoveringHistory ? (
+            <form className="broadcast-chat-composer" onSubmit={sendMessage}>
+              <label>
+                <span className="sr-only">Chat message</span>
+                <textarea
+                  disabled={sending}
+                  maxLength={MAX_MESSAGE_LENGTH}
+                  onChange={(event) => setDraft(event.target.value)}
+                  placeholder="Write a message…"
+                  rows={2}
+                  value={draft}
+                />
+              </label>
+              <div>
+                <small>{draft.length}/{MAX_MESSAGE_LENGTH}</small>
+                <button disabled={sending || !draft.trim()} type="submit">
+                  {sending ? 'Sending…' : 'Send'}
+                </button>
+              </div>
+            </form>
+          ) : showReadOnlyState && messages.length > 0 ? (
+            <div className="broadcast-chat-empty" role="status">
+              <strong>Chat is read-only</strong>
+              <span>{readOnlyMessage(broadcastStatus)}</span>
             </div>
-          </form>
+          ) : null}
 
           <footer className="broadcast-chat-footer">
             <span>Signed in as {user.displayName}</span>
