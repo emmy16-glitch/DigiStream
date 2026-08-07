@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { BrandLockup } from './components';
+import { CreatorAccountMenu } from './CreatorAccountMenu';
 import { visibleCreatorNavigation } from './creator-navigation-visibility';
 import { Icon, type IconName } from './Icon';
 import './listener-trust.css';
@@ -12,20 +13,26 @@ export type CreatorNavigationItem = {
 };
 
 export function CreatorShell({
+  accountIdentity,
   actions,
   activeLabel,
   children,
   eyebrow,
   navigation,
+  onSignOut,
+  signingOut = false,
   title,
   workspaceDescription = 'Sign in to load organisation access',
   workspaceName = 'Creator workspace',
 }: {
+  accountIdentity: string;
   actions?: ReactNode;
   activeLabel: string;
   children: ReactNode;
   eyebrow: string;
   navigation: CreatorNavigationItem[];
+  onSignOut: () => Promise<void>;
+  signingOut?: boolean;
   title: string;
   workspaceDescription?: string;
   workspaceName?: string;
@@ -85,17 +92,20 @@ export function CreatorShell({
         <p className="sr-only" aria-live="polite" aria-atomic="true">
           {activeLabel} page opened
         </p>
-        {actions ? (
-          <div className="ds-creator-account-area" aria-label="Signed-in account actions">
-            <div className="ds-creator-account-summary">
-              <span className="ds-creator-account-label">Account</span>
-              <span className="ds-creator-account-identity" title={workspaceDescription}>
-                Signed in as {workspaceDescription}
-              </span>
-            </div>
-            <div className="ds-topbar-actions">{actions}</div>
+        <div className="ds-creator-account-area" aria-label="Signed-in account actions">
+          <div className="ds-creator-account-summary">
+            <span className="ds-creator-account-label">Account</span>
+            <span className="ds-creator-account-identity" title={accountIdentity}>
+              Signed in as {accountIdentity}
+            </span>
           </div>
-        ) : null}
+          <div className="ds-topbar-actions">{actions}</div>
+          <CreatorAccountMenu
+            identity={accountIdentity}
+            onSignOut={onSignOut}
+            signingOut={signingOut}
+          />
+        </div>
       </header>
 
       <main
