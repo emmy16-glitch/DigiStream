@@ -41,7 +41,7 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
 }
 
 ::selection {
-  color: #06100a;
+  color: #ffffff;
   background: var(--ds-accent);
 }
 
@@ -72,7 +72,7 @@ h1, h2, h3, p {
   z-index: 1000;
   padding: var(--ds-space-3) var(--ds-space-4);
   border-radius: var(--ds-radius-md);
-  color: #06100a;
+  color: #ffffff;
   background: var(--ds-accent);
   font-weight: var(--ds-weight-bold);
   text-decoration: none;
