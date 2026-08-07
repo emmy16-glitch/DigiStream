@@ -1,4 +1,4 @@
-/* Final manual-review corrections for PR #29. */
+/* Final manual-review corrections for PR #29 and later physical acceptance fixes. */
 
 .listener-orb::after {
   content: none;
@@ -35,9 +35,27 @@
   font-size: var(--ds-text-sm);
 }
 
+/*
+ * The Creator account surface is deliberately inline, not a modal or sheet.
+ * Sign out therefore stays directly reachable and does not claim browser/Android
+ * Back or Escape ownership. Those keys remain native navigation behaviour.
+ */
+.ds-creator-account-area:focus-within {
+  border-radius: var(--ds-radius-md);
+}
+
+.ds-creator-account-area .ds-button[aria-label^="Sign out "] {
+  min-width: 44px;
+  min-height: 44px;
+}
+
 @media (max-width: 640px) {
   .ds-listener-shell:has(.listener-call-in-role-action) .ds-listener-footer {
     margin-bottom: calc(108px + env(safe-area-inset-bottom));
+  }
+
+  .ds-creator-account-area .ds-button[aria-label^="Sign out "] span {
+    display: inline;
   }
 }
 
