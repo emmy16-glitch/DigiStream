@@ -18,6 +18,8 @@ DigiStream must not silently create public resources. The product opens the corr
 
 Every summary, readiness check, listener count, duration and recording status must come from real API-backed evidence. Omit or clearly mark unavailable data rather than fabricating it.
 
+Primary onboarding copy follows `AUTHENTICATION_ACCOUNT_AND_INTERFACE_COPY_ACCEPTANCE.md`: one clear heading, at most one short supporting sentence, and one contextual primary action. Architecture hierarchy and lifecycle explanations belong in field help, diagnostics or documentation when they are not required for the immediate decision.
+
 ## Canonical end-to-end journey
 
 ```text
@@ -40,6 +42,7 @@ Reuse the existing authentication experience. After a successful first registrat
 
 ```text
 What would you like to do?
+Choose whether you want to listen or create a broadcast.
 
 Broadcast audio
 Listen to broadcasts
@@ -71,6 +74,7 @@ Present:
 ```text
 Set up your creator workspace
 Step 1 of 3
+Create your organisation to continue to channel setup.
 ```
 
 Fields:
@@ -107,15 +111,10 @@ Present:
 ```text
 Create your first channel
 Step 2 of 3
+Choose your channel details and who can find it.
 ```
 
-Explain the hierarchy:
-
-```text
-Organisation
-  -> Channel
-      -> Broadcast
-```
+The organisation -> channel -> broadcast hierarchy remains an implementation and help concept, but it must not be repeated as system-oriented primary onboarding copy. The channel fields, public URL preview and visibility control provide the information needed for this step.
 
 Fields:
 
@@ -171,6 +170,7 @@ Present:
 ```text
 How would you like to start?
 Step 3 of 3
+Choose whether to start now, schedule for later or finish setup later.
 ```
 
 The created organisation and channel are already selected.
@@ -211,10 +211,10 @@ Behaviour:
 
 ### Finish later
 
-Use a visually secondary action:
+Use the existing explicit choice:
 
 ```text
-I’ll create a broadcast later
+Finish setup later
 ```
 
 Behaviour:
