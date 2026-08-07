@@ -82,7 +82,7 @@ test('Android portrait and short landscape keep account, forms and creator chrom
   });
 });
 
-test('Android desktop-site and 200% zoom retain obvious account access and readable creator content', async ({ page }, testInfo) => {
+test('Android desktop-site and 200% browser zoom retain obvious account access and readable creator content', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'android-desktop-site');
   await createCreatorAtChannelSetup(page, testInfo);
 
@@ -92,14 +92,21 @@ test('Android desktop-site and 200% zoom retain obvious account access and reada
   await expect(accountArea).toContainText('Signed in as');
   await expect(signOut).toBeVisible();
 
-  await page.evaluate(() => {
-    document.documentElement.style.zoom = '2';
-  });
+  // Native 200% browser zoom halves the effective CSS layout viewport and
+  // re-evaluates responsive media queries. CSS `zoom: 2` does not: it scales
+  // rendered boxes while leaving media-query evaluation at the unzoomed
+  // 980px desktop-site viewport, so it tests a different layout mechanism.
+  // Keep the Android desktop-site UA/context and emulate the browser-zoom
+  // layout viewport directly: 980x1740 at 200% becomes 490x870 CSS pixels.
+  await page.setViewportSize({ width: 490, height: 870 });
 
+  const channelName = page.getByLabel('Channel name');
   await expect(page.getByRole('heading', { name: 'Create your first channel' })).toBeVisible();
-  await page.getByLabel('Channel name').scrollIntoViewIfNeeded();
-  await expect(page.getByLabel('Channel name')).toBeVisible();
+  await channelName.scrollIntoViewIfNeeded();
+  await expect(channelName).toBeVisible();
   await expect(signOut).toBeVisible();
+  await expect(page.locator('.ds-creator-mobile-nav')).toBeVisible();
+  await expectVisibleAboveCreatorChrome(page, channelName);
 
   const signOutBox = await signOut.boundingBox();
   expect(signOutBox).not.toBeNull();
