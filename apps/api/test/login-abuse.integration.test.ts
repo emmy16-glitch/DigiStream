@@ -24,6 +24,7 @@ test(
     const email = `abuse-${suffix}@example.test`;
     const password = 'A-strong-test-password-123!';
     const app = buildApp({ database, realtime: false });
+    let userId: string | null = null;
 
     try {
       const registration = await app.inject({
@@ -32,6 +33,8 @@ test(
         payload: { email, displayName: 'Abuse Test', password },
       });
       assert.equal(registration.statusCode, 201);
+      userId = registration.json().user.id;
+      assert.equal(typeof userId, 'string');
 
       for (let attempt = 0; attempt < 2; attempt += 1) {
         const failure = await app.inject({
@@ -58,9 +61,12 @@ test(
         outcome: string;
         request_id: string | null;
       }>(
-        `SELECT email_hash, ip_hash, outcome, request_id
-           FROM auth_login_attempts
-          ORDER BY created_at ASC`,
+        `SELECT attempt.email_hash, attempt.ip_hash, attempt.outcome, attempt.request_id
+           FROM auth_login_attempts attempt
+           JOIN users ON users.id = attempt.user_id
+          WHERE users.email = $1
+          ORDER BY attempt.created_at ASC`,
+        [email],
       );
       assert.equal(audit.rows.length, 3);
       assert.deepEqual(
@@ -75,11 +81,10 @@ test(
       }
     } finally {
       await app.close();
-      await database.pool.query('DELETE FROM users WHERE email = $1', [email]);
-      await database.pool.query(
-        `DELETE FROM auth_login_attempts
-          WHERE created_at >= now() - interval '5 minutes'`,
-      );
+      if (userId) {
+        await database.pool.query('DELETE FROM auth_login_attempts WHERE user_id = $1', [userId]);
+        await database.pool.query('DELETE FROM users WHERE id = $1', [userId]);
+      }
       await database.close();
       if (previousEmailLimit === undefined) delete process.env.AUTH_LOGIN_EMAIL_FAILURE_LIMIT;
       else process.env.AUTH_LOGIN_EMAIL_FAILURE_LIMIT = previousEmailLimit;
