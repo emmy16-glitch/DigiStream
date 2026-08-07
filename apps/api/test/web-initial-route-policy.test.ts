@@ -8,6 +8,7 @@ test('keeps implemented creator destinations available', () => {
     '/creator/broadcasts',
     '/creator/audience',
     '/creator/studio-lobby',
+    '/creator/chat',
     '/creator/recordings',
   ]) {
     assert.deepEqual(resolveInitialRoute(path), {
