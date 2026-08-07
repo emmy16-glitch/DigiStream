@@ -57,7 +57,7 @@ import { ApiClientError, apiRequest, jsonBody } from './lib/api-client';
 type CreatorPage =
   | 'Overview'
   | 'Broadcasts'
-  | 'Backstage'
+  | 'Studio Lobby'
   | 'Recordings'
   | 'Analytics';
 
@@ -76,12 +76,13 @@ type OrganisationCreateResult =
 const navigationDefinitions: NavigationDefinition[] = [
   { label: 'Overview', shortLabel: 'Home', icon: 'home', path: '/creator/overview' },
   { label: 'Broadcasts', shortLabel: 'Streams', icon: 'broadcast', path: '/creator/broadcasts' },
-  { label: 'Backstage', shortLabel: 'Backstage', icon: 'audience', path: '/creator/audience' },
+  { label: 'Studio Lobby', shortLabel: 'Lobby', icon: 'audience', path: '/creator/studio-lobby' },
   { label: 'Recordings', shortLabel: 'Replay', icon: 'recording', path: '/creator/recordings' },
   { label: 'Analytics', shortLabel: 'Stats', icon: 'analytics', path: '/creator/analytics' },
 ];
 
 function creatorPageFromPath(pathname: string): CreatorPage {
+  if (pathname === '/creator/audience') return 'Studio Lobby';
   const match = navigationDefinitions.find((item) => item.path === pathname);
   return match?.label ?? 'Overview';
 }
@@ -433,13 +434,13 @@ function CreatorDashboard({
       </Button>
       {overviewState.canOpenBackstage ? (
         <Button
-          aria-label="Open creator backstage"
+          aria-label="Open Studio Lobby"
           icon="audience"
           onClick={() => setBackstageOpen(true)}
-          title="Backstage"
+          title="Studio Lobby"
           variant="ghost"
         >
-          Backstage
+          Studio Lobby
         </Button>
       ) : null}
       <LinkButton
@@ -533,26 +534,26 @@ function CreatorDashboard({
         organisation={primaryOrganisation}
       />
     );
-  } else if (activeNav === 'Backstage') {
+  } else if (activeNav === 'Studio Lobby') {
     pageContent = (
       <>
-        <PageIntro title="Backstage and call-ins">
-          Review listener requests, create guest invitations, admit waiting participants and control live-stage access.
+        <PageIntro title="Studio Lobby and call-ins">
+          Review listener requests, create guest invitations, admit waiting participants and manage who can join the live conversation.
         </PageIntro>
         <section className="workspace-action-card">
           <div>
-            <StatusBadge tone="info">Call-in moderation</StatusBadge>
-            <h2>Open the producer call-in desk</h2>
+            <StatusBadge tone="info">Guest and call-in moderation</StatusBadge>
+            <h2>Open the Studio Lobby</h2>
             <p>
               Select a broadcast, review pending listener requests and approve a caller to generate a secure guest link. The same workspace also manages invited guests and connected participants for {primaryOrganisation.name}.
             </p>
           </div>
           <Button icon="audience" onClick={() => setBackstageOpen(true)} variant="primary">
-            Open call-in desk
+            Open Studio Lobby
           </Button>
         </section>
-        <StatePanel kind="empty" title="No broadcast selected for backstage">
-          Open the call-in desk to select a scheduled or active broadcast. Pending requests, guest links and participant controls load only from the selected broadcast.
+        <StatePanel kind="empty" title="No broadcast selected for Studio Lobby">
+          Open the Studio Lobby to select a scheduled or active broadcast. Pending requests, guest links and participant controls load only from the selected broadcast.
         </StatePanel>
       </>
     );
