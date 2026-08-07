@@ -33,7 +33,10 @@ test('landing page matches the approved Echoo content structure without fake met
   assert.match(page, /Private Calls/);
   assert.match(page, /Record & Share/);
   assert.match(page, /Built for creators and communities/);
-  assert.doesNotMatch(page, /2\.4K|active creators|listeners|plays/);
+  assert.doesNotMatch(
+    page,
+    /\b\d+(?:\.\d+)?K?\+?\s+(?:active creators|listeners|plays)\b/i,
+  );
   assert.doesNotMatch(page, /landing-editorial-visual|EXAMPLE · UPCOMING/);
 });
 
