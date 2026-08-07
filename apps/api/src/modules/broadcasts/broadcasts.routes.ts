@@ -173,13 +173,31 @@ export function registerBroadcastRoutes(
       async (request) => {
         const context = requireDatabase(database);
         const user = await requireUser(request, context);
+        let lifecycleCommand = command;
+
+        // Studio's safe-stop action is valid while public delivery is still
+        // starting, but the canonical lifecycle deliberately reserves `end`
+        // for a broadcast that actually reached live/reconnecting. Treat an
+        // `/end` request against `starting` as the existing idempotent cancel
+        // command so the broadcast truthfully becomes cancelled rather than
+        // pretending that listener delivery had been live.
+        if (command === 'end') {
+          const current = await getOrganisationBroadcast(
+            context.db,
+            request.params.organisationId,
+            request.params.broadcastId,
+            user.id,
+          );
+          if (current.status === 'starting') lifecycleCommand = 'cancel';
+        }
+
         return {
           broadcast: await commandBroadcast(
             context.db,
             request.params.organisationId,
             request.params.broadcastId,
             user.id,
-            command,
+            lifecycleCommand,
             request.headers['idempotency-key'],
             request.body ?? {},
           ),
