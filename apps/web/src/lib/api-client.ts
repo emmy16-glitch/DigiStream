@@ -288,7 +288,11 @@ async function recoverableBroadcastCreate<T>(
   body: string,
 ): Promise<T> {
   const priorPending = pendingBroadcastCreate();
-  if (priorPending?.key === key && priorPending.path === path && priorPending.body === body) {
+  const isRetry = priorPending?.key === key &&
+    priorPending.path === path &&
+    priorPending.body === body;
+
+  if (isRetry) {
     const recovered = await reconcilePendingBroadcastCreate(path, body);
     if (recovered) {
       clearPendingBroadcastCreate(key);
@@ -304,7 +308,7 @@ async function recoverableBroadcastCreate<T>(
   } catch (error) {
     if (
       ambiguousBroadcastCreateFailure(error) ||
-      (error instanceof ApiClientError && error.code === 'BROADCAST_SLUG_TAKEN')
+      (isRetry && error instanceof ApiClientError && error.code === 'BROADCAST_SLUG_TAKEN')
     ) {
       try {
         const recovered = await reconcilePendingBroadcastCreate(path, body);
