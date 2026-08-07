@@ -49,6 +49,7 @@ import { ReplayDiscoveryPage } from './features/listening/ReplayDiscoveryPage';
 import { ReplayListeningPage } from './features/listening/ReplayListeningPage';
 import { parseListenerRoute } from './features/listening/listener-route';
 import { creatorSetupState } from './features/onboarding/creator-setup-state';
+import { CreatorOverviewPage } from './features/onboarding/CreatorOverviewPage';
 import { creatorOverviewDerivation } from './features/onboarding/overview-state';
 import { CreatorRecordingsPage } from './features/recordings/CreatorRecordingsPage';
 import { ApiClientError, apiRequest, jsonBody } from './lib/api-client';
@@ -102,40 +103,6 @@ function slugify(value: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 80);
-}
-
-function MetricCard({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <article className="metric-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{note}</small>
-    </article>
-  );
-}
-
-function Panel({
-  action,
-  children,
-  onAction,
-  title,
-}: {
-  action?: string;
-  children: ReactNode;
-  onAction?: () => void;
-  title: string;
-}) {
-  return (
-    <section className="panel">
-      <header className="panel-header">
-        <h2>{title}</h2>
-        {action && onAction ? (
-          <Button onClick={onAction} variant="ghost">{action}</Button>
-        ) : null}
-      </header>
-      {children}
-    </section>
-  );
 }
 
 function PageIntro({ children, title }: { children: ReactNode; title: string }) {
@@ -280,11 +247,9 @@ function OrganisationSetup({
 }
 
 function CreatorDashboard({
-  apiStatus,
   onSignedOut,
   user,
 }: {
-  apiStatus: PlatformStatus;
   onSignedOut(): void;
   user: AuthUser;
 }) {
@@ -531,7 +496,7 @@ function CreatorDashboard({
     if (loadingOverviewState) {
       pageContent = (
         <StatePanel kind="loading" title="Loading creator overview">
-          DigiStream is loading your real channel and broadcast state.
+          Echoo is loading your real channel and broadcast state.
         </StatePanel>
       );
     } else if (overviewStateError) {
@@ -546,121 +511,19 @@ function CreatorDashboard({
         </StatePanel>
       );
     } else {
-      const primaryAction = (() => {
-        switch (setupState) {
-          case 'create_channel':
-            return (
-              <Button icon="broadcast" onClick={openBroadcastsSetup} variant="primary">
-                Create your first channel
-              </Button>
-            );
-          case 'finish_channel_activation':
-            return (
-              <Button icon="broadcast" onClick={openBroadcastsSetup} variant="primary">
-                Finish channel activation
-              </Button>
-            );
-          case 'create_broadcast':
-            return (
-              <Button icon="broadcast" onClick={openBroadcastsSetup} variant="primary">
-                Create your first broadcast
-              </Button>
-            );
-          case 'manage_live_broadcast':
-            return (
-              <Button icon="broadcast" onClick={() => openStudio(overviewStudioContext)} variant="primary">
-                Open live studio
-              </Button>
-            );
-          case 'prepare_broadcast':
-            return (
-              <Button icon="broadcast" onClick={() => openStudio(overviewStudioContext)} variant="primary">
-                Open broadcast studio
-              </Button>
-            );
-          case 'view_completed_broadcast':
-            return (
-              <Button icon="broadcast" onClick={openBroadcastsSetup} variant="primary">
-                Manage broadcasts
-              </Button>
-            );
-          default:
-            return null;
-        }
-      })();
-
-      const welcomeCopy = (() => {
-        switch (setupState) {
-          case 'create_channel':
-            return 'Create a channel to start broadcasting.';
-          case 'finish_channel_activation':
-            return 'An owner or administrator must activate the channel before a broadcast can start.';
-          case 'create_broadcast':
-            return 'Your channel is ready. Create your first broadcast when you are ready.';
-          case 'manage_live_broadcast':
-            return 'Your broadcast is live. Open the Studio to monitor it or end it safely.';
-          case 'prepare_broadcast':
-            return 'Open the Studio when you are ready to prepare your broadcast.';
-          case 'view_completed_broadcast':
-            return 'Review your completed broadcast or prepare the next one.';
-          default:
-            return 'Create or manage your next broadcast.';
-        }
-      })();
-
       pageContent = (
-        <>
-          <section className="workspace-welcome">
-            <div>
-              <StatusBadge tone="success">Workspace connected</StatusBadge>
-              <h2>Welcome back, {firstName}</h2>
-              <p>{welcomeCopy}</p>
-              <div className="workspace-welcome-actions">
-                {primaryAction}
-                {overviewState.canOpenBackstage ? (
-                  <Button icon="audience" onClick={() => setBackstageOpen(true)}>
-                    Manage backstage
-                  </Button>
-                ) : null}
-                <LinkButton href="/listen" icon="headphones">
-                  Open listener app
-                </LinkButton>
-              </div>
-            </div>
-          </section>
-
-          <section className="metrics-grid" aria-label="Creator workspace summary">
-            <MetricCard label="Organisation" value={primaryOrganisation.name} note={`${primaryOrganisation.role} access · /${primaryOrganisation.slug}`} />
-            <MetricCard label="Live listeners" value="—" note="Available during verified live delivery" />
-            <MetricCard label="Published recordings" value="—" note="Open Replay to manage real recording jobs" />
-            <MetricCard label="API" value="Online" note={`${apiStatus.product} application server connected`} />
-          </section>
-
-          {overviewState.canOpenStudio ? (
-            <div className="content-grid">
-              <Panel title="Broadcast studio" action="Open studio" onAction={() => openStudio(overviewStudioContext)}>
-                <StatePanel kind="empty" title="No broadcast selected">
-                  Open the studio to select an organisation, channel and draft or scheduled broadcast.
-                </StatePanel>
-              </Panel>
-              <Panel title="Audio readiness" action="Run sound check" onAction={() => openStudio(overviewStudioContext)}>
-                <div className="audio-device">
-                  <div className="device-icon" aria-hidden="true">◍</div>
-                  <div>
-                    <strong>Microphone not prepared</strong>
-                    <span>Permission is requested only when you open Broadcast Studio.</span>
-                  </div>
-                </div>
-                <div className="level-meter" aria-label="Inactive audio level meter">
-                  {Array.from({ length: 18 }, (_, index) => <i key={index} />)}
-                </div>
-                <Button fullWidth icon="microphone" onClick={() => openStudio(overviewStudioContext)}>
-                  Run sound check
-                </Button>
-              </Panel>
-            </div>
-          ) : null}
-        </>
+        <CreatorOverviewPage
+          broadcasts={broadcasts}
+          channels={channels}
+          firstName={firstName}
+          onOpenBackstage={() => setBackstageOpen(true)}
+          onOpenBroadcasts={openBroadcastsSetup}
+          onOpenRecordings={() => selectNavigation('Recordings')}
+          onOpenStudio={() => openStudio(overviewStudioContext)}
+          organisation={primaryOrganisation}
+          overview={overviewState}
+          setupState={setupState}
+        />
       );
     }
   } else if (activeNav === 'Broadcasts') {
@@ -810,7 +673,6 @@ function CreatorApplication() {
 
   return (
     <CreatorDashboard
-      apiStatus={status}
       onSignedOut={() => setUser(null)}
       user={user}
     />
