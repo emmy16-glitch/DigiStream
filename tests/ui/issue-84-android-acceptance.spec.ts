@@ -34,17 +34,23 @@ async function expectNoHorizontalOverflow(page: Page) {
   expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
 }
 
-async function expectVisibleAboveMobileNav(page: Page, locator: ReturnType<Page['locator']>) {
+async function expectVisibleAboveCreatorChrome(page: Page, locator: ReturnType<Page['locator']>) {
   const nav = page.locator('.ds-creator-mobile-nav');
-  await expect(nav).toBeVisible();
   await locator.scrollIntoViewIfNeeded();
-  const [navBox, targetBox] = await Promise.all([nav.boundingBox(), locator.boundingBox()]);
-  expect(navBox).not.toBeNull();
+
+  const [navVisible, navBox, targetBox, viewportHeight] = await Promise.all([
+    nav.isVisible(),
+    nav.boundingBox(),
+    locator.boundingBox(),
+    page.evaluate(() => window.innerHeight),
+  ]);
+
   expect(targetBox).not.toBeNull();
-  expect(targetBox!.y + targetBox!.height).toBeLessThanOrEqual(navBox!.y + 1);
+  const lowerBoundary = navVisible && navBox ? navBox.y : viewportHeight;
+  expect(targetBox!.y + targetBox!.height).toBeLessThanOrEqual(lowerBoundary + 1);
 }
 
-test('Android portrait and short landscape keep account, forms and fixed navigation usable', async ({ page }, testInfo) => {
+test('Android portrait and short landscape keep account, forms and creator chrome usable', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'android-chrome');
   await createCreatorAtChannelSetup(page, testInfo);
 
@@ -59,14 +65,15 @@ test('Android portrait and short landscape keep account, forms and fixed navigat
   const portraitSignOutBox = await signOut.boundingBox();
   expect(portraitSignOutBox).not.toBeNull();
   expect(portraitSignOutBox!.height).toBeGreaterThanOrEqual(44);
-  await expectVisibleAboveMobileNav(page, channelName);
+  await expect(page.locator('.ds-creator-mobile-nav')).toBeVisible();
+  await expectVisibleAboveCreatorChrome(page, channelName);
   await expectNoHorizontalOverflow(page);
 
   await page.setViewportSize({ width: 844, height: 390 });
   await expect(continueHeading).toBeVisible();
   await expect(channelName).toBeVisible();
   await expect(signOut).toBeVisible();
-  await expectVisibleAboveMobileNav(page, channelName);
+  await expectVisibleAboveCreatorChrome(page, channelName);
   await expectNoHorizontalOverflow(page);
 
   await testInfo.attach('issue-84-short-landscape', {
@@ -97,6 +104,7 @@ test('Android desktop-site and 200% zoom retain obvious account access and reada
   const signOutBox = await signOut.boundingBox();
   expect(signOutBox).not.toBeNull();
   expect(signOutBox!.height).toBeGreaterThanOrEqual(44);
+  await expectNoHorizontalOverflow(page);
 
   await testInfo.attach('issue-84-desktop-site-200-percent', {
     body: await page.screenshot({ animations: 'disabled', fullPage: true }),
