@@ -234,6 +234,7 @@ export function CreatorBroadcastStudio({
   const [message, setMessage] = useState('Select a broadcast and test your microphone.');
   const [error, setError] = useState('');
   const [failure, setFailure] = useState<StudioDiagnostic | null>(null);
+  const [failureStage, setFailureStage] = useState<StudioFailureStage | null>(null);
   const [deliveryRecovery, setDeliveryRecovery] =
     useState<PublicDeliveryRecoveryState | null>(null);
   const [busy, setBusy] = useState(false);
@@ -291,11 +292,13 @@ export function CreatorBroadcastStudio({
   const clearStudioFailure = useCallback(() => {
     setError('');
     setFailure(null);
+    setFailureStage(null);
   }, []);
 
   const reportStudioFailure = useCallback(
     (stage: StudioFailureStage, requestError: unknown) => {
       setError('');
+      setFailureStage(stage);
       setFailure(diagnoseStudioFailure(stage, requestError));
     },
     [],
@@ -434,6 +437,7 @@ export function CreatorBroadcastStudio({
       return;
     }
     setFailure(null);
+    setFailureStage(null);
     setError('End the broadcast before closing the studio so public delivery stops safely.');
   }, [endConfirmationOpen]);
 
@@ -856,7 +860,7 @@ export function CreatorBroadcastStudio({
       await stopLocalMedia();
       setPhase('idle');
       reportStudioFailure(joinStage, requestError);
-      setMessage('The private Studio did not connect. Use the diagnostic stage and recovery guidance before retrying.');
+      setMessage('The private Studio did not connect. Follow the recovery guidance or return to Broadcasts.');
     } finally {
       setBusy(false);
     }
@@ -1056,6 +1060,7 @@ export function CreatorBroadcastStudio({
       !participantIdentityRef.current
     ) {
       setFailure(null);
+      setFailureStage(null);
       setError('Join the private studio and publish your microphone first.');
       return;
     }
@@ -1172,6 +1177,59 @@ export function CreatorBroadcastStudio({
     setMessage('You left the private studio. Public delivery was not active.');
   }
 
+  function canRetryStudioFailure(stage: StudioFailureStage | null): boolean {
+    return (
+      stage === 'livekit-module' ||
+      stage === 'microphone-permission' ||
+      stage === 'microphone-device' ||
+      stage === 'contribution-authorisation' ||
+      stage === 'studio-connect' ||
+      stage === 'microphone-publish' ||
+      stage === 'broadcast-lifecycle' ||
+      stage === 'contribution-verification' ||
+      stage === 'delivery-start' ||
+      stage === 'delivery-verification' ||
+      stage === 'studio-audio' ||
+      stage === 'safe-end'
+    );
+  }
+
+  function retryStudioFailure(): void {
+    if (!failureStage || busy) return;
+    if (
+      failureStage === 'livekit-module' ||
+      failureStage === 'microphone-permission' ||
+      failureStage === 'microphone-device'
+    ) {
+      void prepareMicrophone();
+      return;
+    }
+    if (
+      failureStage === 'contribution-authorisation' ||
+      failureStage === 'studio-connect' ||
+      failureStage === 'microphone-publish'
+    ) {
+      void joinStudio();
+      return;
+    }
+    if (
+      failureStage === 'broadcast-lifecycle' ||
+      failureStage === 'contribution-verification'
+    ) {
+      void goLive();
+      return;
+    }
+    if (failureStage === 'delivery-start' || failureStage === 'delivery-verification') {
+      void retryPublicDelivery();
+      return;
+    }
+    if (failureStage === 'studio-audio') {
+      void enableStudioAudio();
+      return;
+    }
+    if (failureStage === 'safe-end') void endBroadcast();
+  }
+
   if (!open) return null;
 
   return (
@@ -1211,15 +1269,30 @@ export function CreatorBroadcastStudio({
               <span>{failure?.message ?? error}</span>
               {failure ? <span className="studio-global-alert-recovery">{failure.recovery}</span> : null}
               {failure ? (
-                <small>
-                  Stage: {failure.stage}
-                  {failure.code ? ` · Code: ${failure.code}` : ''}
-                  {failure.status !== null ? ` · HTTP ${failure.status}` : ''}
-                  {failure.requestId ? ` · Request: ${failure.requestId}` : ''}
-                </small>
+                <details>
+                  <summary>Diagnostics</summary>
+                  <small>
+                    Stage: {failure.stage}
+                    {failure.code ? ` · Code: ${failure.code}` : ''}
+                    {failure.status !== null ? ` · HTTP ${failure.status}` : ''}
+                    {failure.requestId ? ` · Request: ${failure.requestId}` : ''}
+                  </small>
+                </details>
               ) : null}
             </div>
-            <Button onClick={clearStudioFailure} variant="ghost">Dismiss</Button>
+            <div className="studio-global-alert-actions">
+              {failure && canRetryStudioFailure(failureStage) ? (
+                <Button disabled={busy} onClick={retryStudioFailure} variant="primary">
+                  Try again
+                </Button>
+              ) : null}
+              {failure && !liveCritical ? (
+                <Button disabled={busy} onClick={requestClose} variant="secondary">
+                  Return to broadcasts
+                </Button>
+              ) : null}
+              <Button onClick={clearStudioFailure} variant="ghost">Dismiss</Button>
+            </div>
           </div>
         ) : null}
 
@@ -1525,11 +1598,14 @@ export function CreatorBroadcastStudio({
                   <div className="studio-inline-alert studio-inline-warning" role="status">
                     <strong>Private Studio is still connected</strong>
                     <span>{deliveryRecovery.message}</span>
-                    <small>
-                      Stage: {deliveryRecovery.stage.replaceAll('-', ' ')} · Code:{' '}
-                      {deliveryRecovery.code} · Checked:{' '}
-                      {new Date(deliveryRecovery.checkedAt).toLocaleTimeString()}
-                    </small>
+                    <details>
+                      <summary>Diagnostics</summary>
+                      <small>
+                        Stage: {deliveryRecovery.stage.replaceAll('-', ' ')} · Code:{' '}
+                        {deliveryRecovery.code} · Checked:{' '}
+                        {new Date(deliveryRecovery.checkedAt).toLocaleTimeString()}
+                      </small>
+                    </details>
                   </div>
                 ) : null}
 
@@ -1615,7 +1691,7 @@ export function CreatorBroadcastStudio({
                 ) : liveCritical ? (
                   <p className="studio-action-note">Closing the studio is blocked until the broadcast ends safely.</p>
                 ) : (
-                  <p className="studio-action-note">Provider details remain in diagnostics; this surface uses plain-language stages.</p>
+                  <p className="studio-action-note">Complete the steps above before starting listener delivery.</p>
                 )}
               </section>
 
