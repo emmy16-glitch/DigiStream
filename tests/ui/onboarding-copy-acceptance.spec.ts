@@ -7,6 +7,10 @@ const broadcastsPath = resolve(
   process.cwd(),
   'apps/web/src/features/broadcasting/CreatorBroadcastsPage.tsx',
 );
+const overviewPath = resolve(
+  process.cwd(),
+  'apps/web/src/features/onboarding/CreatorOverviewPage.tsx',
+);
 
 async function source(path: string): Promise<string> {
   return readFile(path, 'utf8');
@@ -52,11 +56,19 @@ test('first-broadcast decision copy names only the three real choices', async ()
   expect(broadcasts).not.toContain('Choose what happens next for ${selectedChannel.name}.');
 });
 
-test('returning creator setup copy avoids system-oriented workspace language', async () => {
+test('returning creator overview stays ordinary-language and action-led', async () => {
   const app = await source(appPath);
+  const overview = await source(overviewPath);
 
-  expect(app).toContain('Create a channel to start broadcasting.');
-  expect(app).toContain('Your channel is ready. Create your first broadcast when you are ready.');
-  expect(app).not.toContain('connected broadcasts workspace');
-  expect(app).not.toContain('manage listeners from DigiStream');
+  expect(app).toContain('<CreatorOverviewPage');
+  expect(overview).toContain('Here’s what’s happening with your broadcasts.');
+  expect(overview).toContain("case 'create_channel':");
+  expect(overview).toContain("label: 'Create your first channel'");
+  expect(overview).toContain("case 'create_broadcast':");
+  expect(overview).toContain("label: 'Create broadcast'");
+  expect(overview).toContain("case 'prepare_broadcast':");
+  expect(overview).toContain("label: 'Prepare broadcast'");
+  expect(overview).not.toContain('connected broadcasts workspace');
+  expect(overview).not.toContain('manage listeners from DigiStream');
+  expect(overview).not.toContain('Version 0');
 });
