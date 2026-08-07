@@ -3,6 +3,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
   type ReactNode,
@@ -65,6 +66,11 @@ type NavigationDefinition = {
   path: string;
   shortLabel: string;
 };
+
+type OrganisationCreateResult =
+  | { kind: 'created' }
+  | { kind: 'slug-conflict'; submittedSlug: string }
+  | { kind: 'error'; message: string };
 
 const navigationDefinitions: NavigationDefinition[] = [
   { label: 'Overview', shortLabel: 'Home', icon: 'home', path: '/creator/overview' },
@@ -165,20 +171,44 @@ function CreatorIntentChoice({ onBroadcast }: { onBroadcast(): void }) {
 
 function OrganisationSetup({
   busy,
-  error,
   onCreate,
 }: {
   busy: boolean;
-  error: string;
-  onCreate(name: string, slug: string): Promise<void>;
+  onCreate(name: string, slug: string): Promise<OrganisationCreateResult>;
 }) {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [slugEdited, setSlugEdited] = useState(false);
+  const [slugError, setSlugError] = useState('');
+  const [submissionError, setSubmissionError] = useState('');
+  const submittingRef = useRef(false);
+  const slugValueRef = useRef('');
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await onCreate(name, slug || slugify(name));
+    if (submittingRef.current || busy) return;
+
+    const submittedSlug = slug || slugify(name);
+    submittingRef.current = true;
+    setSlugError('');
+    setSubmissionError('');
+
+    try {
+      const result = await onCreate(name, submittedSlug);
+      if (
+        result.kind === 'slug-conflict' &&
+        slugValueRef.current === result.submittedSlug
+      ) {
+        setSlugError('That web address is already in use. Choose another one.');
+        window.requestAnimationFrame(() => {
+          document.getElementById('organisation-slug')?.focus();
+        });
+      } else if (result.kind === 'error') {
+        setSubmissionError(result.message);
+      }
+    } finally {
+      submittingRef.current = false;
+    }
   }
 
   return (
@@ -199,7 +229,13 @@ function OrganisationSetup({
             onChange={(event) => {
               const nextName = event.target.value;
               setName(nextName);
-              if (!slugEdited) setSlug(slugify(nextName));
+              setSubmissionError('');
+              if (!slugEdited) {
+                const nextSlug = slugify(nextName);
+                setSlug(nextSlug);
+                slugValueRef.current = nextSlug;
+                setSlugError('');
+              }
             }}
             placeholder="Faith City Church"
             required
@@ -210,11 +246,18 @@ function OrganisationSetup({
         <label>
           Public slug
           <input
+            aria-describedby="organisation-slug-help organisation-slug-error"
+            aria-invalid={slugError ? 'true' : undefined}
+            id="organisation-slug"
             maxLength={80}
             minLength={2}
             onChange={(event) => {
+              const nextSlug = slugify(event.target.value);
               setSlugEdited(true);
-              setSlug(slugify(event.target.value));
+              setSlug(nextSlug);
+              slugValueRef.current = nextSlug;
+              setSlugError('');
+              setSubmissionError('');
             }}
             pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
             placeholder="faith-city-church"
@@ -222,9 +265,16 @@ function OrganisationSetup({
             type="text"
             value={slug}
           />
-          <small>Used in public DigiStream links. Lowercase letters, numbers and hyphens only.</small>
+          <small id="organisation-slug-help">Used in public DigiStream links. Lowercase letters, numbers and hyphens only.</small>
+          {slugError ? (
+            <span className="workspace-inline-error" id="organisation-slug-error" role="alert">
+              {slugError}
+            </span>
+          ) : null}
         </label>
-        {error ? <div className="workspace-inline-error" role="alert">{error}</div> : null}
+        {submissionError ? (
+          <div className="workspace-inline-error" role="alert">{submissionError}</div>
+        ) : null}
         <Button loading={busy} type="submit" variant="primary">
           Continue to channel setup
         </Button>
@@ -343,9 +393,11 @@ function CreatorDashboard({
     setStudioContext({});
   }
 
-  async function createOrganisation(name: string, slug: string) {
+  async function createOrganisation(
+    name: string,
+    slug: string,
+  ): Promise<OrganisationCreateResult> {
     setCreatingOrganisation(true);
-    setOrganisationError('');
     try {
       const response = await apiRequest<OrganisationResponse>('/api/v1/organisations', {
         method: 'POST',
@@ -356,8 +408,17 @@ function CreatorDashboard({
       window.requestAnimationFrame(() => {
         document.getElementById('create-channel-title')?.focus();
       });
+      return { kind: 'created' };
     } catch (requestError) {
-      setOrganisationError(readableError(requestError));
+      if (
+        requestError instanceof ApiClientError &&
+        requestError.status === 409 &&
+        requestError.code === 'ORGANISATION_SLUG_TAKEN'
+      ) {
+        return { kind: 'slug-conflict', submittedSlug: slug };
+      }
+
+      return { kind: 'error', message: readableError(requestError) };
     } finally {
       setCreatingOrganisation(false);
     }
@@ -467,7 +528,6 @@ function CreatorDashboard({
     pageContent = (
       <OrganisationSetup
         busy={creatingOrganisation}
-        error={organisationError}
         onCreate={createOrganisation}
       />
     );
