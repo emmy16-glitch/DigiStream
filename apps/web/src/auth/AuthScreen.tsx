@@ -299,8 +299,9 @@ export function AuthScreen({
           </div>
           <div className="auth-choice-content">
             <h1 id="auth-heading">Create an account</h1>
+            <p className="auth-choice-subtitle">Choose how you want to create your account.</p>
             <button
-              className="auth-provider-pill auth-provider-pill-light"
+              className="auth-provider-pill auth-provider-pill-primary"
               disabled={busy || !providers.email.enabled}
               onClick={() => changeView('register-form')}
               type="button"
@@ -323,7 +324,7 @@ export function AuthScreen({
             ) : null}
             <p className="auth-switch-copy">
               Already have an account?{' '}
-              <button onClick={() => changeView('login')} type="button">Sign In</button>
+              <button onClick={() => changeView('login')} type="button">Sign in</button>
             </p>
           </div>
         </section>
@@ -349,12 +350,13 @@ export function AuthScreen({
 
         {view === 'register-form' ? (
           <header className="auth-reference-heading">
-            <h1 id="auth-heading">Hear every audio detail<br />clearly with <span>Echoo</span></h1>
+            <h1 id="auth-heading">Create your account</h1>
+            <p>Get started with your Echoo account.</p>
           </header>
         ) : (
           <header className="auth-reference-heading auth-login-heading">
             <h1 id="auth-heading">Welcome back</h1>
-            <p>Sign in with the email linked to your account.</p>
+            <p>Sign in to your Echoo account.</p>
           </header>
         )}
 
@@ -451,7 +453,7 @@ export function AuthScreen({
             onClick={() => changeView(view === 'login' ? 'register-choice' : 'login')}
             type="button"
           >
-            {view === 'login' ? 'Create account' : 'Sign In'}
+            {view === 'login' ? 'Create account' : 'Sign in'}
           </button>
         </p>
 
