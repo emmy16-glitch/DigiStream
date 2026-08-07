@@ -65,11 +65,12 @@ test('terminal broadcasts cannot silently re-enter the Studio contribution path'
   expect(contributionBlock).not.toContain("'failed'");
 });
 
-test('safe end maps starting to cancellation instead of inventing a live end', async () => {
+test('safe end maps starting and its idempotent cancelled replay to cancellation', async () => {
   const routes = await source(routePath);
 
   expect(routes).toContain("if (command === 'end')");
-  expect(routes).toContain("if (current.status === 'starting') lifecycleCommand = 'cancel';");
+  expect(routes).toContain("current.status === 'starting' || current.status === 'cancelled'");
+  expect(routes).toContain('lost successful response');
   expect(routes).toContain('pretending that listener delivery had been live');
 });
 
