@@ -66,8 +66,10 @@ test('Overview is state-aware: active channel with no broadcast shows a single c
   await createCreatorWorkspace(page, suffix);
   await createAndActivateChannel(page, suffix);
 
-  // Finish later keeps the active channel but chooses not to create a broadcast.
-  await page.getByRole('button', { name: 'I’ll create a broadcast later', exact: true }).click();
+  // Finish later is an explicit choice followed by one contextual final action.
+  await page.getByRole('button', { name: 'Finish setup later', exact: true }).click();
+  await expect(page.getByLabel('Broadcast title')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Finish setup later', exact: true }).last().click();
 
   await expect(page).toHaveURL(/\/creator\/overview$/);
   await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible();
