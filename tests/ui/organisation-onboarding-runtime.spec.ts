@@ -23,6 +23,7 @@ test('organisation slug conflicts stay editable across stale replies, repeated s
   await openOrganisationSetup(page);
 
   let postCount = 0;
+  let fulfilledCount = 0;
   await page.route('**/api/v1/organisations', async (route) => {
     if (route.request().method() !== 'POST') {
       await route.continue();
@@ -42,6 +43,7 @@ test('organisation slug conflicts stay editable across stale replies, repeated s
         },
       }),
     });
+    fulfilledCount += 1;
   });
 
   const name = page.getByLabel('Organisation name');
@@ -61,6 +63,7 @@ test('organisation slug conflicts stay editable across stale replies, repeated s
   await slug.fill('corrected-before-response');
 
   await expect.poll(() => postCount).toBe(1);
+  await expect.poll(() => fulfilledCount).toBe(1);
   await expect(name).toHaveValue('Recovery Church');
   await expect(slug).toHaveValue('corrected-before-response');
   await expect(page.getByText('That web address is already in use. Choose another one.')).toHaveCount(0);
@@ -69,6 +72,7 @@ test('organisation slug conflicts stay editable across stale replies, repeated s
   // returns focus to the slug instead of replacing the form with a Retry card.
   await form.evaluate((element) => (element as HTMLFormElement).requestSubmit());
   await expect.poll(() => postCount).toBe(2);
+  await expect.poll(() => fulfilledCount).toBe(2);
   await expect(page.getByText('That web address is already in use. Choose another one.')).toBeVisible();
   await expect(name).toHaveValue('Recovery Church');
   await expect(slug).toHaveValue('corrected-before-response');
