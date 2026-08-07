@@ -107,18 +107,34 @@ export function CreatorOverviewPage({
   onOpenRecordings,
   onOpenStudio,
 }: CreatorOverviewPageProps) {
-  const liveBroadcast = [...broadcasts]
+  const activeChannelIds = new Set(
+    channels
+      .filter((channel) => channel.organisationId === organisation.id && channel.status === 'active')
+      .map((channel) => channel.id),
+  );
+  const actionableBroadcasts = broadcasts.filter((broadcast) => (
+    broadcast.organisationId === organisation.id && activeChannelIds.has(broadcast.channelId)
+  ));
+  const now = Date.now();
+  const liveBroadcast = [...actionableBroadcasts]
     .filter((broadcast) => broadcast.status === 'live')
     .sort(newestFirst)[0] ?? null;
   const recoveringBroadcast = !liveBroadcast
-    ? [...broadcasts]
+    ? [...actionableBroadcasts]
         .filter((broadcast) => broadcast.status === 'reconnecting')
         .sort(newestFirst)[0] ?? null
     : null;
-  const scheduledBroadcast = [...broadcasts]
-    .filter((broadcast) => broadcast.status === 'scheduled' && broadcast.scheduledStartAt)
+  const scheduledBroadcast = [...actionableBroadcasts]
+    .filter((broadcast) => (
+      broadcast.status === 'scheduled' &&
+      Boolean(broadcast.scheduledStartAt) &&
+      new Date(broadcast.scheduledStartAt as string).getTime() > now
+    ))
     .sort(scheduledFirst)[0] ?? null;
-  const recentBroadcasts = [...broadcasts].sort(newestFirst).slice(0, 4);
+  const recentBroadcasts = broadcasts
+    .filter((broadcast) => broadcast.organisationId === organisation.id)
+    .sort(newestFirst)
+    .slice(0, 4);
 
   const primaryAction = (() => {
     switch (setupState) {
