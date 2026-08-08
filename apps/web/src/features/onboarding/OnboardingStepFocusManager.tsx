@@ -1,26 +1,39 @@
 import { useEffect } from 'react';
 
-function visibleAutomaticStepHeading(): HTMLElement | null {
-  const channelHeading = document.getElementById('create-channel-title');
-  const channelPage = channelHeading?.closest('.creator-broadcasts-page');
-  if (
-    channelHeading instanceof HTMLElement &&
-    channelPage &&
-    !channelPage.querySelector('.channel-strip')
-  ) {
-    return channelHeading;
+type OnboardingFocusTarget = 'create-channel-title' | 'create-broadcast-title';
+
+type PendingFocusRequest = {
+  originPath: string;
+  targetId: OnboardingFocusTarget;
+};
+
+function requestedTargetForSubmit(form: HTMLFormElement): OnboardingFocusTarget | null {
+  const organisationSetup = form.closest('.workspace-onboarding');
+  if (organisationSetup?.querySelector('#workspace-onboarding-title')) {
+    return 'create-channel-title';
   }
 
-  const broadcastHeading = document.getElementById('create-broadcast-title');
-  const broadcastPage = broadcastHeading?.closest('.creator-broadcasts-page');
-  if (
-    broadcastHeading instanceof HTMLElement &&
-    broadcastPage?.querySelector('[aria-label="First broadcast choices"]')
-  ) {
-    return broadcastHeading;
+  const channelPage = form.closest('.creator-broadcasts-page');
+  const firstChannelForm = form.closest('section[aria-labelledby="create-channel-title"]');
+  if (channelPage && firstChannelForm && !channelPage.querySelector('.channel-strip')) {
+    return 'create-broadcast-title';
   }
 
   return null;
+}
+
+function renderedRequestedHeading(targetId: OnboardingFocusTarget): HTMLElement | null {
+  const heading = document.getElementById(targetId);
+  if (!(heading instanceof HTMLElement)) return null;
+
+  const page = heading.closest('.creator-broadcasts-page');
+  if (!page) return null;
+
+  if (targetId === 'create-channel-title') {
+    return page.querySelector('.channel-strip') ? null : heading;
+  }
+
+  return page.querySelector('[aria-label="First broadcast choices"]') ? heading : null;
 }
 
 export function OnboardingStepFocusManager() {
@@ -28,22 +41,36 @@ export function OnboardingStepFocusManager() {
     const root = document.getElementById('root');
     if (!root) return;
 
-    let focusArmed = false;
+    let pendingRequest: PendingFocusRequest | null = null;
 
     const armForOnboardingSubmit = (event: Event) => {
-      const target = event.target;
-      if (!(target instanceof HTMLFormElement)) return;
-      if (!target.closest('.workspace-onboarding, .creator-broadcasts-page')) return;
-      focusArmed = true;
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) return;
+
+      const targetId = requestedTargetForSubmit(form);
+      if (!targetId) return;
+
+      pendingRequest = {
+        originPath: window.location.pathname,
+        targetId,
+      };
     };
 
     const focusRenderedStep = () => {
-      if (!focusArmed) return;
-      const heading = visibleAutomaticStepHeading();
+      const request = pendingRequest;
+      if (!request) return;
+
+      const pathname = window.location.pathname;
+      if (pathname !== request.originPath && pathname !== '/creator/broadcasts') {
+        pendingRequest = null;
+        return;
+      }
+
+      const heading = renderedRequestedHeading(request.targetId);
       if (!heading) return;
 
       heading.focus();
-      focusArmed = false;
+      pendingRequest = null;
     };
 
     const observer = new MutationObserver(focusRenderedStep);
