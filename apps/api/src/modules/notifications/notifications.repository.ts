@@ -1,4 +1,4 @@
-import { and, count, desc, eq, isNull, lt, or } from 'drizzle-orm';
+import { and, count, desc, eq, isNull, lt, or, sql } from 'drizzle-orm';
 import type { DigiStreamDatabase } from '../../db/client.js';
 import {
   userNotificationPreferences,
@@ -73,14 +73,19 @@ export async function listUserNotifications(
   userId: string,
   options: NotificationListOptions,
 ) {
+  // JavaScript Date and the public cursor preserve milliseconds, while PostgreSQL
+  // timestamptz can retain microseconds. Normalize the pagination sort/filter key
+  // to milliseconds so a round-tripped cursor cannot skip rows created within the
+  // same millisecond. UUID remains the deterministic tie-breaker.
+  const cursorCreatedAt = sql<Date>`date_trunc('milliseconds', ${userNotifications.createdAt})`;
   const filters = [eq(userNotifications.userId, userId)];
   if (!options.includeArchived) filters.push(isNull(userNotifications.archivedAt));
   if (options.before) {
     filters.push(
       or(
-        lt(userNotifications.createdAt, options.before.createdAt),
+        lt(cursorCreatedAt, options.before.createdAt),
         and(
-          eq(userNotifications.createdAt, options.before.createdAt),
+          eq(cursorCreatedAt, options.before.createdAt),
           lt(userNotifications.id, options.before.id),
         ),
       )!,
@@ -91,7 +96,7 @@ export async function listUserNotifications(
     .select()
     .from(userNotifications)
     .where(and(...filters))
-    .orderBy(desc(userNotifications.createdAt), desc(userNotifications.id))
+    .orderBy(desc(cursorCreatedAt), desc(userNotifications.id))
     .limit(options.limit + 1);
   const hasMore = rows.length > options.limit;
   const page = hasMore ? rows.slice(0, options.limit) : rows;
