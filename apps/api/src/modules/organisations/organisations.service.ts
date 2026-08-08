@@ -194,6 +194,7 @@ export async function updateOrganisation(
     const updated = await updateOrganisationRecord(
       db,
       organisationId,
+      userId,
       existing.role,
       input,
     );
