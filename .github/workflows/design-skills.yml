@@ -1,0 +1,45 @@
+name: Design skill integrity
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.agents/**'
+      - 'scripts/sync-design-agent-skills.mjs'
+      - 'scripts/verify-design-agent-skills.mjs'
+      - 'docs/DESIGN_AGENT_SKILLS.md'
+      - '.github/workflows/design-skills.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.agents/**'
+      - 'scripts/sync-design-agent-skills.mjs'
+      - 'scripts/verify-design-agent-skills.mjs'
+      - 'docs/DESIGN_AGENT_SKILLS.md'
+      - '.github/workflows/design-skills.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  materialize:
+    name: Materialize pinned design skills
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js 22.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+
+      - name: Verify local adapters and lock
+        run: npm run skills:verify
+
+      - name: Materialize exact pinned upstream sources
+        run: npm run skills:sync
+
+      - name: Verify materialized sources
+        run: npm run skills:verify

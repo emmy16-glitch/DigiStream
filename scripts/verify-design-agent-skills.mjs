@@ -6,18 +6,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const agentsRoot = join(root, '.agents');
 const lock = JSON.parse(await readFile(join(agentsRoot, 'sources.lock.json'), 'utf8'));
 const expectedSources = new Set(['ui-ux-pro-max', 'taste-skill', 'impeccable', 'emil-kowalski-skills']);
-const expectedAdapters = [
-  'ui-ux-pro-max',
-  'taste-skill',
-  'impeccable',
-  'baseline-ui',
-  'command-based-ui',
-  'navigating-around',
-  'performant-animations',
-  'realtime-rendering',
-  'sound',
-  'visual-effects',
-];
+const expectedAdapters = ['ui-ux-pro-max', 'taste-skill', 'impeccable', 'emil-design-eng'];
 
 function fail(message) {
   console.error(`design-agent skill verification failed: ${message}`);

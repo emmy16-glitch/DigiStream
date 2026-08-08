@@ -5,7 +5,7 @@
       "id": "ui-ux-pro-max",
       "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
       "commit": "abb7f2fd5a083fa1ff55c326a963ff0d95c33f99",
-      "paths": ["src/ui-ux-pro-max", "LICENSE"]
+      "paths": [".claude/skills/ui-ux-pro-max", "LICENSE"]
     },
     {
       "id": "taste-skill",
@@ -23,7 +23,7 @@
       "id": "emil-kowalski-skills",
       "repo": "emilkowalski/skills",
       "commit": "de33dbed000212b54400a33767d1e4d03654db2a",
-      "paths": ["skills", "LICENSE"]
+      "paths": ["skills/emil-design-eng", "LICENSE"]
     }
   ]
 }

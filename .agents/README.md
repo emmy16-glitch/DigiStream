@@ -15,12 +15,12 @@ Never use a design skill to invent APIs, routes, metrics, listener counts, readi
 
 ## Installed skill adapters
 
-- `ui-ux-pro-max` — UI/UX systems, patterns, accessibility and responsive design guidance.
-- `taste-skill` — visual-quality audit, hierarchy, spacing and product-polish guidance.
-- `impeccable` — design critique and focused interface-improvement playbooks.
-- Emil Kowalski design-engineering skills — baseline UI, command-based UI, navigation, performant animations, realtime rendering, sound and visual effects.
+- `ui-ux-pro-max` — broad UI/UX structure, accessibility, interaction, responsive and design-system guidance.
+- `taste-skill` — anti-slop visual guidance only where its upstream scope fits; it explicitly does not cover dashboards, data tables or multi-step product UI.
+- `impeccable` — product UI critique, audit, accessibility, responsive and final-polish playbooks.
+- `emil-design-eng` — Emil Kowalski's component craft, interaction feedback and animation-decision guidance.
 
-The local `SKILL.md` files are stable DigiStream adapters. Exact upstream revisions are pinned in `.agents/sources.lock.json`.
+The local `SKILL.md` files are stable DigiStream adapters. Exact upstream revisions and source paths are pinned in `.agents/sources.lock.json`.
 
 ## Materializing upstream source
 
@@ -32,4 +32,4 @@ npm run skills:sync
 
 This checks out the exact pinned revisions and copies only the declared source paths into `.agents/vendor/`. The vendor directory is intentionally gitignored so upstream repositories do not become noisy product source.
 
-Run `npm run skills:verify` to validate the registry. CI runs this through `npm run check`.
+Run `npm run skills:verify` to validate the registry. The dedicated design-skill workflow additionally materializes every pinned upstream source so a stale or invalid path cannot silently pass CI.

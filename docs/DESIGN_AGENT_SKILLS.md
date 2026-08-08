@@ -4,7 +4,9 @@ DigiStream exposes a repo-level design skill registry under `.agents/skills/` so
 
 ## What is installed
 
-The registry contains stable DigiStream adapters for UI UX Pro Max, Taste Skill, Impeccable and all seven skills in Emil Kowalski's current `skills/` repository. Exact upstream revisions are locked in `.agents/sources.lock.json`.
+The registry contains four stable DigiStream adapters: UI UX Pro Max, Taste Skill, Impeccable and Emil Kowalski's `emil-design-eng` skill. Exact upstream revisions and source paths are locked in `.agents/sources.lock.json`.
+
+Taste Skill's pinned upstream instructions explicitly exclude dashboards, data tables and multi-step product UI. In DigiStream it is therefore restricted to surfaces such as landing/auth-entry visual work where that scope actually fits. UI UX Pro Max and Impeccable remain the broad audit tools for product UI, while `emil-design-eng` guides interaction and motion craft.
 
 The upstream repositories are not copied permanently into application source. `npm run skills:sync` materializes the exact pinned source into the gitignored `.agents/vendor/` directory. This keeps the product repository small while preserving reproducibility and access to supporting scripts/reference files.
 
