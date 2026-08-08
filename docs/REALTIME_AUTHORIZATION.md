@@ -36,7 +36,7 @@ The first server event is:
 }
 ```
 
-The authenticated user room is joined automatically and cannot be left. It will later carry durable notification wake-ups; it does not replace persisted notification records.
+The authenticated user room is joined automatically and cannot be left. It carries immediate wake-ups for persisted targeted notifications; it never replaces persisted notification records.
 
 The server sends WebSocket ping frames and terminates clients that stop answering. Active sessions are rechecked periodically, so revoked or expired sessions are disconnected. Reconnecting always performs the complete cookie-session authorization again.
 
@@ -158,8 +158,8 @@ Production must configure an explicit web origin. Missing Origin headers are rej
 
 ## Current boundary
 
-The real-time owner provides connection authentication, room authorization, lifecycle management, bounded reactions and expiring typing events. Durable chat remains owned by the existing chat API and PostgreSQL; transient WebSocket events do not replace durable chat history.
+The real-time owner provides connection authentication, room authorization, lifecycle management, bounded reactions, expiring typing events and socket-scoped presence. Durable chat and moderation remain owned by the existing chat and moderation APIs and PostgreSQL; transient WebSocket events do not replace durable chat history or moderation state.
 
-User-visible presence, moderation controls and durable notifications remain separate roadmap work. In particular, socket presence must never be presented as media listener counts, and notification delivery must never precede persistence.
+Targeted moderation notifications are persisted before `notification.created` real-time delivery and remain recoverable from durable notification storage. Socket presence is never media listener-count or analytics evidence.
 
 The hub is currently process-local. That is correct for the single API instance used by development and the current smoke stack. Before horizontally scaling the API, room fan-out, interaction throttling and presence coordination must move behind Redis while PostgreSQL remains the source of truth for durable chat and notifications.
