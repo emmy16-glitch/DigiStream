@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": "ui-ux-pro-max",
+      "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "commit": "abb7f2fd5a083fa1ff55c326a963ff0d95c33f99",
+      "paths": ["src/ui-ux-pro-max", "LICENSE"]
+    },
+    {
+      "id": "taste-skill",
+      "repo": "Leonxlnx/taste-skill",
+      "commit": "e988add20dab0fa97d7a76781c48961c8184288e",
+      "paths": ["skills/taste-skill", "LICENSE"]
+    },
+    {
+      "id": "impeccable",
+      "repo": "pbakaus/impeccable",
+      "commit": "aee6ce9352b842217b3f57c78296a7a4fa35a7f3",
+      "paths": [".agents/skills/impeccable", "LICENSE"]
+    },
+    {
+      "id": "emil-kowalski-skills",
+      "repo": "emilkowalski/skills",
+      "commit": "de33dbed000212b54400a33767d1e4d03654db2a",
+      "paths": ["skills", "LICENSE"]
+    }
+  ]
+}

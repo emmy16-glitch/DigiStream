@@ -31,3 +31,6 @@ npm-debug.log*
 storage/
 uploads/
 recordings/
+
+# Locally materialized third-party design-agent skills
+.agents/vendor/
