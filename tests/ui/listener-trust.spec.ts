@@ -205,7 +205,7 @@ test('mobile request-to-speak flow uses a modal sheet and keeps status visible',
   await expect(launcher).toBeVisible();
   await launcher.click();
 
-  const dialog = page.getByRole('dialog', { name: 'Request to speak' });
+  const dialog = page.getByRole('dialog', { name: 'Request to join the conversation' });
   await expect(dialog).toBeVisible();
   await expect(launcher).toHaveCount(0);
   await expect(page.locator('.listener-call-in-backdrop')).toBeVisible();
@@ -213,8 +213,8 @@ test('mobile request-to-speak flow uses a modal sheet and keeps status visible',
 
   await dialog.getByLabel('Display name').fill('Listener One');
   await dialog.getByLabel('Contact email').fill('listener@example.test');
-  await dialog.getByLabel('What would you like to say?').fill('I would like to contribute briefly.');
-  await dialog.getByRole('button', { name: 'Send request' }).click();
+  await dialog.getByLabel('Note to the host').fill('I would like to contribute briefly.');
+  await dialog.getByRole('button', { name: 'Request to speak' }).click();
 
   await expect(page.getByText(/Request sent\. Your status will update here/)).toBeVisible();
   await expect(page.getByText('Waiting for review', { exact: true })).toBeVisible();
