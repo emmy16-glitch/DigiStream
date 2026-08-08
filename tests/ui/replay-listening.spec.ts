@@ -129,6 +129,6 @@ test('mobile replay page mints playback only after the listener chooses Start li
     'src',
     '/api/v1/recording-media?token=playwright-replay-token',
   );
-  await expect(page.getByText(/Playback access expires/)).toBeVisible();
+  await expect(page.getByText(/playback access expires/i)).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });
