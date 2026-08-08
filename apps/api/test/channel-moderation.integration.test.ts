@@ -5,7 +5,12 @@ import { eq } from 'drizzle-orm';
 import { buildApp } from '../src/app.js';
 import { createDatabase } from '../src/db/client.js';
 import { runMigrations } from '../src/db/migrate.js';
-import { organisationMemberships, organisations, users } from '../src/db/schema.js';
+import {
+  channels,
+  organisationMemberships,
+  organisations,
+  users,
+} from '../src/db/schema.js';
 
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -44,6 +49,18 @@ test(
       const userId = response.json().user.id as string;
       userIds.push(userId);
       return { userId, cookie: responseCookie(response) };
+    }
+
+    async function channelAuditCount(action?: string) {
+      const result = await database.pool.query<{ count: string }>(
+        `select count(*)::text as count
+           from organisation_audit_events
+          where organisation_id = $1
+            and action like 'channel.%'
+            and ($2::text is null or action = $2)`,
+        [organisationId, action ?? null],
+      );
+      return Number(result.rows[0]?.count ?? 0);
     }
 
     try {
@@ -97,6 +114,16 @@ test(
         assert.equal(transition.statusCode, 200);
       }
 
+      const follow = await app.inject({
+        method: 'PUT',
+        url: `/api/v1/channels/${organisationSlug}/${channelSlug}/follow`,
+        headers: { cookie: owner.cookie },
+      });
+      assert.equal(follow.statusCode, 200);
+      assert.equal(follow.json().following, true);
+
+      assert.equal(await channelAuditCount(), 0);
+
       const unauthenticated = await app.inject({
         method: 'POST',
         url: `/api/v1/organisations/${organisationId}/channels/${channelId}/moderation`,
@@ -129,10 +156,8 @@ test(
         payload: { status: 'suspended' },
       });
       assert.equal(genericSuspension.statusCode, 409);
-      assert.equal(
-        genericSuspension.json().error.code,
-        'CHANNEL_MODERATION_ROUTE_REQUIRED',
-      );
+      assert.equal(genericSuspension.json().error.code, 'CHANNEL_MODERATION_ROUTE_REQUIRED');
+      assert.equal(await channelAuditCount(), 0);
 
       const suspended = await app.inject({
         method: 'POST',
@@ -144,6 +169,7 @@ test(
       assert.equal(suspended.json().channel.status, 'suspended');
       assert.equal(suspended.json().channel.moderatedByUserId, moderator.userId);
       assert.equal(suspended.json().channel.moderationReason, 'Community safety review');
+      assert.equal(await channelAuditCount('channel.suspended'), 1);
 
       const genericRestore = await app.inject({
         method: 'PATCH',
@@ -162,6 +188,7 @@ test(
       });
       assert.equal(duplicateSuspend.statusCode, 200);
       assert.equal(duplicateSuspend.json().channel.moderationReason, 'Community safety review');
+      assert.equal(await channelAuditCount('channel.suspended'), 1);
 
       const hiddenWhileSuspended = await app.inject({
         method: 'GET',
@@ -177,6 +204,7 @@ test(
       });
       assert.equal(restored.statusCode, 200);
       assert.equal(restored.json().channel.status, 'active');
+      assert.equal(await channelAuditCount('channel.restored'), 1);
 
       const moderatorDelete = await app.inject({
         method: 'DELETE',
@@ -198,6 +226,7 @@ test(
       assert.ok(deleted.json().channel.deletedAt);
       assert.ok(deleted.json().channel.retentionUntil);
       assert.ok(new Date(deleted.json().channel.retentionUntil).getTime() > Date.now());
+      assert.equal(await channelAuditCount('channel.deleted'), 1);
 
       const duplicateDelete = await app.inject({
         method: 'DELETE',
@@ -207,6 +236,7 @@ test(
       });
       assert.equal(duplicateDelete.statusCode, 200);
       assert.equal(duplicateDelete.json().channel.deletedAt, deleted.json().channel.deletedAt);
+      assert.equal(await channelAuditCount('channel.deleted'), 1);
 
       const privateAfterDelete = await app.inject({
         method: 'GET',
@@ -232,6 +262,35 @@ test(
         false,
       );
 
+      const followsAfterDelete = await app.inject({
+        method: 'GET',
+        url: '/api/v1/me/channel-follows',
+        headers: { cookie: owner.cookie },
+      });
+      assert.equal(followsAfterDelete.statusCode, 200);
+      assert.equal(
+        followsAfterDelete.json().channels.some((channel: { id: string }) => channel.id === channelId),
+        false,
+      );
+
+      await database.db
+        .update(channels)
+        .set({ retentionUntil: new Date(Date.now() - 1_000) })
+        .where(eq(channels.id, channelId));
+      const expiredRestore = await app.inject({
+        method: 'POST',
+        url: `/api/v1/organisations/${organisationId}/channels/${channelId}/restore`,
+        headers: { cookie: owner.cookie },
+        payload: { reason: 'Late restore attempt' },
+      });
+      assert.equal(expiredRestore.statusCode, 409);
+      assert.equal(expiredRestore.json().error.code, 'CHANNEL_RETENTION_EXPIRED');
+      assert.equal(await channelAuditCount('channel.deletion_restored'), 0);
+
+      await database.db
+        .update(channels)
+        .set({ retentionUntil: new Date(deleted.json().channel.retentionUntil) })
+        .where(eq(channels.id, channelId));
       const restoredDeletion = await app.inject({
         method: 'POST',
         url: `/api/v1/organisations/${organisationId}/channels/${channelId}/restore`,
@@ -242,6 +301,7 @@ test(
       assert.equal(restoredDeletion.json().channel.status, 'draft');
       assert.equal(restoredDeletion.json().channel.deletedAt, null);
       assert.equal(restoredDeletion.json().channel.retentionUntil, null);
+      assert.equal(await channelAuditCount('channel.deletion_restored'), 1);
 
       const visibleToOrganisationAgain = await app.inject({
         method: 'GET',
