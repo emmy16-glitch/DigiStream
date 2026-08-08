@@ -42,19 +42,7 @@ export function OnboardingStepFocusManager() {
     if (!root) return;
 
     let pendingRequest: PendingFocusRequest | null = null;
-
-    const armForOnboardingSubmit = (event: Event) => {
-      const form = event.target;
-      if (!(form instanceof HTMLFormElement)) return;
-
-      const targetId = requestedTargetForSubmit(form);
-      if (!targetId) return;
-
-      pendingRequest = {
-        originPath: window.location.pathname,
-        targetId,
-      };
-    };
+    let scheduledFrame: number | null = null;
 
     const focusRenderedStep = () => {
       const request = pendingRequest;
@@ -69,17 +57,45 @@ export function OnboardingStepFocusManager() {
       const heading = renderedRequestedHeading(request.targetId);
       if (!heading) return;
 
-      heading.focus();
+      heading.focus({ preventScroll: true });
+      heading.scrollIntoView({ block: 'nearest' });
       pendingRequest = null;
     };
 
-    const observer = new MutationObserver(focusRenderedStep);
+    const scheduleFocusCheck = () => {
+      if (scheduledFrame !== null) cancelAnimationFrame(scheduledFrame);
+      scheduledFrame = requestAnimationFrame(() => {
+        scheduledFrame = null;
+        focusRenderedStep();
+      });
+    };
+
+    const armForOnboardingSubmit = (event: Event) => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) return;
+
+      const targetId = requestedTargetForSubmit(form);
+      if (!targetId) return;
+
+      pendingRequest = {
+        originPath: window.location.pathname,
+        targetId,
+      };
+
+      // A routed onboarding step can already be committed before MutationObserver
+      // receives another child-list mutation. Check once on the next paint as well
+      // as on subsequent mutations so keyboard focus never falls back to <body>.
+      scheduleFocusCheck();
+    };
+
+    const observer = new MutationObserver(() => scheduleFocusCheck());
     root.addEventListener('submit', armForOnboardingSubmit, true);
     observer.observe(root, { childList: true, subtree: true });
 
     return () => {
       root.removeEventListener('submit', armForOnboardingSubmit, true);
       observer.disconnect();
+      if (scheduledFrame !== null) cancelAnimationFrame(scheduledFrame);
     };
   }, []);
 
