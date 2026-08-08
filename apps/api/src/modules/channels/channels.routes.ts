@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
+import { listPublicChannelCategories } from './channel-categories.service.js';
 import { discoverChannels, type ChannelDiscoveryQuery } from './channel-discovery.service.js';
 import { registerChannelFollowingRoutes } from './channel-following.routes.js';
 import { registerChannelModerationRoutes } from './channel-moderation.routes.js';
@@ -34,6 +35,11 @@ export function registerChannelRoutes(
   app: FastifyInstance,
   database: DatabaseContext | null,
 ): void {
+  app.get('/api/v1/channel-categories', async (_request, reply) => {
+    const categories = await listPublicChannelCategories(requireDatabase(database));
+    return reply.header('cache-control', 'public, max-age=60').send({ categories });
+  });
+
   app.get<{ Querystring: ChannelDiscoveryQuery }>(
     '/api/v1/channels',
     async (request) => discoverChannels(requireDatabase(database), request.query),
@@ -110,7 +116,7 @@ export function registerChannelRoutes(
           request.params.organisationId,
           request.params.channelId,
           user.id,
-          request.body ?? {},
+        request.body ?? {},
         ),
       };
     },
