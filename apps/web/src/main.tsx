@@ -1,6 +1,7 @@
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { ConnectivityStatus } from './design-system/ConnectivityStatus';
 import { EchooSystemStatePage } from './design-system/EchooSystemStatePage';
 import { PlatformAdminApplication } from './features/admin/PlatformAdminApplication';
 import { parseGuestRoute } from './features/guests/guest-route';
@@ -16,6 +17,7 @@ import './design-system/content-resilience.css';
 import './design-system/feedback.css';
 import './design-system/creator-shell.css';
 import './design-system/listener-shell.css';
+import './design-system/connectivity-status.css';
 import './auth/auth-screen.css';
 import './auth/auth-entry-responsive.css';
 import './features/broadcasting/creator-broadcast-studio-landscape.css';
@@ -100,6 +102,7 @@ function RootApplication() {
 createRoot(root).render(
   <StrictMode>
     <OnboardingStepFocusManager />
+    <ConnectivityStatus />
     <RootApplication />
   </StrictMode>,
 );
