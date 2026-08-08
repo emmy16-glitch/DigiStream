@@ -75,6 +75,7 @@ export function instrumentPlaybackTelemetry<T extends TelemetryPlayer>(player: T
   let heartbeatTimer: number | null = null;
   let ended = false;
   let playing = false;
+  let errorReportedSinceProgress = false;
 
   const send = (event: TelemetryEvent, keepalive = false) => {
     if (ended && event !== 'ended') return;
@@ -110,6 +111,14 @@ export function instrumentPlaybackTelemetry<T extends TelemetryPlayer>(player: T
     );
   };
 
+  const reportError = () => {
+    playing = false;
+    stopHeartbeat();
+    if (errorReportedSinceProgress) return;
+    errorReportedSinceProgress = true;
+    send('error');
+  };
+
   const finish = (keepalive = false) => {
     if (ended) return;
     ended = true;
@@ -123,6 +132,7 @@ export function instrumentPlaybackTelemetry<T extends TelemetryPlayer>(player: T
       ? (raw as { newstate?: unknown }).newstate
       : undefined;
     if (state === 'playing') {
+      errorReportedSinceProgress = false;
       playing = true;
       send('started');
       startHeartbeat();
@@ -130,6 +140,7 @@ export function instrumentPlaybackTelemetry<T extends TelemetryPlayer>(player: T
     }
     if (state === 'paused') {
       playing = false;
+      errorReportedSinceProgress = true;
       stopHeartbeat();
       send('paused');
       return;
@@ -141,14 +152,10 @@ export function instrumentPlaybackTelemetry<T extends TelemetryPlayer>(player: T
       return;
     }
     if (state === 'complete') finish();
-    if (state === 'error') {
-      playing = false;
-      stopHeartbeat();
-      send('error');
-    }
+    if (state === 'error') reportError();
   });
   player.on('sourceChanged', () => send('source_changed'));
-  player.on('error', () => send('error'));
+  player.on('error', reportError);
 
   const originalRemove = player.remove.bind(player);
   player.remove = (() => {
