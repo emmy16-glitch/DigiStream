@@ -4,6 +4,7 @@ import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
 import type { DeliveryProvider } from '../media/delivery-provider.js';
 import type { MediaRelayProvider } from '../media/media-relay-provider.js';
+import { findBroadcastDeliveryBySlugs } from './broadcast-delivery.repository.js';
 import {
   issueMemberBroadcastPlayback,
   issuePublicBroadcastPlayback,
@@ -11,6 +12,12 @@ import {
   startBroadcastDelivery,
   stopBroadcastDelivery,
 } from './broadcast-delivery.service.js';
+import {
+  createPlaybackTelemetrySession,
+  recordPlaybackTelemetryEvent,
+  type PlaybackTelemetryEvent,
+  type PlaybackTelemetryProtocol,
+} from './playback-telemetry.repository.js';
 
 function requireDatabase(database: DatabaseContext | null): DatabaseContext {
   if (!database) {
@@ -84,19 +91,60 @@ async function withDeliveryOperationLock<T>(
   }
 }
 
-function playbackResponse(playback: ReturnType<DeliveryProvider['issuePlayback']>) {
+function playbackResponse(
+  playback: ReturnType<DeliveryProvider['issuePlayback']>,
+  telemetry: Awaited<ReturnType<typeof createPlaybackTelemetrySession>>,
+) {
   return {
     playback: {
       provider: playback.provider,
       expiresAt: playback.expiresAt.toISOString(),
       sources: playback.sources,
     },
+    telemetry,
   };
 }
 
 function noStore(reply: { header(name: string, value: string): unknown }): void {
   reply.header('cache-control', 'no-store');
   reply.header('pragma', 'no-cache');
+}
+
+const telemetryEvents = new Set<PlaybackTelemetryEvent>([
+  'started',
+  'heartbeat',
+  'paused',
+  'buffering',
+  'source_changed',
+  'error',
+  'ended',
+]);
+const telemetrySessionIdPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function parseTelemetryBody(body: unknown): {
+  token: string;
+  event: PlaybackTelemetryEvent;
+  protocol: PlaybackTelemetryProtocol | null;
+} {
+  if (!body || typeof body !== 'object') {
+    throw new ApiError(400, 'INVALID_PLAYBACK_TELEMETRY', 'Playback telemetry is invalid.');
+  }
+  const candidate = body as Record<string, unknown>;
+  const token = typeof candidate.token === 'string' ? candidate.token : '';
+  const event = typeof candidate.event === 'string' ? candidate.event : '';
+  const protocol = candidate.protocol === 'webrtc' || candidate.protocol === 'llhls'
+    ? candidate.protocol
+    : null;
+  if (
+    token.length < 32 ||
+    token.length > 128 ||
+    !telemetryEvents.has(event as PlaybackTelemetryEvent) ||
+    (candidate.protocol !== undefined && candidate.protocol !== null && protocol === null)
+  ) {
+    throw new ApiError(400, 'INVALID_PLAYBACK_TELEMETRY', 'Playback telemetry is invalid.');
+  }
+  return { token, event: event as PlaybackTelemetryEvent, protocol };
 }
 
 export function registerBroadcastDeliveryRoutes(
@@ -153,8 +201,13 @@ export function registerBroadcastDeliveryRoutes(
         request.params.broadcastId,
         user.id,
       );
+      const telemetry = await createPlaybackTelemetrySession(
+        context,
+        request.params.broadcastId,
+        user.id,
+      );
       noStore(reply);
-      return playbackResponse(playback);
+      return playbackResponse(playback, telemetry);
     },
   );
 
@@ -176,8 +229,48 @@ export function registerBroadcastDeliveryRoutes(
         request.params.channelSlug,
         request.params.broadcastSlug,
       );
+      const broadcast = await findBroadcastDeliveryBySlugs(
+        context.db,
+        request.params.organisationSlug,
+        request.params.channelSlug,
+        request.params.broadcastSlug,
+      );
+      if (!broadcast) {
+        throw new ApiError(404, 'NOT_FOUND', 'The requested resource was not found.');
+      }
+      // Public playback must remain independent of any stale or invalid signed-in
+      // browser state. Public sessions are therefore anonymous telemetry sessions;
+      // authenticated member playback is the authoritative signed-in session path.
+      const telemetry = await createPlaybackTelemetrySession(
+        context,
+        broadcast.id,
+        null,
+      );
       noStore(reply);
-      return playbackResponse(playback);
+      return playbackResponse(playback, telemetry);
+    },
+  );
+
+  app.post<{
+    Params: { sessionId: string };
+    Body: unknown;
+  }>(
+    '/api/v1/playback-telemetry/:sessionId',
+    async (request, reply) => {
+      const context = requireDatabase(database);
+      if (!telemetrySessionIdPattern.test(request.params.sessionId)) {
+        throw new ApiError(404, 'NOT_FOUND', 'The requested resource was not found.');
+      }
+      const body = parseTelemetryBody(request.body);
+      const accepted = await recordPlaybackTelemetryEvent(context, {
+        sessionId: request.params.sessionId,
+        ...body,
+      });
+      if (!accepted) {
+        throw new ApiError(404, 'NOT_FOUND', 'The requested resource was not found.');
+      }
+      noStore(reply);
+      return { accepted: true };
     },
   );
 }

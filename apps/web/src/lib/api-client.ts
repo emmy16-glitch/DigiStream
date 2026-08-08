@@ -5,6 +5,7 @@ import type {
   BroadcastResponse,
 } from '@digistream/contracts';
 import { reconcileCreatorContext } from './backstage-context-runtime';
+import { capturePlaybackTelemetryDescriptor } from './playback-telemetry-client';
 import {
   announceSessionExpired,
   announceSignedOut,
@@ -262,6 +263,7 @@ async function performApiRequest<T>(
     announceSignedOut();
   }
 
+  capturePlaybackTelemetryDescriptor(payload, apiBaseUrl);
   return reconcileCreatorContext(path, payload) as T;
 }
 

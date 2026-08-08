@@ -19,7 +19,7 @@ test('Creator Stats uses the tenant analytics API and explicit truthful states',
     /\/api\/v1\/organisations\/\$\{encodeURIComponent\(organisation\.id\)\}\/analytics/,
   );
   assert.match(analytics, /title="Loading Stats"/);
-  assert.match(analytics, /title="No stored Stats yet"/);
+  assert.match(analytics, /title="No stored or measured Stats yet"/);
   assert.match(analytics, /title="Stats could not load"/);
   assert.match(analytics, /status === 401/);
   assert.match(analytics, /status === 404/);
@@ -27,16 +27,23 @@ test('Creator Stats uses the tenant analytics API and explicit truthful states',
   assert.match(analytics, /response\.analytics\.organisationId !== organisation\.id/);
 });
 
-test('Creator Stats displays only persisted metrics and names unavailable measurements', async () => {
+test('Creator Stats displays persisted and measured metrics without inventing unavailable measurements', async () => {
   const analytics = await readFile(analyticsUrl, 'utf8');
 
-  assert.match(analytics, /Persisted product data/);
+  assert.match(analytics, /Persisted \+ measured data/);
   assert.match(analytics, /Registered listeners/);
   assert.match(analytics, /Listening-history entries/);
   assert.match(analytics, /Saved broadcasts/);
   assert.match(analytics, /Users who saved/);
+  assert.match(analytics, /Measured playback sessions/);
+  assert.match(analytics, /Active measured sessions/);
+  assert.match(analytics, /Measured listening time/);
+  assert.match(analytics, /Buffering events/);
+  assert.match(analytics, /WebRTC → LL-HLS fallbacks/);
+  assert.match(analytics, /Player media errors/);
   assert.match(analytics, /Channel breakdown/);
-  assert.match(analytics, /Anonymous listener reach, concurrent audience, listening duration and stream quality/);
+  assert.match(analytics, /Unique anonymous reach is not collected/);
+  assert.match(analytics, /Bitrate, jitter and packet loss also remain unavailable/);
   assert.match(analytics, /does not fill empty Stats with sample data/);
   assert.doesNotMatch(analytics, /Math\.random/);
   assert.doesNotMatch(analytics, /sampleMetric|fakeMetric|estimatedReach/);
