@@ -191,10 +191,10 @@ This phase blocks decorative expansion until the existing live product behaves h
 - [x] Authenticate real-time connections using the existing session system
 - [x] Authorize server-generated broadcast, organisation and user rooms
 - [x] Add durable live chat with client idempotency IDs
-- [ ] Add rate-limited reactions and expiring typing events
-- [ ] Add presence with heartbeat and multi-tab handling
-- [ ] Keep socket presence distinct from media listener counts
-- [ ] Add moderation: mute, block, slow chat, disable chat and report
+- [x] Add rate-limited reactions and expiring typing events
+- [x] Add presence with heartbeat and multi-tab handling
+- [x] Keep socket presence distinct from media listener counts
+- [x] Add moderation: mute, block, slow chat, disable chat and report
 - [ ] Persist notifications before immediate delivery
 - [x] Recover durable history and state after reconnect
 - [ ] Add abuse, reconnect and unauthorized-room tests
