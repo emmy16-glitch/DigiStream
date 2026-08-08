@@ -42,8 +42,13 @@ async function auditPublicEntrySurfaces(page: Page, testInfo: TestInfo) {
     await expect(page.getByText(/backstage/i)).toHaveCount(0);
     await expectNoPageOverflow(page);
     await expectNoInternalOverflow(page.locator('.landing-hero'));
+    await expectTouchTarget(page.getByRole('link', { name: 'Echoo home' }));
     await expectTouchTarget(page.getByRole('link', { name: 'Start a broadcast' }));
     await expectTouchTarget(page.getByRole('link', { name: 'Listen now' }));
+
+    if (viewport.width > 820) {
+      await expectTouchTarget(page.getByRole('link', { name: 'Login' }));
+    }
 
     if (viewport.name === 'short-landscape') {
       const hero = page.locator('.landing-hero');
@@ -66,6 +71,8 @@ async function auditPublicEntrySurfaces(page: Page, testInfo: TestInfo) {
 
     await continueEmail.click();
     await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
+    await expectTouchTarget(page.getByRole('link', { name: 'Echoo home' }));
+    await expectTouchTarget(page.getByRole('button', { name: 'Sign in', exact: true }));
     await expectTouchTarget(page.getByRole('button', { name: 'Create account', exact: true }));
     await expectTouchTarget(page.getByRole('button', { name: 'Show password' }).first());
     await expectNoPageOverflow(page);
@@ -73,7 +80,9 @@ async function auditPublicEntrySurfaces(page: Page, testInfo: TestInfo) {
 
     await page.goto('/login');
     await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
+    await expectTouchTarget(page.getByRole('link', { name: 'Echoo home' }));
     await expectTouchTarget(page.getByRole('button', { name: 'Login', exact: true }));
+    await expectTouchTarget(page.getByRole('button', { name: 'Show password' }));
     await expectNoPageOverflow(page);
     await expectNoInternalOverflow(page.locator('.auth-mobile-card'));
 
