@@ -33,6 +33,7 @@ import './landing/landing-entry-responsive.css';
 import './features/guests/echoo-backstage.css';
 import './design-system/phase9-flow-resilience.css';
 import './features/listening/listener-responsive-audit.css';
+import './design-system/guest-system-responsive-audit.css';
 
 const root = document.getElementById('root');
 
