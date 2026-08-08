@@ -16,6 +16,7 @@ import {
   type UpdateChatSettingsBody,
   type UpdateChatUserRestrictionBody,
 } from './broadcast-chat-moderation.service.js';
+import { listBroadcastChatReportQueue } from './broadcast-chat-report-queue.service.js';
 import {
   resolveMemberBroadcastChat,
   resolvePublicBroadcastChat,
@@ -41,6 +42,25 @@ export function registerBroadcastChatModerationRoutes(
   database: DatabaseContext | null,
   publisher: Pick<RealtimeHub, 'publish'> | null,
 ): void {
+  app.get<{
+    Params: { organisationId: string };
+    Querystring: { cursor?: string; limit?: string };
+  }>(
+    '/api/v1/organisations/:organisationId/chat/moderation/reports',
+    async (request, reply) => {
+      const context = requireDatabase(database);
+      const user = await requireUser(request, context);
+      const result = await listBroadcastChatReportQueue(
+        context,
+        request.params.organisationId,
+        user.id,
+        request.query ?? {},
+      );
+      reply.header('cache-control', 'no-store');
+      return result;
+    },
+  );
+
   app.patch<{
     Params: { organisationId: string; broadcastId: string };
     Body: UpdateChatSettingsBody;
