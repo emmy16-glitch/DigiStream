@@ -15,6 +15,7 @@ import { registerBroadcastGuestRoutes } from './modules/broadcast-guests/broadca
 import { registerBroadcastContributionRoutes } from './modules/broadcasts/broadcast-contribution.routes.js';
 import { registerBroadcastDeliveryRoutes } from './modules/broadcasts/broadcast-delivery.routes.js';
 import { registerBroadcastRoutes } from './modules/broadcasts/broadcasts.routes.js';
+import { registerChannelArtworkRoutes } from './modules/channels/channel-artwork.routes.js';
 import { registerChannelRoutes } from './modules/channels/channels.routes.js';
 import { registerBroadcastChatRoutes } from './modules/chat/broadcast-chat.routes.js';
 import {
@@ -125,6 +126,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   registerOrganisationRoutes(app, database);
   registerOrganisationMembershipRoutes(app, database);
   registerChannelRoutes(app, database);
+  registerChannelArtworkRoutes(app, database, objectStorage);
   registerRecordingRoutes(app, database, mediaControlSecret, {
     objectStorage,
     accessManager: recordingAccessManager,
@@ -260,6 +262,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       'organisation-final-owner-protection',
       'channel-lifecycle',
       'channel-visibility',
+      'storage-backed-channel-artwork',
       'public-channel-discovery',
       'broadcast-scheduling',
       'broadcast-lifecycle',
