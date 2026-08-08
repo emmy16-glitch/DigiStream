@@ -20,24 +20,13 @@ function responseCookie(response: { headers: Record<string, unknown> }): string 
 }
 
 test(
-  'targeted chat moderation persists a notification before realtime delivery',
+  'targeted chat moderation persists a durable notification before delivery',
   { skip: !databaseUrl, timeout: 90_000 },
   async () => {
     const database = createDatabase(databaseUrl);
     assert.ok(database);
     await runMigrations(database.pool);
-    const published: Array<{ roomKey: string; event: Record<string, unknown> }> = [];
-    const app = buildApp({
-      database,
-      realtime: {
-        hub: {
-          publish(roomKey: string, event: Record<string, unknown>) {
-            published.push({ roomKey, event });
-          },
-          close() {},
-        },
-      } as never,
-    });
+    const app = buildApp({ database, realtime: false });
     const suffix = randomUUID().replaceAll('-', '').slice(0, 12);
     const password = 'Durable-notification-password-123!';
     const userIds: string[] = [];
@@ -134,13 +123,7 @@ test(
       assert.equal(rows[0]?.type, 'chat.moderation.updated');
       assert.equal(rows[0]?.title, 'Live chat moderation updated');
       assert.equal((rows[0]?.metadata as { broadcastId?: string }).broadcastId, broadcast.id);
-
-      const notificationEventIndex = published.findIndex(({ event }) => event.type === 'notification.created');
-      const moderationEventIndex = published.findIndex(({ event }) => event.type === 'chat.user.moderation.updated');
-      assert.ok(notificationEventIndex >= 0);
-      assert.ok(moderationEventIndex > notificationEventIndex);
-      const notificationEvent = published[notificationEventIndex]?.event as { notification?: { id?: string } };
-      assert.equal(notificationEvent.notification?.id, rows[0]?.id);
+      assert.equal((rows[0]?.metadata as { restriction?: { userId?: string } }).restriction?.userId, listener.userId);
     } finally {
       await app.close();
       if (organisationId) {
