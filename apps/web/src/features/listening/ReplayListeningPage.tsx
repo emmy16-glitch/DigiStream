@@ -4,10 +4,12 @@ import type {
   PublicReplayResponse,
   RecordingPlaybackAccessResponse,
 } from '@digistream/contracts';
-import { Button, StatePanel, StatusBadge } from '../../design-system/components';
+import { Button, StatePanel } from '../../design-system/components';
+import { Icon } from '../../design-system/Icon';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
 import type { ListenerRoute } from './listener-route';
 import './replay-listening.css';
+import './replay-listening-reference.css';
 
 type ReplayRoute = Extract<
   ListenerRoute,
@@ -19,6 +21,13 @@ type ReplayListeningPageProps = {
 };
 
 function formatDate(value: string | null): string {
+  if (!value) return 'Not available';
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+  }).format(new Date(value));
+}
+
+function formatDateTime(value: string | null): string {
   if (!value) return 'Not available';
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: 'medium',
@@ -127,6 +136,11 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
       );
       setPlaybackUrl(response.access.url);
       setAccessExpiresAt(response.access.expiresAt);
+      window.requestAnimationFrame(() => {
+        void audioRef.current?.play().catch(() => {
+          // Browser autoplay rules may require the listener to press play on the native audio control.
+        });
+      });
     } catch (requestError) {
       setPlaybackUrl('');
       setAccessExpiresAt('');
@@ -145,9 +159,9 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
 
   if (loading) {
     return (
-      <div className="replay-listening-page">
+      <div className="replay-listening-page echoo-replay-page">
         <StatePanel kind="loading" title="Loading replay">
-          DigiStream is checking whether this replay is available.
+          Echoo is checking whether this replay is available.
         </StatePanel>
       </div>
     );
@@ -155,7 +169,7 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
 
   if (!replay) {
     return (
-      <div className="replay-listening-page">
+      <div className="replay-listening-page echoo-replay-page">
         <StatePanel
           actionLabel="Try again"
           kind="error"
@@ -169,33 +183,47 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
   }
 
   return (
-    <article className="replay-listening-page">
-      <header className="replay-listening-hero">
-        <div className="replay-listening-signal" aria-hidden="true">
-          {Array.from({ length: 14 }, (_, index) => <i key={index} />)}
-        </div>
-        <div className="replay-listening-heading">
-          <div className="replay-listening-badges">
-            <StatusBadge tone="success">Replay ready</StatusBadge>
-            <StatusBadge tone={replay.access === 'public' ? 'info' : 'neutral'}>
-              {accessLabel}
-            </StatusBadge>
-          </div>
-          <span>{replay.channel.name} · {replay.organisation.name}</span>
-          <h1>{replay.title}</h1>
-          <p>{replay.description ?? 'Listen again to this completed broadcast.'}</p>
-        </div>
-      </header>
+    <article className="replay-listening-page echoo-replay-page">
+      <nav className="echoo-replay-breadcrumb" aria-label="Replay breadcrumb">
+        <a href="/listen/replays">Replays</a>
+        <span aria-hidden="true">›</span>
+        <span>{replay.title}</span>
+      </nav>
 
-      <section className="replay-player-panel" aria-labelledby="replay-player-title">
-        <div>
-          <span className="listener-kicker">Audio replay</span>
-          <h2 id="replay-player-title">Listen to the recording</h2>
-          <p>Start listening when you’re ready.</p>
+      <section className="echoo-replay-hero" aria-labelledby="echoo-replay-title">
+        <div className="echoo-replay-hero-overlay" />
+        {!playbackUrl ? (
+          <button
+            aria-label={`Play ${replay.title}`}
+            className="echoo-replay-hero-play"
+            disabled={accessLoading}
+            onClick={() => void startListening()}
+            type="button"
+          >
+            <Icon name="play" size={38} />
+          </button>
+        ) : null}
+        <div className="echoo-replay-hero-copy">
+          <span>{accessLabel}</span>
+          <h1 id="echoo-replay-title">{replay.title}</h1>
+          <p>{replay.organisation.name}</p>
+          <small>
+            {formatDate(replay.publishedAt ?? replay.endedAt)} · {formatDuration(replay.media.durationMs)}
+          </small>
         </div>
+      </section>
+
+      <section className="echoo-replay-player" aria-labelledby="replay-player-title">
+        <header>
+          <div>
+            <span>Audio replay</span>
+            <h2 id="replay-player-title">Listen to the recording</h2>
+          </div>
+          <small>{replay.channel.name}</small>
+        </header>
 
         {playbackUrl ? (
-          <div className="replay-audio-shell">
+          <div className="echoo-replay-audio-shell">
             <audio
               controls
               onError={() => {
@@ -210,12 +238,12 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
               Your browser does not support HTML audio playback.
             </audio>
             <small>
-              Playback access expires {formatDate(accessExpiresAt)}. Start listening again to continue if it expires.
+              Secure playback access expires {formatDateTime(accessExpiresAt)}.
             </small>
           </div>
         ) : (
           <Button
-            icon="headphones"
+            icon="play"
             loading={accessLoading}
             onClick={() => void startListening()}
             variant="primary"
@@ -235,23 +263,29 @@ export function ReplayListeningPage({ route }: ReplayListeningPageProps) {
         ) : null}
       </section>
 
-      <section className="replay-details-grid" aria-label="Replay details">
-        <article>
-          <span>Duration</span>
-          <strong>{formatDuration(replay.media.durationMs)}</strong>
-        </article>
-        <article>
-          <span>Format</span>
-          <strong>{replay.media.format.toUpperCase()}</strong>
-        </article>
-        <article>
-          <span>File size</span>
-          <strong>{formatSize(replay.media.sizeBytes)}</strong>
-        </article>
-        <article>
-          <span>Published</span>
-          <strong>{formatDate(replay.publishedAt ?? replay.endedAt)}</strong>
-        </article>
+      <section className="echoo-replay-details" aria-labelledby="echoo-replay-details-title">
+        <header>
+          <h2 id="echoo-replay-details-title">Details</h2>
+        </header>
+        <p>{replay.description ?? 'Listen again to this completed broadcast.'}</p>
+        <dl>
+          <div>
+            <dt>Duration</dt>
+            <dd>{formatDuration(replay.media.durationMs)}</dd>
+          </div>
+          <div>
+            <dt>Format</dt>
+            <dd>{replay.media.format.toUpperCase()}</dd>
+          </div>
+          <div>
+            <dt>File size</dt>
+            <dd>{formatSize(replay.media.sizeBytes)}</dd>
+          </div>
+          <div>
+            <dt>Published</dt>
+            <dd>{formatDate(replay.publishedAt ?? replay.endedAt)}</dd>
+          </div>
+        </dl>
       </section>
     </article>
   );
