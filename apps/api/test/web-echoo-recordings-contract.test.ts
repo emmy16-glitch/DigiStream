@@ -20,7 +20,7 @@ test('Creator Recordings follows the Echoo completed-broadcast reference', async
   assert.match(source, /recording-reference-row/);
   assert.match(source, /recording-reference-artwork/);
   assert.match(source, /recording-reference-status/);
-  assert.match(source, />Play</);
+  assert.match(source, /label: 'Play'/);
   assert.match(source, /recording-more-menu/);
 });
 
