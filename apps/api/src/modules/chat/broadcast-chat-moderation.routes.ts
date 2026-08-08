@@ -2,7 +2,10 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
-import { persistNotificationBeforeDelivery } from '../notifications/notifications.repository.js';
+import {
+  persistNotificationBeforeDelivery,
+  shouldDeliverNotificationRealtime,
+} from '../notifications/notifications.repository.js';
 import type { RealtimeHub } from '../realtime/realtime-hub.js';
 import { broadcastRoom, userRoom } from '../realtime/realtime-rooms.js';
 import {
@@ -96,11 +99,13 @@ export function registerBroadcastChatModerationRoutes(
         },
       });
       const room = userRoom(request.params.userId);
-      publisher?.publish(room.key, {
-        type: 'notification.created',
-        room,
-        notification,
-      });
+      if (await shouldDeliverNotificationRealtime(context.db, request.params.userId)) {
+        publisher?.publish(room.key, {
+          type: 'notification.created',
+          room,
+          notification,
+        });
+      }
       publisher?.publish(room.key, {
         type: 'chat.user.moderation.updated',
         room,
