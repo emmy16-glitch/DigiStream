@@ -69,7 +69,7 @@ test('platform administration stays signed in until logout is confirmed by the s
   await expect(logoutFailure).toBeVisible();
   await expect(logoutFailure).toContainText('You are still signed in on this device.');
   await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
-  await expect(page.getByText('admin@example.test', { exact: true })).toBeVisible();
+  await expect(page.locator('.platform-admin-actor').getByText('admin@example.test', { exact: true })).toBeVisible();
   expect(logoutAttempts).toBe(1);
 
   await logoutFailure.getByRole('button', { name: 'Try sign out again' }).click();
