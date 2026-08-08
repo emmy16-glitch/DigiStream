@@ -1,0 +1,4 @@
+.studio-global-alert summary,
+.studio-inline-alert summary {
+  min-height: 44px;
+}
