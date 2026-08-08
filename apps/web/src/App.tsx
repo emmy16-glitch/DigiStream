@@ -33,6 +33,7 @@ import {
   type CreatorNavigationItem,
 } from './design-system/shells';
 import type { IconName } from './design-system/Icon';
+import { CreatorAnalyticsPage } from './features/analytics/CreatorAnalyticsPage';
 import { CreatorBroadcastsPage } from './features/broadcasting/CreatorBroadcastsPage';
 import { CreatorBroadcastStudio } from './features/broadcasting/CreatorBroadcastStudio';
 import type { RequestedStudioContext } from './features/broadcasting/studio-context-selection';
@@ -563,16 +564,7 @@ function CreatorDashboard({
   } else if (activeNav === 'Recordings') {
     pageContent = <CreatorRecordingsPage organisation={primaryOrganisation} />;
   } else {
-    pageContent = (
-      <>
-        <PageIntro title="Analytics">
-          Understand real listener reach, concurrent audience and listening duration after analytics collection is available.
-        </PageIntro>
-        <StatePanel kind="empty" title="Analytics collection is not implemented yet">
-          DigiStream will not display invented charts or health scores. This page remains honest until measured event data is available.
-        </StatePanel>
-      </>
-    );
+    pageContent = <CreatorAnalyticsPage organisation={primaryOrganisation} />;
   }
 
   return (
