@@ -1,0 +1,46 @@
+/* UIQ-007 Slice 6 — final public/system responsive ownership.
+ *
+ * Keep this layer limited to interaction floors and viewport containment.
+ * Guest authorization, microphone/media behavior and system-state semantics
+ * remain owned by their existing components.
+ */
+
+.guest-brand {
+  min-height: 44px;
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .echoo-system-page {
+    min-height: 100dvh;
+    place-items: start center;
+    padding: 12px;
+  }
+
+  .echoo-system-card {
+    width: min(42rem, 100%);
+    min-height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .echoo-system-content {
+    gap: 0.65rem;
+  }
+
+  .echoo-system-content p {
+    line-height: 1.45;
+  }
+
+  .echoo-system-icon {
+    width: 3.75rem;
+    height: 3.75rem;
+  }
+
+  .echoo-system-spinner {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+}
