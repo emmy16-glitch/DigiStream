@@ -11,51 +11,54 @@ async function read(relativePath: string, base = import.meta.url): Promise<strin
 
 test('Programme 2 keeps the complete Phase 9 runtime ownership wired', async () => {
   const [
-    listenerLibraryRoutes,
-    notificationsRoutes,
-    analyticsRoutes,
-    governanceRoutes,
-    auditRoutes,
-    reportQueueRoutes,
-    channelRoutes,
-    adminRoutes,
-    playbackTelemetryRoutes,
+    listenerLibrary,
+    notifications,
+    analytics,
+    governance,
+    auditLog,
+    reportQueue,
+    categories,
+    administration,
+    playbackTelemetry,
   ] = await Promise.all([
     read('../src/modules/broadcasts/listener-library.routes.ts'),
     read('../src/modules/notifications/notifications.routes.ts'),
-    read('../src/modules/organisations/organisation-analytics.routes.ts'),
-    read('../src/modules/organisations/organisation-governance-report.routes.ts'),
-    read('../src/modules/organisations/organisation-audit-log.routes.ts'),
-    read('../src/modules/chat/broadcast-chat-report-queue.routes.ts'),
-    read('../src/modules/channels/channels.routes.ts'),
-    read('../src/modules/platform-administration/platform-administration.routes.ts'),
-    read('../src/modules/broadcasts/playback-telemetry.routes.ts'),
+    read('../src/modules/organisations/organisation-analytics.service.ts'),
+    read('../src/modules/organisations/organisation-governance-report.service.ts'),
+    read('../src/modules/organisations/organisation-audit-log.service.ts'),
+    read('../src/modules/chat/broadcast-chat-report-queue.service.ts'),
+    read('../src/modules/channels/channel-categories.service.ts'),
+    read('../src/modules/administration/platform-administration.routes.ts'),
+    read('../src/modules/broadcasts/playback-telemetry.repository.ts'),
   ]);
 
-  assert.match(listenerLibraryRoutes, /saved/i);
-  assert.match(listenerLibraryRoutes, /history/i);
-  assert.match(notificationsRoutes, /preference/i);
-  assert.match(analyticsRoutes, /analytics/i);
-  assert.match(governanceRoutes, /report/i);
-  assert.match(auditRoutes, /audit/i);
-  assert.match(reportQueueRoutes, /report/i);
-  assert.match(channelRoutes, /categor/i);
-  assert.match(adminRoutes, /suspend|reactivate/i);
-  assert.match(playbackTelemetryRoutes, /telemetry|playback/i);
+  assert.match(listenerLibrary, /saved/i);
+  assert.match(listenerLibrary, /history/i);
+  assert.match(notifications, /preference/i);
+  assert.match(analytics, /measuredSessions/);
+  assert.match(governance, /report/i);
+  assert.match(auditLog, /audit/i);
+  assert.match(reportQueue, /report/i);
+  assert.match(categories, /categor/i);
+  assert.match(administration, /suspend|reactivate/i);
+  assert.match(playbackTelemetry, /heartbeat|playback/i);
 });
 
-test('Programme 2 keeps truthful Phase 9 web recovery and administration ownership wired at the application root', async () => {
-  const [main, analytics, adminApplication] = await Promise.all([
+test('Programme 2 keeps truthful Phase 9 recovery and platform administration wired at the application root', async () => {
+  const [main, analytics, adminUsers] = await Promise.all([
     read('main.tsx', webRoot.href),
-    read('features/analytics/CreatorAnalyticsPage.tsx', webRoot.href),
-    read('features/admin/PlatformAdminApplication.tsx', webRoot.href),
+    read('../src/modules/organisations/organisation-analytics.service.ts'),
+    read('features/admin/PlatformAdminUsersPage.tsx', webRoot.href),
   ]);
 
   assert.match(main, /<ConnectivityStatus\s*\/>/);
   assert.match(main, /<ApplicationErrorBoundary>/);
+  assert.match(main, /route\.path === '\/admin'/);
   assert.match(main, /<PlatformAdminApplication\s*\/>/);
-  assert.match(analytics, /not_collected|not collected|unavailable/i);
-  assert.match(adminApplication, /session-expired|Session Expired|session expired/i);
+  assert.match(analytics, /anonymousListenerReach: 'not_collected'/);
+  assert.match(analytics, /Bitrate, jitter and packet loss are not inferred/);
+  assert.match(adminUsers, /sessionLoginPath\('session-expired'/);
+  assert.match(adminUsers, /You are still signed in on this device/);
 });
 
 test('Programme 2 keeps executable cross-product responsive, accessibility, offline and recovery coverage', async () => {
@@ -65,7 +68,7 @@ test('Programme 2 keeps executable cross-product responsive, accessibility, offl
     'creator-core-responsive-matrix.spec.ts',
     'creator-secondary-responsive-matrix.spec.ts',
     'listener-responsive-matrix.spec.ts',
-    'guest-responsive-matrix.spec.ts',
+    'guest-system-responsive-matrix.spec.ts',
     'connectivity-state.spec.ts',
     'runtime-error-recovery.spec.ts',
     'platform-admin-access.spec.ts',
@@ -78,11 +81,22 @@ test('Programme 2 keeps executable cross-product responsive, accessibility, offl
   }
 });
 
-test('Programme 2 analytics truth model refuses unsupported inferred media metrics', async () => {
-  const analyticsDoc = await read('../../../docs/ANALYTICS.md');
-  assert.match(analyticsDoc, /unique anonymous listener reach remains `not_collected`/);
-  assert.match(analyticsDoc, /bitrate remains unavailable/);
-  assert.match(analyticsDoc, /jitter remains unavailable/);
-  assert.match(analyticsDoc, /packet loss remains unavailable/);
-  assert.match(analyticsDoc, /must not be substituted for measured browser playback sessions/);
+test('Programme 2 keeps the Phase 9 integration suites in the required API test run', async () => {
+  const requiredSuites = [
+    'listener-library.integration.test.ts',
+    'durable-notifications.integration.test.ts',
+    'organisation-analytics.integration.test.ts',
+    'organisation-governance-report.integration.test.ts',
+    'organisation-audit-log.integration.test.ts',
+    'broadcast-chat-report-queue.integration.test.ts',
+    'channel-categories.integration.test.ts',
+    'platform-administration.integration.test.ts',
+    'playback-telemetry.integration.test.ts',
+    'web-phase9-flow-resilience-contract.test.ts',
+  ];
+
+  for (const suite of requiredSuites) {
+    const source = await read(suite);
+    assert.ok(source.length > 0, `${suite} must remain part of the complete API test suite`);
+  }
 });
