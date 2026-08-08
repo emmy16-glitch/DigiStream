@@ -33,6 +33,9 @@ export type RealtimeServerOptions = {
   maxConnectionsPerUser?: number;
   maxMessagesPerWindow?: number;
   messageWindowMs?: number;
+  maxReactionsPerWindow?: number;
+  reactionWindowMs?: number;
+  typingTtlMs?: number;
 };
 
 type ResolvedRealtimeOptions = Required<RealtimeServerOptions>;
@@ -41,7 +44,18 @@ type ClientMessage = {
   type?: unknown;
   requestId?: unknown;
   room?: unknown;
+  reaction?: unknown;
+  active?: unknown;
 };
+
+type ReactionWindow = { startedAt: number; count: number };
+
+type InteractionRuntime = {
+  reactionWindows: Map<string, ReactionWindow>;
+  typingTimers: Map<string, NodeJS.Timeout>;
+};
+
+const ALLOWED_REACTIONS = new Set(['👍', '❤️', '👏', '😂', '🔥', '🎉']);
 
 const STATUS_TEXT: Record<number, string> = {
   400: 'Bad Request',
@@ -122,6 +136,19 @@ function resolveOptions(options: RealtimeServerOptions): ResolvedRealtimeOptions
       1_000,
       60_000,
     ),
+    maxReactionsPerWindow: boundedInteger(
+      options.maxReactionsPerWindow,
+      8,
+      1,
+      100,
+    ),
+    reactionWindowMs: boundedInteger(
+      options.reactionWindowMs,
+      10_000,
+      1_000,
+      60_000,
+    ),
+    typingTtlMs: boundedInteger(options.typingTtlMs, 5_000, 1_000, 30_000),
   };
 }
 
@@ -181,12 +208,40 @@ function sendError(
   code: string,
   message: string,
   id?: string,
+  details?: Record<string, unknown>,
 ): void {
   connection.send({
     type: 'realtime.error',
     requestId: id,
-    error: { code, message },
+    error: { code, message, ...details },
   });
+}
+
+function typingKey(connectionId: string, roomKey: string): string {
+  return `${connectionId}:${roomKey}`;
+}
+
+function clearTypingForConnection(
+  runtime: InteractionRuntime,
+  hub: RealtimeHub,
+  connection: RealtimeConnection,
+): void {
+  const prefix = `${connection.id}:`;
+  for (const [key, timer] of runtime.typingTimers) {
+    if (!key.startsWith(prefix)) continue;
+    clearTimeout(timer);
+    runtime.typingTimers.delete(key);
+    const roomKey = key.slice(prefix.length);
+    hub.publish(roomKey, {
+      type: 'typing.changed',
+      room: { key: roomKey, kind: 'broadcast', id: roomKey.slice('broadcast:'.length) },
+      user: { id: connection.userId },
+      active: false,
+      reason: 'connection-ended',
+      timestamp: new Date().toISOString(),
+    });
+  }
+  runtime.reactionWindows.delete(connection.id);
 }
 
 async function handleClientMessage(
@@ -195,6 +250,7 @@ async function handleClientMessage(
   connection: RealtimeConnection,
   text: string,
   options: ResolvedRealtimeOptions,
+  runtime: InteractionRuntime,
 ): Promise<void> {
   const now = Date.now();
   if (now - connection.messageWindowStartedAt >= options.messageWindowMs) {
@@ -238,11 +294,12 @@ async function handleClientMessage(
     return;
   }
 
-  if (message.type !== 'join' && message.type !== 'leave') {
+  const roomCommands = new Set(['join', 'leave', 'reaction.send', 'typing.set']);
+  if (typeof message.type !== 'string' || !roomCommands.has(message.type)) {
     sendError(
       connection,
       'UNSUPPORTED_REALTIME_COMMAND',
-      'Supported commands are join, leave and ping.',
+      'Supported commands are join, leave, ping, reaction.send and typing.set.',
       id,
     );
     return;
@@ -284,22 +341,132 @@ async function handleClientMessage(
     return;
   }
 
-  if (room.kind === 'user') {
+  if (message.type === 'leave') {
+    if (room.kind === 'user') {
+      sendError(
+        connection,
+        'USER_ROOM_REQUIRED',
+        'The authenticated user room cannot be left.',
+        id,
+      );
+      return;
+    }
+    hub.leave(connection, room.key);
+    const key = typingKey(connection.id, room.key);
+    const timer = runtime.typingTimers.get(key);
+    if (timer) {
+      clearTimeout(timer);
+      runtime.typingTimers.delete(key);
+      hub.publish(room.key, {
+        type: 'typing.changed',
+        room,
+        user: { id: connection.userId },
+        active: false,
+        reason: 'room-left',
+        timestamp: new Date().toISOString(),
+      });
+    }
+    connection.send({
+      type: 'room.left',
+      requestId: id,
+      room,
+    });
+    return;
+  }
+
+  if (room.kind !== 'broadcast' || !connection.rooms.has(room.key)) {
     sendError(
       connection,
-      'USER_ROOM_REQUIRED',
-      'The authenticated user room cannot be left.',
+      'REALTIME_INTERACTION_ROOM_REQUIRED',
+      'Join an authorized broadcast room before sending live interactions.',
       id,
     );
     return;
   }
 
-  hub.leave(connection, room.key);
-  connection.send({
-    type: 'room.left',
+  if (message.type === 'reaction.send') {
+    if (typeof message.reaction !== 'string' || !ALLOWED_REACTIONS.has(message.reaction)) {
+      sendError(
+        connection,
+        'INVALID_REALTIME_REACTION',
+        'Use a supported reaction.',
+        id,
+      );
+      return;
+    }
+
+    const currentWindow = runtime.reactionWindows.get(connection.id);
+    const window = !currentWindow || now - currentWindow.startedAt >= options.reactionWindowMs
+      ? { startedAt: now, count: 0 }
+      : currentWindow;
+    window.count += 1;
+    runtime.reactionWindows.set(connection.id, window);
+    if (window.count > options.maxReactionsPerWindow) {
+      const retryAfterMs = Math.max(1, options.reactionWindowMs - (now - window.startedAt));
+      sendError(
+        connection,
+        'REALTIME_REACTION_RATE_LIMITED',
+        'Too many reactions were sent.',
+        id,
+        { retryAfterMs },
+      );
+      return;
+    }
+
+    hub.publish(room.key, {
+      type: 'reaction.sent',
+      requestId: id,
+      room,
+      user: { id: connection.userId },
+      reaction: message.reaction,
+      timestamp: new Date().toISOString(),
+    });
+    return;
+  }
+
+  if (typeof message.active !== 'boolean') {
+    sendError(
+      connection,
+      'INVALID_TYPING_STATE',
+      'Typing state must be a boolean.',
+      id,
+    );
+    return;
+  }
+
+  const key = typingKey(connection.id, room.key);
+  const existing = runtime.typingTimers.get(key);
+  if (existing) {
+    clearTimeout(existing);
+    runtime.typingTimers.delete(key);
+  }
+
+  const expiresAt = new Date(Date.now() + options.typingTtlMs).toISOString();
+  hub.publish(room.key, {
+    type: 'typing.changed',
     requestId: id,
     room,
+    user: { id: connection.userId },
+    active: message.active,
+    expiresAt: message.active ? expiresAt : undefined,
+    timestamp: new Date().toISOString(),
   });
+
+  if (message.active) {
+    const timer = setTimeout(() => {
+      runtime.typingTimers.delete(key);
+      hub.publish(room.key, {
+        type: 'typing.changed',
+        room,
+        user: { id: connection.userId },
+        active: false,
+        reason: 'expired',
+        timestamp: new Date().toISOString(),
+      });
+    }, options.typingTtlMs);
+    timer.unref();
+    runtime.typingTimers.set(key, timer);
+  }
 }
 
 export function registerRealtimeServer(
@@ -309,6 +476,10 @@ export function registerRealtimeServer(
 ): RealtimeHub {
   const resolved = resolveOptions(options);
   const hub = new RealtimeHub();
+  const runtime: InteractionRuntime = {
+    reactionWindows: new Map(),
+    typingTimers: new Map(),
+  };
   let heartbeatRunning = false;
 
   app.get(REALTIME_PATH, async (_request, reply) =>
@@ -504,6 +675,7 @@ export function registerRealtimeServer(
                   connection,
                   frame.text,
                   resolved,
+                  runtime,
                 ),
               )
               .catch((error: unknown) => {
@@ -533,7 +705,10 @@ export function registerRealtimeServer(
         'Realtime socket error',
       );
     });
-    socket.on('close', () => hub.remove(connection));
+    socket.on('close', () => {
+      clearTypingForConnection(runtime, hub, connection);
+      hub.remove(connection);
+    });
 
     connection.send({
       type: 'realtime.connected',
@@ -617,6 +792,9 @@ export function registerRealtimeServer(
 
   app.addHook('onClose', async () => {
     clearInterval(heartbeat);
+    for (const timer of runtime.typingTimers.values()) clearTimeout(timer);
+    runtime.typingTimers.clear();
+    runtime.reactionWindows.clear();
     app.server.off('upgrade', upgradeListener);
     hub.closeAll();
   });
