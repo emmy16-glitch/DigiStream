@@ -26,5 +26,6 @@ test('creator onboarding keeps truthful slug guidance and rendered-step focus ow
   assert.match(focusSource, /create-broadcast-title/);
   assert.match(focusSource, /First broadcast choices/);
   assert.match(focusSource, /MutationObserver/);
+  assert.match(focusSource, /observer\.disconnect\(\)/);
   assert.match(responsiveCss, /#organisation-slug-help\s*\{\s*display: block;/s);
 });
