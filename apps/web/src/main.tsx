@@ -4,6 +4,7 @@ import { App } from './App';
 import { EchooSystemStatePage } from './design-system/EchooSystemStatePage';
 import { parseGuestRoute } from './features/guests/guest-route';
 import { parseListenerRoute } from './features/listening/listener-route';
+import { OnboardingStepFocusManager } from './features/onboarding/OnboardingStepFocusManager';
 import { LandingPage } from './landing/LandingPage';
 import { resolveInitialRoute } from './routing/initial-route';
 import './design-system/tokens.css';
@@ -21,6 +22,7 @@ import './features/broadcasting/creator-broadcast-studio-mobile-clearance.css';
 import './features/broadcasting/creator-broadcast-action-truth.css';
 import './styles.css';
 import './features/onboarding/echoo-onboarding.css';
+import './features/onboarding/onboarding-responsive-audit.css';
 import './design-system/responsive-operations.css';
 import './design-system/manual-review-fixes.css';
 import './design-system/semantic-feedback-contrast.css';
@@ -89,6 +91,7 @@ function RootApplication() {
 
 createRoot(root).render(
   <StrictMode>
+    <OnboardingStepFocusManager />
     <RootApplication />
   </StrictMode>,
 );
