@@ -92,7 +92,11 @@ function eventUpdateSql(event: PlaybackTelemetryEvent): string {
       last_event_at = now()`;
   }
   if (event === 'error') {
-    return `media_errors = media_errors + 1, ${rememberProtocol}, last_event_at = now()`;
+    return `${addElapsed},
+      media_errors = media_errors + 1,
+      ${rememberProtocol},
+      last_heartbeat_at = null,
+      last_event_at = now()`;
   }
   return `${addElapsed},
     ${rememberProtocol},
