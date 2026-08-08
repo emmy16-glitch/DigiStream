@@ -216,7 +216,7 @@ This phase blocks decorative expansion until the existing live product behaves h
 ## Phase 9 — Product expansion
 
 - [ ] Saved broadcasts and listening history
-- [ ] Durable in-app notifications and notification preferences
+- [x] Durable in-app notifications and notification preferences
 - [ ] Creator, channel and organisation analytics
 - [ ] Audience and stream-quality analytics with accurate metric definitions
 - [ ] Expose Stats navigation only after trustworthy metrics, loading, empty, failure and authorization states exist
