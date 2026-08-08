@@ -31,18 +31,33 @@ type OrganisationAnalytics = {
     savedBroadcasts: number;
     usersWhoSaved: number;
   };
+  playback: {
+    measuredSessions: number;
+    anonymousSessions: number;
+    signedInSessions: number;
+    activeSessions: number;
+    measuredListeningSeconds: number;
+    bufferingEvents: number;
+    fallbackEvents: number;
+    mediaErrors: number;
+    sessionsWithBuffering: number;
+  };
   definitions: {
     registeredListeners: string;
     listeningHistoryEntries: string;
     savedBroadcasts: string;
     usersWhoSaved: string;
     channelBreakdown: string;
+    measuredSessions: string;
+    activeSessions: string;
+    measuredListeningSeconds: string;
+    streamQualityEvents: string;
   };
   coverage: {
     anonymousListenerReach: 'not_collected';
-    concurrentAudience: 'not_collected';
-    listeningDuration: 'not_collected';
-    streamQuality: 'not_collected';
+    concurrentAudience: 'measured_active_playback_sessions';
+    listeningDuration: 'measured_server_heartbeat_intervals';
+    streamQuality: 'measured_client_playback_events';
   };
 };
 
@@ -72,14 +87,24 @@ function failureFrom(error: unknown): Failure {
   };
 }
 
-function MetricCard({ definition, label, value }: { definition: string; label: string; value: number }) {
+function MetricCard({ definition, label, value }: { definition: string; label: string; value: number | string }) {
   return (
     <article className="metric-card">
       <span>{label}</span>
-      <strong>{value.toLocaleString()}</strong>
+      <strong>{typeof value === 'number' ? value.toLocaleString() : value}</strong>
       <small>{definition}</small>
     </article>
   );
+}
+
+function formatMeasuredDuration(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remaining = seconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m ${remaining}s`;
+  return `${remaining}s`;
 }
 
 export function CreatorAnalyticsPage({ organisation }: { organisation: Organisation }) {
@@ -113,7 +138,7 @@ export function CreatorAnalyticsPage({ organisation }: { organisation: Organisat
   if (loading) {
     return (
       <StatePanel kind="loading" title="Loading Stats">
-        DigiStream is loading persisted analytics for {organisation.name}.
+        DigiStream is loading persisted and measured analytics for {organisation.name}.
       </StatePanel>
     );
   }
@@ -152,27 +177,28 @@ export function CreatorAnalyticsPage({ organisation }: { organisation: Organisat
     analytics.broadcasts.total === 0 &&
     analytics.audience.registeredListeners === 0 &&
     analytics.audience.listeningHistoryEntries === 0 &&
-    analytics.audience.savedBroadcasts === 0;
+    analytics.audience.savedBroadcasts === 0 &&
+    analytics.playback.measuredSessions === 0;
 
   return (
     <section className="creator-analytics" aria-labelledby="creator-analytics-title">
       <header className="workspace-page-intro">
-        <StatusBadge tone="info">Persisted product data</StatusBadge>
+        <StatusBadge tone="info">Persisted + measured data</StatusBadge>
         <h2 id="creator-analytics-title">Stats</h2>
         <p>
-          These numbers come from stored DigiStream records. They do not estimate anonymous reach,
-          live concurrency, listening duration or stream quality.
+          Stored product records and real browser playback telemetry are shown separately. DigiStream does not
+          turn playback sessions into invented unique reach or infer network measurements the player did not report.
         </p>
       </header>
 
       {empty ? (
-        <StatePanel kind="empty" title="No stored Stats yet">
-          When this workspace has channels, broadcasts, signed-in listening history or saved broadcasts,
-          those persisted records will appear here. DigiStream does not fill empty Stats with sample data.
+        <StatePanel kind="empty" title="No stored or measured Stats yet">
+          When this workspace has channels, broadcasts, signed-in listener-library activity or a browser actually
+          begins playback, those records will appear here. DigiStream does not fill empty Stats with sample data.
         </StatePanel>
       ) : (
         <>
-          <div className="metrics-grid" aria-label="Workspace analytics summary">
+          <div className="metrics-grid" aria-label="Workspace persisted analytics summary">
             <MetricCard
               definition={analytics.definitions.registeredListeners}
               label="Registered listeners"
@@ -195,10 +221,49 @@ export function CreatorAnalyticsPage({ organisation }: { organisation: Organisat
             />
           </div>
 
+          <section className="panel creator-analytics-summary" aria-labelledby="playback-measurements-title">
+            <div className="panel-header">
+              <div>
+                <StatusBadge tone="success">Measured playback</StatusBadge>
+                <h2 id="playback-measurements-title">Audience and playback health</h2>
+              </div>
+              <Button onClick={() => void load()} variant="secondary">Refresh</Button>
+            </div>
+            <div className="metrics-grid" aria-label="Measured playback analytics summary">
+              <MetricCard
+                definition={analytics.definitions.measuredSessions}
+                label="Measured playback sessions"
+                value={analytics.playback.measuredSessions}
+              />
+              <MetricCard
+                definition={analytics.definitions.activeSessions}
+                label="Active measured sessions"
+                value={analytics.playback.activeSessions}
+              />
+              <MetricCard
+                definition={analytics.definitions.measuredListeningSeconds}
+                label="Measured listening time"
+                value={formatMeasuredDuration(analytics.playback.measuredListeningSeconds)}
+              />
+              <MetricCard
+                definition="Measured playback sessions with no signed-in user attached. This is session count, not unique anonymous reach."
+                label="Anonymous playback sessions"
+                value={analytics.playback.anonymousSessions}
+              />
+            </div>
+            <dl>
+              <div><dt>Signed-in playback sessions</dt><dd>{analytics.playback.signedInSessions.toLocaleString()}</dd></div>
+              <div><dt>Buffering events</dt><dd>{analytics.playback.bufferingEvents.toLocaleString()}</dd></div>
+              <div><dt>Sessions with buffering</dt><dd>{analytics.playback.sessionsWithBuffering.toLocaleString()}</dd></div>
+              <div><dt>WebRTC → LL-HLS fallbacks</dt><dd>{analytics.playback.fallbackEvents.toLocaleString()}</dd></div>
+              <div><dt>Player media errors</dt><dd>{analytics.playback.mediaErrors.toLocaleString()}</dd></div>
+            </dl>
+            <p>{analytics.definitions.streamQualityEvents}</p>
+          </section>
+
           <section className="panel creator-analytics-summary" aria-labelledby="content-summary-title">
             <div className="panel-header">
               <h2 id="content-summary-title">Content totals</h2>
-              <Button onClick={() => void load()} variant="secondary">Refresh</Button>
             </div>
             <dl>
               <div><dt>Channels</dt><dd>{analytics.channels.total.toLocaleString()}</dd></div>
@@ -250,10 +315,11 @@ export function CreatorAnalyticsPage({ organisation }: { organisation: Organisat
 
       <section className="panel creator-analytics-unavailable" aria-labelledby="unavailable-stats-title">
         <StatusBadge tone="neutral">Not collected</StatusBadge>
-        <h2 id="unavailable-stats-title">Measurements not yet available</h2>
+        <h2 id="unavailable-stats-title">Measurements still unavailable</h2>
         <p>
-          Anonymous listener reach, concurrent audience, listening duration and stream quality stay unavailable
-          until DigiStream has an authoritative measured collection path and verified definitions.
+          Unique anonymous reach is not collected because anonymous playback sessions cannot be truthfully deduplicated
+          into people. Bitrate, jitter and packet loss also remain unavailable until the active player or media provider
+          exposes authoritative samples; DigiStream does not infer them from buffering, presence or socket counts.
         </p>
       </section>
     </section>
