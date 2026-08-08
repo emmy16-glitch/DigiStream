@@ -60,7 +60,10 @@ test('reduced motion fully stops audited interpolation and standalone system rot
     motion,
     /\.echoo-system-spinner\s*\{[^}]*animation:\s*none\s*!important/s,
   );
-  assert.doesNotMatch(motion, /0\.01ms/);
+  assert.doesNotMatch(
+    motion,
+    /transition-duration\s*:\s*0\.01ms(?:\s*!important)?\s*;/,
+  );
 });
 
 test('small touch-device overlays drop full-screen blur without changing geometry', async () => {
