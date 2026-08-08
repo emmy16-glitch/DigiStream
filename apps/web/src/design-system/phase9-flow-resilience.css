@@ -1,0 +1,43 @@
+.broadcast-chat-older,
+.broadcast-chat-composer button,
+.broadcast-chat-login button {
+  min-height: max(44px, var(--ds-control-min-height));
+  touch-action: manipulation;
+}
+
+.broadcast-chat-older {
+  min-width: 44px;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--ds-radius-md);
+}
+
+.broadcast-chat-error {
+  border-color: color-mix(in srgb, var(--ds-danger) 32%, transparent);
+  color: var(--ds-danger);
+  background: var(--ds-danger-soft);
+}
+
+.broadcast-chat-older:focus-visible,
+.broadcast-chat-composer button:focus-visible,
+.broadcast-chat-login button:focus-visible {
+  outline: 3px solid var(--ds-focus-ring);
+  outline-offset: 3px;
+}
+
+.creator-chat-selection select,
+.recording-more-menu summary,
+.recording-processing-action,
+.recording-preparation button,
+.recording-reference-primary-action > a,
+.recording-reference-primary-action > button,
+.recording-more-actions button {
+  min-height: max(44px, var(--ds-control-min-height));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .broadcast-chat-older,
+  .broadcast-chat-composer button,
+  .broadcast-chat-login button {
+    transition-duration: 0.01ms !important;
+  }
+}
