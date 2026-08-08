@@ -1,4 +1,4 @@
-import { and, desc, eq, or } from 'drizzle-orm';
+import { and, desc, eq, isNull, or } from 'drizzle-orm';
 import type { DigiStreamDatabase } from '../../db/client.js';
 import { organisations } from '../../db/schema.js';
 import { channelRecords } from './channels.schema.js';
@@ -17,17 +17,10 @@ export async function createChannelRecord(
 ): Promise<ChannelDto> {
   const [row] = await db
     .insert(channelRecords)
-    .values({
-      organisationId,
-      createdByUserId: userId,
-      ...input,
-    })
+    .values({ organisationId, createdByUserId: userId, ...input })
     .returning();
 
-  if (!row) {
-    throw new Error('Channel insertion returned no row.');
-  }
-
+  if (!row) throw new Error('Channel insertion returned no row.');
   return row;
 }
 
@@ -38,7 +31,12 @@ export async function listOrganisationChannelRecords(
   return db
     .select()
     .from(channelRecords)
-    .where(eq(channelRecords.organisationId, organisationId))
+    .where(
+      and(
+        eq(channelRecords.organisationId, organisationId),
+        isNull(channelRecords.deletedAt),
+      ),
+    )
     .orderBy(desc(channelRecords.createdAt), desc(channelRecords.id));
 }
 
@@ -54,6 +52,7 @@ export async function findOrganisationChannelRecord(
       and(
         eq(channelRecords.id, channelId),
         eq(channelRecords.organisationId, organisationId),
+        isNull(channelRecords.deletedAt),
       ),
     )
     .limit(1);
@@ -74,6 +73,7 @@ export async function updateChannelRecord(
       and(
         eq(channelRecords.id, channelId),
         eq(channelRecords.organisationId, organisationId),
+        isNull(channelRecords.deletedAt),
       ),
     )
     .returning();
@@ -89,10 +89,9 @@ export async function listPublicChannelRecords(
   const conditions = [
     eq(channelRecords.status, 'active'),
     eq(channelRecords.visibility, 'public'),
+    isNull(channelRecords.deletedAt),
   ];
-  if (category) {
-    conditions.push(eq(channelRecords.category, category));
-  }
+  if (category) conditions.push(eq(channelRecords.category, category));
 
   const rows = await db
     .select({
@@ -108,10 +107,7 @@ export async function listPublicChannelRecords(
       updatedAt: channelRecords.updatedAt,
     })
     .from(channelRecords)
-    .innerJoin(
-      organisations,
-      eq(channelRecords.organisationId, organisations.id),
-    )
+    .innerJoin(organisations, eq(channelRecords.organisationId, organisations.id))
     .where(and(...conditions))
     .orderBy(desc(channelRecords.createdAt), desc(channelRecords.id))
     .limit(limit);
@@ -151,15 +147,13 @@ export async function findPublicChannelRecord(
       updatedAt: channelRecords.updatedAt,
     })
     .from(channelRecords)
-    .innerJoin(
-      organisations,
-      eq(channelRecords.organisationId, organisations.id),
-    )
+    .innerJoin(organisations, eq(channelRecords.organisationId, organisations.id))
     .where(
       and(
         eq(organisations.slug, organisationSlug),
         eq(channelRecords.slug, channelSlug),
         eq(channelRecords.status, 'active'),
+        isNull(channelRecords.deletedAt),
         or(
           eq(channelRecords.visibility, 'public'),
           eq(channelRecords.visibility, 'unlisted'),
@@ -168,9 +162,7 @@ export async function findPublicChannelRecord(
     )
     .limit(1);
 
-  if (!row) {
-    return null;
-  }
+  if (!row) return null;
 
   return {
     id: row.id,
