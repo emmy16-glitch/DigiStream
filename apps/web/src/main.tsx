@@ -25,7 +25,7 @@ import './design-system/responsive-operations.css';
 import './design-system/manual-review-fixes.css';
 import './design-system/semantic-feedback-contrast.css';
 import './landing/landing-page.css';
-import './landing/landing-short-landscape.css';
+import './landing/landing-entry-responsive.css';
 import './features/guests/echoo-backstage.css';
 
 const root = document.getElementById('root');
