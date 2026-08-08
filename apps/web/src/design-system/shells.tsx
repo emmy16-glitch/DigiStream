@@ -11,28 +11,43 @@ export type CreatorNavigationItem = {
   shortLabel: string;
 };
 
+export type CreatorWorkspaceOption = {
+  id: string;
+  name: string;
+};
+
 export function CreatorShell({
   actions,
   activeLabel,
   children,
   eyebrow,
   navigation,
+  onWorkspaceChange,
   title,
   workspaceDescription = 'Sign in to load organisation access',
+  workspaceId,
   workspaceName = 'Creator workspace',
+  workspaceOptions = [],
+  workspaceSelectionDisabled = false,
 }: {
   actions?: ReactNode;
   activeLabel: string;
   children: ReactNode;
   eyebrow: string;
   navigation: CreatorNavigationItem[];
+  onWorkspaceChange?: (organisationId: string) => void;
   title: string;
   workspaceDescription?: string;
+  workspaceId?: string;
   workspaceName?: string;
+  workspaceOptions?: CreatorWorkspaceOption[];
+  workspaceSelectionDisabled?: boolean;
 }) {
   const visibleNavigation = visibleCreatorNavigation(navigation);
   const mainContentRef = useRef<HTMLElement>(null);
   const previousActiveLabel = useRef(activeLabel);
+  const canSwitchWorkspace =
+    workspaceOptions.length > 1 && Boolean(workspaceId) && Boolean(onWorkspaceChange);
 
   useEffect(() => {
     if (previousActiveLabel.current === activeLabel) return;
@@ -42,6 +57,26 @@ export function CreatorShell({
       mainContentRef.current?.focus({ preventScroll: true });
     });
   }, [activeLabel]);
+
+  function workspaceSelect() {
+    if (!canSwitchWorkspace || !workspaceId || !onWorkspaceChange) return null;
+
+    return (
+      <select
+        aria-label="Switch creator workspace"
+        className="ds-workspace-select"
+        disabled={workspaceSelectionDisabled}
+        onChange={(event) => onWorkspaceChange(event.target.value)}
+        value={workspaceId}
+      >
+        {workspaceOptions.map((workspace) => (
+          <option key={workspace.id} value={workspace.id}>
+            {workspace.name}
+          </option>
+        ))}
+      </select>
+    );
+  }
 
   return (
     <div className="ds-creator-shell">
@@ -72,7 +107,7 @@ export function CreatorShell({
 
         <section className="ds-workspace-summary" aria-label="Current workspace">
           <span>Workspace</span>
-          <strong>{workspaceName}</strong>
+          {canSwitchWorkspace ? workspaceSelect() : <strong>{workspaceName}</strong>}
           <small>{workspaceDescription}</small>
         </section>
       </aside>
@@ -83,8 +118,14 @@ export function CreatorShell({
           <h1>{title}</h1>
         </div>
         <p className="sr-only" aria-live="polite" aria-atomic="true">
-          {activeLabel} page opened
+          {activeLabel} page opened. Current workspace: {workspaceName}.
         </p>
+        {canSwitchWorkspace ? (
+          <label className="ds-creator-workspace-compact">
+            <span>Workspace</span>
+            {workspaceSelect()}
+          </label>
+        ) : null}
         {actions ? (
           <div className="ds-creator-account-area" aria-label="Signed-in account actions">
             <div className="ds-creator-account-summary">
@@ -152,7 +193,7 @@ export function ListenerShell({
 
   return (
     <div className="listener-page ds-listener-shell">
-      <a className="ds-skip-link" href="#ds-listener-content">Skip to listener content</a>
+      <a className="ds-skip-link" href="#ds-listener-content">Skip to main content</a>
 
       <header className="ds-listener-header">
         <a className="ds-shell-brand-link" href="/listen" aria-label="Echoo listener home">
