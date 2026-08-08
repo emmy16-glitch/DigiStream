@@ -26,6 +26,13 @@ async function mountMotionFixture(page: Page) {
   });
 }
 
+function everyDurationIs(value: string, expected: string): boolean {
+  return value
+    .split(',')
+    .map((duration) => duration.trim())
+    .every((duration) => duration === expected);
+}
+
 test('final motion cascade uses semantic compositor feedback on audited surfaces', async ({
   page,
 }) => {
@@ -53,11 +60,11 @@ test('final motion cascade uses semantic compositor feedback on audited surfaces
   });
 
   expect(result.rowProperty).toBe('border-color');
-  expect(result.rowDuration).toBe('0.2s');
+  expect(everyDurationIs(result.rowDuration, '0.2s')).toBe(true);
   expect(result.cardProperty).toBe('transform, border-color, background-color');
-  expect(result.cardDuration).toBe('0.2s');
+  expect(everyDurationIs(result.cardDuration, '0.2s')).toBe(true);
   expect(result.studioMeterProperty).toBe('transform, opacity');
-  expect(result.studioMeterDuration).toBe('0.1s');
+  expect(everyDurationIs(result.studioMeterDuration, '0.1s')).toBe(true);
   expect(result.studioMeterTransform).not.toBe('none');
   expect(result.guestMeterTransform).not.toBe('none');
 });
@@ -92,11 +99,11 @@ test('reduced motion stops interpolation while preserving truthful meter state',
     };
   });
 
-  expect(result.rowDuration).toBe('0s');
-  expect(result.cardDuration).toBe('0s');
-  expect(result.studioMeterDuration).toBe('0s');
-  expect(result.guestMeterDuration).toBe('0s');
-  expect(result.callInDuration).toBe('0s');
+  expect(everyDurationIs(result.rowDuration, '0s')).toBe(true);
+  expect(everyDurationIs(result.cardDuration, '0s')).toBe(true);
+  expect(everyDurationIs(result.studioMeterDuration, '0s')).toBe(true);
+  expect(everyDurationIs(result.guestMeterDuration, '0s')).toBe(true);
+  expect(everyDurationIs(result.callInDuration, '0s')).toBe(true);
   expect(result.listenerAnimation).toBe('none');
   expect(result.systemSpinnerAnimation).toBe('none');
 
