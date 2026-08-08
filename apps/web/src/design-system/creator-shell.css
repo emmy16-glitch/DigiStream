@@ -217,6 +217,15 @@
 }
 
 @media (min-width: 641px) and (max-height: 620px) {
+  .ds-creator-sidebar {
+    padding-block: 8px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .ds-creator-navigation {
+    margin-top: 8px;
+    gap: 2px;
+  }
   .ds-creator-content {
     scroll-padding-bottom: 32px;
   }
