@@ -173,7 +173,7 @@ test('Chat, Studio Lobby and Recordings pass the exact responsive matrix', async
     await expect(chat).toBeVisible();
     await expectCreatorShellUsable(page);
     await expectNoInternalOverflow(chat);
-    await expect(page.getByRole('heading', { name: 'Chat', exact: true })).toBeVisible();
+    await expect(chat.getByRole('heading', { name: 'Chat', exact: true })).toBeVisible();
     await expect(page.getByRole('option', { name: new RegExp(state.broadcastTitle) })).toHaveCount(1);
     const chatSelects = chat.locator('select:visible');
     for (let index = 0; index < await chatSelects.count(); index += 1) {
@@ -208,7 +208,7 @@ test('Chat, Studio Lobby and Recordings pass the exact responsive matrix', async
     await expect(recordings).toBeVisible();
     await expectCreatorShellUsable(page);
     await expectNoInternalOverflow(recordings);
-    await expect(page.getByRole('heading', { name: 'Recordings', exact: true })).toBeVisible();
+    await expect(recordings.getByRole('heading', { name: 'Recordings', exact: true })).toBeVisible();
     await expect(page.getByText(state.organisationName)).toHaveCount(0);
     const recordingButtons = recordings.locator('button:visible');
     for (let index = 0; index < await recordingButtons.count(); index += 1) {
