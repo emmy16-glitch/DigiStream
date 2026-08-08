@@ -15,6 +15,7 @@ import './design-system/feedback.css';
 import './design-system/creator-shell.css';
 import './design-system/listener-shell.css';
 import './auth/auth-screen.css';
+import './auth/auth-entry-responsive.css';
 import './features/broadcasting/creator-broadcast-studio-landscape.css';
 import './features/broadcasting/creator-broadcast-studio-mobile-clearance.css';
 import './features/broadcasting/creator-broadcast-action-truth.css';
@@ -24,6 +25,7 @@ import './design-system/responsive-operations.css';
 import './design-system/manual-review-fixes.css';
 import './design-system/semantic-feedback-contrast.css';
 import './landing/landing-page.css';
+import './landing/landing-entry-responsive.css';
 import './features/guests/echoo-backstage.css';
 
 const root = document.getElementById('root');
