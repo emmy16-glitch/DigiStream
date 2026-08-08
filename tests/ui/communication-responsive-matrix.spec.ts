@@ -135,7 +135,7 @@ async function auditChat(page: Page, viewport: (typeof viewports)[number], broad
   await page.goto('/creator/chat');
   const workspace = page.locator('.creator-chat-workspace');
   await expect(workspace).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Chat', exact: true })).toBeVisible();
+  await expect(workspace.getByRole('heading', { name: 'Chat', exact: true })).toBeVisible();
   await expectNoPageOverflow(page);
   await expectNoInternalOverflow(workspace);
 
