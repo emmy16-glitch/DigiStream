@@ -1,3 +1,5 @@
+import { instrumentPlaybackTelemetry } from '../../lib/playback-telemetry-client';
+
 const defaultOvenPlayerUrl =
   'https://cdn.jsdelivr.net/npm/ovenplayer@0.10.52/dist/ovenplayer.js';
 const defaultHlsUrl =
@@ -104,8 +106,14 @@ export async function loadOvenPlayer(): Promise<OvenPlayerGlobal> {
   await loadScript(hlsUrl, () => Boolean(window.Hls));
   await loadScript(ovenPlayerUrl, () => Boolean(window.OvenPlayer));
 
-  if (!window.OvenPlayer) {
+  const runtime = window.OvenPlayer;
+  if (!runtime) {
     throw new Error('OvenPlayer is unavailable after loading its browser bundle.');
   }
-  return window.OvenPlayer;
+
+  return {
+    create(container, options) {
+      return instrumentPlaybackTelemetry(runtime.create(container, options));
+    },
+  };
 }
