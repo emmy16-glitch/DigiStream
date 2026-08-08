@@ -5,7 +5,8 @@ export type EchooSystemStateKind =
   | 'loading'
   | 'offline'
   | 'session-expired'
-  | 'not-found';
+  | 'not-found'
+  | 'error';
 
 type EchooSystemStatePageProps = {
   kind: EchooSystemStateKind;
