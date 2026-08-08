@@ -3,7 +3,12 @@ import { organisations, users } from '../../db/schema.js';
 
 export type OrganisationAuditAction =
   | 'organisation.created'
-  | 'organisation.updated';
+  | 'organisation.updated'
+  | 'organisation.invitation.created'
+  | 'organisation.invitation.revoked'
+  | 'organisation.invitation.accepted'
+  | 'organisation.member.role_changed'
+  | 'organisation.member.removed';
 
 export const organisationAuditEvents = pgTable(
   'organisation_audit_events',
