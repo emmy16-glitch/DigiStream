@@ -63,7 +63,7 @@ All phases are governed by [`PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`](PRODU
 - [x] Add bounded public listing and exact channel detail endpoints
 - [x] Add ownership-safe channel management endpoints
 - [x] Add following and idempotent unfollow
-- [ ] Add full-text search, stable cursor pagination and advanced filtering
+- [x] Add full-text search, stable cursor pagination and advanced filtering
 - [ ] Add moderation and soft-delete/retention policy
 
 ## Phase 5 — Broadcast scheduling and lifecycle

@@ -2,13 +2,13 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
+import { discoverChannels, type ChannelDiscoveryQuery } from './channel-discovery.service.js';
 import { registerChannelFollowingRoutes } from './channel-following.routes.js';
 import {
   createChannel,
   getOrganisationChannel,
   getPublicChannel,
   listOrganisationChannels,
-  listPublicChannels,
   updateChannel,
   type CreateChannelBody,
   type UpdateChannelBody,
@@ -16,26 +16,15 @@ import {
 
 function requireDatabase(database: DatabaseContext | null): DatabaseContext {
   if (!database) {
-    throw new ApiError(
-      503,
-      'DATABASE_UNAVAILABLE',
-      'Channels are temporarily unavailable.',
-    );
+    throw new ApiError(503, 'DATABASE_UNAVAILABLE', 'Channels are temporarily unavailable.');
   }
   return database;
 }
 
-async function requireUser(
-  request: FastifyRequest,
-  database: DatabaseContext,
-) {
+async function requireUser(request: FastifyRequest, database: DatabaseContext) {
   const user = await findAuthenticatedUser(request, database);
   if (!user) {
-    throw new ApiError(
-      401,
-      'AUTHENTICATION_REQUIRED',
-      'Sign in to continue.',
-    );
+    throw new ApiError(401, 'AUTHENTICATION_REQUIRED', 'Sign in to continue.');
   }
   return user;
 }
@@ -44,18 +33,9 @@ export function registerChannelRoutes(
   app: FastifyInstance,
   database: DatabaseContext | null,
 ): void {
-  app.get<{ Querystring: { category?: string; limit?: string } }>(
+  app.get<{ Querystring: ChannelDiscoveryQuery }>(
     '/api/v1/channels',
-    async (request) => {
-      const context = requireDatabase(database);
-      return {
-        channels: await listPublicChannels(
-          context.db,
-          request.query.category,
-          request.query.limit,
-        ),
-      };
-    },
+    async (request) => discoverChannels(requireDatabase(database), request.query),
   );
 
   app.get<{ Params: { organisationSlug: string; channelSlug: string } }>(
@@ -72,10 +52,7 @@ export function registerChannelRoutes(
     },
   );
 
-  app.post<{
-    Params: { organisationId: string };
-    Body: CreateChannelBody;
-  }>(
+  app.post<{ Params: { organisationId: string }; Body: CreateChannelBody }>(
     '/api/v1/organisations/:organisationId/channels',
     async (request, reply) => {
       const context = requireDatabase(database);
@@ -121,10 +98,7 @@ export function registerChannelRoutes(
     },
   );
 
-  app.patch<{
-    Params: { organisationId: string; channelId: string };
-    Body: UpdateChannelBody;
-  }>(
+  app.patch<{ Params: { organisationId: string; channelId: string }; Body: UpdateChannelBody }>(
     '/api/v1/organisations/:organisationId/channels/:channelId',
     async (request) => {
       const context = requireDatabase(database);
