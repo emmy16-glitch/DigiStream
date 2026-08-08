@@ -84,6 +84,20 @@ test(
       assert.equal(broadcast.statusCode, 201);
       const broadcastId = broadcast.json().broadcast.id as string;
 
+      const schedule = await app.inject({
+        method: 'POST',
+        url: `/api/v1/organisations/${organisationId}/broadcasts/${broadcastId}/schedule`,
+        headers: {
+          cookie: ownerCookie,
+          'idempotency-key': `analytics-schedule-${suffix}`,
+        },
+        payload: {
+          expectedVersion: 0,
+          scheduledStartAt: new Date(Date.now() + 15 * 60_000).toISOString(),
+        },
+      });
+      assert.equal(schedule.statusCode, 200);
+
       const save = await app.inject({
         method: 'PUT',
         url: `/api/v1/me/saved-broadcasts/${broadcastId}`,
@@ -123,7 +137,7 @@ test(
       assert.equal(analytics.channels.total, 1);
       assert.equal(analytics.channels.byStatus.draft, 1);
       assert.equal(analytics.broadcasts.total, 1);
-      assert.equal(analytics.broadcasts.byStatus.draft, 1);
+      assert.equal(analytics.broadcasts.byStatus.scheduled, 1);
       assert.equal(analytics.audience.registeredListeners, 1);
       assert.equal(analytics.audience.listeningHistoryEntries, 1);
       assert.equal(analytics.audience.savedBroadcasts, 1);
