@@ -66,33 +66,36 @@ function eventUpdateSql(event: PlaybackTelemetryEvent): string {
       when last_heartbeat_at is null then 0
       else least(30, greatest(0, floor(extract(epoch from (now() - last_heartbeat_at)))::int))
     end`;
+  const rememberProtocol = `last_protocol = coalesce($3::varchar, last_protocol)`;
 
   if (event === 'started' || event === 'heartbeat') {
     return `${addElapsed},
       started_at = coalesce(started_at, now()),
       last_heartbeat_at = now(),
-      last_protocol = coalesce($3, last_protocol),
+      ${rememberProtocol},
       last_event_at = now()`;
   }
   if (event === 'paused') {
-    return `${addElapsed}, last_heartbeat_at = null, last_event_at = now()`;
+    return `${addElapsed}, ${rememberProtocol}, last_heartbeat_at = null, last_event_at = now()`;
   }
   if (event === 'buffering') {
     return `${addElapsed},
+      ${rememberProtocol},
       last_heartbeat_at = null,
       buffering_events = buffering_events + 1,
       last_event_at = now()`;
   }
   if (event === 'source_changed') {
     return `fallback_events = fallback_events + case
-        when last_protocol = 'webrtc' and $3 = 'llhls' then 1 else 0 end,
-      last_protocol = coalesce($3, last_protocol),
+        when last_protocol = 'webrtc' and $3::varchar = 'llhls' then 1 else 0 end,
+      ${rememberProtocol},
       last_event_at = now()`;
   }
   if (event === 'error') {
-    return `media_errors = media_errors + 1, last_event_at = now()`;
+    return `media_errors = media_errors + 1, ${rememberProtocol}, last_event_at = now()`;
   }
   return `${addElapsed},
+    ${rememberProtocol},
     last_heartbeat_at = null,
     ended_at = coalesce(ended_at, now()),
     last_event_at = now()`;
