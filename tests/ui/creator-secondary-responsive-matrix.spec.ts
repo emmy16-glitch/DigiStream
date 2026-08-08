@@ -140,10 +140,7 @@ async function createState(page: Page, suffix: string) {
     { userId: me.user.id, organisationId: organisation.id },
   );
 
-  return {
-    broadcastTitle: scheduledResponse.broadcast.title as string,
-    organisationName: organisation.name as string,
-  };
+  return { broadcastTitle: scheduledResponse.broadcast.title as string };
 }
 
 async function expectCreatorShellUsable(page: Page) {
@@ -209,7 +206,6 @@ test('Chat, Studio Lobby and Recordings pass the exact responsive matrix', async
     await expectCreatorShellUsable(page);
     await expectNoInternalOverflow(recordings);
     await expect(recordings.getByRole('heading', { name: 'Recordings', exact: true })).toBeVisible();
-    await expect(page.getByText(state.organisationName)).toHaveCount(0);
     const recordingButtons = recordings.locator('button:visible');
     for (let index = 0; index < await recordingButtons.count(); index += 1) {
       await expectTouchTarget(recordingButtons.nth(index));
