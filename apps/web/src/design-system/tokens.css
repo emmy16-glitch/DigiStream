@@ -83,10 +83,19 @@
   --ds-shadow-dialog: 0 28px 80px rgba(30, 64, 105, 0.18);
   --ds-glow-live: 0 0 24px rgba(31, 78, 140, 0.16);
 
-  --ds-duration-fast: 120ms;
-  --ds-duration-normal: 200ms;
-  --ds-duration-slow: 320ms;
+  /* Semantic motion foundation. Keep interaction motion short and purposeful. */
+  --ds-motion-instant: 100ms;
+  --ds-motion-control: 160ms;
+  --ds-motion-surface: 200ms;
+  --ds-motion-overlay: 260ms;
+  --ds-motion-workspace: 320ms;
+  --ds-motion-status: 220ms;
   --ds-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Compatibility aliases while feature CSS migrates to semantic motion tokens. */
+  --ds-duration-fast: var(--ds-motion-control);
+  --ds-duration-normal: var(--ds-motion-surface);
+  --ds-duration-slow: var(--ds-motion-workspace);
 
   --ds-sidebar-width: 228px;
   --ds-page-max: 1600px;
