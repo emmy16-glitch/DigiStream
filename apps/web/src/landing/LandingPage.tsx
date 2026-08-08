@@ -19,7 +19,7 @@ const features: Array<{
   {
     icon: 'audience',
     title: 'Private Calls',
-    description: 'Invite guests backstage',
+    description: 'Invite guests to the Studio Lobby',
   },
   {
     icon: 'recording',
