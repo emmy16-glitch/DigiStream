@@ -45,6 +45,23 @@
   padding: 1.2rem;
 }
 
+/*
+ * The legacy header-button selector is more specific than the Echoo reference
+ * selector and would otherwise keep the close action at 42px. Own the final
+ * rendered interaction floor here rather than relying on stylesheet order.
+ */
+.echoo-call-in-panel.listener-call-in-panel > .echoo-call-in-header > button {
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.echoo-call-in-panel.listener-call-in-panel input,
+.echoo-call-in-panel.listener-call-in-panel button {
+  min-height: 44px;
+}
+
 @media (max-width: 620px) {
   .listener-shell {
     padding-top: 18px;
