@@ -14,7 +14,7 @@ type EchooSystemStatePageProps = {
   actionLabel?: string;
   actionHref?: string;
   embedded?: boolean;
-  onAction?: () => void;
+  onAction?: (() => void) | undefined;
 };
 
 function EchooStateIcon({ kind }: { kind: EchooSystemStateKind }) {
