@@ -34,7 +34,7 @@ test('Studio Lobby names the producer and external guest surfaces', async () => 
 
   assert.match(creatorLobby, />\s*Studio Lobby\s*</);
   assert.match(creatorLobby, /Sign in to manage the Studio Lobby/);
-  assert.match(guestJoin, /<h1>Join the Studio Lobby<\/h1>/);
+  assert.match(guestJoin, /<h1>You’re invited to join a live conversation\.<\/h1>/);
   assert.match(guestJoin, /'Join Studio Lobby'/);
   assert.match(guestJoin, />\s*Leave Studio Lobby\s*</);
 });
