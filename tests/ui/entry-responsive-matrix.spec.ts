@@ -72,7 +72,7 @@ async function auditPublicEntrySurfaces(page: Page, testInfo: TestInfo) {
     await continueEmail.click();
     await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
     await expectTouchTarget(page.getByRole('link', { name: 'Echoo home' }));
-    await expectTouchTarget(page.getByRole('button', { name: 'Sign in', exact: true }));
+    await expectTouchTarget(page.locator('.auth-corner-switch'));
     await expectTouchTarget(page.getByRole('button', { name: 'Create account', exact: true }));
     await expectTouchTarget(page.getByRole('button', { name: 'Show password' }).first());
     await expectNoPageOverflow(page);
