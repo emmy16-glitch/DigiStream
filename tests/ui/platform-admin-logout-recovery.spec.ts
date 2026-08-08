@@ -65,13 +65,14 @@ test('platform administration stays signed in until logout is confirmed by the s
   const signOut = page.getByRole('button', { name: 'Sign out' });
   await signOut.click();
 
-  await expect(page.getByRole('heading', { name: 'Sign out could not complete' })).toBeVisible();
-  await expect(page.getByText('You are still signed in on this device.')).toBeVisible();
+  const logoutFailure = page.getByRole('alert').filter({ hasText: 'Sign out could not complete' });
+  await expect(logoutFailure).toBeVisible();
+  await expect(logoutFailure).toContainText('You are still signed in on this device.');
   await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
   await expect(page.getByText('admin@example.test', { exact: true })).toBeVisible();
   expect(logoutAttempts).toBe(1);
 
-  await page.getByRole('button', { name: 'Try sign out again' }).click();
+  await logoutFailure.getByRole('button', { name: 'Try sign out again' }).click();
   await expect(page.getByRole('heading', { name: 'Users' })).toBeHidden();
   await expect(page.getByLabel('Email')).toBeVisible();
   await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
