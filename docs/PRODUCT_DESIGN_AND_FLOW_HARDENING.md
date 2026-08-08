@@ -6,9 +6,9 @@ This document is the authoritative implementation programme for the product-desi
 
 The current onboarding programme remains first priority. An implementation agent must finish every required onboarding slice, acceptance gate, review thread and validation requirement before beginning this programme, unless a specific defect here blocks the onboarding work itself.
 
-This is not a request for a cosmetic redesign. DigiStream already has a useful dark visual identity, a shared design system, API-backed creator and listener surfaces, truthful lifecycle communication and strong media-recovery behaviour. The goal is to preserve those strengths while correcting fragmented creator flows, hidden functionality, duplicate decisions, mobile information density, inconsistent terminology and interaction defects.
+This is not a request for a cosmetic redesign. DigiStream already has the approved Echoo light visual identity, a shared design system, API-backed creator and listener surfaces, truthful lifecycle communication and strong media-recovery behaviour. The goal is to preserve those strengths while correcting fragmented creator flows, hidden functionality, duplicate decisions, mobile information density, inconsistent terminology and interaction defects.
 
-This document does not authorize duplicate onboarding pages, a second dashboard, a second Broadcasts page, a second Studio, duplicate Backstage or Recordings workspaces, parallel lifecycle state, browser-only resources or invented product data. Existing components, routes, APIs, authorization rules and lifecycle services remain authoritative.
+This document does not authorize duplicate onboarding pages, a second dashboard, a second Broadcasts page, a second Studio, duplicate Studio Lobby or Recordings workspaces, parallel lifecycle state, browser-only resources or invented product data. Existing components, routes, APIs, authorization rules and lifecycle services remain authoritative.
 
 When this document conflicts with a decorative mock-up, generic dashboard pattern or convenience shortcut, follow this authority order:
 
@@ -33,7 +33,7 @@ Existing strengths that must be preserved:
 - WebRTC-first listener playback with automatic LL-HLS fallback;
 - bounded playback recovery and evidence-based unstable-connection presentation;
 - role-aware call-in actions for visitors, production users, moderators and analysts;
-- secure API-backed organisation, channel, broadcast, Studio, Backstage, recording and replay operations;
+- secure API-backed organisation, channel, broadcast, Studio, Studio Lobby, recording and replay operations;
 - measured microphone states and separation of microphone readiness, private contribution and public delivery;
 - responsive Playwright coverage for desktop Chromium, Android Chrome and Android desktop-site simulation;
 - honest omission of fake listener counts, fake analytics, fake health scores and dead replay actions.
@@ -56,7 +56,7 @@ Every implementation in this programme must preserve the following invariants.
 
 ### API-backed navigation
 
-- Overview, navigation, Studio entry, Backstage entry, Recordings actions and replay actions derive from real API state.
+- Overview, navigation, Studio entry, Studio Lobby entry, Recordings actions and replay actions derive from real API state.
 - Browser-local wizard state may support presentation but cannot be the source of truth for completed setup.
 - Refresh, reconnect, session recovery and device switching reconstruct the same valid next action.
 - One current organisation, channel and broadcast context is carried into the next surface whenever the user selected a contextual action.
@@ -66,7 +66,7 @@ Every implementation in this programme must preserve the following invariants.
 - `OrganisationSetup` owns organisation creation.
 - `CreatorBroadcastsPage` owns channel and broadcast creation/management.
 - `CreatorBroadcastStudio` owns microphone, contribution, delivery and live control.
-- `CreatorBackstageWorkspace` owns call-ins, invitations and participant operations.
+- `CreatorBackstageWorkspace` owns call-ins, invitations and participant operations. This internal compatibility identifier does not define creator-facing terminology.
 - `CreatorRecordingsPage` owns recording and replay management.
 - Listener discovery, live listening and replay listening remain distinct existing listener surfaces.
 
@@ -81,7 +81,7 @@ Each product state has one obvious primary action. Secondary actions remain visi
 This programme is complete only when all of the following are true:
 
 - the creator shell derives its next action from real organisation, channel, broadcast and recording state;
-- every contextual Studio or Backstage action opens with the intended organisation, channel and broadcast already selected;
+- every contextual Studio or Studio Lobby action opens with the intended organisation, channel and broadcast already selected;
 - Recordings is discoverable whenever its real API-backed workspace is available;
 - Analytics remains hidden until trustworthy metrics and complete states exist;
 - creator and listener terminology is consistent;
@@ -200,7 +200,7 @@ Use the existing destinations and actions.
 - Exact date/time uses the user device locale while storing canonical server time.
 - Secondary cards show only real information.
 - Replace unavailable metric cards with contextual guidance, not permanent dashes repeated across the page.
-- Do not show `Manage backstage` until a broadcast state can support backstage work.
+- Do not show `Manage Studio Lobby` until a broadcast state can support call-in or guest work.
 - Do not show `Open broadcast studio` until a valid broadcast exists.
 - Do not show recording or replay actions before a completed lifecycle and real recording state.
 - Avoid repeating the shell page title inside the page unless the inner heading names a different task.
@@ -218,7 +218,7 @@ Each empty state contains:
 
 ### Current problem
 
-Broadcast rows, Overview actions and role-aware listener actions may open a general Studio or Backstage selector. The user then repeats organisation, channel and broadcast selection even though the originating action already identified the intended resource.
+Broadcast rows, Overview actions and role-aware listener actions may open a general Studio or Studio Lobby selector. The user then repeats organisation, channel and broadcast selection even though the originating action already identified the intended resource.
 
 ### Required implementation
 
@@ -242,7 +242,7 @@ The exact implementation may use component props, route state or query parameter
 - A row-level action passes that row’s broadcast ID.
 - Overview passes its current resource context.
 - `Manage broadcast` from a listener page resolves the owned broadcast and opens its management context.
-- `Open backstage` opens the call-in/guest area for that broadcast.
+- `Open Studio Lobby` opens the call-in/guest area for that broadcast.
 - A stale, unauthorized or terminal resource is rejected safely and the user receives the nearest valid destination.
 - The Studio still reloads and verifies every selected resource through the API; preselection is not authorization.
 - Browser and Android Back close the operational workspace before leaving the creator route where appropriate.
@@ -272,7 +272,7 @@ Creator primary navigation should use one consistent vocabulary:
 
 - Overview
 - Broadcasts
-- Backstage
+- Studio Lobby
 - Recordings
 
 Analytics or Stats remains hidden until trustworthy metrics, loading, empty, unauthorized and failure states are implemented.
@@ -301,9 +301,11 @@ Required behaviour:
 Creator-facing terms:
 
 - `Broadcasts` for creation and management;
-- `Backstage` for call-ins, guests and on-stage participants;
+- `Studio Lobby` for call-ins, guests and on-stage participants;
 - `Recordings` for recording jobs and visibility management;
 - `Studio` for audio preparation and live control.
+
+Internal compatibility names such as `CreatorBackstageWorkspace`, `/backstage/*` routes or `BackstageParticipant` types may remain until a separately justified refactor. They must not surface as creator-facing copy.
 
 Listener-facing terms:
 
@@ -313,11 +315,11 @@ Listener-facing terms:
 
 Do not use `Streams` as a competing desktop concept. A narrow mobile label may use `Streams` only when space prevents `Broadcasts` and tests show that the meaning remains clear. Route names do not need to change to satisfy terminology alignment.
 
-## Workstream 5 — Backstage information architecture
+## Workstream 5 — Studio Lobby information architecture
 
 ### Product goal
 
-Backstage should feel like one operational desk for one selected broadcast, not several unrelated management panels and repeated selectors.
+Studio Lobby should feel like one operational desk for one selected broadcast, not several unrelated management panels and repeated selectors.
 
 ### Required layout
 
@@ -341,7 +343,7 @@ The selected organisation/channel/broadcast appears once in a persistent context
 
 ### Modal requirements
 
-Backstage must use the same shared dialog behaviour as Studio and creator chat:
+Studio Lobby must use the same shared dialog behaviour as Studio and creator chat:
 
 - initial focus;
 - focus trap;
@@ -354,7 +356,7 @@ Backstage must use the same shared dialog behaviour as Studio and creator chat:
 
 ## Workstream 6 — Modal and overlay interaction standard
 
-Create or extend shared hooks/components so Studio, Backstage, creator chat, call-in sheets and confirmation dialogs do not each implement incomplete versions of modal behaviour.
+Create or extend shared hooks/components so Studio, Studio Lobby, creator chat, call-in sheets and confirmation dialogs do not each implement incomplete versions of modal behaviour.
 
 Every modal or bottom sheet must define:
 
@@ -467,7 +469,7 @@ Use automated contrast checks and manual review in bright-screen conditions. Sta
 - Replace browser-dependent Unicode controls with the shared icon system.
 - Keep icon-only controls labeled through `aria-label` and visible tooltips where useful.
 - Define shared field, helper, error and disabled patterns.
-- Keep form controls visually consistent across authentication, onboarding, Broadcasts, Studio, Backstage and Recordings.
+- Keep form controls visually consistent across authentication, onboarding, Broadcasts, Studio, Studio Lobby and Recordings.
 - Do not create a large new component library merely to rename existing components.
 
 ### Motion
@@ -577,7 +579,7 @@ A routing migration is justified when it materially improves:
 - modal route state and Back behaviour;
 - query-driven discovery filters;
 - navigation focus and scroll restoration;
-- refresh-safe Studio/Backstage context.
+- refresh-safe Studio/Studio Lobby context.
 
 A migration must be bounded and regression-tested. It must not rewrite feature business logic or change authorization. Do not introduce a router only to replace a few stable conditionals.
 
@@ -661,10 +663,10 @@ Complete this programme through bounded pull requests after the onboarding and a
 
 2. **State-aware Overview**
    - present one contextual next action;
-   - remove dead Studio/Backstage/replay actions;
+   - remove dead Studio/Studio Lobby/replay actions;
    - remove unavailable fake metric presentation.
 
-3. **Contextual Studio and Backstage opening**
+3. **Contextual Studio and Studio Lobby opening**
    - pass selected IDs and initial task;
    - validate stale/unauthorized context;
    - align Back and refresh behaviour.
@@ -679,7 +681,7 @@ Complete this programme through bounded pull requests after the onboarding and a
    - replace generic duplicate Studio controls with lifecycle-specific row actions;
    - keep one primary action per state.
 
-6. **Backstage information architecture and shared modal behaviour**
+6. **Studio Lobby information architecture and shared modal behaviour**
    - organize Call-ins, Invited guests and On stage;
    - standardize focus, scroll lock, Back and restoration.
 
@@ -766,7 +768,7 @@ Reject the implementation when any answer below is `no`.
 ### Reuse
 
 - Is the implementation reusing the existing responsible component and API?
-- Has it avoided a second dashboard, wizard, form, Studio, Backstage, Recordings or replay surface?
+- Has it avoided a second dashboard, wizard, form, Studio, Studio Lobby, Recordings or replay surface?
 - Is new orchestration limited to selection, routing and presentation rather than copied business logic?
 
 ### Permissions
@@ -816,7 +818,7 @@ Every affected pull request must review and update the documents whose contracts
 - `PRODUCT_SPECIFICATION.md`;
 - `ROADMAP.md`;
 - `CREATOR_BROADCAST_STUDIO.md`;
-- listener playback, Backstage, chat, recording/replay, responsive-test and deployment documents.
+- listener playback, Studio Lobby, chat, recording/replay, responsive-test and deployment documents.
 
 Do not mark checklist items complete because a document or screenshot changed. Completion requires production code, tests and verified behaviour.
 
