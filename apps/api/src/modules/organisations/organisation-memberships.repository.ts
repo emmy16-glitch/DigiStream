@@ -13,6 +13,7 @@ import {
   organisations,
   users,
 } from '../../db/schema.js';
+import { organisationAuditEvents } from './organisation-audit.schema.js';
 import { organisationInvitations } from './organisation-invitations.schema.js';
 import type {
   AcceptedOrganisationInvitationDto,
@@ -100,31 +101,43 @@ export async function createOrganisationInvitationRecord(
   invitedByUserId: string,
   input: CreateOrganisationInvitationInput,
 ): Promise<OrganisationInvitationDto> {
-  const [row] = await db
-    .insert(organisationInvitations)
-    .values({
+  return db.transaction(async (transaction) => {
+    const [row] = await transaction
+      .insert(organisationInvitations)
+      .values({
+        organisationId,
+        email: input.email,
+        role: input.role,
+        tokenHash: input.tokenHash,
+        invitedByUserId,
+        expiresAt: input.expiresAt,
+      })
+      .returning();
+
+    if (!row) {
+      throw new Error('Organisation invitation insertion returned no row.');
+    }
+
+    await transaction.insert(organisationAuditEvents).values({
       organisationId,
-      email: input.email,
-      role: input.role,
-      tokenHash: input.tokenHash,
-      invitedByUserId,
-      expiresAt: input.expiresAt,
-    })
-    .returning();
+      actorUserId: invitedByUserId,
+      action: 'organisation.invitation.created',
+      details: {
+        invitationId: row.id,
+        role: row.role,
+      },
+    });
 
-  if (!row) {
-    throw new Error('Organisation invitation insertion returned no row.');
-  }
-
-  return {
-    id: row.id,
-    organisationId: row.organisationId,
-    email: row.email,
-    role: row.role as Exclude<OrganisationRole, 'owner'>,
-    invitedByUserId: row.invitedByUserId,
-    expiresAt: row.expiresAt,
-    createdAt: row.createdAt,
-  };
+    return {
+      id: row.id,
+      organisationId: row.organisationId,
+      email: row.email,
+      role: row.role as Exclude<OrganisationRole, 'owner'>,
+      invitedByUserId: row.invitedByUserId,
+      expiresAt: row.expiresAt,
+      createdAt: row.createdAt,
+    };
+  });
 }
 
 export async function listPendingOrganisationInvitations(
@@ -158,22 +171,36 @@ export async function listPendingOrganisationInvitations(
 export async function revokeOrganisationInvitationRecord(
   db: DigiStreamDatabase,
   organisationId: string,
+  actorUserId: string,
   invitationId: string,
 ): Promise<boolean> {
-  const [row] = await db
-    .update(organisationInvitations)
-    .set({ revokedAt: new Date() })
-    .where(
-      and(
-        eq(organisationInvitations.id, invitationId),
-        eq(organisationInvitations.organisationId, organisationId),
-        isNull(organisationInvitations.acceptedAt),
-        isNull(organisationInvitations.revokedAt),
-      ),
-    )
-    .returning({ id: organisationInvitations.id });
+  return db.transaction(async (transaction) => {
+    const [row] = await transaction
+      .update(organisationInvitations)
+      .set({ revokedAt: new Date() })
+      .where(
+        and(
+          eq(organisationInvitations.id, invitationId),
+          eq(organisationInvitations.organisationId, organisationId),
+          isNull(organisationInvitations.acceptedAt),
+          isNull(organisationInvitations.revokedAt),
+        ),
+      )
+      .returning({ id: organisationInvitations.id });
 
-  return Boolean(row);
+    if (!row) {
+      return false;
+    }
+
+    await transaction.insert(organisationAuditEvents).values({
+      organisationId,
+      actorUserId,
+      action: 'organisation.invitation.revoked',
+      details: { invitationId: row.id },
+    });
+
+    return true;
+  });
 }
 
 export async function acceptOrganisationInvitationRecord(
@@ -257,6 +284,17 @@ export async function acceptOrganisationInvitationRecord(
       .update(organisationInvitations)
       .set({ acceptedAt: new Date() })
       .where(eq(organisationInvitations.id, invitation.id));
+
+    await transaction.insert(organisationAuditEvents).values({
+      organisationId: invitation.organisationId,
+      actorUserId: userId,
+      action: 'organisation.invitation.accepted',
+      details: {
+        invitationId: invitation.id,
+        userId,
+        role: membership.role,
+      },
+    });
 
     return {
       status: 'accepted',
@@ -351,6 +389,19 @@ export async function changeOrganisationMemberRoleRecord(
       return { status: 'member_not_found' };
     }
 
+    if (target.role !== updated.role) {
+      await transaction.insert(organisationAuditEvents).values({
+        organisationId,
+        actorUserId,
+        action: 'organisation.member.role_changed',
+        details: {
+          targetUserId,
+          previousRole: target.role,
+          nextRole: updated.role,
+        },
+      });
+    }
+
     return {
       status: 'updated',
       member: {
@@ -432,6 +483,20 @@ export async function removeOrganisationMemberRecord(
       )
       .returning({ id: organisationMemberships.id });
 
-    return deleted ? { status: 'removed' } : { status: 'member_not_found' };
+    if (!deleted) {
+      return { status: 'member_not_found' };
+    }
+
+    await transaction.insert(organisationAuditEvents).values({
+      organisationId,
+      actorUserId,
+      action: 'organisation.member.removed',
+      details: {
+        targetUserId,
+        previousRole: target.role,
+      },
+    });
+
+    return { status: 'removed' };
   });
 }
