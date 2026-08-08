@@ -104,17 +104,23 @@ function saveSession(token: string, session: GuestSession): void {
   }
 }
 
+function EchooGuestMark() {
+  return (
+    <span className="guest-echoo-mark" aria-label="Echoo">
+      <i />
+      <i />
+    </span>
+  );
+}
+
 export function GuestJoinPage({ route }: { route: GuestRoute }) {
+  const storedSession = readStoredSession(route.token);
   const [displayName, setDisplayName] = useState('');
-  const [session, setSession] = useState<GuestSession | null>(() =>
-    readStoredSession(route.token),
-  );
+  const [session, setSession] = useState<GuestSession | null>(storedSession);
   const [credential, setCredential] = useState<GuestCredential | null>(null);
-  const [phase, setPhase] = useState<GuestPhase>(() =>
-    readStoredSession(route.token) ? 'waiting' : 'invitation',
-  );
+  const [phase, setPhase] = useState<GuestPhase>(storedSession ? 'waiting' : 'invitation');
   const [message, setMessage] = useState(
-    session
+    storedSession
       ? 'Your invitation was accepted. Waiting for the host to admit you.'
       : 'Enter the name the host should see in the Studio Lobby.',
   );
@@ -381,28 +387,41 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
 
   const activeBars = Math.round(level * 20);
   const joined = phase === 'connected' || phase === 'reconnecting';
+  const microphoneReady = Boolean(trackRef.current);
+  const admitted = Boolean(credential);
 
   return (
     <main className="guest-page">
       <header className="guest-header">
-        <a className="guest-brand" href="/">
-          <span aria-hidden="true">D</span>
-          DigiStream
+        <a className="guest-brand" href="/" aria-label="Echoo home">
+          <EchooGuestMark />
+          <strong>Echoo</strong>
         </a>
-        <span>External guest Studio Lobby</span>
+        <span>Secure guest invitation</span>
       </header>
 
       <section className="guest-shell" aria-live="polite">
         <div className="guest-intro">
-          <span className="guest-kicker">Private contribution room</span>
-          <h1>Join the Studio Lobby</h1>
+          <span className="guest-kicker">Private invitation</span>
+          <h1>You’re invited to join a live conversation.</h1>
           <p>
-            Your microphone is sent through LiveKit only after you accept the invitation,
-            prepare your device and the host admits you.
+            The host shared a secure guest link with you. Your microphone is never sent to the Studio Lobby until you accept the invitation, prepare it and the host admits you.
           </p>
         </div>
 
         <article className="guest-card">
+          <div className="guest-conversation-card">
+            <div className="guest-conversation-art" aria-hidden="true">
+              <span>♫</span>
+            </div>
+            <div>
+              <span className="guest-conversation-label">Echoo live conversation</span>
+              <strong>{session?.displayName ? `Invitation for ${session.displayName}` : 'Private guest invitation'}</strong>
+              <small>{session ? 'Invitation accepted' : 'Accept the invitation to continue'}</small>
+            </div>
+            {joined ? <span className="guest-live-pill">CONNECTED</span> : null}
+          </div>
+
           {error ? <div className="guest-alert" role="alert">{error}</div> : null}
 
           {!session ? (
@@ -425,28 +444,70 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
             </form>
           ) : (
             <>
+              <section className="guest-audio-check" aria-labelledby="guest-audio-title">
+                <div className="guest-section-heading">
+                  <div>
+                    <span>Before you join</span>
+                    <h2 id="guest-audio-title">Check your audio</h2>
+                  </div>
+                  <span className={`guest-readiness ${microphoneReady && admitted ? 'is-ready' : ''}`}>
+                    {microphoneReady && admitted ? 'Ready' : 'Setup'}
+                  </span>
+                </div>
+
+                <div className="guest-check-row">
+                  <span className={`guest-check-icon ${microphoneReady ? 'is-ready' : ''}`} aria-hidden="true">
+                    {microphoneReady ? '✓' : '•'}
+                  </span>
+                  <div>
+                    <strong>Microphone</strong>
+                    <small>{microphoneReady ? 'Microphone prepared' : 'Permission is requested only when you prepare it'}</small>
+                  </div>
+                </div>
+                <div className="guest-check-row">
+                  <span className={`guest-check-icon ${navigator.onLine ? 'is-ready' : ''}`} aria-hidden="true">
+                    {navigator.onLine ? '✓' : '!'}
+                  </span>
+                  <div>
+                    <strong>Connection</strong>
+                    <small>{navigator.onLine ? 'Browser is online' : 'You appear to be offline'}</small>
+                  </div>
+                </div>
+                <div className="guest-check-row">
+                  <span className={`guest-check-icon ${admitted ? 'is-ready' : ''}`} aria-hidden="true">
+                    {admitted ? '✓' : '•'}
+                  </span>
+                  <div>
+                    <strong>Host admission</strong>
+                    <small>{admitted ? 'The host admitted this guest session' : 'Waiting for the host to admit you'}</small>
+                  </div>
+                </div>
+              </section>
+
               <div className={`guest-state guest-state-${phase}`}>
                 <span className="guest-state-dot" />
                 <div>
                   <strong>{message}</strong>
-                  <small>
-                    Session expires {expiresAt?.toLocaleString() ?? 'soon'}
-                  </small>
+                  <small>Session expires {expiresAt?.toLocaleString() ?? 'soon'}</small>
                 </div>
               </div>
 
-              <div className="guest-meter" aria-label={`Microphone level ${Math.round(level * 100)} percent`}>
-                {Array.from({ length: 20 }, (_, index) => (
-                  <i
-                    className={index < activeBars ? (index > 16 ? 'hot' : 'active') : ''}
-                    key={index}
-                  />
-                ))}
-              </div>
-              {clipping ? (
-                <div className="guest-warning" role="status">
-                  Your microphone is clipping. Lower the input gain or move farther away.
-                </div>
+              {microphoneReady ? (
+                <>
+                  <div className="guest-meter" aria-label={`Microphone level ${Math.round(level * 100)} percent`}>
+                    {Array.from({ length: 20 }, (_, index) => (
+                      <i
+                        className={index < activeBars ? (index > 16 ? 'hot' : 'active') : ''}
+                        key={index}
+                      />
+                    ))}
+                  </div>
+                  {clipping ? (
+                    <div className="guest-warning" role="status">
+                      Your microphone is clipping. Lower the input gain or move farther away.
+                    </div>
+                  ) : null}
+                </>
               ) : null}
 
               <label className="guest-device">
@@ -476,15 +537,15 @@ export function GuestJoinPage({ route }: { route: GuestRoute }) {
               ) : null}
 
               <div className="guest-actions">
-                {!trackRef.current && !joined ? (
+                {!microphoneReady && !joined ? (
                   <button className="guest-secondary" disabled={busy || expired} onClick={prepareMicrophone} type="button">
                     Prepare microphone
                   </button>
                 ) : null}
                 {!joined ? (
                   <button
-                    className="guest-primary"
-                    disabled={busy || expired || !credential || !trackRef.current}
+                    className="guest-primary guest-join-primary"
+                    disabled={busy || expired || !credential || !microphoneReady}
                     onClick={joinBackstage}
                     type="button"
                   >
