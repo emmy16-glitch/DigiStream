@@ -144,7 +144,7 @@ test('mobile request-to-speak sheet follows the visible viewport and preserves s
 
   await launcher.click();
 
-  const dialog = page.getByRole('dialog', { name: 'Request to speak' });
+  const dialog = page.getByRole('dialog', { name: 'Request to join the conversation' });
   await expect(dialog).toBeVisible();
   await expect(launcher).toHaveCount(0);
   await expect
@@ -190,9 +190,9 @@ test('mobile request-to-speak sheet follows the visible viewport and preserves s
   await expect(dialog.locator('[data-icon="close"]')).toBeVisible();
 
   await dialog
-    .getByLabel('What would you like to say?')
+    .getByLabel('Note to the host')
     .fill('I would like to contribute briefly.');
-  await dialog.getByRole('button', { name: 'Send request' }).click();
+  await dialog.getByRole('button', { name: 'Request to speak' }).click();
 
   await expect(
     page.getByText(/Request sent\. Your status will update here/),
