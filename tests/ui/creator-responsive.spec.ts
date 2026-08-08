@@ -183,11 +183,10 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await attachViewport(page, testInfo, 'chat');
 
   await page.goto('/creator/recordings');
-  await expect(page.getByRole('heading', { name: 'Recordings and replay' })).toBeVisible();
-  await expect(
-    page.getByText('No completed broadcast needs a recording job', { exact: true }),
-  ).toBeVisible();
-  await expect(page.getByText('No recording jobs yet', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Recordings', exact: true }).last()).toBeVisible();
+  await expect(page.getByText('Your completed broadcasts.', { exact: true })).toBeVisible();
+  await expect(page.getByText('No recordings yet', { exact: true })).toBeVisible();
+  await expect(page.getByText('Echoo does not invent replay data.', { exact: false })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await attachViewport(page, testInfo, 'recordings');
 
