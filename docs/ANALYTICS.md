@@ -24,11 +24,11 @@ Measured playback evidence includes:
 - server-counted listening intervals between valid playing heartbeats, capped at 30 seconds per interval;
 - buffering events reported by the real player;
 - measured WebRTC-to-LL-HLS fallback events;
-- media errors reported by the real player.
+- de-duplicated media-error episodes reported by the real player.
 
 Playback telemetry is created only after DigiStream has authorized and issued a valid playback descriptor. A random 256-bit session token is returned to that browser; only the token's SHA-256 hash is stored. Public playback sessions are deliberately anonymous so stale or invalid sign-in state can never block a public listener. Member/private playback sessions may retain the already-authorized user identifier. No IP address or user-agent is stored by this telemetry model.
 
-Telemetry events are accepted only for the matching session token. Tokens expire after 24 hours. Telemetry records are retained for 90 days by the current bounded cleanup policy.
+Telemetry events are accepted only for the matching session token. Tokens expire after 24 hours. Telemetry records are retained for 90 days by the current bounded cleanup policy. A media-error event closes the current playing interval immediately, so error/recovery time is not left active or added to measured listening duration when playback later resumes. The browser client also collapses paired OvenPlayer error notifications into one failure episode until real playback progress resumes.
 
 ## Metric definitions
 
@@ -37,9 +37,9 @@ Telemetry events are accepted only for the matching session token. Tokens expire
 - **Saved broadcasts** — durable saved-broadcast records in the selected scope. This does not measure playback or reach.
 - **Users who saved** — distinct signed-in users with at least one saved broadcast in the selected organisation.
 - **Measured playback sessions** — browser playback sessions with at least one server-accepted `playing` event. Sessions are not unique people.
-- **Active measured sessions** — measured sessions with no accepted end event and a server-received playing heartbeat within the previous 30 seconds. This is measured playback concurrency, not chat presence, websocket presence or a media-provider connection estimate.
-- **Measured listening time** — the sum of bounded server-side intervals between accepted playing heartbeats. Paused, buffering, offline and missing-heartbeat time is not counted.
-- **Playback health events** — buffering, WebRTC-to-LL-HLS fallback and media-error events emitted by the actual browser player.
+- **Active measured sessions** — measured sessions with no accepted end event and a server-received playing heartbeat within the previous 30 seconds. A paused, buffering or errored player clears its current playing heartbeat. This is measured playback concurrency, not chat presence, websocket presence or a media-provider connection estimate.
+- **Measured listening time** — the sum of bounded server-side intervals between accepted playing heartbeats. Paused, buffering, errored, offline and missing-heartbeat time is not counted.
+- **Playback health events** — buffering, WebRTC-to-LL-HLS fallback and de-duplicated media-error episodes emitted by the actual browser player.
 
 ## Explicitly unavailable measurements
 
