@@ -1,0 +1,37 @@
+/* UIQ-008 Slice 1 — shared motion ownership.
+ *
+ * Motion communicates control acknowledgement and state change only. Feature
+ * choreography stays with the responsible surface. Reduced motion is a complete
+ * mode: it removes non-essential movement instead of merely slowing it down.
+ */
+
+.ds-button,
+.ds-icon-button {
+  transition-duration: var(--ds-motion-control);
+  transition-timing-function: var(--ds-ease-standard);
+}
+
+.ds-audio-meter-bars i {
+  transition-duration: var(--ds-motion-instant);
+  transition-timing-function: var(--ds-ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-button,
+  .ds-icon-button,
+  .ds-audio-meter-bars i {
+    transition: none;
+  }
+
+  .ds-button:hover:not(:disabled):not([aria-disabled='true']):not([aria-busy='true']),
+  .ds-button:active:not(:disabled):not([aria-disabled='true']):not([aria-busy='true']),
+  .ds-icon-button:hover:not(:disabled):not([aria-disabled='true']):not([aria-busy='true']),
+  .ds-icon-button:active:not(:disabled):not([aria-disabled='true']):not([aria-busy='true']) {
+    transform: none;
+  }
+
+  .ds-spinner {
+    animation: none;
+    transform: none;
+  }
+}
