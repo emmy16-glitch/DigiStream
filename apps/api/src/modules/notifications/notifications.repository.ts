@@ -1,5 +1,10 @@
+import { and, count, desc, eq, isNull, lt, or } from 'drizzle-orm';
 import type { DigiStreamDatabase } from '../../db/client.js';
-import { userNotifications } from './notifications.schema.js';
+import {
+  userNotificationPreferences,
+  userNotifications,
+  type UserNotificationRecord,
+} from './notifications.schema.js';
 
 export type PersistNotificationInput = {
   userId: string;
@@ -8,6 +13,35 @@ export type PersistNotificationInput = {
   body: string;
   metadata?: Record<string, unknown>;
 };
+
+export type NotificationCursor = {
+  createdAt: Date;
+  id: string;
+};
+
+export type NotificationListOptions = {
+  limit: number;
+  before?: NotificationCursor;
+  includeArchived?: boolean;
+};
+
+export type NotificationDeliveryPreferences = {
+  realtimeDeliveryEnabled: boolean;
+  updatedAt: string | null;
+};
+
+function projectNotification(row: UserNotificationRecord) {
+  return {
+    id: row.id,
+    type: row.type,
+    title: row.title,
+    body: row.body,
+    metadata: row.metadata,
+    createdAt: row.createdAt.toISOString(),
+    readAt: row.readAt?.toISOString() ?? null,
+    archivedAt: row.archivedAt?.toISOString() ?? null,
+  };
+}
 
 export async function persistNotificationBeforeDelivery(
   db: DigiStreamDatabase,
@@ -29,13 +63,167 @@ export async function persistNotificationBeforeDelivery(
   }
 
   return {
-    id: row.id,
     userId: row.userId,
-    type: row.type,
-    title: row.title,
-    body: row.body,
-    metadata: row.metadata,
-    createdAt: row.createdAt.toISOString(),
-    readAt: row.readAt?.toISOString() ?? null,
+    ...projectNotification(row),
   };
+}
+
+export async function listUserNotifications(
+  db: DigiStreamDatabase,
+  userId: string,
+  options: NotificationListOptions,
+) {
+  const filters = [eq(userNotifications.userId, userId)];
+  if (!options.includeArchived) filters.push(isNull(userNotifications.archivedAt));
+  if (options.before) {
+    filters.push(
+      or(
+        lt(userNotifications.createdAt, options.before.createdAt),
+        and(
+          eq(userNotifications.createdAt, options.before.createdAt),
+          lt(userNotifications.id, options.before.id),
+        ),
+      )!,
+    );
+  }
+
+  const rows = await db
+    .select()
+    .from(userNotifications)
+    .where(and(...filters))
+    .orderBy(desc(userNotifications.createdAt), desc(userNotifications.id))
+    .limit(options.limit + 1);
+  const hasMore = rows.length > options.limit;
+  const page = hasMore ? rows.slice(0, options.limit) : rows;
+
+  const [unread] = await db
+    .select({ value: count() })
+    .from(userNotifications)
+    .where(
+      and(
+        eq(userNotifications.userId, userId),
+        isNull(userNotifications.readAt),
+        isNull(userNotifications.archivedAt),
+      ),
+    );
+
+  return {
+    notifications: page.map(projectNotification),
+    unreadCount: Number(unread?.value ?? 0),
+    nextCursor: hasMore && page.length > 0
+      ? {
+          createdAt: page[page.length - 1]!.createdAt,
+          id: page[page.length - 1]!.id,
+        }
+      : null,
+  };
+}
+
+export async function markNotificationRead(
+  db: DigiStreamDatabase,
+  userId: string,
+  notificationId: string,
+  now = new Date(),
+) {
+  const [updated] = await db
+    .update(userNotifications)
+    .set({ readAt: now })
+    .where(
+      and(
+        eq(userNotifications.id, notificationId),
+        eq(userNotifications.userId, userId),
+        isNull(userNotifications.readAt),
+      ),
+    )
+    .returning();
+  if (updated) return projectNotification(updated);
+
+  const [existing] = await db
+    .select()
+    .from(userNotifications)
+    .where(
+      and(
+        eq(userNotifications.id, notificationId),
+        eq(userNotifications.userId, userId),
+      ),
+    )
+    .limit(1);
+  return existing ? projectNotification(existing) : null;
+}
+
+export async function archiveNotification(
+  db: DigiStreamDatabase,
+  userId: string,
+  notificationId: string,
+  now = new Date(),
+) {
+  const [updated] = await db
+    .update(userNotifications)
+    .set({ archivedAt: now })
+    .where(
+      and(
+        eq(userNotifications.id, notificationId),
+        eq(userNotifications.userId, userId),
+        isNull(userNotifications.archivedAt),
+      ),
+    )
+    .returning();
+  if (updated) return projectNotification(updated);
+
+  const [existing] = await db
+    .select()
+    .from(userNotifications)
+    .where(
+      and(
+        eq(userNotifications.id, notificationId),
+        eq(userNotifications.userId, userId),
+      ),
+    )
+    .limit(1);
+  return existing ? projectNotification(existing) : null;
+}
+
+export async function getNotificationDeliveryPreferences(
+  db: DigiStreamDatabase,
+  userId: string,
+): Promise<NotificationDeliveryPreferences> {
+  const [row] = await db
+    .select()
+    .from(userNotificationPreferences)
+    .where(eq(userNotificationPreferences.userId, userId))
+    .limit(1);
+  return row
+    ? {
+        realtimeDeliveryEnabled: row.realtimeDeliveryEnabled,
+        updatedAt: row.updatedAt.toISOString(),
+      }
+    : { realtimeDeliveryEnabled: true, updatedAt: null };
+}
+
+export async function updateNotificationDeliveryPreferences(
+  db: DigiStreamDatabase,
+  userId: string,
+  realtimeDeliveryEnabled: boolean,
+  now = new Date(),
+): Promise<NotificationDeliveryPreferences> {
+  const [row] = await db
+    .insert(userNotificationPreferences)
+    .values({ userId, realtimeDeliveryEnabled, updatedAt: now })
+    .onConflictDoUpdate({
+      target: userNotificationPreferences.userId,
+      set: { realtimeDeliveryEnabled, updatedAt: now },
+    })
+    .returning();
+  if (!row) throw new Error('Notification preference upsert returned no row.');
+  return {
+    realtimeDeliveryEnabled: row.realtimeDeliveryEnabled,
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+export async function shouldDeliverNotificationRealtime(
+  db: DigiStreamDatabase,
+  userId: string,
+): Promise<boolean> {
+  return (await getNotificationDeliveryPreferences(db, userId)).realtimeDeliveryEnabled;
 }

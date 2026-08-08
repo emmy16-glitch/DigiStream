@@ -1,4 +1,4 @@
-import { index, jsonb, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { boolean, index, jsonb, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { users } from '../../db/schema.js';
 
 export const userNotifications = pgTable(
@@ -16,6 +16,7 @@ export const userNotifications = pgTable(
       .defaultNow()
       .notNull(),
     readAt: timestamp('read_at', { withTimezone: true, mode: 'date' }),
+    archivedAt: timestamp('archived_at', { withTimezone: true, mode: 'date' }),
   },
   (table) => [
     index('user_notifications_user_created_idx').on(
@@ -23,7 +24,23 @@ export const userNotifications = pgTable(
       table.createdAt,
       table.id,
     ),
+    index('user_notifications_user_active_created_idx').on(
+      table.userId,
+      table.createdAt,
+      table.id,
+    ),
   ],
 );
 
+export const userNotificationPreferences = pgTable('user_notification_preferences', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  realtimeDeliveryEnabled: boolean('realtime_delivery_enabled').default(true).notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
+    .defaultNow()
+    .notNull(),
+});
+
 export type UserNotificationRecord = typeof userNotifications.$inferSelect;
+export type UserNotificationPreferenceRecord = typeof userNotificationPreferences.$inferSelect;

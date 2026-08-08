@@ -28,6 +28,7 @@ import { createLiveKitEgressProviderFromEnv } from './modules/media/livekit-egre
 import type { MediaRelayProvider } from './modules/media/media-relay-provider.js';
 import { createLiveKitContributionProviderFromEnv } from './modules/media/livekit-provider.js';
 import { createOvenMediaEngineDeliveryProviderFromEnv } from './modules/media/ovenmediaengine-provider.js';
+import { registerNotificationRoutes } from './modules/notifications/notifications.routes.js';
 import { registerOrganisationMembershipRoutes } from './modules/organisations/organisation-memberships.routes.js';
 import { registerOrganisationRoutes } from './modules/organisations/organisations.routes.js';
 import { registerProfileAvatarRoutes } from './modules/profiles/profile-avatar.routes.js';
@@ -150,6 +151,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     ? null
     : registerRealtimeServer(app, database, options.realtime ?? {});
   registerBroadcastChatRoutes(app, database, realtimeHub);
+  registerNotificationRoutes(app, database);
 
   app.get<{ Reply: ServiceHealth }>('/health', async (_request, reply) => {
     if (!database) {
@@ -184,9 +186,12 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   app.get('/api/v1/status', async () => ({
     product: 'DigiStream',
-    stage: 'recording-orphan-reconciliation',
+    stage: 'notification-inbox',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
+      'durable-notification-inbox',
+      'notification-read-and-archive-state',
+      'notification-realtime-delivery-preference',
       'recording-object-storage',
       'recording-object-inventory',
       'recording-orphan-detection',
