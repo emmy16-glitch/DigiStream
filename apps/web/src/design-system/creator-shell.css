@@ -173,7 +173,7 @@
     min-height: 68px;
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     border-top: 1px solid var(--ds-border-default);
     background: rgba(255, 255, 255, .97);
     box-shadow: 0 -10px 28px rgba(30, 64, 105, .08);
