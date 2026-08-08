@@ -11,7 +11,10 @@ async function creatorStyles(): Promise<string> {
 test('creator workspace text can wrap without forcing horizontal overflow', async () => {
   const css = await creatorStyles();
 
-  assert.match(css, /\.workspace-welcome h2,[\s\S]*overflow-wrap: anywhere;/);
+  assert.match(
+    css,
+    /\.workspace-action-card h2,[\s\S]*\.workspace-page-intro h2 \{[\s\S]*overflow-wrap: anywhere;/,
+  );
   assert.match(css, /\.workspace-welcome-actions \.ds-button \{[\s\S]*white-space: normal;/);
   assert.match(css, /\.workspace-onboarding input \{[\s\S]*min-width: 0;/);
   assert.match(css, /\.ds-creator-account-identity \{[\s\S]*overflow-wrap: anywhere;/);
@@ -20,9 +23,13 @@ test('creator workspace text can wrap without forcing horizontal overflow', asyn
 test('creator workspace preserves safe areas and usable short-height layouts', async () => {
   const css = await creatorStyles();
 
-  assert.match(css, /padding-inline: max\(12px, env\(safe-area-inset-left\)\) max\(12px, env\(safe-area-inset-right\)\);/);
+  assert.match(
+    css,
+    /padding-inline: max\(12px, env\(safe-area-inset-left\)\) max\(12px, env\(safe-area-inset-right\)\);/,
+  );
   assert.match(css, /@media \(orientation: landscape\) and \(max-height: 480px\)/);
-  assert.match(css, /\.signal-visual \{ display: none; \}/);
+  assert.match(css, /\.workspace-page-intro \{ margin-bottom: var\(--ds-space-3\); \}/);
+  assert.match(css, /\.metrics-grid \{ margin-block: var\(--ds-space-3\); \}/);
 });
 
 test('creator workspace removes nonessential motion when requested', async () => {
