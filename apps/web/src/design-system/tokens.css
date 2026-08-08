@@ -25,12 +25,16 @@
   --ds-brand-secondary: #9ab0ca;
 
   --ds-success: #24875a;
+  --ds-success-foreground: #1f6d49;
   --ds-success-soft: rgba(36, 135, 90, 0.10);
   --ds-warning: #a66612;
+  --ds-warning-foreground: #83500d;
   --ds-warning-soft: rgba(166, 102, 18, 0.11);
   --ds-danger: #c73f4a;
+  --ds-danger-foreground: #a9343d;
   --ds-danger-soft: rgba(199, 63, 74, 0.10);
   --ds-info: #2f6fb3;
+  --ds-info-foreground: #245d99;
   --ds-info-soft: rgba(47, 111, 179, 0.10);
 
   --ds-focus-ring: #2f6fb3;
