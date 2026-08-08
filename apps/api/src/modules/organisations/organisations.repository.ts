@@ -5,6 +5,7 @@ import {
   organisations,
   userPlatformCapabilities,
 } from '../../db/schema.js';
+import { organisationAuditEvents } from './organisation-audit.schema.js';
 import type {
   CreateOrganisationInput,
   OrganisationDto,
@@ -57,6 +58,15 @@ export async function createOrganisationWithOwner(
       organisationId: organisation.id,
       userId,
       role: 'owner',
+    });
+
+    await transaction.insert(organisationAuditEvents).values({
+      organisationId: organisation.id,
+      actorUserId: userId,
+      action: 'organisation.created',
+      details: {
+        slug: organisation.slug,
+      },
     });
 
     return {
@@ -125,28 +135,40 @@ export async function findOrganisationForUser(
 export async function updateOrganisationRecord(
   db: DigiStreamDatabase,
   organisationId: string,
+  actorUserId: string,
   role: OrganisationRole,
   input: UpdateOrganisationInput,
 ): Promise<OrganisationDto | null> {
-  const [row] = await db
-    .update(organisations)
-    .set({
-      ...input,
-      updatedAt: new Date(),
-    })
-    .where(eq(organisations.id, organisationId))
-    .returning();
+  return db.transaction(async (transaction) => {
+    const [row] = await transaction
+      .update(organisations)
+      .set({
+        ...input,
+        updatedAt: new Date(),
+      })
+      .where(eq(organisations.id, organisationId))
+      .returning();
 
-  if (!row) {
-    return null;
-  }
+    if (!row) {
+      return null;
+    }
 
-  return {
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    role,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  };
+    await transaction.insert(organisationAuditEvents).values({
+      organisationId,
+      actorUserId,
+      action: 'organisation.updated',
+      details: {
+        changedFields: Object.keys(input).sort(),
+      },
+    });
+
+    return {
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      role,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
+  });
 }
