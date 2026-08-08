@@ -10,7 +10,7 @@ const navigation = [
   { label: 'Analytics', shortLabel: 'Stats' },
 ];
 
-test('implemented creator navigation is exposed while unimplemented Stats remains hidden', () => {
+test('implemented creator navigation exposes authoritative Stats', () => {
   const visible = visibleCreatorNavigation(navigation);
 
   expect(visible.map((item) => item.label)).toEqual([
@@ -19,10 +19,11 @@ test('implemented creator navigation is exposed while unimplemented Stats remain
     'Studio Lobby',
     'Chat',
     'Recordings',
+    'Analytics',
   ]);
   expect(visible.find((item) => item.shortLabel === 'Chat')).toBeTruthy();
   expect(visible.find((item) => item.shortLabel === 'Replay')).toBeTruthy();
-  expect(visible.find((item) => item.shortLabel === 'Stats')).toBeUndefined();
+  expect(visible.find((item) => item.shortLabel === 'Stats')).toBeTruthy();
 });
 
 test('navigation filtering is non-mutating and preserves authoritative order', () => {
@@ -33,4 +34,5 @@ test('navigation filtering is non-mutating and preserves authoritative order', (
   expect(visible).not.toBe(navigation);
   expect(visible[3]?.label).toBe('Chat');
   expect(visible[4]?.label).toBe('Recordings');
+  expect(visible[5]?.label).toBe('Analytics');
 });
