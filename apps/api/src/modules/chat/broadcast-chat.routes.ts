@@ -8,6 +8,7 @@ import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
 import type { RealtimeHub } from '../realtime/realtime-hub.js';
 import { broadcastRoom } from '../realtime/realtime-rooms.js';
+import { registerBroadcastChatModerationRoutes } from './broadcast-chat-moderation.routes.js';
 import {
   createBroadcastChatMessage,
   listBroadcastChatMessages,
@@ -186,4 +187,6 @@ export function registerBroadcastChatRoutes(
       return reply.code(created.replayed ? 200 : 201).send(created);
     },
   );
+
+  registerBroadcastChatModerationRoutes(app, database, publisher);
 }
