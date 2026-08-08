@@ -28,7 +28,7 @@ All phases are governed by [`PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`](PRODU
 - [x] Document the team-handbook comparison and DigiStream adoption rules
 - [x] Define product roles, entities, traffic paths, visibility and lifecycles
 - [x] Standardize API error envelopes, request IDs and safe not-found handling
-- [ ] Refactor remaining backend features into route/controller/service/repository modules
+- [x] Refactor remaining backend features into route/controller/service/repository modules
 - [x] Add public user profiles and explicit public DTO projections
 - [x] Add unique usernames, biography and discoverability preferences
 - [x] Add storage-backed avatar metadata and controlled public URLs
