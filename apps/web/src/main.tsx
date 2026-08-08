@@ -20,6 +20,7 @@ import './auth/auth-screen.css';
 import './auth/auth-entry-responsive.css';
 import './features/broadcasting/creator-broadcast-studio-landscape.css';
 import './features/broadcasting/creator-broadcast-studio-mobile-clearance.css';
+import './features/broadcasting/creator-broadcast-studio-responsive-audit.css';
 import './features/broadcasting/creator-broadcast-action-truth.css';
 import './styles.css';
 import './features/onboarding/echoo-onboarding.css';
