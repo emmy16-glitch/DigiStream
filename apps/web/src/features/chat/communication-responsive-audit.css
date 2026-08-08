@@ -1,0 +1,7 @@
+.creator-chat-workspace .broadcast-chat-older {
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
