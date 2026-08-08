@@ -5,6 +5,17 @@ export type OrganisationAnalytics = {
   channels: {
     total: number;
     byStatus: Record<string, number>;
+    breakdown: Array<{
+      id: string;
+      name: string;
+      slug: string;
+      status: string;
+      visibility: string;
+      broadcasts: number;
+      registeredListeners: number;
+      listeningHistoryEntries: number;
+      savedBroadcasts: number;
+    }>;
   };
   broadcasts: {
     total: number;
@@ -21,6 +32,7 @@ export type OrganisationAnalytics = {
     listeningHistoryEntries: string;
     savedBroadcasts: string;
     usersWhoSaved: string;
+    channelBreakdown: string;
   };
   coverage: {
     anonymousListenerReach: 'not_collected';
@@ -32,6 +44,17 @@ export type OrganisationAnalytics = {
 
 type CountRow = { count: string | number };
 type StatusCountRow = { status: string; count: string | number };
+type ChannelAnalyticsRow = {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+  visibility: string;
+  broadcasts: string | number;
+  registered_listeners: string | number;
+  listening_history_entries: string | number;
+  saved_broadcasts: string | number;
+};
 
 function count(value: string | number | undefined): number {
   const parsed = Number(value ?? 0);
@@ -46,54 +69,88 @@ export async function getOrganisationAnalytics(
   database: DatabaseContext,
   organisationId: string,
 ): Promise<OrganisationAnalytics> {
-  const [channels, broadcasts, registeredListeners, historyEntries, savedBroadcasts, usersWhoSaved] =
-    await Promise.all([
-      database.pool.query<StatusCountRow>(
-        `select status::text as status, count(*)::int as count
-           from channels
-          where organisation_id = $1
-            and deleted_at is null
-          group by status
-          order by status`,
-        [organisationId],
-      ),
-      database.pool.query<StatusCountRow>(
-        `select status::text as status, count(*)::int as count
-           from broadcasts
-          where organisation_id = $1
-          group by status
-          order by status`,
-        [organisationId],
-      ),
-      database.pool.query<CountRow>(
-        `select count(distinct history.user_id)::int as count
-           from listening_history history
-           join broadcasts broadcast on broadcast.id = history.broadcast_id
-          where broadcast.organisation_id = $1`,
-        [organisationId],
-      ),
-      database.pool.query<CountRow>(
-        `select count(*)::int as count
-           from listening_history history
-           join broadcasts broadcast on broadcast.id = history.broadcast_id
-          where broadcast.organisation_id = $1`,
-        [organisationId],
-      ),
-      database.pool.query<CountRow>(
-        `select count(*)::int as count
-           from saved_broadcasts saved
-           join broadcasts broadcast on broadcast.id = saved.broadcast_id
-          where broadcast.organisation_id = $1`,
-        [organisationId],
-      ),
-      database.pool.query<CountRow>(
-        `select count(distinct saved.user_id)::int as count
-           from saved_broadcasts saved
-           join broadcasts broadcast on broadcast.id = saved.broadcast_id
-          where broadcast.organisation_id = $1`,
-        [organisationId],
-      ),
-    ]);
+  const [
+    channels,
+    channelBreakdown,
+    broadcasts,
+    registeredListeners,
+    historyEntries,
+    savedBroadcasts,
+    usersWhoSaved,
+  ] = await Promise.all([
+    database.pool.query<StatusCountRow>(
+      `select status::text as status, count(*)::int as count
+         from channels
+        where organisation_id = $1
+          and deleted_at is null
+        group by status
+        order by status`,
+      [organisationId],
+    ),
+    database.pool.query<ChannelAnalyticsRow>(
+      `select channel.id,
+              channel.name,
+              channel.slug,
+              channel.status::text as status,
+              channel.visibility::text as visibility,
+              (select count(*)::int
+                 from broadcasts broadcast
+                where broadcast.channel_id = channel.id) as broadcasts,
+              (select count(distinct history.user_id)::int
+                 from listening_history history
+                 join broadcasts broadcast on broadcast.id = history.broadcast_id
+                where broadcast.channel_id = channel.id) as registered_listeners,
+              (select count(*)::int
+                 from listening_history history
+                 join broadcasts broadcast on broadcast.id = history.broadcast_id
+                where broadcast.channel_id = channel.id) as listening_history_entries,
+              (select count(*)::int
+                 from saved_broadcasts saved
+                 join broadcasts broadcast on broadcast.id = saved.broadcast_id
+                where broadcast.channel_id = channel.id) as saved_broadcasts
+         from channels channel
+        where channel.organisation_id = $1
+          and channel.deleted_at is null
+        order by channel.created_at desc, channel.id desc`,
+      [organisationId],
+    ),
+    database.pool.query<StatusCountRow>(
+      `select status::text as status, count(*)::int as count
+         from broadcasts
+        where organisation_id = $1
+        group by status
+        order by status`,
+      [organisationId],
+    ),
+    database.pool.query<CountRow>(
+      `select count(distinct history.user_id)::int as count
+         from listening_history history
+         join broadcasts broadcast on broadcast.id = history.broadcast_id
+        where broadcast.organisation_id = $1`,
+      [organisationId],
+    ),
+    database.pool.query<CountRow>(
+      `select count(*)::int as count
+         from listening_history history
+         join broadcasts broadcast on broadcast.id = history.broadcast_id
+        where broadcast.organisation_id = $1`,
+      [organisationId],
+    ),
+    database.pool.query<CountRow>(
+      `select count(*)::int as count
+         from saved_broadcasts saved
+         join broadcasts broadcast on broadcast.id = saved.broadcast_id
+        where broadcast.organisation_id = $1`,
+      [organisationId],
+    ),
+    database.pool.query<CountRow>(
+      `select count(distinct saved.user_id)::int as count
+         from saved_broadcasts saved
+         join broadcasts broadcast on broadcast.id = saved.broadcast_id
+        where broadcast.organisation_id = $1`,
+      [organisationId],
+    ),
+  ]);
 
   const channelCounts = byStatus(channels.rows);
   const broadcastCounts = byStatus(broadcasts.rows);
@@ -103,6 +160,17 @@ export async function getOrganisationAnalytics(
     channels: {
       total: Object.values(channelCounts).reduce((sum, value) => sum + value, 0),
       byStatus: channelCounts,
+      breakdown: channelBreakdown.rows.map((channel) => ({
+        id: channel.id,
+        name: channel.name,
+        slug: channel.slug,
+        status: channel.status,
+        visibility: channel.visibility,
+        broadcasts: count(channel.broadcasts),
+        registeredListeners: count(channel.registered_listeners),
+        listeningHistoryEntries: count(channel.listening_history_entries),
+        savedBroadcasts: count(channel.saved_broadcasts),
+      })),
     },
     broadcasts: {
       total: Object.values(broadcastCounts).reduce((sum, value) => sum + value, 0),
@@ -123,6 +191,8 @@ export async function getOrganisationAnalytics(
         'Durable saved-broadcast records for organisation broadcasts. This is not a playback or reach metric.',
       usersWhoSaved:
         'Distinct signed-in users with at least one saved broadcast for the organisation.',
+      channelBreakdown:
+        'Per-channel counts use the same persisted signed-in listener, listening-history and saved-broadcast records. They do not represent anonymous reach, plays, duration or concurrency.',
     },
     coverage: {
       anonymousListenerReach: 'not_collected',
