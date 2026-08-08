@@ -1,0 +1,3 @@
+.workspace-onboarding:has(#workspace-onboarding-title) #organisation-slug-help {
+  display: block;
+}
