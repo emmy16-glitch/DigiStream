@@ -23,6 +23,12 @@ Owners are the only members allowed to appoint owners or administrators. An orga
 
 Owners may invite administrators, broadcasters, moderators and analysts. Administrators may invite only broadcasters, moderators and analysts. Invitations cannot directly create owners.
 
+## Audit events
+
+Successful organisation and membership mutations write durable audit events in the same database transaction as the state change. The bounded event set covers organisation creation/update, invitation creation/revocation/acceptance, member role changes and member removal. Rejected, private-not-found, expired, revoked or otherwise unsuccessful requests do not create success audit records.
+
+Audit details contain only stable identifiers and bounded role/change metadata needed for operator review. Raw invitation tokens, token hashes and member email addresses are deliberately excluded from audit details. The authenticated user responsible for a mutation is stored as the event actor, including self-acceptance and voluntary membership removal.
+
 ## Endpoints
 
 ```text
@@ -44,7 +50,6 @@ Cross-tenant access returns the same private not-found response used by other or
 ## Next work
 
 - email delivery for invitation links
-- organisation audit events
 - invitation resend and throttling
 - member pagination for large organisations
 - channel and broadcast authorization using the shared role policies
