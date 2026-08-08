@@ -8,20 +8,26 @@ const readRepoFile = (path: string) =>
 test('the design system exposes semantic motion timing tokens', async () => {
   const tokens = await readRepoFile('apps/web/src/design-system/tokens.css');
 
-  for (const token of [
-    '--ds-motion-instant',
-    '--ds-motion-control',
-    '--ds-motion-surface',
-    '--ds-motion-overlay',
-    '--ds-motion-workspace',
-    '--ds-motion-status',
-  ]) {
-    assert.match(tokens, new RegExp(`${token}:\\s*`));
-  }
+  const expectedTokens = new Map([
+    ['--ds-motion-instant', '100ms'],
+    ['--ds-motion-control', '160ms'],
+    ['--ds-motion-surface', '200ms'],
+    ['--ds-motion-overlay', '260ms'],
+    ['--ds-motion-workspace', '320ms'],
+    ['--ds-motion-status', '220ms'],
+  ]);
 
-  assert.match(tokens, /--ds-duration-fast:\s*var\(--ds-motion-control\)/);
-  assert.match(tokens, /--ds-duration-normal:\s*var\(--ds-motion-surface\)/);
-  assert.match(tokens, /--ds-duration-slow:\s*var\(--ds-motion-workspace\)/);
+  for (const [token, value] of expectedTokens) {
+    assert.match(tokens, new RegExp(`${token}:\\s*${value}`));
+  }
+});
+
+test('legacy feature durations stay unchanged until their surfaces are audited', async () => {
+  const tokens = await readRepoFile('apps/web/src/design-system/tokens.css');
+
+  assert.match(tokens, /--ds-duration-fast:\s*120ms/);
+  assert.match(tokens, /--ds-duration-normal:\s*200ms/);
+  assert.match(tokens, /--ds-duration-slow:\s*320ms/);
 });
 
 test('the web entrypoint loads the final shared motion ownership layer', async () => {
