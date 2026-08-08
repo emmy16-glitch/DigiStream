@@ -1,6 +1,7 @@
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { ApplicationErrorBoundary } from './design-system/ApplicationErrorBoundary';
 import { ConnectivityStatus } from './design-system/ConnectivityStatus';
 import { EchooSystemStatePage } from './design-system/EchooSystemStatePage';
 import { PlatformAdminApplication } from './features/admin/PlatformAdminApplication';
@@ -57,6 +58,17 @@ function isKnownApplicationPath(pathname: string): boolean {
   return Boolean(parseGuestRoute(pathname) || parseListenerRoute(pathname));
 }
 
+function RuntimeErrorProbe() {
+  if (
+    import.meta.env.DEV &&
+    new URLSearchParams(window.location.search).get('__digistream_test_runtime_error') === '1'
+  ) {
+    throw new Error('Intentional development-only runtime recovery probe');
+  }
+
+  return null;
+}
+
 function RootApplication() {
   const sessionReason = new URLSearchParams(window.location.search).get('reason');
   const [showSessionExpired, setShowSessionExpired] = useState(
@@ -101,8 +113,11 @@ function RootApplication() {
 
 createRoot(root).render(
   <StrictMode>
-    <OnboardingStepFocusManager />
     <ConnectivityStatus />
-    <RootApplication />
+    <ApplicationErrorBoundary>
+      <RuntimeErrorProbe />
+      <OnboardingStepFocusManager />
+      <RootApplication />
+    </ApplicationErrorBoundary>
   </StrictMode>,
 );
