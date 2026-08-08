@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
+import { getOrganisationAnalytics } from './organisation-analytics.service.js';
 import {
   createOrganisation,
   getOrganisation,
@@ -65,6 +66,24 @@ export function registerOrganisationRoutes(
       organisations: await listOrganisations(context.db, user.id),
     };
   });
+
+  app.get<{ Params: { organisationId: string } }>(
+    '/api/v1/organisations/:organisationId/analytics',
+    async (request) => {
+      const context = requireDatabase(database);
+      const user = await requireUser(request, context);
+
+      // Reuse the organisation owner for tenant/private-not-found authorization.
+      await getOrganisation(context.db, user.id, request.params.organisationId);
+
+      return {
+        analytics: await getOrganisationAnalytics(
+          context,
+          request.params.organisationId,
+        ),
+      };
+    },
+  );
 
   app.get<{ Params: { organisationId: string } }>(
     '/api/v1/organisations/:organisationId',
