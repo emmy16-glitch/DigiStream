@@ -75,6 +75,7 @@ export function PlatformAdminUsersPage({
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
+  const [signOutError, setSignOutError] = useState('');
   const [forbidden, setForbidden] = useState(false);
   const [pendingMutation, setPendingMutation] = useState<PendingMutation | null>(null);
   const [mutating, setMutating] = useState(false);
@@ -162,10 +163,18 @@ export function PlatformAdminUsersPage({
   async function signOut() {
     if (signingOut) return;
     setSigningOut(true);
+    setSignOutError('');
     try {
       await apiRequest('/api/v1/auth/logout', { method: 'POST' });
-    } finally {
       onSignedOut();
+    } catch (requestError) {
+      if (recoverExpiredAdminSession(requestError)) return;
+      setSignOutError(
+        requestError instanceof ApiClientError && requestError.status === 0
+          ? 'DigiStream could not reach the server to end your session. You are still signed in on this device.'
+          : 'DigiStream could not confirm that your session ended. You are still signed in on this device.',
+      );
+    } finally {
       setSigningOut(false);
     }
   }
@@ -195,6 +204,12 @@ export function PlatformAdminUsersPage({
             <span>{actor.email}</span>
           </div>
         </header>
+
+        {signOutError ? (
+          <StatePanel actionLabel="Try sign out again" kind="error" onAction={() => void signOut()} title="Sign out could not complete">
+            {signOutError}
+          </StatePanel>
+        ) : null}
 
         {forbidden ? (
           <StatePanel kind="unauthorized" title="Platform administrator access required">
