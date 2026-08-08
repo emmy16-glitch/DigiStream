@@ -1,98 +1,38 @@
-export type DatabaseHealth = {
-  status: 'connected' | 'not-configured' | 'unavailable';
-  latencyMs?: number;
-};
-
 export type ServiceHealth = {
   status: 'ok' | 'degraded';
-  service: 'digistream-api';
+  service: string;
   timestamp: string;
   uptimeSeconds: number;
-  database: DatabaseHealth;
+  database: {
+    status: 'connected' | 'unavailable' | 'not-configured';
+    latencyMs?: number;
+  };
 };
 
-export type PlatformStatus = {
-  product: 'DigiStream';
-  stage:
-    | 'foundation'
-    | 'backend-data-foundation'
-    | 'authentication-foundation'
-    | 'profiles-capabilities'
-    | 'organisation-tenancy'
-    | 'organisation-memberships'
-    | 'channel-foundation'
-    | 'broadcast-lifecycle'
-    | 'livekit-contribution-adapter'
-    | 'ovenmediaengine-delivery-adapter'
-    | 'livekit-ome-egress-bridge'
-    | 'local-media-infrastructure'
-    | 'creator-broadcast-client'
-    | 'listener-playback-client'
-    | 'guest-backstage-control'
-    | 'realtime-auth-foundation'
-    | 'durable-live-chat'
-    | 'recording-retention'
-    | 'public-replay-listening'
-    | 'recording-orphan-reconciliation';
-  responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
-  capabilities: readonly string[];
-};
+export type UserRole = 'listener' | 'broadcaster' | 'admin';
 
-export type AuthUser = {
+export type User = {
   id: string;
   email: string;
   displayName: string;
-  status: 'active' | 'suspended' | 'deleted';
-  emailVerifiedAt: string | null;
+  role: UserRole;
   createdAt: string;
 };
 
-export type AuthUserResponse = {
-  user: AuthUser;
+export type AuthResponse = {
+  user: User;
 };
 
-export type PlatformCapability = 'broadcaster' | 'platform_admin';
-
-export type PublicProfile = {
+export type PublicUserProfile = {
   id: string;
   username: string;
   displayName: string;
   biography: string | null;
-  isBroadcaster: boolean;
-  joinedAt: string;
+  avatarUrl: string | null;
 };
 
-export type PublicProfileResponse = {
-  profile: PublicProfile;
-};
-
-export type OwnProfile = {
-  id: string;
-  email: string;
-  displayName: string;
-  status: 'active' | 'suspended' | 'deleted';
-  emailVerifiedAt: string | null;
-  joinedAt: string;
-  profile: {
-    username: string;
-    biography: string | null;
-    isDiscoverable: boolean;
-    createdAt: string;
-    updatedAt: string;
-  } | null;
-  capabilities: PlatformCapability[];
-};
-
-export type OwnProfileResponse = {
-  profile: OwnProfile;
-};
-
-export type CapabilityChangeResponse = {
-  capability: {
-    userId: string;
-    capability: PlatformCapability;
-    active: boolean;
-  };
+export type PublicUserProfileResponse = {
+  profile: PublicUserProfile;
 };
 
 export type OrganisationRole =
@@ -132,39 +72,33 @@ export type OrganisationMemberListResponse = {
   members: OrganisationMember[];
 };
 
-export type OrganisationMemberResponse = {
-  member: OrganisationMember;
-};
-
 export type OrganisationInvitation = {
   id: string;
   organisationId: string;
   email: string;
   role: Exclude<OrganisationRole, 'owner'>;
-  invitedByUserId: string | null;
+  invitedByUserId: string;
   expiresAt: string;
   createdAt: string;
 };
 
-export type CreatedOrganisationInvitation = OrganisationInvitation & {
-  acceptanceToken: string;
-};
-
 export type OrganisationInvitationResponse = {
-  invitation: CreatedOrganisationInvitation;
+  invitation: OrganisationInvitation;
 };
 
 export type OrganisationInvitationListResponse = {
   invitations: OrganisationInvitation[];
 };
 
-export type AcceptedOrganisationMembershipResponse = {
-  membership: {
-    organisationId: string;
-    organisationName: string;
-    role: OrganisationRole;
-    joinedAt: string;
-  };
+export type AcceptedOrganisationInvitation = {
+  organisationId: string;
+  organisationName: string;
+  role: Exclude<OrganisationRole, 'owner'>;
+  joinedAt: string;
+};
+
+export type AcceptedOrganisationInvitationResponse = {
+  membership: AcceptedOrganisationInvitation;
 };
 
 export type ChannelStatus =
@@ -442,12 +376,20 @@ export type BroadcastChatMessage = {
   };
 };
 
+export type BroadcastChatModerationState = {
+  chatDisabled: boolean;
+  slowModeSeconds: number;
+  mutedUntil: string | null;
+  blocked: boolean;
+};
+
 export type BroadcastChatHistoryResponse = {
   messages: BroadcastChatMessage[];
   chat: {
     broadcastId: string;
     status: BroadcastState;
     canSend: boolean;
+    moderation: BroadcastChatModerationState;
   };
   pageInfo: {
     hasMore: boolean;
