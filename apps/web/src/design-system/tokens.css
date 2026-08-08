@@ -92,10 +92,10 @@
   --ds-motion-status: 220ms;
   --ds-ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
-  /* Compatibility aliases while feature CSS migrates to semantic motion tokens. */
-  --ds-duration-fast: var(--ds-motion-control);
-  --ds-duration-normal: var(--ds-motion-surface);
-  --ds-duration-slow: var(--ds-motion-workspace);
+  /* Preserve legacy feature timings until each surface is explicitly audited. */
+  --ds-duration-fast: 120ms;
+  --ds-duration-normal: 200ms;
+  --ds-duration-slow: 320ms;
 
   --ds-sidebar-width: 228px;
   --ds-page-max: 1600px;
