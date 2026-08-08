@@ -19,7 +19,11 @@ export async function searchPublicChannels(
   filters: ChannelDiscoveryFilters,
 ): Promise<PublicChannelDto[]> {
   const values: unknown[] = [];
-  const where = ["c.status = 'active'", "c.visibility = 'public'"];
+  const where = [
+    "c.status = 'active'",
+    "c.visibility = 'public'",
+    'c.deleted_at is null',
+  ];
 
   const bind = (value: unknown): string => {
     values.push(value);
