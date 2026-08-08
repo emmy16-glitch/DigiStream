@@ -1,6 +1,7 @@
 import type { Broadcast, Channel, Organisation } from '@digistream/contracts';
 import { Button, LinkButton, StatusBadge } from '../../design-system/components';
 import { Icon } from '../../design-system/Icon';
+import { requestCreatorStudioLobbyContext } from '../../lib/backstage-context-runtime';
 import {
   presentationLabel,
   presentationStatus,
@@ -155,6 +156,21 @@ export function CreatorOverviewPage({
     }
   })();
 
+  function openContextualStudioLobby() {
+    if (
+      overview.canOpenBackstage &&
+      overview.selectedChannel &&
+      overview.selectedBroadcast
+    ) {
+      requestCreatorStudioLobbyContext({
+        organisationId: organisation.id,
+        channelId: overview.selectedChannel.id,
+        broadcastId: overview.selectedBroadcast.id,
+      });
+    }
+    onOpenBackstage();
+  }
+
   const quickActions = [
     {
       icon: 'broadcast' as const,
@@ -162,7 +178,7 @@ export function CreatorOverviewPage({
       onClick: overview.canOpenStudio ? onOpenStudio : onOpenBroadcasts,
     },
     ...(overview.canOpenBackstage
-      ? [{ icon: 'audience' as const, label: 'Studio Lobby', onClick: onOpenBackstage }]
+      ? [{ icon: 'audience' as const, label: 'Studio Lobby', onClick: openContextualStudioLobby }]
       : []),
     { icon: 'recording' as const, label: 'Recordings', onClick: onOpenRecordings },
   ];

@@ -2,11 +2,13 @@ import type { Broadcast, Channel, Organisation } from '@digistream/contracts';
 
 type ApiRecord = Record<string, unknown>;
 
-type BackstageContext = {
+export type RequestedStudioLobbyContext = {
   organisationId: string;
   channelId: string;
   broadcastId: string;
 };
+
+type BackstageContext = RequestedStudioLobbyContext;
 
 const backstageStates = new Set<Broadcast['status']>([
   'scheduled',
@@ -25,6 +27,7 @@ const statusPriority: Partial<Record<Broadcast['status'], number>> = {
 let organisations: Organisation[] = [];
 const channelsByOrganisation = new Map<string, Channel[]>();
 const broadcastsByChannel = new Map<string, Broadcast[]>();
+let requestedStudioLobbyContext: RequestedStudioLobbyContext | null = null;
 
 function timestamp(value: string): number {
   const parsed = Date.parse(value);
@@ -44,7 +47,7 @@ function strongestBroadcast(resources: Broadcast[]): Broadcast | null {
   })[0] ?? null;
 }
 
-function currentContext(): BackstageContext | null {
+function inferredContext(): BackstageContext | null {
   const candidates: Broadcast[] = [];
   for (const organisation of organisations) {
     const activeChannelIds = new Set(
@@ -74,6 +77,10 @@ function currentContext(): BackstageContext | null {
   };
 }
 
+function preferredContext(): BackstageContext | null {
+  return requestedStudioLobbyContext ?? inferredContext();
+}
+
 function moveFirst<T extends { id: string }>(resources: T[], id: string): T[] {
   const index = resources.findIndex((resource) => resource.id === id);
   if (index <= 0) return resources;
@@ -86,14 +93,36 @@ function backstageIsOpen(): boolean {
   return typeof document !== 'undefined' && Boolean(document.querySelector('.backstage-backdrop'));
 }
 
+/**
+ * Records a one-shot contextual preference for the existing Studio Lobby.
+ *
+ * This is deliberately not authorization. CreatorBackstageWorkspace still
+ * reloads organisations, active channels and Studio-Lobby-eligible broadcasts
+ * through the real APIs. The hint can only reorder resources that those
+ * authorized responses already contain, and it is consumed once the exact
+ * broadcast has been verified in its real organisation/channel list.
+ */
+export function requestCreatorStudioLobbyContext(
+  context: RequestedStudioLobbyContext,
+): void {
+  requestedStudioLobbyContext = { ...context };
+}
+
 export function reconcileCreatorContext(path: string, payload: unknown): unknown {
   if (!payload || typeof payload !== 'object') return payload;
   const record = payload as ApiRecord;
 
   if (path === '/api/v1/organisations' && Array.isArray(record.organisations)) {
     organisations = record.organisations as Organisation[];
-    const context = currentContext();
+    const context = preferredContext();
     if (!context || !backstageIsOpen()) return payload;
+    if (
+      requestedStudioLobbyContext &&
+      !organisations.some((organisation) => organisation.id === context.organisationId)
+    ) {
+      requestedStudioLobbyContext = null;
+      return payload;
+    }
     return {
       ...record,
       organisations: moveFirst(organisations, context.organisationId),
@@ -105,7 +134,7 @@ export function reconcileCreatorContext(path: string, payload: unknown): unknown
     const organisationId = channelsMatch[1];
     const channels = record.channels as Channel[];
     channelsByOrganisation.set(organisationId, channels);
-    const context = currentContext();
+    const context = preferredContext();
     if (
       !context ||
       !backstageIsOpen() ||
@@ -113,15 +142,20 @@ export function reconcileCreatorContext(path: string, payload: unknown): unknown
     ) {
       return payload;
     }
+    const eligibleChannels = channels.filter(
+      (channel) =>
+        channel.organisationId === organisationId && channel.status === 'active',
+    );
+    if (
+      requestedStudioLobbyContext &&
+      !eligibleChannels.some((channel) => channel.id === context.channelId)
+    ) {
+      requestedStudioLobbyContext = null;
+      return { ...record, channels: eligibleChannels };
+    }
     return {
       ...record,
-      channels: moveFirst(
-        channels.filter(
-          (channel) =>
-            channel.organisationId === organisationId && channel.status === 'active',
-        ),
-        context.channelId,
-      ),
+      channels: moveFirst(eligibleChannels, context.channelId),
     };
   }
 
@@ -136,7 +170,7 @@ export function reconcileCreatorContext(path: string, payload: unknown): unknown
     const channelId = broadcastsMatch[2];
     const broadcasts = record.broadcasts as Broadcast[];
     broadcastsByChannel.set(channelId, broadcasts);
-    const context = currentContext();
+    const context = preferredContext();
     if (
       !context ||
       !backstageIsOpen() ||
@@ -145,17 +179,26 @@ export function reconcileCreatorContext(path: string, payload: unknown): unknown
     ) {
       return payload;
     }
+    const eligibleBroadcasts = broadcasts.filter(
+      (broadcast) =>
+        broadcast.organisationId === organisationId &&
+        broadcast.channelId === channelId &&
+        backstageStates.has(broadcast.status),
+    );
+    const requestedBroadcastIsAvailable = eligibleBroadcasts.some(
+      (broadcast) => broadcast.id === context.broadcastId,
+    );
+    if (requestedStudioLobbyContext && !requestedBroadcastIsAvailable) {
+      requestedStudioLobbyContext = null;
+      return { ...record, broadcasts: eligibleBroadcasts };
+    }
+    const reordered = moveFirst(eligibleBroadcasts, context.broadcastId);
+    if (requestedStudioLobbyContext && requestedBroadcastIsAvailable) {
+      requestedStudioLobbyContext = null;
+    }
     return {
       ...record,
-      broadcasts: moveFirst(
-        broadcasts.filter(
-          (broadcast) =>
-            broadcast.organisationId === organisationId &&
-            broadcast.channelId === channelId &&
-            backstageStates.has(broadcast.status),
-        ),
-        context.broadcastId,
-      ),
+      broadcasts: reordered,
     };
   }
 
@@ -166,4 +209,5 @@ export function resetCreatorContextForTests(): void {
   organisations = [];
   channelsByOrganisation.clear();
   broadcastsByChannel.clear();
+  requestedStudioLobbyContext = null;
 }
