@@ -15,6 +15,7 @@ import { registerBroadcastGuestRoutes } from './modules/broadcast-guests/broadca
 import { registerBroadcastContributionRoutes } from './modules/broadcasts/broadcast-contribution.routes.js';
 import { registerBroadcastDeliveryRoutes } from './modules/broadcasts/broadcast-delivery.routes.js';
 import { registerBroadcastRoutes } from './modules/broadcasts/broadcasts.routes.js';
+import { registerListenerLibraryRoutes } from './modules/broadcasts/listener-library.routes.js';
 import { registerChannelArtworkRoutes } from './modules/channels/channel-artwork.routes.js';
 import { registerChannelRoutes } from './modules/channels/channels.routes.js';
 import { registerBroadcastChatRoutes } from './modules/chat/broadcast-chat.routes.js';
@@ -144,6 +145,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   registerRecordingRetentionRoutes(app, database, mediaControlSecret, { objectStorage });
   registerRecordingOrphanRoutes(app, database, mediaControlSecret, { objectStorage });
   registerBroadcastRoutes(app, database, mediaControlSecret);
+  registerListenerLibraryRoutes(app, database);
   registerBroadcastContributionRoutes(app, database, contributionProvider);
   registerBroadcastGuestRoutes(app, database, contributionProvider, backstageProvider);
   registerBroadcastDeliveryRoutes(app, database, deliveryProvider, mediaRelayProvider);
@@ -189,6 +191,8 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     stage: 'notification-inbox',
     responsiveTargets: ['mobile', 'tablet', 'desktop'],
     capabilities: [
+      'saved-broadcasts',
+      'listening-history',
       'durable-notification-inbox',
       'notification-read-and-archive-state',
       'notification-realtime-delivery-preference',
