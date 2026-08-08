@@ -72,6 +72,18 @@ test(
         body: 'This must never appear in the owner inbox.',
       });
 
+      // PostgreSQL can retain microseconds while a JavaScript Date cursor retains
+      // milliseconds. Force four distinct database timestamps into one JS millisecond
+      // so pagination proves it cannot skip a sub-millisecond sibling row.
+      for (let index = 0; index < created.length; index += 1) {
+        await database.pool.query(
+          `update user_notifications
+              set created_at = $2::timestamptz
+            where id = $1`,
+          [created[index]!.id, `2026-08-08T19:00:00.123${index + 1}00Z`],
+        );
+      }
+
       const firstPage = await app.inject({
         method: 'GET',
         url: '/api/v1/notifications?limit=2',
@@ -98,6 +110,11 @@ test(
       for (const item of secondPage.json().notifications as Array<{ id: string }>) {
         assert.equal(firstIds.has(item.id), false);
       }
+      const pagedIds = new Set([
+        ...firstPage.json().notifications.map((item: { id: string }) => item.id),
+        ...secondPage.json().notifications.map((item: { id: string }) => item.id),
+      ]);
+      assert.deepEqual(pagedIds, new Set(created.map((item) => item.id)));
 
       const invalidCursor = await app.inject({
         method: 'GET',
