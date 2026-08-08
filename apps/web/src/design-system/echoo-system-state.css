@@ -8,6 +8,22 @@
   color: #10233f;
 }
 
+.application-gate:has(.echoo-system-page.is-embedded) {
+  width: 100%;
+  max-width: none;
+  min-height: 100dvh;
+  margin: 0;
+  display: block;
+}
+
+.application-gate:has(.echoo-system-page.is-embedded) > .ds-button {
+  display: none;
+}
+
+.echoo-system-page.is-embedded {
+  width: 100%;
+}
+
 .echoo-system-card {
   width: min(30rem, 100%);
   min-height: min(42rem, calc(100dvh - 2rem));
