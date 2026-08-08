@@ -40,7 +40,8 @@ test('Programme 2 keeps the complete Phase 9 runtime ownership wired', async () 
   assert.match(auditLog, /audit/i);
   assert.match(reportQueue, /report/i);
   assert.match(categories, /categor/i);
-  assert.match(administration, /suspend|reactivate/i);
+  assert.match(administration, /updateAdministrativeUserStatus/);
+  assert.match(administration, /\/api\/v1\/admin\/users\/:userId\/status/);
   assert.match(playbackTelemetry, /heartbeat|playback/i);
 });
 
