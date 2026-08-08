@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
+import { persistNotificationBeforeDelivery } from '../notifications/notifications.repository.js';
 import type { RealtimeHub } from '../realtime/realtime-hub.js';
 import { broadcastRoom, userRoom } from '../realtime/realtime-rooms.js';
 import {
@@ -79,7 +80,27 @@ export function registerBroadcastChatModerationRoutes(
         request.params.userId,
         request.body ?? {},
       );
+      const notification = await persistNotificationBeforeDelivery(context.db, {
+        userId: request.params.userId,
+        type: 'chat.moderation.updated',
+        title: 'Live chat moderation updated',
+        body: result.restriction.blocked
+          ? 'Your access to this live chat has been restricted.'
+          : result.restriction.mutedUntil
+            ? 'You have been temporarily muted in this live chat.'
+            : 'Your live chat moderation status has been updated.',
+        metadata: {
+          organisationId: request.params.organisationId,
+          broadcastId: request.params.broadcastId,
+          restriction: result.restriction,
+        },
+      });
       const room = userRoom(request.params.userId);
+      publisher?.publish(room.key, {
+        type: 'notification.created',
+        room,
+        notification,
+      });
       publisher?.publish(room.key, {
         type: 'chat.user.moderation.updated',
         room,
