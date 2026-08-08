@@ -16,6 +16,10 @@ export type CreatorWorkspaceOption = {
   name: string;
 };
 
+function creatorFacingLabel(label: string): string {
+  return label === 'Analytics' ? 'Stats' : label;
+}
+
 export function CreatorShell({
   actions,
   activeLabel,
@@ -48,6 +52,8 @@ export function CreatorShell({
   const previousActiveLabel = useRef(activeLabel);
   const canSwitchWorkspace =
     workspaceOptions.length > 1 && Boolean(workspaceId) && Boolean(onWorkspaceChange);
+  const visibleActiveLabel = creatorFacingLabel(activeLabel);
+  const visibleTitle = creatorFacingLabel(title);
 
   useEffect(() => {
     if (previousActiveLabel.current === activeLabel) return;
@@ -99,7 +105,7 @@ export function CreatorShell({
                 type="button"
               >
                 <Icon name={item.icon} />
-                <span>{item.label}</span>
+                <span>{creatorFacingLabel(item.label)}</span>
               </button>
             );
           })}
@@ -115,10 +121,10 @@ export function CreatorShell({
       <header className="ds-creator-topbar">
         <div className="ds-page-heading">
           <span>{eyebrow}</span>
-          <h1>{title}</h1>
+          <h1>{visibleTitle}</h1>
         </div>
         <p className="sr-only" aria-live="polite" aria-atomic="true">
-          {activeLabel} page opened. Current workspace: {workspaceName}.
+          {visibleActiveLabel} page opened. Current workspace: {workspaceName}.
         </p>
         {canSwitchWorkspace ? (
           <label className="ds-creator-workspace-compact">
@@ -149,7 +155,7 @@ export function CreatorShell({
       </main>
 
       <nav className="ds-creator-mobile-nav" aria-label="Creator mobile navigation">
-        {visibleNavigation.slice(0, 5).map((item) => {
+        {visibleNavigation.map((item) => {
           const active = item.label === activeLabel;
           return (
             <button
