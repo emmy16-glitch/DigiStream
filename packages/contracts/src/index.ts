@@ -442,12 +442,20 @@ export type BroadcastChatMessage = {
   };
 };
 
+export type BroadcastChatModerationState = {
+  chatDisabled: boolean;
+  slowModeSeconds: number;
+  mutedUntil: string | null;
+  blocked: boolean;
+};
+
 export type BroadcastChatHistoryResponse = {
   messages: BroadcastChatMessage[];
   chat: {
     broadcastId: string;
     status: BroadcastState;
     canSend: boolean;
+    moderation: BroadcastChatModerationState;
   };
   pageInfo: {
     hasMore: boolean;

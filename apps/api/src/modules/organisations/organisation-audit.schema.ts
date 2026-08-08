@@ -12,7 +12,12 @@ export type OrganisationAuditAction =
   | 'channel.suspended'
   | 'channel.restored'
   | 'channel.deleted'
-  | 'channel.deletion_restored';
+  | 'channel.deletion_restored'
+  | 'chat.settings.updated'
+  | 'chat.user.muted'
+  | 'chat.user.unmuted'
+  | 'chat.user.blocked'
+  | 'chat.user.unblocked';
 
 export const organisationAuditEvents = pgTable(
   'organisation_audit_events',

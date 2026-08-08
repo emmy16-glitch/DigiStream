@@ -12,6 +12,10 @@ import {
 } from '../broadcasts/broadcast-delivery.repository.js';
 import { findOrganisationRole } from '../organisations/organisation-memberships.repository.js';
 import {
+  enforceBroadcastChatSendPolicy,
+  getBroadcastChatModerationState,
+} from './broadcast-chat-policy.js';
+import {
   broadcastChatMessages,
   type BroadcastChatMessageRecord,
 } from './broadcast-chat.schema.js';
@@ -203,11 +207,13 @@ function toMessage(record: BroadcastChatMessageRecord): BroadcastChatMessage {
 export async function listBroadcastChatMessages(
   db: DigiStreamDatabase,
   context: BroadcastChatContext,
+  userId: string,
   before: string | undefined,
   rawLimit: string | undefined,
 ): Promise<BroadcastChatHistoryResponse> {
   const cursor = parseCursor(before);
   const limit = parseLimit(rawLimit);
+  const moderation = await getBroadcastChatModerationState(db, context, userId);
   const conditions = [
     eq(broadcastChatMessages.broadcastId, context.broadcastId),
     eq(broadcastChatMessages.organisationId, context.organisationId),
@@ -237,13 +243,16 @@ export async function listBroadcastChatMessages(
   const hasMore = rows.length > limit;
   const page = rows.slice(0, limit);
   const oldest = page.at(-1);
+  const moderationAllowsSend =
+    !moderation.chatDisabled && !moderation.blocked && !moderation.mutedUntil;
 
   return {
     messages: page.reverse().map(toMessage),
     chat: {
       broadcastId: context.broadcastId,
       status: context.status,
-      canSend: context.canSend,
+      canSend: context.canSend && moderationAllowsSend,
+      moderation,
     },
     pageInfo: {
       hasMore,
@@ -282,6 +291,26 @@ function normaliseClientMessageId(value: unknown): string {
   return value;
 }
 
+async function findExistingMessage(
+  db: DigiStreamDatabase,
+  broadcastId: string,
+  authorUserId: string,
+  clientMessageId: string,
+): Promise<BroadcastChatMessageRecord | undefined> {
+  const [existing] = await db
+    .select()
+    .from(broadcastChatMessages)
+    .where(
+      and(
+        eq(broadcastChatMessages.broadcastId, broadcastId),
+        eq(broadcastChatMessages.authorUserId, authorUserId),
+        eq(broadcastChatMessages.clientMessageId, clientMessageId),
+      ),
+    )
+    .limit(1);
+  return existing;
+}
+
 export async function createBroadcastChatMessage(
   db: DigiStreamDatabase,
   context: BroadcastChatContext,
@@ -299,6 +328,25 @@ export async function createBroadcastChatMessage(
 
   const body = normaliseMessageBody(input.body);
   const clientMessageId = normaliseClientMessageId(input.clientMessageId);
+
+  const existingBeforePolicy = await findExistingMessage(
+    db,
+    context.broadcastId,
+    author.id,
+    clientMessageId,
+  );
+  if (existingBeforePolicy) {
+    if (existingBeforePolicy.body !== body) {
+      throw new ApiError(
+        409,
+        'CHAT_IDEMPOTENCY_CONFLICT',
+        'That client message ID was already used for different content.',
+      );
+    }
+    return { message: toMessage(existingBeforePolicy), replayed: true };
+  }
+
+  await enforceBroadcastChatSendPolicy(db, context, author.id);
 
   const [inserted] = await db
     .insert(broadcastChatMessages)
@@ -323,18 +371,12 @@ export async function createBroadcastChatMessage(
     return { message: toMessage(inserted), replayed: false };
   }
 
-  const [existing] = await db
-    .select()
-    .from(broadcastChatMessages)
-    .where(
-      and(
-        eq(broadcastChatMessages.broadcastId, context.broadcastId),
-        eq(broadcastChatMessages.authorUserId, author.id),
-        eq(broadcastChatMessages.clientMessageId, clientMessageId),
-      ),
-    )
-    .limit(1);
-
+  const existing = await findExistingMessage(
+    db,
+    context.broadcastId,
+    author.id,
+    clientMessageId,
+  );
   if (!existing) {
     throw new Error('Chat idempotency conflict returned no existing message.');
   }

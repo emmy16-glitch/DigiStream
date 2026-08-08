@@ -8,6 +8,7 @@ import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
 import type { RealtimeHub } from '../realtime/realtime-hub.js';
 import { broadcastRoom } from '../realtime/realtime-rooms.js';
+import { registerBroadcastChatModerationRoutes } from './broadcast-chat-moderation.routes.js';
 import {
   createBroadcastChatMessage,
   listBroadcastChatMessages,
@@ -70,7 +71,7 @@ export function registerBroadcastChatRoutes(
     '/api/v1/broadcasts/:organisationSlug/:channelSlug/:broadcastSlug/chat/messages',
     async (request, reply) => {
       const context = requireDatabase(database);
-      await requireUser(request, context);
+      const user = await requireUser(request, context);
       const chat = await resolvePublicBroadcastChat(
         context.db,
         request.params.organisationSlug,
@@ -81,6 +82,7 @@ export function registerBroadcastChatRoutes(
       return listBroadcastChatMessages(
         context.db,
         chat,
+        user.id,
         request.query.before,
         request.query.limit,
       );
@@ -144,6 +146,7 @@ export function registerBroadcastChatRoutes(
       return listBroadcastChatMessages(
         context.db,
         chat,
+        user.id,
         request.query.before,
         request.query.limit,
       );
@@ -184,4 +187,6 @@ export function registerBroadcastChatRoutes(
       return reply.code(created.replayed ? 200 : 201).send(created);
     },
   );
+
+  registerBroadcastChatModerationRoutes(app, database, publisher);
 }
