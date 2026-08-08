@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AuthUser } from '@digistream/contracts';
 import { BrandLockup, Button, LinkButton, StatePanel, StatusBadge } from '../../design-system/components';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
@@ -79,6 +79,7 @@ export function PlatformAdminUsersPage({
   const [pendingMutation, setPendingMutation] = useState<PendingMutation | null>(null);
   const [mutating, setMutating] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const mutationTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const loadUsers = useCallback(async (cursor?: string) => {
     const append = Boolean(cursor);
@@ -111,6 +112,28 @@ export function PlatformAdminUsersPage({
     void loadUsers();
   }, [loadUsers]);
 
+  function openPendingMutation(
+    user: AdministrativeUser,
+    status: MutableAdministrativeUserStatus,
+    trigger: HTMLButtonElement,
+  ) {
+    mutationTriggerRef.current = trigger;
+    setPendingMutation({ user, status });
+  }
+
+  function closePendingMutation() {
+    setPendingMutation(null);
+    window.requestAnimationFrame(() => mutationTriggerRef.current?.focus());
+  }
+
+  function focusUpdatedUserAction(userId: string) {
+    window.requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLButtonElement>(`[data-admin-user-id="${userId}"] .platform-admin-user-actions button`)
+        ?.focus();
+    });
+  }
+
   async function applyStatusChange() {
     if (!pendingMutation || mutating) return;
     setMutating(true);
@@ -127,6 +150,7 @@ export function PlatformAdminUsersPage({
         user.id === response.user.id ? response.user : user
       )));
       setPendingMutation(null);
+      focusUpdatedUserAction(response.user.id);
     } catch (requestError) {
       if (recoverExpiredAdminSession(requestError)) return;
       setError(readableError(requestError));
@@ -192,19 +216,32 @@ export function PlatformAdminUsersPage({
             </section>
 
             {pendingMutation ? (
-              <section className="platform-admin-confirmation" role="alert" aria-labelledby="platform-admin-confirm-title">
+              <section
+                aria-describedby="platform-admin-confirm-description"
+                aria-labelledby="platform-admin-confirm-title"
+                className="platform-admin-confirmation"
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') {
+                    event.preventDefault();
+                    closePendingMutation();
+                  }
+                }}
+                role="alertdialog"
+              >
                 <div>
                   <strong id="platform-admin-confirm-title">
                     {pendingMutation.status === 'suspended' ? 'Suspend this account?' : 'Reactivate this account?'}
                   </strong>
-                  <p>
+                  <p id="platform-admin-confirm-description">
                     {pendingMutation.status === 'suspended'
                       ? `Suspending ${pendingMutation.user.displayName} revokes all of their active sessions immediately.`
                       : `Reactivating ${pendingMutation.user.displayName} allows them to sign in again with their existing account.`}
                   </p>
                 </div>
                 <div className="platform-admin-confirm-actions">
-                  <Button disabled={mutating} onClick={() => setPendingMutation(null)} variant="secondary">Cancel</Button>
+                  <Button autoFocus disabled={mutating} onClick={closePendingMutation} variant="secondary">
+                    Cancel
+                  </Button>
                   <Button
                     loading={mutating}
                     onClick={() => void applyStatusChange()}
@@ -233,7 +270,7 @@ export function PlatformAdminUsersPage({
             ) : users.length > 0 ? (
               <section className="platform-admin-list" aria-label="Administrative users">
                 {users.map((user) => (
-                  <article className="platform-admin-user" key={user.id}>
+                  <article className="platform-admin-user" data-admin-user-id={user.id} key={user.id}>
                     <div className="platform-admin-user-main">
                       <div>
                         <strong>{user.displayName}</strong>
@@ -250,13 +287,16 @@ export function PlatformAdminUsersPage({
                       {user.status === 'active' ? (
                         <Button
                           disabled={user.id === actor.id}
-                          onClick={() => setPendingMutation({ user, status: 'suspended' })}
+                          onClick={(event) => openPendingMutation(user, 'suspended', event.currentTarget)}
                           variant="danger"
                         >
                           {user.id === actor.id ? 'Current account' : 'Suspend'}
                         </Button>
                       ) : user.status === 'suspended' ? (
-                        <Button onClick={() => setPendingMutation({ user, status: 'active' })} variant="primary">
+                        <Button
+                          onClick={(event) => openPendingMutation(user, 'active', event.currentTarget)}
+                          variant="primary"
+                        >
                           Reactivate
                         </Button>
                       ) : (
