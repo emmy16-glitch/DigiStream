@@ -37,26 +37,22 @@ type BroadcastRow = QueryResultRow & {
 type SavedRow = BroadcastRow & { saved_at: Date };
 type HistoryRow = BroadcastRow & { last_listened_at: Date };
 
-const visibleBroadcastSelection = `
-  select
-    broadcasts.id,
-    broadcasts.title,
-    broadcasts.slug,
-    broadcasts.description,
-    broadcasts.status,
-    broadcasts.scheduled_start_at,
-    broadcasts.live_started_at,
-    broadcasts.ended_at,
-    organisations.id as organisation_id,
-    organisations.name as organisation_name,
-    organisations.slug as organisation_slug,
-    channels.id as channel_id,
-    channels.name as channel_name,
-    channels.slug as channel_slug,
-    channels.category as channel_category
-  from broadcasts
-  inner join organisations on organisations.id = broadcasts.organisation_id
-  inner join channels on channels.id = broadcasts.channel_id
+const broadcastColumns = `
+  broadcasts.id,
+  broadcasts.title,
+  broadcasts.slug,
+  broadcasts.description,
+  broadcasts.status,
+  broadcasts.scheduled_start_at,
+  broadcasts.live_started_at,
+  broadcasts.ended_at,
+  organisations.id as organisation_id,
+  organisations.name as organisation_name,
+  organisations.slug as organisation_slug,
+  channels.id as channel_id,
+  channels.name as channel_name,
+  channels.slug as channel_slug,
+  channels.category as channel_category
 `;
 
 const accessibleConditions = `
@@ -150,8 +146,11 @@ export async function listSavedBroadcasts(
   limit: number,
 ): Promise<SavedBroadcastItem[]> {
   const result = await pool.query<SavedRow>(
-    `${visibleBroadcastSelection}, saved_broadcasts.saved_at
-     inner join saved_broadcasts on saved_broadcasts.broadcast_id = broadcasts.id
+    `select ${broadcastColumns}, saved_broadcasts.saved_at
+     from saved_broadcasts
+     inner join broadcasts on broadcasts.id = saved_broadcasts.broadcast_id
+     inner join organisations on organisations.id = broadcasts.organisation_id
+     inner join channels on channels.id = broadcasts.channel_id
      where saved_broadcasts.user_id = $1
        and ${accessibleConditions}
      order by saved_broadcasts.saved_at desc, broadcasts.id desc
@@ -185,8 +184,11 @@ export async function listListeningHistory(
   limit: number,
 ): Promise<ListeningHistoryItem[]> {
   const result = await pool.query<HistoryRow>(
-    `${visibleBroadcastSelection}, listening_history.last_listened_at
-     inner join listening_history on listening_history.broadcast_id = broadcasts.id
+    `select ${broadcastColumns}, listening_history.last_listened_at
+     from listening_history
+     inner join broadcasts on broadcasts.id = listening_history.broadcast_id
+     inner join organisations on organisations.id = broadcasts.organisation_id
+     inner join channels on channels.id = broadcasts.channel_id
      where listening_history.user_id = $1
        and ${accessibleConditions}
      order by listening_history.last_listened_at desc, broadcasts.id desc
