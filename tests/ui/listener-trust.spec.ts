@@ -201,8 +201,9 @@ test('mobile request-to-speak flow uses a modal sheet and keeps status visible',
   await mockBroadcast(page, 'live');
   await page.goto(routePath);
 
-  const launcher = page.getByRole('button', { name: 'Request to speak' });
+  const launcher = page.locator('button.listener-call-in-launcher');
   await expect(launcher).toBeVisible();
+  await expect(launcher).toHaveText('Request to speak');
   await launcher.click();
 
   const dialog = page.getByRole('dialog', { name: 'Request to join the conversation' });
