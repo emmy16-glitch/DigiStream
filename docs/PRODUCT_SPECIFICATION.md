@@ -89,7 +89,7 @@ Visibility is always enforced by the API and media authorization path. Removing 
 
 `draft -> pending-approval -> active -> suspended -> archived`
 
-Development may bypass approval, but the stored state remains explicit.
+Development may bypass approval, but the stored state remains explicit. Suspension and restoration require an authorised moderation action with a recorded actor and reason. Soft-deleted channels are immediately unavailable to ordinary product surfaces, remain recoverable for 30 days, and restore to `draft` rather than silently returning to public visibility. Permanent purge and legal-hold handling remain separate governed operations.
 
 ### Broadcast
 
@@ -238,4 +238,4 @@ Technical values may appear as secondary diagnostics for experienced operators. 
 - Default recording and retention policy
 - Public, unlisted, and private sharing behaviour
 - Platform fees, supported currencies, minimum withdrawals, and verification requirements
-- Suspension, archival, deletion, legal-hold, and restoration policies
+- Permanent channel purge and legal-hold policy after the 30-day soft-delete recovery window
