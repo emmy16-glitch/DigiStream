@@ -22,6 +22,7 @@ import './styles.css';
 import './features/onboarding/echoo-onboarding.css';
 import './design-system/responsive-operations.css';
 import './design-system/manual-review-fixes.css';
+import './design-system/semantic-feedback-contrast.css';
 import './landing/landing-page.css';
 import './features/guests/echoo-backstage.css';
 

@@ -1,0 +1,54 @@
+/*
+ * Shared semantic-foreground normalization for legacy selectors that still
+ * render on the Echoo light theme. This stylesheet intentionally loads after
+ * manual-review-fixes.css so old dark-theme foregrounds cannot win the cascade.
+ */
+
+.workspace-inline-error {
+  border-color: color-mix(in srgb, var(--ds-danger) 38%, var(--ds-border-default));
+  color: var(--ds-danger-foreground);
+  background: var(--ds-danger-soft);
+}
+
+.ds-state-offline {
+  border-color: color-mix(in srgb, var(--ds-danger) 38%, var(--ds-border-default));
+}
+
+.ds-state-error .ds-state-icon,
+.ds-state-offline .ds-state-icon {
+  color: var(--ds-danger-foreground);
+  background: var(--ds-danger-soft);
+}
+
+.ds-state-unauthorized .ds-state-icon {
+  color: var(--ds-warning-foreground);
+  background: var(--ds-warning-soft);
+}
+
+.ds-state-loading .ds-state-icon {
+  color: var(--ds-info-foreground);
+  background: var(--ds-info-soft);
+}
+
+.broadcast-row-overdue {
+  border-color: color-mix(in srgb, var(--ds-warning) 38%, var(--ds-border-subtle));
+}
+
+.broadcast-overdue-note {
+  border-color: color-mix(in srgb, var(--ds-warning) 30%, var(--ds-border-default));
+  color: var(--ds-warning-foreground) !important;
+  background: color-mix(in srgb, var(--ds-warning) 9%, var(--ds-surface-1));
+}
+
+@media (forced-colors: active) {
+  .workspace-inline-error,
+  .broadcast-overdue-note,
+  .ds-state-error .ds-state-icon,
+  .ds-state-offline .ds-state-icon,
+  .ds-state-unauthorized .ds-state-icon,
+  .ds-state-loading .ds-state-icon {
+    border-color: CanvasText;
+    color: CanvasText !important;
+    background: Canvas;
+  }
+}
