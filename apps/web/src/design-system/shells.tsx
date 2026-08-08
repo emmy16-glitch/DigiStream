@@ -38,7 +38,7 @@ export function CreatorShell({
   onWorkspaceChange?: (organisationId: string) => void;
   title: string;
   workspaceDescription?: string;
-  workspaceId?: string;
+  workspaceId?: string | undefined;
   workspaceName?: string;
   workspaceOptions?: CreatorWorkspaceOption[];
   workspaceSelectionDisabled?: boolean;
