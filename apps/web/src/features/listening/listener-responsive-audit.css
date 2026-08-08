@@ -29,6 +29,22 @@
   gap: 8px;
 }
 
+/*
+ * The legacy call-in sheet used 21px full-bleed header offsets. The active
+ * Echoo panel now owns 1.2rem padding, so retaining those old offsets creates
+ * a ~2px horizontal scroll range. Keep the full-bleed header, but align its
+ * sticky geometry with the padding of the panel that actually renders it.
+ */
+.echoo-call-in-panel.listener-call-in-panel {
+  box-sizing: border-box;
+}
+
+.echoo-call-in-panel.listener-call-in-panel > .echoo-call-in-header {
+  top: -1.2rem;
+  margin: -1.2rem -1.2rem 1rem;
+  padding: 1.2rem;
+}
+
 @media (max-width: 620px) {
   .listener-shell {
     padding-top: 18px;
@@ -57,6 +73,12 @@
 
   .listener-status {
     margin-top: 18px;
+  }
+
+  .echoo-call-in-panel.listener-call-in-panel > .echoo-call-in-header {
+    top: -0.85rem;
+    margin: -0.85rem -0.85rem 0.85rem;
+    padding: 0.85rem;
   }
 
   .echoo-replay-hero {
