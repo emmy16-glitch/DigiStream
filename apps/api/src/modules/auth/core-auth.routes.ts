@@ -6,6 +6,7 @@ import {
   getSessionCookieName,
   readCookie,
 } from '../../auth/cookies.js';
+import { registerPlatformAdministrationRoutes } from '../administration/platform-administration.routes.js';
 import {
   CoreAuthError,
   getCurrentUser,
@@ -179,4 +180,6 @@ export function registerAuthRoutes(
     reply.header('set-cookie', clearSessionCookie(cookieName));
     return reply.code(204).send();
   });
+
+  registerPlatformAdministrationRoutes(app, database);
 }
