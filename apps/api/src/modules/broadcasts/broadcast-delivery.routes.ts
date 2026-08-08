@@ -119,6 +119,8 @@ const telemetryEvents = new Set<PlaybackTelemetryEvent>([
   'error',
   'ended',
 ]);
+const telemetrySessionIdPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function parseTelemetryBody(body: unknown): {
   token: string;
@@ -236,11 +238,13 @@ export function registerBroadcastDeliveryRoutes(
       if (!broadcast) {
         throw new ApiError(404, 'NOT_FOUND', 'The requested resource was not found.');
       }
-      const user = await findAuthenticatedUser(request, context);
+      // Public playback must remain independent of any stale or invalid signed-in
+      // browser state. Public sessions are therefore anonymous telemetry sessions;
+      // authenticated member playback is the authoritative signed-in session path.
       const telemetry = await createPlaybackTelemetrySession(
         context,
         broadcast.id,
-        user?.id ?? null,
+        null,
       );
       noStore(reply);
       return playbackResponse(playback, telemetry);
@@ -254,6 +258,9 @@ export function registerBroadcastDeliveryRoutes(
     '/api/v1/playback-telemetry/:sessionId',
     async (request, reply) => {
       const context = requireDatabase(database);
+      if (!telemetrySessionIdPattern.test(request.params.sessionId)) {
+        throw new ApiError(404, 'NOT_FOUND', 'The requested resource was not found.');
+      }
       const body = parseTelemetryBody(request.body);
       const accepted = await recordPlaybackTelemetryEvent(context, {
         sessionId: request.params.sessionId,
