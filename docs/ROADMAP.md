@@ -117,7 +117,7 @@ This phase blocks decorative expansion until the existing live product behaves h
 - [x] Trace the exact backend, authentication, authorization or configuration cause of **Studio action failed**
 - [x] Make public listener actions role-aware for organisation owners, admins and broadcasters
 - [x] Replace owner-facing **Request to speak** with **Manage broadcast**, **Open studio** or **Open backstage** as appropriate
-- [ ] Keep the API as the independent authorization boundary and add matching tests
+- [x] Keep the API as the independent authorization boundary and add matching tests
 - [x] Render distinct scheduled, starting, live, reconnecting, ending, completed, cancelled and failed listener layouts
 - [x] Remove permanent `LIVE` artwork from scheduled events
 - [x] Prevent the `Live now` navigation state from appearing active for an upcoming event
@@ -164,7 +164,7 @@ This phase blocks decorative expansion until the existing live product behaves h
 - [ ] Use the shared icon system instead of browser-dependent Unicode symbols
 - [ ] Preserve strong responsive event typography without clipping or overlap
 - [ ] Test long titles, keyboard navigation, reduced motion, bright sunlight contrast and mobile safe areas
-- [ ] Hide Replay and Stats navigation until real authorised data and failure states exist
+- [x] Hide Replay and Stats navigation until real authorised data and failure states exist
 
 ### Failure and constrained-network verification
 
@@ -217,9 +217,9 @@ This phase blocks decorative expansion until the existing live product behaves h
 
 - [ ] Saved broadcasts and listening history
 - [x] Durable in-app notifications and notification preferences
-- [ ] Creator, channel and organisation analytics
-- [ ] Audience and stream-quality analytics with accurate metric definitions
-- [ ] Expose Stats navigation only after trustworthy metrics, loading, empty, failure and authorization states exist
+- [x] Creator, channel and organisation analytics
+- [x] Audience and stream-quality analytics with accurate metric definitions
+- [x] Expose Stats navigation only after trustworthy metrics, loading, empty, failure and authorization states exist
 - [ ] Administrative users, reports, categories, audit logs and moderation queues
 - [ ] Accessibility and offline/error recovery for every product flow
 
