@@ -4,6 +4,7 @@ import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
 import { listOrganisationAuditLog } from './organisation-audit-log.service.js';
 import { getOrganisationAnalytics } from './organisation-analytics.service.js';
+import { getOrganisationGovernanceReport } from './organisation-governance-report.service.js';
 import {
   createOrganisation,
   getOrganisation,
@@ -100,6 +101,20 @@ export function registerOrganisationRoutes(
           request.params.organisationId,
         ),
       };
+    },
+  );
+
+  app.get<{ Params: { organisationId: string } }>(
+    '/api/v1/organisations/:organisationId/reports/governance',
+    async (request, reply) => {
+      const context = requireDatabase(database);
+      const user = await requireUser(request, context);
+      const report = await getOrganisationGovernanceReport(
+        context,
+        request.params.organisationId,
+        user.id,
+      );
+      return reply.header('cache-control', 'no-store').send({ report });
     },
   );
 
