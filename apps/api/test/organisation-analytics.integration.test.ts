@@ -75,6 +75,22 @@ test(
       assert.equal(channel.statusCode, 201);
       const channelId = channel.json().channel.id as string;
 
+      const pendingReview = await app.inject({
+        method: 'PATCH',
+        url: `/api/v1/organisations/${organisationId}/channels/${channelId}`,
+        headers: { cookie: ownerCookie },
+        payload: { status: 'pending_review' },
+      });
+      assert.equal(pendingReview.statusCode, 200);
+
+      const activeChannel = await app.inject({
+        method: 'PATCH',
+        url: `/api/v1/organisations/${organisationId}/channels/${channelId}`,
+        headers: { cookie: ownerCookie },
+        payload: { status: 'active' },
+      });
+      assert.equal(activeChannel.statusCode, 200);
+
       const broadcast = await app.inject({
         method: 'POST',
         url: `/api/v1/organisations/${organisationId}/channels/${channelId}/broadcasts`,
@@ -135,7 +151,7 @@ test(
       const analytics = analyticsResponse.json().analytics;
       assert.equal(analytics.organisationId, organisationId);
       assert.equal(analytics.channels.total, 1);
-      assert.equal(analytics.channels.byStatus.draft, 1);
+      assert.equal(analytics.channels.byStatus.active, 1);
       assert.equal(analytics.broadcasts.total, 1);
       assert.equal(analytics.broadcasts.byStatus.scheduled, 1);
       assert.equal(analytics.audience.registeredListeners, 1);
