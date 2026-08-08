@@ -101,13 +101,13 @@ async function createCreatorCoreState(page: Page, suffix: string) {
     page,
     `/api/v1/organisations/${organisation.id}/channels/${createdChannel.channel.id}`,
     'PATCH',
-    { status: 'pending_review', version: createdChannel.channel.version },
+    { status: 'pending_review' },
   );
   const activeChannel = await apiJson(
     page,
     `/api/v1/organisations/${organisation.id}/channels/${createdChannel.channel.id}`,
     'PATCH',
-    { status: 'active', version: pendingChannel.channel.version },
+    { status: 'active' },
   );
 
   const broadcastResponse = await apiJson(
