@@ -8,7 +8,11 @@ export type OrganisationAuditAction =
   | 'organisation.invitation.revoked'
   | 'organisation.invitation.accepted'
   | 'organisation.member.role_changed'
-  | 'organisation.member.removed';
+  | 'organisation.member.removed'
+  | 'channel.suspended'
+  | 'channel.restored'
+  | 'channel.deleted'
+  | 'channel.deletion_restored';
 
 export const organisationAuditEvents = pgTable(
   'organisation_audit_events',

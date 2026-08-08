@@ -30,6 +30,7 @@ async function findFollowableChannel(
       where o.slug = $1
         and c.slug = $2
         and c.status = 'active'
+        and c.deleted_at is null
         and c.visibility in ('public', 'unlisted')
       limit 1`,
     [organisationSlug, channelSlug],
@@ -99,6 +100,7 @@ export function registerChannelFollowingRoutes(
          join organisations o on o.id = c.organisation_id
         where f.user_id = $1
           and c.status = 'active'
+          and c.deleted_at is null
           and c.visibility in ('public', 'unlisted')
         order by f.followed_at desc, c.id desc
         limit 100`,

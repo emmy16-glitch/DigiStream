@@ -258,6 +258,22 @@ export const channels = pgTable(
     createdByUserId: uuid('created_by_user_id').references(() => users.id, {
       onDelete: 'restrict',
     }),
+    moderatedAt: timestamp('moderated_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
+    moderatedByUserId: uuid('moderated_by_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    moderationReason: varchar('moderation_reason', { length: 500 }),
+    deletedAt: timestamp('deleted_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
+    retentionUntil: timestamp('retention_until', {
+      withTimezone: true,
+      mode: 'date',
+    }),
     createdAt: timestamp('created_at', {
       withTimezone: true,
       mode: 'date',
@@ -287,6 +303,7 @@ export const channels = pgTable(
       table.category,
       table.createdAt,
     ),
+    index('channels_retention_cleanup_idx').on(table.retentionUntil, table.id),
   ],
 );
 

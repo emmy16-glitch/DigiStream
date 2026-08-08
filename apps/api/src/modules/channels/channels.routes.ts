@@ -4,6 +4,7 @@ import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
 import { discoverChannels, type ChannelDiscoveryQuery } from './channel-discovery.service.js';
 import { registerChannelFollowingRoutes } from './channel-following.routes.js';
+import { registerChannelModerationRoutes } from './channel-moderation.routes.js';
 import {
   createChannel,
   getOrganisationChannel,
@@ -116,4 +117,5 @@ export function registerChannelRoutes(
   );
 
   registerChannelFollowingRoutes(app, database);
+  registerChannelModerationRoutes(app, database);
 }
