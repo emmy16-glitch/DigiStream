@@ -70,7 +70,7 @@ export function registerBroadcastChatRoutes(
     '/api/v1/broadcasts/:organisationSlug/:channelSlug/:broadcastSlug/chat/messages',
     async (request, reply) => {
       const context = requireDatabase(database);
-      await requireUser(request, context);
+      const user = await requireUser(request, context);
       const chat = await resolvePublicBroadcastChat(
         context.db,
         request.params.organisationSlug,
@@ -81,6 +81,7 @@ export function registerBroadcastChatRoutes(
       return listBroadcastChatMessages(
         context.db,
         chat,
+        user.id,
         request.query.before,
         request.query.limit,
       );
@@ -144,6 +145,7 @@ export function registerBroadcastChatRoutes(
       return listBroadcastChatMessages(
         context.db,
         chat,
+        user.id,
         request.query.before,
         request.query.limit,
       );
