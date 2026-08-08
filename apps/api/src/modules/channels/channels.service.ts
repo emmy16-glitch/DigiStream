@@ -40,8 +40,8 @@ const CONTENT_MANAGERS = new Set<OrganisationRole>([
 const STATUS_TRANSITIONS: Record<ChannelStatus, readonly ChannelStatus[]> = {
   draft: ['pending_review'],
   pending_review: ['draft', 'active'],
-  active: ['suspended', 'archived'],
-  suspended: ['active', 'archived'],
+  active: ['archived'],
+  suspended: ['archived'],
   archived: [],
 };
 
@@ -291,6 +291,13 @@ export async function updateChannel(
     }
     const value = parseStatus(body.status);
     if (!value) throw new ApiError(400, 'VALIDATION_ERROR', 'Invalid channel status.');
+    if (value === 'suspended' || (current.status === 'suspended' && value === 'active')) {
+      throw new ApiError(
+        409,
+        'CHANNEL_MODERATION_ROUTE_REQUIRED',
+        'Use the channel moderation action so the moderation reason is recorded.',
+      );
+    }
     if (
       value !== current.status &&
       !STATUS_TRANSITIONS[current.status].includes(value)
