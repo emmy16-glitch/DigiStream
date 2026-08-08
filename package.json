@@ -20,9 +20,11 @@
     "media:down": "sh scripts/media-stack-down.sh",
     "media:reset": "sh scripts/media-stack-down.sh --volumes",
     "media:smoke": "node scripts/media-e2e-smoke.mjs",
+    "skills:sync": "node scripts/sync-design-agent-skills.mjs",
+    "skills:verify": "node scripts/verify-design-agent-skills.mjs",
     "build": "npm run build --workspace @digistream/contracts && npm run build --workspace @digistream/api && npm run build --workspace @digistream/web",
     "typecheck": "npm run build --workspace @digistream/contracts && npm run typecheck --workspace @digistream/api && npm run typecheck --workspace @digistream/web",
     "test": "npm run test --workspace @digistream/api",
-    "check": "npm run typecheck && npm run test && npm run build"
+    "check": "npm run skills:verify && npm run typecheck && npm run test && npm run build"
   }
 }
