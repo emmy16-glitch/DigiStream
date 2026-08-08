@@ -13,7 +13,7 @@ test('Creator Stats uses the tenant analytics API and explicit truthful states',
   ]);
 
   assert.match(app, /CreatorAnalyticsPage/);
-  assert.match(app, /<CreatorAnalyticsPage organisation=\{primaryOrganisation\}/);
+  assert.match(app, /<CreatorAnalyticsPage organisation=\{selectedOrganisation\}/);
   assert.match(
     analytics,
     /\/api\/v1\/organisations\/\$\{encodeURIComponent\(organisation\.id\)\}\/analytics/,

@@ -49,6 +49,11 @@ import { ListenerDiscoveryPage } from './features/listening/ListenerDiscoveryPag
 import { ReplayDiscoveryPage } from './features/listening/ReplayDiscoveryPage';
 import { ReplayListeningPage } from './features/listening/ReplayListeningPage';
 import { parseListenerRoute } from './features/listening/listener-route';
+import {
+  readCreatorWorkspacePreference,
+  resolveCreatorWorkspaceOrganisation,
+  writeCreatorWorkspacePreference,
+} from './features/onboarding/creator-workspace-selection';
 import { creatorSetupState } from './features/onboarding/creator-setup-state';
 import { CreatorOverviewPage } from './features/onboarding/CreatorOverviewPage';
 import { creatorOverviewDerivation } from './features/onboarding/overview-state';
@@ -273,6 +278,15 @@ function CreatorDashboard({
   const [studioContext, setStudioContext] = useState<RequestedStudioContext>({});
   const [backstageOpen, setBackstageOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [preferredOrganisationId, setPreferredOrganisationId] = useState<string | null>(
+    () => readCreatorWorkspacePreference(window.localStorage, user.id),
+  );
+  const overviewRequestIdRef = useRef(0);
+  const selectedOrganisation = resolveCreatorWorkspaceOrganisation(
+    organisations,
+    preferredOrganisationId,
+  );
+  const selectedOrganisationId = selectedOrganisation?.id ?? null;
 
   const loadOrganisations = useCallback(async () => {
     setLoadingOrganisations(true);
@@ -291,37 +305,69 @@ function CreatorDashboard({
     void loadOrganisations();
   }, [loadOrganisations]);
 
+  useEffect(() => {
+    if (loadingOrganisations || organisationError) return;
+    if (preferredOrganisationId === selectedOrganisationId) return;
+
+    setPreferredOrganisationId(selectedOrganisationId);
+    writeCreatorWorkspacePreference(
+      window.localStorage,
+      user.id,
+      selectedOrganisationId,
+    );
+  }, [
+    loadingOrganisations,
+    organisationError,
+    preferredOrganisationId,
+    selectedOrganisationId,
+    user.id,
+  ]);
+
   const loadOverviewState = useCallback(async () => {
-    const organisation = organisations[0] ?? null;
-    if (!organisation) {
+    const requestId = ++overviewRequestIdRef.current;
+    const organisationId = selectedOrganisationId;
+
+    if (!organisationId) {
       setChannels([]);
       setBroadcasts([]);
+      setOverviewStateError('');
       setLoadingOverviewState(false);
       return;
     }
+
+    setChannels([]);
+    setBroadcasts([]);
     setLoadingOverviewState(true);
     setOverviewStateError('');
+
     try {
       const channelResponse = await apiRequest<ChannelListResponse>(
-        `/api/v1/organisations/${organisation.id}/channels`,
+        `/api/v1/organisations/${organisationId}/channels`,
       );
-      setChannels(channelResponse.channels);
+      if (requestId !== overviewRequestIdRef.current) return;
+
       const broadcastResponses = await Promise.all(
         channelResponse.channels.map((channel) =>
           apiRequest<BroadcastListResponse>(
-            `/api/v1/organisations/${organisation.id}/channels/${channel.id}/broadcasts`,
+            `/api/v1/organisations/${organisationId}/channels/${channel.id}/broadcasts`,
           ),
         ),
       );
+      if (requestId !== overviewRequestIdRef.current) return;
+
+      setChannels(channelResponse.channels);
       setBroadcasts(broadcastResponses.flatMap((response) => response.broadcasts));
     } catch (requestError) {
+      if (requestId !== overviewRequestIdRef.current) return;
       setOverviewStateError(readableError(requestError));
       setChannels([]);
       setBroadcasts([]);
     } finally {
-      setLoadingOverviewState(false);
+      if (requestId === overviewRequestIdRef.current) {
+        setLoadingOverviewState(false);
+      }
     }
-  }, [organisations]);
+  }, [selectedOrganisationId]);
 
   useLayoutEffect(() => {
     if (activeNav === 'Overview') void loadOverviewState();
@@ -338,6 +384,25 @@ function CreatorDashboard({
     const path = creatorPath(label);
     if (window.location.pathname !== path) window.history.pushState({}, '', path);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function selectOrganisation(organisationId: string) {
+    const nextOrganisation = organisations.find(
+      (organisation) => organisation.id === organisationId,
+    );
+    if (!nextOrganisation || nextOrganisation.id === selectedOrganisationId) return;
+
+    overviewRequestIdRef.current += 1;
+    setChannels([]);
+    setBroadcasts([]);
+    setOverviewStateError('');
+    setLoadingOverviewState(activeNav === 'Overview');
+    setPreferredOrganisationId(nextOrganisation.id);
+    writeCreatorWorkspacePreference(
+      window.localStorage,
+      user.id,
+      nextOrganisation.id,
+    );
   }
 
   function openBroadcastsSetup() {
@@ -367,6 +432,15 @@ function CreatorDashboard({
         method: 'POST',
         body: jsonBody({ name: name.trim(), slug }),
       });
+      overviewRequestIdRef.current += 1;
+      setChannels([]);
+      setBroadcasts([]);
+      setPreferredOrganisationId(response.organisation.id);
+      writeCreatorWorkspacePreference(
+        window.localStorage,
+        user.id,
+        response.organisation.id,
+      );
       setOrganisations((current) => [response.organisation, ...current]);
       selectNavigation('Broadcasts');
       window.requestAnimationFrame(() => {
@@ -405,19 +479,18 @@ function CreatorDashboard({
     [],
   );
 
-  const primaryOrganisation = organisations[0] ?? null;
   const firstName = user.displayName.trim().split(/\s+/)[0] || user.displayName;
   const overviewState = creatorOverviewDerivation({ channels, broadcasts });
   const setupState = creatorSetupState({
-    intentChosen: creatorIntentChosen || Boolean(primaryOrganisation),
-    hasOrganisation: Boolean(primaryOrganisation),
+    intentChosen: creatorIntentChosen || Boolean(selectedOrganisation),
+    hasOrganisation: Boolean(selectedOrganisation),
     channelStatus: overviewState.channelStatus,
     broadcastStatus: overviewState.broadcastStatus,
   });
   const overviewStudioContext: RequestedStudioContext | undefined =
-    primaryOrganisation && overviewState.selectedChannel && overviewState.selectedBroadcast
+    selectedOrganisation && overviewState.selectedChannel && overviewState.selectedBroadcast
       ? {
-          organisationId: primaryOrganisation.id,
+          organisationId: selectedOrganisation.id,
           channelId: overviewState.selectedChannel.id,
           broadcastId: overviewState.selectedBroadcast.id,
         }
@@ -488,7 +561,7 @@ function CreatorDashboard({
     );
   } else if (setupState === 'choose_intent') {
     pageContent = <CreatorIntentChoice onBroadcast={() => setCreatorIntentChosen(true)} />;
-  } else if (!primaryOrganisation) {
+  } else if (!selectedOrganisation) {
     pageContent = (
       <OrganisationSetup
         busy={creatingOrganisation}
@@ -523,7 +596,7 @@ function CreatorDashboard({
           onOpenBroadcasts={openBroadcastsSetup}
           onOpenRecordings={() => selectNavigation('Recordings')}
           onOpenStudio={() => openStudio(overviewStudioContext)}
-          organisation={primaryOrganisation}
+          organisation={selectedOrganisation}
           overview={overviewState}
           setupState={setupState}
         />
@@ -533,7 +606,7 @@ function CreatorDashboard({
     pageContent = (
       <CreatorBroadcastsPage
         onOpenStudio={openStudio}
-        organisation={primaryOrganisation}
+        organisation={selectedOrganisation}
       />
     );
   } else if (activeNav === 'Studio Lobby') {
@@ -547,7 +620,7 @@ function CreatorDashboard({
             <StatusBadge tone="info">Guest and call-in moderation</StatusBadge>
             <h2>Open the Studio Lobby</h2>
             <p>
-              Select a broadcast, review pending listener requests and approve a caller to generate a secure guest link. The same workspace also manages invited guests and connected participants for {primaryOrganisation.name}.
+              Select a broadcast, review pending listener requests and approve a caller to generate a secure guest link. The same workspace also manages invited guests and connected participants for {selectedOrganisation.name}.
             </p>
           </div>
           <Button icon="audience" onClick={() => setBackstageOpen(true)} variant="primary">
@@ -562,9 +635,9 @@ function CreatorDashboard({
   } else if (activeNav === 'Chat') {
     pageContent = <CreatorChatWorkspace />;
   } else if (activeNav === 'Recordings') {
-    pageContent = <CreatorRecordingsPage organisation={primaryOrganisation} />;
+    pageContent = <CreatorRecordingsPage organisation={selectedOrganisation} />;
   } else {
-    pageContent = <CreatorAnalyticsPage organisation={primaryOrganisation} />;
+    pageContent = <CreatorAnalyticsPage organisation={selectedOrganisation} />;
   }
 
   return (
@@ -573,9 +646,13 @@ function CreatorDashboard({
       activeLabel={activeNav}
       eyebrow="Creator workspace"
       navigation={navigation}
+      onWorkspaceChange={selectOrganisation}
       title={activeNav}
       workspaceDescription={user.email}
-      workspaceName={primaryOrganisation?.name ?? 'Creator workspace'}
+      workspaceId={selectedOrganisation?.id}
+      workspaceName={selectedOrganisation?.name ?? 'Creator workspace'}
+      workspaceOptions={organisations}
+      workspaceSelectionDisabled={studioOpen || backstageOpen}
     >
       {pageContent}
       {studioOpen ? (
