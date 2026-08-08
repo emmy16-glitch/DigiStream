@@ -6,13 +6,7 @@ import type {
   ChannelListResponse,
   Organisation,
 } from '@digistream/contracts';
-import {
-  Button,
-  LinkButton,
-  StatePanel,
-  StatusBadge,
-  type StatusTone,
-} from '../../design-system/components';
+import { Button, LinkButton, StatePanel } from '../../design-system/components';
 import { memberReplayPath, publicReplayPath } from '../listening/listener-route';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
 import './creator-recordings-page.css';
@@ -96,19 +90,28 @@ function readableError(error: unknown): string {
   return 'DigiStream could not complete that recording action.';
 }
 
-function sentenceCase(value: string): string {
-  return value.replaceAll('_', ' ').replace(/^./, (character) => character.toUpperCase());
-}
-
-function statusTone(status: RecordingStatus): StatusTone {
-  if (status === 'published' || status === 'ready') return 'success';
-  if (PROCESSING_RECORDING_STATUSES.has(status)) return 'info';
-  if (status === 'failed' || status === 'deleted') return 'danger';
-  if (status === 'archived') return 'warning';
-  return 'neutral';
+function statusPresentation(status: RecordingStatus): {
+  label: string;
+  tone: 'success' | 'processing' | 'danger' | 'neutral';
+} {
+  if (status === 'ready') return { label: 'Ready', tone: 'success' };
+  if (status === 'published') return { label: 'Published', tone: 'success' };
+  if (status === 'private') return { label: 'Private', tone: 'success' };
+  if (PROCESSING_RECORDING_STATUSES.has(status)) {
+    return { label: 'Processing', tone: 'processing' };
+  }
+  if (status === 'failed' || status === 'deleted') {
+    return { label: status === 'failed' ? 'Failed' : 'Deleted', tone: 'danger' };
+  }
+  return { label: 'Archived', tone: 'neutral' };
 }
 
 function formatDate(value: string | null): string {
+  if (!value) return 'Date pending';
+  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(value));
+}
+
+function formatDateTime(value: string | null): string {
   if (!value) return 'Not available';
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: 'medium',
@@ -215,7 +218,7 @@ function replayDestination(
         organisationId: organisation.id,
         recordingId: recording.id,
       }),
-      label: 'Open member replay',
+      label: 'Play',
     };
   }
 
@@ -225,11 +228,12 @@ function replayDestination(
       channelSlug: recording.channel.slug,
       broadcastSlug: recording.broadcast.slug,
     }),
-    label:
-      channel.visibility === 'unlisted'
-        ? 'Open unlisted replay'
-        : 'Open listener replay',
+    label: 'Play',
   };
+}
+
+function recordingDate(recording: Recording): string | null {
+  return recording.broadcast.endedAt ?? recording.readyAt ?? recording.createdAt;
 }
 
 export function CreatorRecordingsPage({
@@ -334,14 +338,6 @@ export function CreatorRecordingsPage({
     };
   }, [hasProcessingRecordings, loadWorkspace]);
 
-  const counts = useMemo(() => ({
-    total: recordings.length,
-    processing: recordings.filter((recording) =>
-      PROCESSING_RECORDING_STATUSES.has(recording.status)).length,
-    ready: recordings.filter((recording) => recording.artifactReady).length,
-    published: recordings.filter((recording) => recording.status === 'published').length,
-  }), [recordings]);
-
   const channelById = useMemo(
     () => new Map(channels.map((channel) => [channel.id, channel])),
     [channels],
@@ -401,22 +397,15 @@ export function CreatorRecordingsPage({
 
   return (
     <div className="creator-recordings-page">
-      <header className="workspace-page-intro recording-page-intro">
+      <header className="recordings-reference-header">
         <div>
-          <h2>Recordings and replay</h2>
-          <p>
-            Track real capture, upload and processing states. Private storage keys remain server-only.
-          </p>
+          <h2>Recordings</h2>
+          <p>Your completed broadcasts.</p>
         </div>
-        <Button onClick={() => void loadWorkspace()}>Refresh</Button>
+        <Button onClick={() => void loadWorkspace()} variant="ghost">
+          Refresh
+        </Button>
       </header>
-
-      <section className="recording-summary-grid" aria-label="Recording summary">
-        <article><span>Total jobs</span><strong>{counts.total}</strong></article>
-        <article><span>Processing</span><strong>{counts.processing}</strong></article>
-        <article><span>Artifacts ready</span><strong>{counts.ready}</strong></article>
-        <article><span>Published</span><strong>{counts.published}</strong></article>
-      </section>
 
       {error ? (
         <StatePanel
@@ -430,34 +419,28 @@ export function CreatorRecordingsPage({
       ) : null}
 
       {loading ? (
-        <StatePanel kind="loading" title="Loading recording workspace">
-          DigiStream is loading completed broadcasts and recording jobs for {organisation.name}.
+        <StatePanel kind="loading" title="Loading recordings">
+          Echoo is loading completed broadcasts and real recording jobs for {organisation.name}.
         </StatePanel>
       ) : (
         <>
-          <section className="recording-candidates" aria-labelledby="recording-candidates-title">
-            <header>
-              <div>
-                <span>Completed broadcasts</span>
-                <h3 id="recording-candidates-title">Prepare a replay</h3>
-              </div>
-              <StatusBadge tone={eligibleSources.length > 0 ? 'info' : 'neutral'}>
-                {eligibleSources.length} eligible
-              </StatusBadge>
-            </header>
-
-            {eligibleSources.length === 0 ? (
-              <StatePanel kind="empty" title="No completed broadcast needs a recording job">
-                Finish a real broadcast first. Existing recording jobs are listed below and duplicate requests are prevented by the API.
-              </StatePanel>
-            ) : (
-              <div className="recording-candidate-list">
+          {eligibleSources.length > 0 ? (
+            <section className="recording-preparation" aria-labelledby="recording-preparation-title">
+              <header>
+                <div>
+                  <span className="recording-section-kicker">Completed broadcasts</span>
+                  <h3 id="recording-preparation-title">Prepare a replay</h3>
+                  <p>Create a recording job only for broadcasts that actually completed.</p>
+                </div>
+                <span className="recording-eligible-count">{eligibleSources.length} ready to prepare</span>
+              </header>
+              <div className="recording-preparation-list">
                 {eligibleSources.map((source) => (
                   <article key={source.broadcast.id}>
-                    <div>
-                      <span className="recording-eyebrow">{source.channel.name}</span>
-                      <h4>{source.broadcast.title}</h4>
-                      <p>Completed {formatDate(source.broadcast.endedAt)}.</p>
+                    <div className="recording-preparation-copy">
+                      <span>{source.channel.name}</span>
+                      <strong>{source.broadcast.title}</strong>
+                      <small>Completed {formatDate(source.broadcast.endedAt)}</small>
                     </div>
                     {canManage ? (
                       <Button
@@ -475,97 +458,103 @@ export function CreatorRecordingsPage({
                   </article>
                 ))}
               </div>
-            )}
-          </section>
+            </section>
+          ) : null}
 
           {recordings.length === 0 ? (
-            <StatePanel kind="empty" title="No recording jobs yet">
-              Completed broadcasts can create a recording job. DigiStream will show only real capture and processing data here.
+            <StatePanel kind="empty" title="No recordings yet">
+              Completed broadcasts appear here after a real recording job is created. Echoo does not invent replay data.
             </StatePanel>
           ) : (
-            <section className="recording-list" aria-label="Organisation recordings">
+            <section className="recordings-reference-list" aria-label="Organisation recordings">
               {recordings.map((recording) => {
                 const channel = channelById.get(recording.channelId);
-                const destination = replayDestination(
-                  recording,
-                  organisation,
-                  channel,
-                );
+                const destination = replayDestination(recording, organisation, channel);
+                const presentation = statusPresentation(recording.status);
+                const actions = availableActions(recording.status);
+                const processing = PROCESSING_RECORDING_STATUSES.has(recording.status);
 
                 return (
-                  <article className="recording-card" key={recording.id}>
-                    <div className="recording-card-heading">
-                      <div>
-                        <StatusBadge tone={statusTone(recording.status)}>
-                          {sentenceCase(recording.status)}
-                        </StatusBadge>
-                        {recording.artifactReady ? (
-                          <StatusBadge tone="success">Artifact verified</StatusBadge>
-                        ) : null}
-                      </div>
-                      <span>Updated {formatDate(recording.updatedAt)}</span>
+                  <article className="recording-reference-row" key={recording.id}>
+                    <div className="recording-reference-artwork" aria-hidden="true" />
+
+                    <div className="recording-reference-copy">
+                      <h3>{recording.broadcast.title}</h3>
+                      <p>
+                        {formatDate(recordingDate(recording))}
+                        <span aria-hidden="true"> • </span>
+                        {formatDuration(recording.durationMs)}
+                      </p>
                     </div>
 
-                    <div className="recording-card-body">
-                      <div>
-                        <span className="recording-eyebrow">{recording.channel.name}</span>
-                        <h3>{recording.broadcast.title}</h3>
-                        <p>
-                          Broadcast completed {formatDate(recording.broadcast.endedAt)}.
-                        </p>
-                      </div>
-                      <dl>
-                        <div><dt>Duration</dt><dd>{formatDuration(recording.durationMs)}</dd></div>
-                        <div><dt>File size</dt><dd>{formatSize(recording.sizeBytes)}</dd></div>
-                        <div><dt>Format</dt><dd>{recording.mediaFormat?.toUpperCase() ?? 'Pending'}</dd></div>
-                        <div><dt>Retries</dt><dd>{recording.retryCount}</dd></div>
-                      </dl>
+                    <div className={`recording-reference-status is-${presentation.tone}`}>
+                      <span aria-hidden="true" />
+                      <strong>{presentation.label}</strong>
                     </div>
 
-                    {recording.processingError ? (
-                      <div className="recording-error" role="alert">
-                        <strong>Processing failed</strong>
-                        <span>{recording.processingError}</span>
-                      </div>
-                    ) : null}
+                    <div className="recording-reference-primary-action">
+                      {destination ? (
+                        <LinkButton href={destination.href} variant="secondary">
+                          {destination.label}
+                        </LinkButton>
+                      ) : recording.status === 'ready' && canManage ? (
+                        <Button
+                          loading={updatingId === recording.id}
+                          onClick={() => void changeStatus(recording, 'published')}
+                          variant="secondary"
+                        >
+                          Publish
+                        </Button>
+                      ) : processing ? (
+                        <button
+                          aria-label={`${recording.broadcast.title} is processing`}
+                          className="recording-processing-action"
+                          disabled
+                          type="button"
+                        >
+                          •••
+                        </button>
+                      ) : null}
+                    </div>
 
-                    <footer className="recording-card-footer">
-                      <div>
-                        {recording.status === 'published' ? (
-                          <strong>Replay policy is published.</strong>
-                        ) : recording.status === 'private' ? (
-                          <strong>Replay access is limited to organisation members.</strong>
-                        ) : recording.artifactReady ? (
-                          <strong>The artifact is ready for a visibility decision.</strong>
-                        ) : (
-                          <strong>Waiting for the recording worker.</strong>
-                        )}
-                        <span>
-                          {replayGuidance(recording, channel?.visibility)}
-                        </span>
-                      </div>
-                      <div className="recording-actions">
-                        {destination ? (
-                          <LinkButton
-                            href={destination.href}
-                            icon="headphones"
-                            variant="primary"
-                          >
-                            {destination.label}
-                          </LinkButton>
+                    <details className="recording-more-menu">
+                      <summary aria-label={`More options for ${recording.broadcast.title}`}>⋮</summary>
+                      <div className="recording-more-popover">
+                        <div className="recording-more-copy">
+                          <strong>{recording.channel.name}</strong>
+                          <span>{replayGuidance(recording, channel?.visibility)}</span>
+                        </div>
+
+                        <dl>
+                          <div><dt>Updated</dt><dd>{formatDateTime(recording.updatedAt)}</dd></div>
+                          <div><dt>File size</dt><dd>{formatSize(recording.sizeBytes)}</dd></div>
+                          <div><dt>Format</dt><dd>{recording.mediaFormat?.toUpperCase() ?? 'Pending'}</dd></div>
+                          <div><dt>Retries</dt><dd>{recording.retryCount}</dd></div>
+                        </dl>
+
+                        {recording.processingError ? (
+                          <div className="recording-row-error" role="alert">
+                            <strong>Processing failed</strong>
+                            <span>{recording.processingError}</span>
+                          </div>
                         ) : null}
-                        {availableActions(recording.status).map((action) => (
-                          <Button
-                            key={action.status}
-                            loading={updatingId === recording.id}
-                            onClick={() => void changeStatus(recording, action.status)}
-                            variant={action.primary ? 'primary' : 'secondary'}
-                          >
-                            {action.label}
-                          </Button>
-                        ))}
+
+                        {canManage && actions.length > 0 ? (
+                          <div className="recording-more-actions">
+                            {actions.map((action) => (
+                              <Button
+                                key={action.status}
+                                loading={updatingId === recording.id}
+                                onClick={() => void changeStatus(recording, action.status)}
+                                variant={action.primary ? 'primary' : 'secondary'}
+                              >
+                                {action.label}
+                              </Button>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
-                    </footer>
+                    </details>
                   </article>
                 );
               })}
