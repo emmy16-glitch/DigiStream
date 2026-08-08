@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 
-const appPath = new URL('../../../web/src/App.tsx', import.meta.url);
-const mainPath = new URL('../../../web/src/main.tsx', import.meta.url);
-const focusManagerPath = new URL('../../../web/src/features/onboarding/OnboardingStepFocusManager.tsx', import.meta.url);
-const responsiveCssPath = new URL('../../../web/src/features/onboarding/onboarding-responsive-audit.css', import.meta.url);
+const appPath = new URL('../../web/src/App.tsx', import.meta.url);
+const mainPath = new URL('../../web/src/main.tsx', import.meta.url);
+const focusManagerPath = new URL('../../web/src/features/onboarding/OnboardingStepFocusManager.tsx', import.meta.url);
+const responsiveCssPath = new URL('../../web/src/features/onboarding/onboarding-responsive-audit.css', import.meta.url);
 
 test('creator onboarding keeps truthful slug guidance and rendered-step focus ownership', async () => {
   const [appSource, mainSource, focusSource, responsiveCss] = await Promise.all([
