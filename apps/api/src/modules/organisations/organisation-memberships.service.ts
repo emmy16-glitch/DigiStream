@@ -295,7 +295,14 @@ export async function revokeOrganisationInvitation(
     );
   }
 
-  if (!(await revokeOrganisationInvitationRecord(db, organisationId, invitationId))) {
+  if (
+    !(await revokeOrganisationInvitationRecord(
+      db,
+      organisationId,
+      actorUserId,
+      invitationId,
+    ))
+  ) {
     throw new ApiError(
       404,
       'INVITATION_NOT_FOUND',
