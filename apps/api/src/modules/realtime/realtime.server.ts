@@ -217,6 +217,35 @@ function sendError(
   });
 }
 
+function broadcastPresenceRoom(roomKey: string) {
+  if (!roomKey.startsWith('broadcast:')) return null;
+  return {
+    key: roomKey,
+    kind: 'broadcast' as const,
+    id: roomKey.slice('broadcast:'.length),
+  };
+}
+
+function publishPresence(
+  hub: RealtimeHub,
+  roomKey: string,
+  userId: string,
+  state: 'online' | 'offline',
+  reason: 'joined' | 'left' | 'connection-ended',
+): void {
+  const room = broadcastPresenceRoom(roomKey);
+  if (!room) return;
+  hub.publish(roomKey, {
+    type: 'presence.changed',
+    room,
+    user: { id: userId },
+    state,
+    reason,
+    scope: 'socket',
+    timestamp: new Date().toISOString(),
+  });
+}
+
 function typingKey(connectionId: string, roomKey: string): string {
   return `${connectionId}:${roomKey}`;
 }
@@ -332,12 +361,26 @@ async function handleClientMessage(
   }
 
   if (message.type === 'join') {
+    const wasPresent =
+      room.kind === 'broadcast' && hub.countUserInRoom(room.key, connection.userId) > 0;
     hub.join(connection, room.key);
     connection.send({
       type: 'room.joined',
       requestId: id,
       room,
     });
+    if (room.kind === 'broadcast') {
+      connection.send({
+        type: 'presence.snapshot',
+        room,
+        users: hub.userIdsInRoom(room.key).map((userId) => ({ id: userId })),
+        scope: 'socket',
+        timestamp: new Date().toISOString(),
+      });
+      if (!wasPresent) {
+        publishPresence(hub, room.key, connection.userId, 'online', 'joined');
+      }
+    }
     return;
   }
 
@@ -352,6 +395,12 @@ async function handleClientMessage(
       return;
     }
     hub.leave(connection, room.key);
+    if (
+      room.kind === 'broadcast' &&
+      hub.countUserInRoom(room.key, connection.userId) === 0
+    ) {
+      publishPresence(hub, room.key, connection.userId, 'offline', 'left');
+    }
     const key = typingKey(connection.id, room.key);
     const timer = runtime.typingTimers.get(key);
     if (timer) {
@@ -706,8 +755,22 @@ export function registerRealtimeServer(
       );
     });
     socket.on('close', () => {
+      const presenceRooms = [...connection.rooms].filter((roomKey) =>
+        roomKey.startsWith('broadcast:'),
+      );
       clearTypingForConnection(runtime, hub, connection);
       hub.remove(connection);
+      for (const roomKey of presenceRooms) {
+        if (hub.countUserInRoom(roomKey, connection.userId) === 0) {
+          publishPresence(
+            hub,
+            roomKey,
+            connection.userId,
+            'offline',
+            'connection-ended',
+          );
+        }
+      }
     });
 
     connection.send({
