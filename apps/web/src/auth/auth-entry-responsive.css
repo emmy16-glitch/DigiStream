@@ -1,0 +1,16 @@
+/* Entry-surface acceptance: every compact auth action remains a 44px target. */
+.auth-password-toggle {
+  width: 44px;
+  height: 44px;
+}
+
+.auth-corner-switch {
+  min-height: 44px;
+}
+
+.auth-logo-link {
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+}
