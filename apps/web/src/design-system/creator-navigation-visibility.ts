@@ -2,7 +2,7 @@ export type CreatorNavigationVisibilityItem = {
   label: string;
 };
 
-const HIDDEN_UNTIL_IMPLEMENTED = new Set(['Analytics']);
+const HIDDEN_UNTIL_IMPLEMENTED = new Set<string>();
 
 export function visibleCreatorNavigation<T extends CreatorNavigationVisibilityItem>(
   navigation: readonly T[],

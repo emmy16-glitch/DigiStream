@@ -119,6 +119,33 @@ test(
       });
       assert.equal(heartbeat.statusCode, 200);
 
+      await database.pool.query(
+        `update listener_playback_sessions
+            set last_heartbeat_at = now() - interval '12 seconds'
+          where id = $1`,
+        [descriptor.sessionId],
+      );
+
+      const mediaError = await app.inject({
+        method: 'POST',
+        url: descriptor.endpoint,
+        payload: { token: descriptor.token, event: 'error', protocol: 'webrtc' },
+      });
+      assert.equal(mediaError.statusCode, 200);
+
+      const afterError = await database.pool.query<{
+        active_seconds: number;
+        last_heartbeat_at: Date | null;
+      }>(
+        `select active_seconds, last_heartbeat_at
+           from listener_playback_sessions
+          where id = $1`,
+        [descriptor.sessionId],
+      );
+      assert.ok((afterError.rows[0]?.active_seconds ?? 0) >= 20);
+      assert.equal(afterError.rows[0]?.last_heartbeat_at, null);
+      const activeSecondsAfterError = afterError.rows[0]?.active_seconds ?? 0;
+
       const fallback = await app.inject({
         method: 'POST',
         url: descriptor.endpoint,
@@ -126,19 +153,27 @@ test(
       });
       assert.equal(fallback.statusCode, 200);
 
+      const resumed = await app.inject({
+        method: 'POST',
+        url: descriptor.endpoint,
+        payload: { token: descriptor.token, event: 'started', protocol: 'llhls' },
+      });
+      assert.equal(resumed.statusCode, 200);
+
+      const afterResume = await database.pool.query<{ active_seconds: number }>(
+        `select active_seconds
+           from listener_playback_sessions
+          where id = $1`,
+        [descriptor.sessionId],
+      );
+      assert.equal(afterResume.rows[0]?.active_seconds, activeSecondsAfterError);
+
       const buffering = await app.inject({
         method: 'POST',
         url: descriptor.endpoint,
         payload: { token: descriptor.token, event: 'buffering', protocol: 'llhls' },
       });
       assert.equal(buffering.statusCode, 200);
-
-      const mediaError = await app.inject({
-        method: 'POST',
-        url: descriptor.endpoint,
-        payload: { token: descriptor.token, event: 'error', protocol: 'llhls' },
-      });
-      assert.equal(mediaError.statusCode, 200);
 
       const ended = await app.inject({
         method: 'POST',
@@ -178,7 +213,7 @@ test(
       );
       assert.ok(row.rows[0]?.started_at);
       assert.ok(row.rows[0]?.ended_at);
-      assert.ok((row.rows[0]?.active_seconds ?? 0) >= 10);
+      assert.ok((row.rows[0]?.active_seconds ?? 0) >= 20);
       assert.equal(row.rows[0]?.buffering_events, 1);
       assert.equal(row.rows[0]?.fallback_events, 1);
       assert.equal(row.rows[0]?.media_errors, 1);
@@ -195,7 +230,7 @@ test(
       assert.equal(analytics.playback.anonymousSessions, 1);
       assert.equal(analytics.playback.signedInSessions, 0);
       assert.equal(analytics.playback.activeSessions, 0);
-      assert.ok(analytics.playback.measuredListeningSeconds >= 10);
+      assert.ok(analytics.playback.measuredListeningSeconds >= 20);
       assert.equal(analytics.playback.bufferingEvents, 1);
       assert.equal(analytics.playback.fallbackEvents, 1);
       assert.equal(analytics.playback.mediaErrors, 1);

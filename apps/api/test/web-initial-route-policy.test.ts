@@ -10,6 +10,7 @@ test('keeps implemented creator destinations available', () => {
     '/creator/studio-lobby',
     '/creator/chat',
     '/creator/recordings',
+    '/creator/analytics',
   ]) {
     assert.deepEqual(resolveInitialRoute(path), {
       path,
@@ -22,7 +23,6 @@ test('replaces unfinished and unknown creator destinations with overview', () =>
   for (const path of [
     '/creator',
     '/creator/',
-    '/creator/analytics',
     '/creator/unknown',
     '/creator/recordings/not-a-real-route',
   ]) {
