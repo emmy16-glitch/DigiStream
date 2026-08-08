@@ -195,9 +195,9 @@ This phase blocks decorative expansion until the existing live product behaves h
 - [x] Add presence with heartbeat and multi-tab handling
 - [x] Keep socket presence distinct from media listener counts
 - [x] Add moderation: mute, block, slow chat, disable chat and report
-- [ ] Persist notifications before immediate delivery
+- [x] Persist notifications before immediate delivery
 - [x] Recover durable history and state after reconnect
-- [ ] Add abuse, reconnect and unauthorized-room tests
+- [x] Add abuse, reconnect and unauthorized-room tests
 
 ## Phase 8 — Recordings and object storage
 
