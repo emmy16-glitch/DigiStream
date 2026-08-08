@@ -122,6 +122,18 @@ test(
       assert.equal(broadcasterAttempt.statusCode, 403);
       assert.equal(broadcasterAttempt.json().error.code, 'CHANNEL_MODERATION_REQUIRED');
 
+      const genericSuspension = await app.inject({
+        method: 'PATCH',
+        url: `/api/v1/organisations/${organisationId}/channels/${channelId}`,
+        headers: { cookie: owner.cookie },
+        payload: { status: 'suspended' },
+      });
+      assert.equal(genericSuspension.statusCode, 409);
+      assert.equal(
+        genericSuspension.json().error.code,
+        'CHANNEL_MODERATION_ROUTE_REQUIRED',
+      );
+
       const suspended = await app.inject({
         method: 'POST',
         url: `/api/v1/organisations/${organisationId}/channels/${channelId}/moderation`,
@@ -132,6 +144,15 @@ test(
       assert.equal(suspended.json().channel.status, 'suspended');
       assert.equal(suspended.json().channel.moderatedByUserId, moderator.userId);
       assert.equal(suspended.json().channel.moderationReason, 'Community safety review');
+
+      const genericRestore = await app.inject({
+        method: 'PATCH',
+        url: `/api/v1/organisations/${organisationId}/channels/${channelId}`,
+        headers: { cookie: owner.cookie },
+        payload: { status: 'active' },
+      });
+      assert.equal(genericRestore.statusCode, 409);
+      assert.equal(genericRestore.json().error.code, 'CHANNEL_MODERATION_ROUTE_REQUIRED');
 
       const duplicateSuspend = await app.inject({
         method: 'POST',
