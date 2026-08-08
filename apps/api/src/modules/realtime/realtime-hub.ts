@@ -25,7 +25,7 @@ export class RealtimeHub {
 
   remove(connection: RealtimeConnection): void {
     this.connections.delete(connection.id);
-    for (const room of connection.rooms) {
+    for (const room of [...connection.rooms]) {
       this.leave(connection, room);
     }
   }
@@ -52,6 +52,28 @@ export class RealtimeHub {
       if (connection.userId === userId) total += 1;
     }
     return total;
+  }
+
+  countUserInRoom(room: string, userId: string): number {
+    const members = this.rooms.get(room);
+    if (!members) return 0;
+    let total = 0;
+    for (const connectionId of members) {
+      const connection = this.connections.get(connectionId);
+      if (connection?.userId === userId) total += 1;
+    }
+    return total;
+  }
+
+  userIdsInRoom(room: string): string[] {
+    const members = this.rooms.get(room);
+    if (!members) return [];
+    const userIds = new Set<string>();
+    for (const connectionId of members) {
+      const connection = this.connections.get(connectionId);
+      if (connection) userIds.add(connection.userId);
+    }
+    return [...userIds].sort();
   }
 
   allConnections(): RealtimeConnection[] {
