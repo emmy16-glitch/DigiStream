@@ -66,14 +66,12 @@ function RootApplication() {
 
   if (!isKnownApplicationPath(route.path)) {
     const listenerContext = route.path.startsWith('/listen');
+    const recoveryPath = listenerContext ? '/listen' : '/';
     return (
       <EchooSystemStatePage
         actionLabel="Go back"
         kind="not-found"
-        onAction={() => {
-          if (window.history.length > 1) window.history.back();
-          else window.location.assign(listenerContext ? '/listen' : '/');
-        }}
+        onAction={() => window.location.assign(recoveryPath)}
         title="Not Found"
       >
         {listenerContext
