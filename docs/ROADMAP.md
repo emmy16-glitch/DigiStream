@@ -46,12 +46,12 @@ All phases are governed by [`PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`](PRODU
 - [x] Allow owner and admin organisation updates
 - [x] Return private not-found responses for cross-tenant access
 - [x] Add tenant-isolation integration tests for create, list, read and update
-- [ ] Add personal creator workspace automation
+- [x] Add personal creator workspace automation
 - [x] Add membership invitations and acceptance
 - [x] Add role-change and member-removal endpoints
 - [x] Prevent removal or demotion of the final owner
 - [x] Complete the owner, admin, broadcaster, moderator and analyst permission matrix
-- [ ] Add organisation audit events
+- [x] Add organisation audit events
 
 ## Phase 4 — Channels, profiles and discovery foundation
 

@@ -107,6 +107,7 @@ export type Organisation = {
   name: string;
   slug: string;
   role: OrganisationRole;
+  isPersonalWorkspace: boolean;
   createdAt: string;
   updatedAt: string;
 };

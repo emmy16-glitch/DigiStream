@@ -10,6 +10,7 @@ export type OrganisationDto = {
   name: string;
   slug: string;
   role: OrganisationRole;
+  isPersonalWorkspace: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
