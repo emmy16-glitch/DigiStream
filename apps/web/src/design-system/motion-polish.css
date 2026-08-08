@@ -1,0 +1,178 @@
+/* UIQ-008 Slices 2–5 — final product motion ownership.
+ *
+ * Motion is limited to interaction acknowledgement and truthful state feedback.
+ * This layer intentionally adds no route choreography and no delayed overlay exit:
+ * production dialogs remain synchronously dismissible. High-frequency audio meters
+ * use compositor transforms rather than layout-changing height transitions.
+ */
+
+/* Slice 2 — overlays/dialogs and their custom controls. */
+.listener-call-in-launcher {
+  transition:
+    transform var(--ds-motion-instant) var(--ds-ease-standard),
+    background-color var(--ds-motion-control) var(--ds-ease-standard);
+}
+
+.listener-call-in-submit,
+.listener-call-in-actions button,
+.backstage-close,
+.backstage-refresh,
+.backstage-row-actions button,
+.backstage-invite-form button,
+.backstage-login button {
+  transition:
+    background-color var(--ds-motion-control) var(--ds-ease-standard),
+    border-color var(--ds-motion-control) var(--ds-ease-standard),
+    color var(--ds-motion-control) var(--ds-ease-standard),
+    opacity var(--ds-motion-control) var(--ds-ease-standard);
+}
+
+/* Keep scan feedback cheap: shadows may change, but they do not animate. */
+.backstage-row {
+  transition: border-color var(--ds-motion-surface) var(--ds-ease-standard);
+}
+
+.studio-field select,
+.studio-login input {
+  transition:
+    border-color var(--ds-motion-control) var(--ds-ease-standard),
+    background-color var(--ds-motion-control) var(--ds-ease-standard);
+}
+
+.studio-readiness-list li {
+  transition:
+    border-color var(--ds-motion-status) var(--ds-ease-standard),
+    background-color var(--ds-motion-status) var(--ds-ease-standard);
+}
+
+/* Slice 3 — workspace/navigation feedback, without page-transition choreography. */
+.ds-shell-nav-item,
+.ds-creator-mobile-nav button,
+.echoo-overview-quick-action {
+  transition:
+    background-color var(--ds-motion-control) var(--ds-ease-standard),
+    border-color var(--ds-motion-control) var(--ds-ease-standard),
+    color var(--ds-motion-control) var(--ds-ease-standard);
+}
+
+/* Slice 4 — high-frequency Studio/shared audio feedback.
+ * Full-height layout boxes stay stable; only the compositor transform changes.
+ */
+.ds-audio-meter-bars i,
+.studio-signal-meter-bars i,
+.guest-meter i {
+  height: 100%;
+  transform: scaleY(.12);
+  transform-origin: bottom;
+  transition:
+    transform var(--ds-motion-instant) var(--ds-ease-standard),
+    opacity var(--ds-motion-instant) var(--ds-ease-standard);
+}
+
+.ds-audio-meter-bars i.is-active,
+.studio-signal-meter-bars i.is-active {
+  height: 100%;
+  transform: scaleY(.78);
+}
+
+.ds-audio-meter-bars i.is-hot,
+.studio-signal-meter-bars i.is-hot {
+  height: 100%;
+  transform: scaleY(1);
+}
+
+.guest-meter i.active {
+  height: 100%;
+  transform: scaleY(.55);
+}
+
+.guest-meter i.hot {
+  height: 100%;
+  transform: scaleY(.88);
+}
+
+/* Slice 5 — listener/guest/system-state polish. */
+.listener-orb i {
+  transition: opacity var(--ds-motion-status) var(--ds-ease-standard);
+}
+
+.listener-discovery-card {
+  transition:
+    transform var(--ds-motion-surface) var(--ds-ease-standard),
+    border-color var(--ds-motion-surface) var(--ds-ease-standard),
+    background-color var(--ds-motion-surface) var(--ds-ease-standard);
+}
+
+.listener-play-button,
+.listener-icon-button,
+.listener-secondary-actions button,
+.guest-primary,
+.guest-secondary,
+.guest-danger,
+.echoo-system-action {
+  transition:
+    background-color var(--ds-motion-control) var(--ds-ease-standard),
+    border-color var(--ds-motion-control) var(--ds-ease-standard),
+    color var(--ds-motion-control) var(--ds-ease-standard),
+    opacity var(--ds-motion-control) var(--ds-ease-standard);
+}
+
+/* Small touch devices should not spend GPU time blurring full-screen backdrops.
+ * This covers portrait phones and short phone landscape while preserving desktop
+ * treatment. It does not alter overlay geometry or interaction ownership.
+ */
+@media (pointer: coarse) and (max-width: 760px),
+       (pointer: coarse) and (max-height: 620px) {
+  .studio-backdrop,
+  .studio-confirmation-backdrop,
+  .backstage-backdrop,
+  .listener-call-in-backdrop {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Reduced motion is a complete mode. Legacy feature rules that use 0.01ms are
+ * intentionally superseded at the final cascade rather than allowed to keep a
+ * nominal animation alive. State remains visible; only interpolation stops.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .echoo-call-in-panel *,
+  .echoo-call-in-panel *::before,
+  .echoo-call-in-panel *::after,
+  .listener-call-in-launcher,
+  .listener-call-in-submit,
+  .listener-call-in-actions button,
+  .backstage-close,
+  .backstage-refresh,
+  .backstage-row,
+  .backstage-row-actions button,
+  .backstage-invite-form button,
+  .backstage-login button,
+  .studio-field select,
+  .studio-login input,
+  .studio-readiness-list li,
+  .ds-shell-nav-item,
+  .ds-creator-mobile-nav button,
+  .echoo-overview-quick-action,
+  .ds-audio-meter-bars i,
+  .studio-signal-meter-bars i,
+  .guest-meter i,
+  .listener-orb i,
+  .listener-status-dot,
+  .listener-discovery-card,
+  .listener-play-button,
+  .listener-icon-button,
+  .listener-secondary-actions button,
+  .guest-primary,
+  .guest-secondary,
+  .guest-danger,
+  .echoo-system-action {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .echoo-system-spinner {
+    animation: none !important;
+  }
+}
