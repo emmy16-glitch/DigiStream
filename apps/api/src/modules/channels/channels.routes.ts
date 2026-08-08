@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
+import { registerChannelFollowingRoutes } from './channel-following.routes.js';
 import {
   createChannel,
   getOrganisationChannel,
@@ -139,4 +140,6 @@ export function registerChannelRoutes(
       };
     },
   );
+
+  registerChannelFollowingRoutes(app, database);
 }
