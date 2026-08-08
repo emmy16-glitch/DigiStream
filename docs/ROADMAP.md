@@ -215,13 +215,15 @@ This phase blocks decorative expansion until the existing live product behaves h
 
 ## Phase 9 — Product expansion
 
-- [ ] Saved broadcasts and listening history
+- [x] Saved broadcasts and listening history
 - [x] Durable in-app notifications and notification preferences
 - [x] Creator, channel and organisation analytics
 - [x] Audience and stream-quality analytics with accurate metric definitions
 - [x] Expose Stats navigation only after trustworthy metrics, loading, empty, failure and authorization states exist
-- [ ] Administrative users, reports, categories, audit logs and moderation queues
-- [ ] Accessibility and offline/error recovery for every product flow
+- [x] Administrative users, reports, categories, audit logs and moderation queues
+- [x] Accessibility and offline/error recovery for every product flow
+
+Programme 2 automated closure is guarded by `apps/api/test/programme-2-completion-contract.test.ts`, the Phase 9 integration suites, the six exact responsive Playwright matrix slices, and the connectivity/runtime-recovery suites. These checks record executable runtime ownership; documentation alone is not completion evidence. Programme 1 physical/manual media and device evidence remains separately governed by issue #84 and is not claimed here.
 
 ## Phase 10 — Commerce
 
