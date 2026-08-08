@@ -7,6 +7,7 @@ import {
   markNotificationRead,
   updateNotificationDeliveryPreferences,
   type NotificationCursor,
+  type NotificationListOptions,
 } from './notifications.repository.js';
 
 const UUID_PATTERN =
@@ -79,11 +80,13 @@ export async function listNotificationInbox(
   userId: string,
   query: NotificationListQuery,
 ) {
-  const result = await listUserNotifications(db, userId, {
+  const before = decodeCursor(query.before);
+  const options: NotificationListOptions = {
     limit: parseLimit(query.limit),
-    before: decodeCursor(query.before),
     includeArchived: parseIncludeArchived(query.includeArchived),
-  });
+    ...(before ? { before } : {}),
+  };
+  const result = await listUserNotifications(db, userId, options);
   return {
     notifications: result.notifications,
     unreadCount: result.unreadCount,
