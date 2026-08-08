@@ -158,6 +158,10 @@ function OrganisationSetup({
   const submittingRef = useRef(false);
   const slugValueRef = useRef('');
 
+  useEffect(() => {
+    document.getElementById('workspace-onboarding-title')?.focus();
+  }, []);
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submittingRef.current || busy) return;
@@ -189,7 +193,7 @@ function OrganisationSetup({
     <section className="workspace-onboarding" aria-labelledby="workspace-onboarding-title">
       <div>
         <StatusBadge tone="info">Step 1 of 3</StatusBadge>
-        <h2 id="workspace-onboarding-title">Set up your creator workspace</h2>
+        <h2 id="workspace-onboarding-title" tabIndex={-1}>Set up your creator workspace</h2>
         <p>Create your organisation to continue to channel setup.</p>
       </div>
       <form onSubmit={submit}>
@@ -237,7 +241,7 @@ function OrganisationSetup({
             type="text"
             value={slug}
           />
-          <small id="organisation-slug-help">Used in public DigiStream links. Lowercase letters, numbers and hyphens only.</small>
+          <small id="organisation-slug-help">Used in public Echoo links. Lowercase letters, numbers and hyphens only.</small>
           {slugError ? (
             <span className="workspace-inline-error" id="organisation-slug-error" role="alert">
               {slugError}
@@ -407,9 +411,6 @@ function CreatorDashboard({
 
   function openBroadcastsSetup() {
     selectNavigation('Broadcasts');
-    window.requestAnimationFrame(() => {
-      document.getElementById('create-broadcast-title')?.focus();
-    });
   }
 
   function openStudio(context?: RequestedStudioContext) {
@@ -443,9 +444,6 @@ function CreatorDashboard({
       );
       setOrganisations((current) => [response.organisation, ...current]);
       selectNavigation('Broadcasts');
-      window.requestAnimationFrame(() => {
-        document.getElementById('create-channel-title')?.focus();
-      });
       return { kind: 'created' };
     } catch (requestError) {
       if (
