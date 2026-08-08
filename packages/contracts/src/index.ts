@@ -1,38 +1,98 @@
-export type ServiceHealth = {
-  status: 'ok' | 'degraded';
-  service: string;
-  timestamp: string;
-  uptimeSeconds: number;
-  database: {
-    status: 'connected' | 'unavailable' | 'not-configured';
-    latencyMs?: number;
-  };
+export type DatabaseHealth = {
+  status: 'connected' | 'not-configured' | 'unavailable';
+  latencyMs?: number;
 };
 
-export type UserRole = 'listener' | 'broadcaster' | 'admin';
+export type ServiceHealth = {
+  status: 'ok' | 'degraded';
+  service: 'digistream-api';
+  timestamp: string;
+  uptimeSeconds: number;
+  database: DatabaseHealth;
+};
 
-export type User = {
+export type PlatformStatus = {
+  product: 'DigiStream';
+  stage:
+    | 'foundation'
+    | 'backend-data-foundation'
+    | 'authentication-foundation'
+    | 'profiles-capabilities'
+    | 'organisation-tenancy'
+    | 'organisation-memberships'
+    | 'channel-foundation'
+    | 'broadcast-lifecycle'
+    | 'livekit-contribution-adapter'
+    | 'ovenmediaengine-delivery-adapter'
+    | 'livekit-ome-egress-bridge'
+    | 'local-media-infrastructure'
+    | 'creator-broadcast-client'
+    | 'listener-playback-client'
+    | 'guest-backstage-control'
+    | 'realtime-auth-foundation'
+    | 'durable-live-chat'
+    | 'recording-retention'
+    | 'public-replay-listening'
+    | 'recording-orphan-reconciliation';
+  responsiveTargets: readonly ['mobile', 'tablet', 'desktop'];
+  capabilities: readonly string[];
+};
+
+export type AuthUser = {
   id: string;
   email: string;
   displayName: string;
-  role: UserRole;
+  status: 'active' | 'suspended' | 'deleted';
+  emailVerifiedAt: string | null;
   createdAt: string;
 };
 
-export type AuthResponse = {
-  user: User;
+export type AuthUserResponse = {
+  user: AuthUser;
 };
 
-export type PublicUserProfile = {
+export type PlatformCapability = 'broadcaster' | 'platform_admin';
+
+export type PublicProfile = {
   id: string;
   username: string;
   displayName: string;
   biography: string | null;
-  avatarUrl: string | null;
+  isBroadcaster: boolean;
+  joinedAt: string;
 };
 
-export type PublicUserProfileResponse = {
-  profile: PublicUserProfile;
+export type PublicProfileResponse = {
+  profile: PublicProfile;
+};
+
+export type OwnProfile = {
+  id: string;
+  email: string;
+  displayName: string;
+  status: 'active' | 'suspended' | 'deleted';
+  emailVerifiedAt: string | null;
+  joinedAt: string;
+  profile: {
+    username: string;
+    biography: string | null;
+    isDiscoverable: boolean;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+  capabilities: PlatformCapability[];
+};
+
+export type OwnProfileResponse = {
+  profile: OwnProfile;
+};
+
+export type CapabilityChangeResponse = {
+  capability: {
+    userId: string;
+    capability: PlatformCapability;
+    active: boolean;
+  };
 };
 
 export type OrganisationRole =
@@ -72,33 +132,39 @@ export type OrganisationMemberListResponse = {
   members: OrganisationMember[];
 };
 
+export type OrganisationMemberResponse = {
+  member: OrganisationMember;
+};
+
 export type OrganisationInvitation = {
   id: string;
   organisationId: string;
   email: string;
   role: Exclude<OrganisationRole, 'owner'>;
-  invitedByUserId: string;
+  invitedByUserId: string | null;
   expiresAt: string;
   createdAt: string;
 };
 
+export type CreatedOrganisationInvitation = OrganisationInvitation & {
+  acceptanceToken: string;
+};
+
 export type OrganisationInvitationResponse = {
-  invitation: OrganisationInvitation;
+  invitation: CreatedOrganisationInvitation;
 };
 
 export type OrganisationInvitationListResponse = {
   invitations: OrganisationInvitation[];
 };
 
-export type AcceptedOrganisationInvitation = {
-  organisationId: string;
-  organisationName: string;
-  role: Exclude<OrganisationRole, 'owner'>;
-  joinedAt: string;
-};
-
-export type AcceptedOrganisationInvitationResponse = {
-  membership: AcceptedOrganisationInvitation;
+export type AcceptedOrganisationMembershipResponse = {
+  membership: {
+    organisationId: string;
+    organisationName: string;
+    role: OrganisationRole;
+    joinedAt: string;
+  };
 };
 
 export type ChannelStatus =
