@@ -28,25 +28,32 @@ export function OnboardingStepFocusManager() {
     const root = document.getElementById('root');
     if (!root) return;
 
-    let lastFocusedStep: HTMLElement | null = null;
+    let focusArmed = false;
+
+    const armForOnboardingSubmit = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLFormElement)) return;
+      if (!target.closest('.workspace-onboarding, .creator-broadcasts-page')) return;
+      focusArmed = true;
+    };
 
     const focusRenderedStep = () => {
+      if (!focusArmed) return;
       const heading = visibleAutomaticStepHeading();
-      if (!heading) {
-        lastFocusedStep = null;
-        return;
-      }
-      if (heading === lastFocusedStep) return;
+      if (!heading) return;
 
       heading.focus();
-      lastFocusedStep = heading;
+      focusArmed = false;
     };
 
     const observer = new MutationObserver(focusRenderedStep);
+    root.addEventListener('submit', armForOnboardingSubmit, true);
     observer.observe(root, { childList: true, subtree: true });
-    focusRenderedStep();
 
-    return () => observer.disconnect();
+    return () => {
+      root.removeEventListener('submit', armForOnboardingSubmit, true);
+      observer.disconnect();
+    };
   }, []);
 
   return null;
