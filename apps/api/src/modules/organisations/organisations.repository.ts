@@ -6,6 +6,7 @@ import {
   userPlatformCapabilities,
 } from '../../db/schema.js';
 import { organisationAuditEvents } from './organisation-audit.schema.js';
+import { personalCreatorWorkspaces } from './personal-creator-workspaces.schema.js';
 import type {
   CreateOrganisationInput,
   OrganisationDto,
@@ -60,6 +61,15 @@ export async function createOrganisationWithOwner(
       role: 'owner',
     });
 
+    const [personalWorkspace] = await transaction
+      .insert(personalCreatorWorkspaces)
+      .values({
+        userId,
+        organisationId: organisation.id,
+      })
+      .onConflictDoNothing({ target: personalCreatorWorkspaces.userId })
+      .returning({ userId: personalCreatorWorkspaces.userId });
+
     await transaction.insert(organisationAuditEvents).values({
       organisationId: organisation.id,
       actorUserId: userId,
@@ -74,6 +84,7 @@ export async function createOrganisationWithOwner(
       name: organisation.name,
       slug: organisation.slug,
       role: 'owner',
+      isPersonalWorkspace: Boolean(personalWorkspace),
       createdAt: organisation.createdAt,
       updatedAt: organisation.updatedAt,
     };
@@ -84,12 +95,13 @@ export async function listOrganisationsForUser(
   db: DigiStreamDatabase,
   userId: string,
 ): Promise<OrganisationDto[]> {
-  return db
+  const rows = await db
     .select({
       id: organisations.id,
       name: organisations.name,
       slug: organisations.slug,
       role: organisationMemberships.role,
+      personalWorkspaceOrganisationId: personalCreatorWorkspaces.organisationId,
       createdAt: organisations.createdAt,
       updatedAt: organisations.updatedAt,
     })
@@ -98,8 +110,25 @@ export async function listOrganisationsForUser(
       organisations,
       eq(organisationMemberships.organisationId, organisations.id),
     )
+    .leftJoin(
+      personalCreatorWorkspaces,
+      and(
+        eq(personalCreatorWorkspaces.userId, userId),
+        eq(personalCreatorWorkspaces.organisationId, organisations.id),
+      ),
+    )
     .where(eq(organisationMemberships.userId, userId))
     .orderBy(asc(organisations.name), asc(organisations.id));
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    role: row.role,
+    isPersonalWorkspace: row.personalWorkspaceOrganisationId === row.id,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  }));
 }
 
 export async function findOrganisationForUser(
@@ -113,6 +142,7 @@ export async function findOrganisationForUser(
       name: organisations.name,
       slug: organisations.slug,
       role: organisationMemberships.role,
+      personalWorkspaceOrganisationId: personalCreatorWorkspaces.organisationId,
       createdAt: organisations.createdAt,
       updatedAt: organisations.updatedAt,
     })
@@ -120,6 +150,13 @@ export async function findOrganisationForUser(
     .innerJoin(
       organisations,
       eq(organisationMemberships.organisationId, organisations.id),
+    )
+    .leftJoin(
+      personalCreatorWorkspaces,
+      and(
+        eq(personalCreatorWorkspaces.userId, userId),
+        eq(personalCreatorWorkspaces.organisationId, organisations.id),
+      ),
     )
     .where(
       and(
@@ -129,7 +166,17 @@ export async function findOrganisationForUser(
     )
     .limit(1);
 
-  return row ?? null;
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    role: row.role,
+    isPersonalWorkspace: row.personalWorkspaceOrganisationId === row.id,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
 }
 
 export async function updateOrganisationRecord(
@@ -162,11 +209,23 @@ export async function updateOrganisationRecord(
       },
     });
 
+    const [personalWorkspace] = await transaction
+      .select({ organisationId: personalCreatorWorkspaces.organisationId })
+      .from(personalCreatorWorkspaces)
+      .where(
+        and(
+          eq(personalCreatorWorkspaces.userId, actorUserId),
+          eq(personalCreatorWorkspaces.organisationId, organisationId),
+        ),
+      )
+      .limit(1);
+
     return {
       id: row.id,
       name: row.name,
       slug: row.slug,
       role,
+      isPersonalWorkspace: Boolean(personalWorkspace),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
