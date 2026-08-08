@@ -2,6 +2,7 @@ import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { EchooSystemStatePage } from './design-system/EchooSystemStatePage';
+import { PlatformAdminApplication } from './features/admin/PlatformAdminApplication';
 import { parseGuestRoute } from './features/guests/guest-route';
 import { parseListenerRoute } from './features/listening/listener-route';
 import { OnboardingStepFocusManager } from './features/onboarding/OnboardingStepFocusManager';
@@ -43,7 +44,7 @@ if (route.replaceHistory) {
 }
 
 function isKnownApplicationPath(pathname: string): boolean {
-  if (pathname === '/login' || pathname === '/signup') return true;
+  if (pathname === '/login' || pathname === '/signup' || pathname === '/admin') return true;
   if (pathname === '/creator' || pathname.startsWith('/creator/')) return true;
   return Boolean(parseGuestRoute(pathname) || parseListenerRoute(pathname));
 }
@@ -55,6 +56,7 @@ function RootApplication() {
   );
 
   if (route.path === '/') return <LandingPage />;
+  if (route.path === '/admin') return <PlatformAdminApplication />;
 
   if (showSessionExpired) {
     return (
