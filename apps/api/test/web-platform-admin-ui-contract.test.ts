@@ -28,6 +28,10 @@ test('platform administration UI keeps the API as the independent authority', as
   assert.match(page, /Confirm suspension/);
   assert.match(page, /Confirm reactivation/);
   assert.match(page, /disabled=\{user\.id === actor\.id\}/);
+  assert.match(page, /requestError.*status !== 401/s);
+  assert.match(page, /sessionLoginPath\('session-expired', returnTo\)/);
+  assert.match(page, /window\.sessionStorage\.clear\(\)/);
+  assert.match(page, /recoverExpiredAdminSession\(requestError\)/);
   assert.doesNotMatch(page, /passwordHash|sessionToken|password_hash|session_token/);
 
   assert.match(css, /@media \(max-width:\s*720px\)/);
