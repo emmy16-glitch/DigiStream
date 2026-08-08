@@ -13,6 +13,7 @@ type EchooSystemStatePageProps = {
   children: ReactNode;
   actionLabel?: string;
   actionHref?: string;
+  embedded?: boolean;
   onAction?: () => void;
 };
 
@@ -52,39 +53,52 @@ export function EchooSystemStatePage({
   actionHref,
   actionLabel,
   children,
+  embedded = false,
   kind,
   onAction,
   title,
 }: EchooSystemStatePageProps) {
+  const content = (
+    <section className="echoo-system-card" aria-labelledby="echoo-system-title">
+      <header className="echoo-system-brand-row">
+        <span className="echoo-system-mark" aria-label="Echoo">
+          <i />
+          <i />
+        </span>
+        <span>Echoo</span>
+      </header>
+
+      <div className="echoo-system-content" role={kind === 'loading' ? 'status' : undefined}>
+        <EchooStateIcon kind={kind} />
+        <h1 id="echoo-system-title">{title}</h1>
+        <p>{children}</p>
+      </div>
+
+      {actionLabel ? (
+        actionHref ? (
+          <a className="echoo-system-action" href={actionHref}>{actionLabel}</a>
+        ) : (
+          <button className="echoo-system-action" onClick={onAction} type="button">
+            {actionLabel}
+          </button>
+        )
+      ) : (
+        <span className="echoo-system-action-spacer" aria-hidden="true" />
+      )}
+    </section>
+  );
+
+  if (embedded) {
+    return (
+      <section className={`echoo-system-page echoo-system-page-${kind} is-embedded`}>
+        {content}
+      </section>
+    );
+  }
+
   return (
     <main className={`echoo-system-page echoo-system-page-${kind}`}>
-      <section className="echoo-system-card" aria-labelledby="echoo-system-title">
-        <header className="echoo-system-brand-row">
-          <span className="echoo-system-mark" aria-label="Echoo">
-            <i />
-            <i />
-          </span>
-          <span>Echoo</span>
-        </header>
-
-        <div className="echoo-system-content" role={kind === 'loading' ? 'status' : undefined}>
-          <EchooStateIcon kind={kind} />
-          <h1 id="echoo-system-title">{title}</h1>
-          <p>{children}</p>
-        </div>
-
-        {actionLabel ? (
-          actionHref ? (
-            <a className="echoo-system-action" href={actionHref}>{actionLabel}</a>
-          ) : (
-            <button className="echoo-system-action" onClick={onAction} type="button">
-              {actionLabel}
-            </button>
-          )
-        ) : (
-          <span className="echoo-system-action-spacer" aria-hidden="true" />
-        )}
-      </section>
+      {content}
     </main>
   );
 }
