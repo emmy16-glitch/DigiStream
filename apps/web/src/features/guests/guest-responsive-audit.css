@@ -1,0 +1,135 @@
+/* UIQ-007 Slice 6 — Guest Join and terminal system-state responsive ownership.
+ *
+ * This layer only owns interaction floors, wrapping and viewport density. Guest
+ * admission, microphone/media readiness, authorization and system-state truth
+ * remain owned by their existing components and APIs.
+ */
+
+.guest-brand {
+  min-height: 44px;
+  padding-inline: .25rem;
+}
+
+.guest-intro h1,
+.guest-intro p,
+.guest-conversation-card strong,
+.guest-conversation-card small,
+.guest-state strong,
+.guest-state small,
+.echoo-system-content h1,
+.echoo-system-content p {
+  overflow-wrap: anywhere;
+}
+
+.guest-primary,
+.guest-secondary,
+.guest-danger,
+.guest-form input,
+.guest-device select,
+.echoo-system-action {
+  min-height: 44px;
+}
+
+@media (max-width: 520px) {
+  .guest-header {
+    min-height: 44px;
+  }
+
+  .guest-intro h1 {
+    font-size: clamp(1.9rem, 9vw, 2.7rem);
+  }
+
+  .guest-audio-check,
+  .guest-state {
+    min-width: 0;
+  }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .guest-page {
+    padding: .75rem max(.75rem, env(safe-area-inset-left)) calc(.75rem + env(safe-area-inset-bottom)) max(.75rem, env(safe-area-inset-right));
+  }
+
+  .guest-header {
+    min-height: 44px;
+    margin-bottom: .5rem;
+  }
+
+  .guest-shell {
+    grid-template-columns: minmax(0, .72fr) minmax(22rem, 1.28fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .guest-intro {
+    padding-top: .35rem;
+  }
+
+  .guest-intro h1 {
+    margin: .5rem 0 .65rem;
+    font-size: clamp(1.75rem, 4.2vw, 2.35rem);
+    line-height: 1.05;
+  }
+
+  .guest-intro p {
+    font-size: .88rem;
+    line-height: 1.5;
+  }
+
+  .guest-card {
+    padding: .8rem;
+    border-radius: 1.1rem;
+  }
+
+  .guest-conversation-card {
+    margin-bottom: .7rem;
+    padding: .7rem;
+  }
+
+  .guest-audio-check {
+    padding: .8rem;
+  }
+
+  .guest-check-row {
+    padding: .55rem 0;
+  }
+
+  .guest-state,
+  .guest-device,
+  .guest-actions {
+    margin-top: .7rem;
+  }
+
+  .echoo-system-page {
+    padding: .75rem;
+  }
+
+  .echoo-system-card {
+    min-height: calc(100dvh - 1.5rem);
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .echoo-system-content {
+    gap: .8rem;
+  }
+
+  .echoo-system-icon {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .echoo-system-spinner {
+    width: 3.8rem;
+    height: 3.8rem;
+  }
+
+  .echoo-system-content h1 {
+    font-size: clamp(1.55rem, 4vw, 2rem);
+  }
+
+  .echoo-system-content p {
+    font-size: .92rem;
+    line-height: 1.45;
+  }
+}
