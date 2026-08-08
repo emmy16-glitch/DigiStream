@@ -77,6 +77,13 @@ test(
       assert.equal(descriptor.heartbeatIntervalMs, 15_000);
       assert.match(descriptor.endpoint, new RegExp(descriptor.sessionId));
 
+      const malformedSession = await app.inject({
+        method: 'POST',
+        url: '/api/v1/playback-telemetry/not-a-valid-session-id',
+        payload: { token: descriptor.token, event: 'started', protocol: 'webrtc' },
+      });
+      assert.equal(malformedSession.statusCode, 404);
+
       const wrongToken = await app.inject({
         method: 'POST',
         url: descriptor.endpoint,
