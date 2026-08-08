@@ -79,7 +79,6 @@ export function PlatformAdminUsersPage({
   const [pendingMutation, setPendingMutation] = useState<PendingMutation | null>(null);
   const [mutating, setMutating] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const mutationCancelRef = useRef<HTMLButtonElement | null>(null);
   const mutationTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const loadUsers = useCallback(async (cursor?: string) => {
@@ -112,10 +111,6 @@ export function PlatformAdminUsersPage({
   useEffect(() => {
     void loadUsers();
   }, [loadUsers]);
-
-  useEffect(() => {
-    if (pendingMutation) mutationCancelRef.current?.focus();
-  }, [pendingMutation]);
 
   function openPendingMutation(
     user: AdministrativeUser,
@@ -244,12 +239,7 @@ export function PlatformAdminUsersPage({
                   </p>
                 </div>
                 <div className="platform-admin-confirm-actions">
-                  <Button
-                    disabled={mutating}
-                    onClick={closePendingMutation}
-                    ref={mutationCancelRef}
-                    variant="secondary"
-                  >
+                  <Button autoFocus disabled={mutating} onClick={closePendingMutation} variant="secondary">
                     Cancel
                   </Button>
                   <Button
