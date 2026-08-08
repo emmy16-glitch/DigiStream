@@ -191,7 +191,11 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   await attachViewport(page, testInfo, 'recordings');
 
   await page.goto('/listen');
-  await expect(page.getByRole('heading', { name: 'Live audio without the heavy video.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Discover', exact: true })).toBeVisible();
+  await expect(page.getByText('Find live and upcoming broadcasts.', { exact: true })).toBeVisible();
+  await expect(page.getByPlaceholder('Search broadcasts, creators…')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'All', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Live', exact: true })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await attachViewport(page, testInfo, 'listener-discovery');
 });

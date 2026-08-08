@@ -34,8 +34,8 @@ test('Replay discovery does not expose storage or artifact terminology', async (
 test('Replay listening keeps implementation details out of primary copy', async () => {
   const source = await readFile(replayListeningSourcePath, 'utf8');
 
-  expect(source).toContain('DigiStream is checking whether this replay is available.');
-  expect(source).toContain('Start listening when you’re ready.');
+  expect(source).toContain('Echoo is checking whether this replay is available.');
+  expect(source).toContain('Listen to the recording');
   expect(source).toContain('Your playback access expired. Start listening again to continue.');
   expect(source).toContain('Try playback again');
   expect(source).not.toContain('private playback link');

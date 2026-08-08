@@ -14,6 +14,7 @@ import {
 import { useModalDialog } from '../../lib/use-modal-dialog';
 import type { ListenerRoute } from './listener-route';
 import './listener-call-ins.css';
+import './listener-call-in-reference.css';
 
 type PublicBroadcastRoute = Extract<ListenerRoute, { kind: 'public-broadcast' }>;
 
@@ -137,13 +138,9 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
   const [message, setMessage] = useState('');
   const [statusToken, setStatusToken] = useState('');
   const [statusExpiresAt, setStatusExpiresAt] = useState('');
-  const [status, setStatus] = useState<CallInStatusResponse['callIn'] | null>(
-    null,
-  );
-  const [broadcastStatus, setBroadcastStatus] =
-    useState<PublicBroadcast['status'] | null>(null);
-  const [relationship, setRelationship] =
-    useState<ListenerRelationship>('checking');
+  const [status, setStatus] = useState<CallInStatusResponse['callIn'] | null>(null);
+  const [broadcastStatus, setBroadcastStatus] = useState<PublicBroadcast['status'] | null>(null);
+  const [relationship, setRelationship] = useState<ListenerRelationship>('checking');
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -151,8 +148,7 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
 
   const dialogRef = useModalDialog<HTMLElement>(open, () => setOpen(false));
   const overlayStyle = useMobileOverlayLayout(open);
-  const roleActionVisible =
-    relationship === 'production' || relationship === 'moderator';
+  const roleActionVisible = relationship === 'production' || relationship === 'moderator';
   const visitorActionAvailable =
     relationship === 'visitor' &&
     broadcastStatus !== null &&
@@ -160,15 +156,12 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
   const fixedActionVisible = roleActionVisible || (visitorActionAvailable && !open);
   useFixedActionReservation(fixedActionVisible);
 
-  const saveTracking = useCallback(
-    (tracking: StoredTracking) => {
-      sessionStorage.setItem(key, JSON.stringify(tracking));
-      setStatusToken(tracking.statusToken);
-      setStatusExpiresAt(tracking.statusExpiresAt);
-      setDisplayName((current) => current || tracking.displayName);
-    },
-    [key],
-  );
+  const saveTracking = useCallback((tracking: StoredTracking) => {
+    sessionStorage.setItem(key, JSON.stringify(tracking));
+    setStatusToken(tracking.statusToken);
+    setStatusExpiresAt(tracking.statusExpiresAt);
+    setDisplayName((current) => current || tracking.displayName);
+  }, [key]);
 
   const clearTracking = useCallback(() => {
     sessionStorage.removeItem(key);
@@ -178,35 +171,21 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
     setSubmitted(false);
   }, [key]);
 
-  const loadBroadcastStatus = useCallback(
-    async (signal?: AbortSignal) => {
-      try {
-        const response = await apiRequest<PublicBroadcastResponse>(
-          metadataEndpoint,
-          {
-            signal: signal ?? null,
-          },
-        );
-        setBroadcastStatus(response.broadcast.status);
-      } catch (requestError) {
-        if (
-          requestError instanceof DOMException &&
-          requestError.name === 'AbortError'
-        ) {
-          return;
-        }
-        setBroadcastStatus(null);
-      }
-    },
-    [metadataEndpoint],
-  );
+  const loadBroadcastStatus = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const response = await apiRequest<PublicBroadcastResponse>(metadataEndpoint, {
+        signal: signal ?? null,
+      });
+      setBroadcastStatus(response.broadcast.status);
+    } catch (requestError) {
+      if (requestError instanceof DOMException && requestError.name === 'AbortError') return;
+      setBroadcastStatus(null);
+    }
+  }, [metadataEndpoint]);
 
   const refreshStatus = useCallback(async () => {
     if (!statusToken) return;
-    if (
-      statusExpiresAt &&
-      new Date(statusExpiresAt).getTime() <= Date.now()
-    ) {
+    if (statusExpiresAt && new Date(statusExpiresAt).getTime() <= Date.now()) {
       clearTracking();
       setError('The call-in status link expired. You may submit a new request.');
       return;
@@ -239,9 +218,7 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
   useEffect(() => {
     const controller = new AbortController();
     void loadBroadcastStatus(controller.signal);
-    const timer = window.setInterval(() => {
-      void loadBroadcastStatus();
-    }, 8_000);
+    const timer = window.setInterval(() => void loadBroadcastStatus(), 8_000);
     return () => {
       controller.abort();
       window.clearInterval(timer);
@@ -250,9 +227,7 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
 
   useEffect(() => {
     const controller = new AbortController();
-    void apiRequest<AuthUserResponse>('/api/v1/auth/me', {
-      signal: controller.signal,
-    })
+    void apiRequest<AuthUserResponse>('/api/v1/auth/me', { signal: controller.signal })
       .then(async (response) => {
         setDisplayName((current) => current || response.user.displayName);
         setEmail((current) => current || response.user.email);
@@ -263,21 +238,11 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
         const organisation = organisations.organisations.find(
           (item) => item.slug === route.organisationSlug,
         );
-        setRelationship(
-          organisation ? relationshipForRole(organisation.role) : 'visitor',
-        );
+        setRelationship(organisation ? relationshipForRole(organisation.role) : 'visitor');
       })
       .catch((requestError) => {
-        if (
-          requestError instanceof DOMException &&
-          requestError.name === 'AbortError'
-        ) {
-          return;
-        }
-        if (
-          requestError instanceof ApiClientError &&
-          requestError.status === 401
-        ) {
+        if (requestError instanceof DOMException && requestError.name === 'AbortError') return;
+        if (requestError instanceof ApiClientError && requestError.status === 401) {
           setRelationship('visitor');
         } else {
           setRelationship('unknown');
@@ -307,9 +272,7 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
   useEffect(() => {
     if (!statusToken) return;
     void refreshStatus();
-    const timer = window.setInterval(() => {
-      void refreshStatus();
-    }, 5_000);
+    const timer = window.setInterval(() => void refreshStatus(), 5_000);
     return () => window.clearInterval(timer);
   }, [refreshStatus, statusToken]);
 
@@ -362,11 +325,7 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
     }
   }
 
-  if (
-    relationship === 'checking' ||
-    relationship === 'unknown' ||
-    !broadcastStatus
-  ) {
+  if (relationship === 'checking' || relationship === 'unknown' || !broadcastStatus) {
     return null;
   }
 
@@ -383,8 +342,8 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
   if (relationship === 'moderator') {
     return (
       <aside className="listener-call-in listener-call-in-role-action">
-        <a className="listener-call-in-launcher" href="/creator/audience">
-          Open backstage
+        <a className="listener-call-in-launcher" href="/creator/studio-lobby">
+          Open Studio Lobby
         </a>
       </aside>
     );
@@ -402,10 +361,7 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
       : 'Request to speak';
 
   return (
-    <aside
-      className={`listener-call-in ${open ? 'open' : ''}`}
-      style={overlayStyle}
-    >
+    <aside className={`listener-call-in ${open ? 'open' : ''}`} style={overlayStyle}>
       {!open ? (
         <button
           aria-expanded="false"
@@ -430,16 +386,13 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
           <section
             aria-labelledby="listener-call-in-title"
             aria-modal="true"
-            className="listener-call-in-panel"
+            className="listener-call-in-panel echoo-call-in-panel"
             ref={dialogRef}
             role="dialog"
             tabIndex={-1}
           >
-            <header>
-              <div>
-                <span>Live participation</span>
-                <h2 id="listener-call-in-title">Request to speak</h2>
-              </div>
+            <header className="echoo-call-in-header">
+              <h2 id="listener-call-in-title">Request to join the conversation</h2>
               <button
                 aria-label="Close request-to-speak panel"
                 data-dialog-initial-focus
@@ -450,12 +403,7 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
               </button>
             </header>
 
-            {error ? (
-              <div className="listener-call-in-error" role="alert">
-                {error}
-              </div>
-            ) : null}
-
+            {error ? <div className="listener-call-in-error" role="alert">{error}</div> : null}
             {submitted ? (
               <div className="listener-call-in-success" role="status">
                 Request sent. Your status will update here while the production team reviews it.
@@ -463,47 +411,27 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
             ) : null}
 
             {statusToken ? (
-              <div className="listener-call-in-status" aria-live="polite">
-                <div
-                  className={`listener-call-in-state ${status?.status ?? 'pending'}`}
-                >
-                  <i />
-                  <div>
-                    <strong>
-                      {status
-                        ? statusLabel(status.status)
-                        : 'Checking your request'}
-                    </strong>
-                    <span>
-                      {refreshing
-                        ? 'Refreshing status…'
-                        : 'Status updates automatically'}
-                    </span>
-                  </div>
+              <div className="echoo-call-in-request-card listener-call-in-status" aria-live="polite">
+                <div className={`echoo-call-in-mic is-${status?.status ?? 'pending'}`} aria-hidden="true">
+                  <Icon name="microphone" size={40} />
                 </div>
-
+                <h3>{status ? statusLabel(status.status) : 'Checking your request'}</h3>
                 <p>{status?.guidance ?? pendingGuidance()}</p>
 
                 {status?.status === 'approved' ? (
                   <div className="listener-call-in-guidance">
-                    <strong>Prepare for backstage</strong>
+                    <strong>Prepare for the Studio Lobby</strong>
                     <ul>
                       <li>Use headphones to prevent echo.</li>
                       <li>Move somewhere quiet with a stable connection.</li>
-                      <li>
-                        Allow microphone access only after receiving the guest link.
-                      </li>
+                      <li>Allow microphone access only after receiving the guest link.</li>
                     </ul>
                   </div>
                 ) : null}
 
-                <div className="listener-call-in-actions">
-                  <button
-                    disabled={refreshing}
-                    onClick={() => void refreshStatus()}
-                    type="button"
-                  >
-                    {refreshing ? 'Checking…' : 'Check now'}
+                <div className="listener-call-in-actions echoo-call-in-actions">
+                  <button disabled={refreshing} onClick={() => void refreshStatus()} type="button">
+                    {refreshing ? 'Checking…' : 'Check status'}
                   </button>
                   {status?.status === 'rejected' ? (
                     <button
@@ -520,52 +448,56 @@ export function ListenerCallInPanel({ route }: ListenerCallInPanelProps) {
                 </div>
               </div>
             ) : (
-              <form onSubmit={submit}>
-                <p>
-                  Send a short request to the production team. Approval does not
-                  automatically turn on your microphone.
+              <form className="echoo-call-in-request-card" onSubmit={submit}>
+                <div className="echoo-call-in-mic" aria-hidden="true">
+                  <Icon name="microphone" size={40} />
+                </div>
+                <p className="echoo-call-in-reference-copy">
+                  You’ll be added to the talk when the host accepts your request.
                 </p>
-                <label>
-                  Display name
-                  <input
-                    autoComplete="name"
-                    maxLength={80}
-                    minLength={2}
-                    onChange={(event) => setDisplayName(event.target.value)}
-                    required
-                    value={displayName}
-                  />
-                </label>
-                <label>
-                  Contact email <small>Optional</small>
-                  <input
-                    autoComplete="email"
-                    maxLength={320}
-                    onChange={(event) => setEmail(event.target.value)}
-                    type="email"
-                    value={email}
-                  />
-                </label>
-                <label>
-                  What would you like to say? <small>Optional</small>
-                  <textarea
-                    maxLength={500}
-                    onChange={(event) => setMessage(event.target.value)}
-                    rows={4}
-                    value={message}
-                  />
-                  <span>{message.length}/500</span>
-                </label>
-                <button
-                  className="listener-call-in-submit"
-                  disabled={busy}
-                  type="submit"
-                >
-                  {busy ? 'Sending request…' : 'Send request'}
+
+                <div className="echoo-call-in-fields">
+                  <label>
+                    Display name
+                    <input
+                      autoComplete="name"
+                      maxLength={80}
+                      minLength={2}
+                      onChange={(event) => setDisplayName(event.target.value)}
+                      required
+                      value={displayName}
+                    />
+                  </label>
+                  <label>
+                    Contact email <small>Optional</small>
+                    <input
+                      autoComplete="email"
+                      maxLength={320}
+                      onChange={(event) => setEmail(event.target.value)}
+                      type="email"
+                      value={email}
+                    />
+                  </label>
+                  <label>
+                    Note to the host <small>Optional</small>
+                    <textarea
+                      maxLength={500}
+                      onChange={(event) => setMessage(event.target.value)}
+                      rows={3}
+                      value={message}
+                    />
+                    <span>{message.length}/500</span>
+                  </label>
+                </div>
+
+                <button className="listener-call-in-submit echoo-call-in-submit" disabled={busy} type="submit">
+                  {busy ? 'Sending request…' : 'Request to speak'}
                 </button>
+                <small className="echoo-call-in-microphone-note">
+                  Make sure your microphone is ready. Approval does not turn it on automatically.
+                </small>
                 <small className="listener-call-in-privacy">
-                  DigiStream stores a one-way request fingerprint for duplicate and
-                  abuse prevention. Your raw IP address is not stored with the call-in.
+                  Echoo stores a one-way request fingerprint for duplicate and abuse prevention. Your raw IP address is not stored with the call-in.
                 </small>
               </form>
             )}
