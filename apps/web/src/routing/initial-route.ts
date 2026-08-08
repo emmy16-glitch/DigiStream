@@ -7,6 +7,7 @@ const IMPLEMENTED_CREATOR_PATHS = new Set([
   '/creator/studio-lobby',
   '/creator/chat',
   '/creator/recordings',
+  '/creator/analytics',
 ]);
 
 export type InitialRouteResolution = {
