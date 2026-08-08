@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { AuthUser } from '@digistream/contracts';
 import { BrandLockup, Button, LinkButton, StatePanel, StatusBadge } from '../../design-system/components';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
+import { sessionLoginPath } from '../../lib/session-coordination';
 import './platform-admin-users.css';
 
 type AdministrativeUserStatus = 'active' | 'suspended' | 'deleted';
@@ -53,6 +54,14 @@ function readableError(error: unknown): string {
   return 'Echoo could not complete that request.';
 }
 
+function recoverExpiredAdminSession(error: unknown): boolean {
+  if (!(error instanceof ApiClientError) || error.status !== 401) return false;
+  const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  window.sessionStorage.clear();
+  window.location.replace(sessionLoginPath('session-expired', returnTo));
+  return true;
+}
+
 export function PlatformAdminUsersPage({
   actor,
   onSignedOut,
@@ -85,6 +94,7 @@ export function PlatformAdminUsersPage({
       setUsers((current) => append ? [...current, ...response.users] : response.users);
       setNextCursor(response.nextCursor);
     } catch (requestError) {
+      if (recoverExpiredAdminSession(requestError)) return;
       if (requestError instanceof ApiClientError && requestError.status === 403) {
         setForbidden(true);
         setUsers([]);
@@ -118,6 +128,7 @@ export function PlatformAdminUsersPage({
       )));
       setPendingMutation(null);
     } catch (requestError) {
+      if (recoverExpiredAdminSession(requestError)) return;
       setError(readableError(requestError));
     } finally {
       setMutating(false);
