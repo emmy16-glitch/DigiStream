@@ -158,11 +158,15 @@ test(
       assert.equal(analytics.audience.listeningHistoryEntries, 1);
       assert.equal(analytics.audience.savedBroadcasts, 1);
       assert.equal(analytics.audience.usersWhoSaved, 1);
+      assert.equal(analytics.playback.measuredSessions, 0);
+      assert.equal(analytics.playback.activeSessions, 0);
+      assert.equal(analytics.playback.measuredListeningSeconds, 0);
       assert.equal(analytics.coverage.anonymousListenerReach, 'not_collected');
-      assert.equal(analytics.coverage.concurrentAudience, 'not_collected');
-      assert.equal(analytics.coverage.listeningDuration, 'not_collected');
-      assert.equal(analytics.coverage.streamQuality, 'not_collected');
+      assert.equal(analytics.coverage.concurrentAudience, 'measured_active_playback_sessions');
+      assert.equal(analytics.coverage.listeningDuration, 'measured_server_heartbeat_intervals');
+      assert.equal(analytics.coverage.streamQuality, 'measured_client_playback_events');
       assert.match(analytics.definitions.listeningHistoryEntries, /not play count or listening duration/i);
+      assert.match(analytics.definitions.streamQualityEvents, /bitrate, jitter and packet loss are not inferred/i);
     } finally {
       for (const organisationId of organisationIds) {
         await database.pool.query('delete from organisations where id = $1', [organisationId]);
