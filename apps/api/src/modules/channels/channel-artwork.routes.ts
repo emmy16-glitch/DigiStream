@@ -8,7 +8,7 @@ import {
   type ObjectStorage,
 } from '../storage/object-storage.js';
 
-const MAX_ARTWORK_BYTES = 5 * 1024 * 1024;
+const MAX_ARTWORK_BYTES = 2 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const CONTENT_MANAGERS = new Set(['owner', 'admin', 'broadcaster']);
 
@@ -87,12 +87,6 @@ export function registerChannelArtworkRoutes(
   database: DatabaseContext | null,
   storage: ObjectStorage | null,
 ): void {
-  app.addContentTypeParser(
-    /^image\/(?:jpeg|png|webp)$/i,
-    { parseAs: 'buffer', bodyLimit: MAX_ARTWORK_BYTES },
-    (_request, body, done) => done(null, body),
-  );
-
   app.put<{
     Params: { organisationId: string; channelId: string };
     Body: Buffer;
@@ -114,12 +108,13 @@ export function registerChannelArtworkRoutes(
         !contentType ||
         !ALLOWED_TYPES.has(contentType) ||
         !Buffer.isBuffer(request.body) ||
-        request.body.byteLength === 0
+        request.body.byteLength === 0 ||
+        request.body.byteLength > MAX_ARTWORK_BYTES
       ) {
         throw new ApiError(
           400,
           'INVALID_CHANNEL_ARTWORK',
-          'Upload a JPEG, PNG or WebP image up to 5 MB.',
+          'Upload a JPEG, PNG or WebP image up to 2 MB.',
         );
       }
 
@@ -151,7 +146,7 @@ export function registerChannelArtworkRoutes(
         reply.header('cache-control', 'no-store');
         return reply.send({
           artwork: {
-            url: `/api/v1/channels/by-id/${encodeURIComponent(request.params.channelId)}/artwork`,
+            url: `/api/v1/organisations/${encodeURIComponent(request.params.organisationId)}/channels/${encodeURIComponent(request.params.channelId)}/artwork`,
             contentType: saved.contentType,
             sizeBytes: saved.sizeBytes,
           },
