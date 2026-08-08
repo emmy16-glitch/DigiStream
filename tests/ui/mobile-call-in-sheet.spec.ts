@@ -132,8 +132,9 @@ test('mobile request-to-speak sheet follows the visible viewport and preserves s
   await mockMobileCallIn(page);
   await page.goto(routePath);
 
-  const launcher = page.getByRole('button', { name: 'Request to speak' });
+  const launcher = page.locator('button.listener-call-in-launcher');
   await expect(launcher).toBeVisible();
+  await expect(launcher).toHaveText('Request to speak');
   await expect
     .poll(() =>
       page.evaluate(() =>
