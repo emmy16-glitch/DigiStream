@@ -3,6 +3,7 @@ import type {
   ButtonHTMLAttributes,
   ReactNode,
 } from 'react';
+import { EchooSystemStatePage } from './EchooSystemStatePage';
 import { Icon, type IconName } from './Icon';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -217,6 +218,28 @@ export function StatePanel({
   onAction?: () => void;
   title: string;
 }) {
+  if (!compact && kind === 'loading' && title === 'Opening DigiStream') {
+    return (
+      <EchooSystemStatePage embedded kind="loading" title="Loading">
+        Please wait a moment...
+      </EchooSystemStatePage>
+    );
+  }
+
+  if (!compact && kind === 'offline' && title === 'Cannot connect to DigiStream') {
+    return (
+      <EchooSystemStatePage
+        actionLabel="Retry"
+        embedded
+        kind="offline"
+        onAction={onAction}
+        title="No Connection"
+      >
+        Check your internet connection and try again.
+      </EchooSystemStatePage>
+    );
+  }
+
   return (
     <section
       aria-busy={kind === 'loading' || undefined}
