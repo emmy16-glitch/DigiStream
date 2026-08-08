@@ -59,10 +59,10 @@ All phases are governed by [`PRODUCT_QUALITY_AND_RELIABILITY_STANDARD.md`](PRODU
 - [x] Add channel lifecycle: draft, pending review, active, suspended and archived
 - [x] Add public, unlisted and private visibility
 - [x] Add normalized categories and stable organisation-scoped slugs
-- [ ] Add storage-backed channel artwork metadata
+- [x] Add storage-backed channel artwork metadata
 - [x] Add bounded public listing and exact channel detail endpoints
 - [x] Add ownership-safe channel management endpoints
-- [ ] Add following and idempotent unfollow
+- [x] Add following and idempotent unfollow
 - [ ] Add full-text search, stable cursor pagination and advanced filtering
 - [ ] Add moderation and soft-delete/retention policy
 
