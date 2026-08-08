@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { findAuthenticatedUser } from '../../auth/session.js';
 import type { DatabaseContext } from '../../db/client.js';
 import { ApiError } from '../../http/errors.js';
+import { listOrganisationAuditLog } from './organisation-audit-log.service.js';
 import { getOrganisationAnalytics } from './organisation-analytics.service.js';
 import {
   createOrganisation,
@@ -66,6 +67,23 @@ export function registerOrganisationRoutes(
       organisations: await listOrganisations(context.db, user.id),
     };
   });
+
+  app.get<{
+    Params: { organisationId: string };
+    Querystring: { cursor?: string; limit?: string };
+  }>(
+    '/api/v1/organisations/:organisationId/audit-log',
+    async (request) => {
+      const context = requireDatabase(database);
+      const user = await requireUser(request, context);
+      return listOrganisationAuditLog(
+        context,
+        request.params.organisationId,
+        user.id,
+        request.query ?? {},
+      );
+    },
+  );
 
   app.get<{ Params: { organisationId: string } }>(
     '/api/v1/organisations/:organisationId/analytics',
