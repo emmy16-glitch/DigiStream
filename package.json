@@ -22,6 +22,8 @@
     "media:smoke": "node scripts/media-e2e-smoke.mjs",
     "skills:sync": "node scripts/sync-design-agent-skills.mjs",
     "skills:verify": "node scripts/verify-design-agent-skills.mjs",
+    "design:install-references": "node scripts/install-design-references.mjs",
+    "design:verify-references": "node scripts/verify-design-references.mjs",
     "build": "npm run build --workspace @digistream/contracts && npm run build --workspace @digistream/api && npm run build --workspace @digistream/web",
     "typecheck": "npm run build --workspace @digistream/contracts && npm run typecheck --workspace @digistream/api && npm run typecheck --workspace @digistream/web",
     "test": "npm run test --workspace @digistream/api",
