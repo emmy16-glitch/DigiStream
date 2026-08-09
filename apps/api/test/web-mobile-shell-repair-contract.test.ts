@@ -30,10 +30,14 @@ test('restored connectivity notice is bounded and dismissible', async () => {
   assert.match(source, /aria-label="Dismiss network restored message"/);
 });
 
-test('mobile account actions move behind one labelled profile affordance', async () => {
+test('mobile account actions move behind one labelled profile affordance without losing workspace switching', async () => {
   const source = await readFile(shellSourceUrl, 'utf8');
   assert.match(source, /aria-label="Open account and workspace menu"/);
   assert.match(source, /ds-mobile-account-actions/);
+  assert.match(
+    source,
+    /ds-mobile-account-popover[\s\S]*canSwitchWorkspace \? workspaceSelect\(\) : null/,
+  );
 });
 
 test('chat and Lobby explain draft eligibility before operational controls', async () => {
