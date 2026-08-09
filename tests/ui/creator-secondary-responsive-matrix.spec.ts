@@ -180,7 +180,7 @@ test('Chat, Studio Lobby and Recordings pass the exact responsive matrix', async
     await page.goto('/creator/studio-lobby');
     await expect(page.getByRole('heading', { name: 'Studio Lobby and call-ins' })).toBeVisible();
     await expectCreatorShellUsable(page);
-    const openLobby = page.getByRole('button', { name: 'Open Studio Lobby', exact: true });
+    const openLobby = page.locator('#ds-main-content').getByRole('button', { name: 'Open Studio Lobby', exact: true });
     await expectTouchTarget(openLobby);
     await openLobby.click();
     const lobby = page.locator('.backstage-workspace');
