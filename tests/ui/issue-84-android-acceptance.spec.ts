@@ -65,6 +65,10 @@ async function openMobileAccountMenu(page: Page) {
   return popover;
 }
 
+function desktopSignOut(page: Page) {
+  return page.locator('.ds-creator-account-area > .ds-topbar-actions:visible').getByRole('button', { name: /^Sign out/ });
+}
+
 test('Android portrait and short landscape keep account, forms and creator chrome usable', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'android-chrome');
   await createCreatorAtChannelSetup(page, testInfo);
@@ -72,13 +76,13 @@ test('Android portrait and short landscape keep account, forms and creator chrom
   const channelName = page.getByLabel('Channel name');
   const continueHeading = page.getByRole('heading', { name: 'Create your first channel' });
 
-  let accountPopover = await openMobileAccountMenu(page);
+  const accountPopover = await openMobileAccountMenu(page);
   await expect(accountPopover).toContainText('Signed in as');
-  let signOut = accountPopover.getByRole('button', { name: /^Sign out/ });
-  await expect(signOut).toBeVisible();
-  let signOutBox = await signOut.boundingBox();
-  expect(signOutBox).not.toBeNull();
-  expect(signOutBox!.height).toBeGreaterThanOrEqual(44);
+  const portraitSignOut = accountPopover.getByRole('button', { name: /^Sign out/ });
+  await expect(portraitSignOut).toBeVisible();
+  const portraitSignOutBox = await portraitSignOut.boundingBox();
+  expect(portraitSignOutBox).not.toBeNull();
+  expect(portraitSignOutBox!.height).toBeGreaterThanOrEqual(44);
   await page.getByLabel('Open account and workspace menu').click();
 
   await expect(page.locator('.ds-creator-mobile-nav')).toBeVisible();
@@ -88,13 +92,11 @@ test('Android portrait and short landscape keep account, forms and creator chrom
   await page.setViewportSize({ width: 844, height: 390 });
   await expect(continueHeading).toBeVisible();
   await expect(channelName).toBeVisible();
-  accountPopover = await openMobileAccountMenu(page);
-  signOut = accountPopover.getByRole('button', { name: /^Sign out/ });
-  await expect(signOut).toBeVisible();
-  signOutBox = await signOut.boundingBox();
-  expect(signOutBox).not.toBeNull();
-  expect(signOutBox!.height).toBeGreaterThanOrEqual(44);
-  await page.getByLabel('Open account and workspace menu').click();
+  const landscapeSignOut = desktopSignOut(page);
+  await expect(landscapeSignOut).toBeVisible();
+  const landscapeSignOutBox = await landscapeSignOut.boundingBox();
+  expect(landscapeSignOutBox).not.toBeNull();
+  expect(landscapeSignOutBox!.height).toBeGreaterThanOrEqual(44);
   await expectVisibleAboveCreatorChrome(page, channelName);
   await expectNoHorizontalOverflow(page);
 
@@ -144,7 +146,7 @@ test('Android desktop-site and 200% browser zoom retain obvious account access a
   const desktopAccountArea = page.getByLabel('Signed-in account actions');
   await expect(desktopAccountArea).toContainText('Account');
   await expect(desktopAccountArea).toContainText('Signed in as');
-  await expect(desktopAccountArea.locator('> .ds-topbar-actions').getByRole('button', { name: /^Sign out/ })).toBeVisible();
+  await expect(desktopSignOut(page)).toBeVisible();
 
   await page.setViewportSize({ width: 490, height: 870 });
 
