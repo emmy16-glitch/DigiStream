@@ -43,13 +43,14 @@ test('Android creator navigation owns keyboard activation and restores focus acr
   await expect(page).toHaveURL(/\/creator\/overview$/);
   await expect(main).toBeFocused();
 
-  const signOut = page.getByRole('button', { name: /^Sign out/ });
-  await signOut.focus();
-  await expect(signOut).toBeFocused();
+  const accountTrigger = page.locator('.ds-mobile-account-menu').getByLabel('Open account and workspace menu');
+  await expect(accountTrigger).toBeVisible();
+  await accountTrigger.focus();
+  await expect(accountTrigger).toBeFocused();
   await page.keyboard.press('Escape');
 
   await expect(page).toHaveURL(/\/creator\/overview$/);
-  await expect(signOut).toBeFocused();
+  await expect(accountTrigger).toBeFocused();
 
   await page.goBack();
   await expect(page).toHaveURL(/\/creator\/broadcasts$/);

@@ -39,11 +39,19 @@ test('signed-in identity and sign out remain discoverable at 200% zoom and short
     document.documentElement.style.zoom = '2';
   });
 
-  const accountArea = page.getByLabel('Signed-in account actions');
-  await expect(accountArea).toBeVisible();
-  await expect(accountArea.getByText(`Signed in as ${email}`, { exact: true })).toBeVisible();
+  const accountMenu = page.locator('.ds-mobile-account-menu');
+  const accountTrigger = accountMenu.getByLabel('Open account and workspace menu');
+  await expect(accountTrigger).toBeVisible();
+  const triggerBox = await accountTrigger.boundingBox();
+  expect(triggerBox).not.toBeNull();
+  expect(triggerBox!.height).toBeGreaterThanOrEqual(44);
+  await accountTrigger.click();
 
-  const signOutButton = accountArea.getByRole('button', { name: 'Sign out Zoom Test Creator' });
+  const popover = accountMenu.locator('.ds-mobile-account-popover');
+  await expect(popover).toBeVisible();
+  await expect(popover.getByText(`Signed in as ${email}`, { exact: true })).toBeVisible();
+
+  const signOutButton = popover.getByRole('button', { name: 'Sign out Zoom Test Creator' });
   await expect(signOutButton).toBeVisible();
   await expect(signOutButton).toContainText('Sign out');
 

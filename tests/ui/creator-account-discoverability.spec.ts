@@ -28,38 +28,41 @@ test('creator shell identifies the signed-in account beside account actions', as
   expect(source).toContain('className="ds-creator-account-identity"');
 });
 
-test('mobile creator layout keeps sign out text visible with touch-sized actions', async () => {
-  const [styles, fixes, app] = await Promise.all([
+test('mobile creator layout moves account actions behind one labelled touch-sized affordance', async () => {
+  const [styles, app, shell] = await Promise.all([
     readFile(shellStylesPath, 'utf8'),
-    readFile(manualFixesPath, 'utf8'),
     readFile(appSourcePath, 'utf8'),
+    readFile(shellSourcePath, 'utf8'),
   ]);
 
-  expect(styles).toMatch(/@media \(max-width: 640px\)[\s\S]*?\.ds-topbar-actions \.ds-button \{[\s\S]*?min-width: 44px;[\s\S]*?min-height: 44px;/);
-  expect(styles).toMatch(/\.ds-topbar-actions \.ds-button span \{ display: none; \}/);
-  expect(fixes).toContain('.ds-creator-account-area .ds-button[aria-label^="Sign out "]');
-  expect(fixes).toMatch(/\[aria-label\^="Sign out "\][\s\S]*?min-width: 44px;[\s\S]*?min-height: 44px;/);
-  expect(fixes).toMatch(/@media \(max-width: 640px\)[\s\S]*?\[aria-label\^="Sign out "\] span \{[\s\S]*?display: inline;/);
+  expect(styles).toMatch(/@media \(max-width: 640px\)[\s\S]*?\.ds-creator-account-summary,[\s\S]*?\.ds-creator-account-area > \.ds-topbar-actions \{ display: none; \}/);
+  expect(styles).toMatch(/\.ds-mobile-account-menu > summary \{[\s\S]*?width: 44px; height: 44px;/);
+  expect(styles).toMatch(/\.ds-mobile-account-actions \.ds-button \{ width: 100%; justify-content: flex-start; \}/);
+  expect(shell).toContain('aria-label="Open account and workspace menu"');
+  expect(shell).toContain('className="ds-mobile-account-actions"');
   expect(app).toContain('aria-label={`Sign out ${user.displayName}`}');
   expect(app).toContain('>\n        Sign out\n      </Button>');
 });
 
-test('very narrow creator layouts stack identity and actions instead of hiding them', async () => {
+test('very narrow creator layouts keep the account popover bounded instead of restoring header clutter', async () => {
   const styles = await readFile(shellStylesPath, 'utf8');
 
-  expect(styles).toMatch(/@media \(max-width: 380px\)[\s\S]*?\.ds-creator-account-area \{[\s\S]*?flex-direction: column;/);
-  expect(styles).toMatch(/\.ds-creator-account-identity \{ width: 100%; \}/);
+  expect(styles).toMatch(/\.ds-mobile-account-popover \{[\s\S]*?width: min\(20rem, calc\(100vw - 28px\)\);/);
+  expect(styles).toMatch(/\.ds-mobile-account-popover span \{[\s\S]*?overflow-wrap: anywhere;/);
+  expect(styles).not.toMatch(/@media \(max-width: 380px\)[\s\S]*?\.ds-creator-account-area \{[\s\S]*?flex-direction: column;/);
 });
 
 test('account actions retain visible keyboard focus', async () => {
-  const [base, fixes] = await Promise.all([
+  const [base, fixes, styles] = await Promise.all([
     readFile(baseStylesPath, 'utf8'),
     readFile(manualFixesPath, 'utf8'),
+    readFile(shellStylesPath, 'utf8'),
   ]);
 
   expect(base).toContain(':where(a, button, input, select, textarea, [tabindex]):focus-visible');
   expect(base).toContain('outline: 2px solid var(--ds-focus-ring);');
   expect(fixes).toContain('.ds-creator-account-area:focus-within');
+  expect(styles).toContain('.ds-mobile-account-menu > summary:focus-visible');
 });
 
 test('inline account access does not steal Escape or Android Back history ownership', async () => {

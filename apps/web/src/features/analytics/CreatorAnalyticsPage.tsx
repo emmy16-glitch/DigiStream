@@ -251,14 +251,17 @@ export function CreatorAnalyticsPage({ organisation }: { organisation: Organisat
                 value={analytics.playback.anonymousSessions}
               />
             </div>
-            <dl>
-              <div><dt>Signed-in playback sessions</dt><dd>{analytics.playback.signedInSessions.toLocaleString()}</dd></div>
-              <div><dt>Buffering events</dt><dd>{analytics.playback.bufferingEvents.toLocaleString()}</dd></div>
-              <div><dt>Sessions with buffering</dt><dd>{analytics.playback.sessionsWithBuffering.toLocaleString()}</dd></div>
-              <div><dt>WebRTC → LL-HLS fallbacks</dt><dd>{analytics.playback.fallbackEvents.toLocaleString()}</dd></div>
-              <div><dt>Player media errors</dt><dd>{analytics.playback.mediaErrors.toLocaleString()}</dd></div>
-            </dl>
-            <p>{analytics.definitions.streamQualityEvents}</p>
+            <details className="creator-analytics-advanced">
+              <summary>Playback health and advanced analytics</summary>
+              <dl>
+                <div><dt>Signed-in playback sessions</dt><dd>{analytics.playback.signedInSessions.toLocaleString()}</dd></div>
+                <div><dt>Buffering events</dt><dd>{analytics.playback.bufferingEvents.toLocaleString()}</dd></div>
+                <div><dt>Sessions with buffering</dt><dd>{analytics.playback.sessionsWithBuffering.toLocaleString()}</dd></div>
+                <div><dt>WebRTC → LL-HLS fallbacks</dt><dd>{analytics.playback.fallbackEvents.toLocaleString()}</dd></div>
+                <div><dt>Player media errors</dt><dd>{analytics.playback.mediaErrors.toLocaleString()}</dd></div>
+              </dl>
+              <p>{analytics.definitions.streamQualityEvents}</p>
+            </details>
           </section>
 
           <section className="panel creator-analytics-summary" aria-labelledby="content-summary-title">

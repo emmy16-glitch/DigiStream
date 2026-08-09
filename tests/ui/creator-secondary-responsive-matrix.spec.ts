@@ -170,7 +170,7 @@ test('Chat, Studio Lobby and Recordings pass the exact responsive matrix', async
     await expect(chat).toBeVisible();
     await expectCreatorShellUsable(page);
     await expectNoInternalOverflow(chat);
-    await expect(chat.getByRole('heading', { name: 'Chat', exact: true })).toBeVisible();
+    await expect(page.locator('.ds-page-heading h1')).toHaveText('Chat');
     await expect(page.getByRole('option', { name: new RegExp(state.broadcastTitle) })).toHaveCount(1);
     const chatSelects = chat.locator('select:visible');
     for (let index = 0; index < await chatSelects.count(); index += 1) {
@@ -180,7 +180,7 @@ test('Chat, Studio Lobby and Recordings pass the exact responsive matrix', async
     await page.goto('/creator/studio-lobby');
     await expect(page.getByRole('heading', { name: 'Studio Lobby and call-ins' })).toBeVisible();
     await expectCreatorShellUsable(page);
-    const openLobby = page.getByRole('button', { name: 'Open Studio Lobby', exact: true });
+    const openLobby = page.locator('#ds-main-content').getByRole('button', { name: 'Open Studio Lobby', exact: true });
     await expectTouchTarget(openLobby);
     await openLobby.click();
     const lobby = page.locator('.backstage-workspace');

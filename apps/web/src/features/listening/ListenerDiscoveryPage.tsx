@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
   PublicBroadcast,
   PublicBroadcastListResponse,
@@ -111,33 +111,33 @@ export function ListenerDiscoveryPage() {
   const [broadcasts, setBroadcasts] = useState<PublicBroadcast[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [offline, setOffline] = useState(false);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<DiscoveryFilter>(initialLiveOnly ? 'live' : 'all');
 
-  useEffect(() => {
-    let active = true;
-    async function refresh() {
-      try {
-        const response = await apiRequest<PublicBroadcastListResponse>(
-          '/api/v1/broadcasts?limit=40',
-        );
-        if (!active) return;
-        setBroadcasts(response.broadcasts);
-        setError('');
-      } catch (requestError) {
-        if (active) setError(errorMessage(requestError));
-      } finally {
-        if (active) setLoading(false);
-      }
+  const refresh = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
+    setError('');
+    setOffline(false);
+    try {
+      const response = await apiRequest<PublicBroadcastListResponse>('/api/v1/broadcasts?limit=40');
+      setBroadcasts(response.broadcasts);
+    } catch (requestError) {
+      setBroadcasts([]);
+      setOffline(!navigator.onLine);
+      setError(errorMessage(requestError));
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    void refresh();
+  useEffect(() => {
+    void refresh(true);
     const timer = window.setInterval(() => void refresh(), 15_000);
     return () => {
-      active = false;
       window.clearInterval(timer);
     };
-  }, []);
+  }, [refresh]);
 
   const categories = useMemo(() => Array.from(new Set(
     broadcasts
@@ -214,9 +214,9 @@ export function ListenerDiscoveryPage() {
       {error ? (
         <StatePanel
           actionLabel="Retry"
-          kind="error"
-          onAction={() => window.location.reload()}
-          title="Public broadcasts could not be loaded"
+          kind={offline ? 'offline' : 'error'}
+          onAction={() => void refresh(true)}
+          title={offline ? 'You are offline' : 'Public broadcasts could not be loaded'}
         >
           {error}
         </StatePanel>

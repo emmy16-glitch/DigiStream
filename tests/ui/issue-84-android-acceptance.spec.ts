@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
 
 const password = 'Playwright-creator-password-123!';
 
@@ -36,7 +36,7 @@ async function expectNoHorizontalOverflow(page: Page) {
   expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
 }
 
-async function expectVisibleAboveCreatorChrome(page: Page, locator: ReturnType<Page['locator']>) {
+async function expectVisibleAboveCreatorChrome(page: Page, locator: Locator) {
   const nav = page.locator('.ds-creator-mobile-nav');
   await locator.scrollIntoViewIfNeeded();
 
@@ -52,21 +52,39 @@ async function expectVisibleAboveCreatorChrome(page: Page, locator: ReturnType<P
   expect(targetBox!.y + targetBox!.height).toBeLessThanOrEqual(lowerBoundary + 1);
 }
 
+async function openMobileAccountMenu(page: Page) {
+  const accountMenu = page.locator('.ds-mobile-account-menu');
+  const accountTrigger = accountMenu.getByLabel('Open account and workspace menu');
+  await expect(accountTrigger).toBeVisible();
+  const triggerBox = await accountTrigger.boundingBox();
+  expect(triggerBox).not.toBeNull();
+  expect(triggerBox!.height).toBeGreaterThanOrEqual(44);
+  await accountTrigger.click();
+  const popover = accountMenu.locator('.ds-mobile-account-popover');
+  await expect(popover).toBeVisible();
+  return popover;
+}
+
+function desktopSignOut(page: Page) {
+  return page.locator('.ds-creator-account-area > .ds-topbar-actions:visible').getByRole('button', { name: /^Sign out/ });
+}
+
 test('Android portrait and short landscape keep account, forms and creator chrome usable', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'android-chrome');
   await createCreatorAtChannelSetup(page, testInfo);
 
-  const accountArea = page.getByLabel('Signed-in account actions');
-  const signOut = page.getByRole('button', { name: 'Sign out' });
   const channelName = page.getByLabel('Channel name');
   const continueHeading = page.getByRole('heading', { name: 'Create your first channel' });
 
-  await expect(accountArea).toContainText('Account');
-  await expect(accountArea).toContainText('Signed in as');
-  await expect(signOut).toBeVisible();
-  const portraitSignOutBox = await signOut.boundingBox();
+  const accountPopover = await openMobileAccountMenu(page);
+  await expect(accountPopover).toContainText('Signed in as');
+  const portraitSignOut = accountPopover.getByRole('button', { name: /^Sign out/ });
+  await expect(portraitSignOut).toBeVisible();
+  const portraitSignOutBox = await portraitSignOut.boundingBox();
   expect(portraitSignOutBox).not.toBeNull();
   expect(portraitSignOutBox!.height).toBeGreaterThanOrEqual(44);
+  await page.getByLabel('Open account and workspace menu').click();
+
   await expect(page.locator('.ds-creator-mobile-nav')).toBeVisible();
   await expectVisibleAboveCreatorChrome(page, channelName);
   await expectNoHorizontalOverflow(page);
@@ -74,7 +92,11 @@ test('Android portrait and short landscape keep account, forms and creator chrom
   await page.setViewportSize({ width: 844, height: 390 });
   await expect(continueHeading).toBeVisible();
   await expect(channelName).toBeVisible();
-  await expect(signOut).toBeVisible();
+  const landscapeSignOut = desktopSignOut(page);
+  await expect(landscapeSignOut).toBeVisible();
+  const landscapeSignOutBox = await landscapeSignOut.boundingBox();
+  expect(landscapeSignOutBox).not.toBeNull();
+  expect(landscapeSignOutBox!.height).toBeGreaterThanOrEqual(44);
   await expectVisibleAboveCreatorChrome(page, channelName);
   await expectNoHorizontalOverflow(page);
 
@@ -98,9 +120,6 @@ test('Android creator form keeps long text and the primary action clear when the
   await description.fill(longDescription);
   await expectNoHorizontalOverflow(page);
 
-  // Android's on-screen keyboard reduces the visual layout available to the
-  // page. Playwright cannot summon a physical IME, so shrink the viewport to
-  // the keyboard-constrained height while the final form control is focused.
   await description.focus();
   await page.setViewportSize({ width: 412, height: 520 });
 
@@ -124,28 +143,23 @@ test('Android desktop-site and 200% browser zoom retain obvious account access a
   test.skip(testInfo.project.name !== 'android-desktop-site');
   await createCreatorAtChannelSetup(page, testInfo);
 
-  const accountArea = page.getByLabel('Signed-in account actions');
-  const signOut = page.getByRole('button', { name: 'Sign out' });
-  await expect(accountArea).toContainText('Account');
-  await expect(accountArea).toContainText('Signed in as');
-  await expect(signOut).toBeVisible();
+  const desktopAccountArea = page.getByLabel('Signed-in account actions');
+  await expect(desktopAccountArea).toContainText('Account');
+  await expect(desktopAccountArea).toContainText('Signed in as');
+  await expect(desktopSignOut(page)).toBeVisible();
 
-  // Native 200% browser zoom halves the effective CSS layout viewport and
-  // re-evaluates responsive media queries. CSS `zoom: 2` does not: it scales
-  // rendered boxes while leaving media-query evaluation at the unzoomed
-  // 980px desktop-site viewport, so it tests a different layout mechanism.
-  // Keep the Android desktop-site UA/context and emulate the browser-zoom
-  // layout viewport directly: 980x1740 at 200% becomes 490x870 CSS pixels.
   await page.setViewportSize({ width: 490, height: 870 });
 
   const channelName = page.getByLabel('Channel name');
   await expect(page.getByRole('heading', { name: 'Create your first channel' })).toBeVisible();
   await channelName.scrollIntoViewIfNeeded();
   await expect(channelName).toBeVisible();
-  await expect(signOut).toBeVisible();
   await expect(page.locator('.ds-creator-mobile-nav')).toBeVisible();
   await expectVisibleAboveCreatorChrome(page, channelName);
 
+  const accountPopover = await openMobileAccountMenu(page);
+  const signOut = accountPopover.getByRole('button', { name: /^Sign out/ });
+  await expect(signOut).toBeVisible();
   const signOutBox = await signOut.boundingBox();
   expect(signOutBox).not.toBeNull();
   expect(signOutBox!.height).toBeGreaterThanOrEqual(44);

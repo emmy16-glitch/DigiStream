@@ -140,6 +140,10 @@ export function CreatorBackstageWorkspace({
     () => broadcasts.find((item) => item.id === broadcastId) ?? null,
     [broadcastId, broadcasts],
   );
+  const availableBroadcasts = broadcasts.filter((item) =>
+    ['scheduled', 'starting', 'live', 'reconnecting'].includes(item.status),
+  );
+  const draftBroadcast = broadcasts.find((item) => item.status === 'draft') ?? null;
   const canCreateInvitations =
     selectedOrganisation?.role === 'owner' ||
     selectedOrganisation?.role === 'admin' ||
@@ -248,12 +252,17 @@ export function CreatorBackstageWorkspace({
         const available = response.broadcasts.filter((item) =>
           ['scheduled', 'starting', 'live', 'reconnecting'].includes(item.status),
         );
-        setBroadcasts(available);
-        setBroadcastId((current) =>
-          available.some((item) => item.id === current)
-            ? current
-            : available[0]?.id || '',
-        );
+        setBroadcasts(response.broadcasts);
+        setBroadcastId((current) => {
+          if (available.some((item) => item.id === current)) return current;
+          const fallback = available[0];
+          if (current && fallback) {
+            setMessage(`The requested broadcast is no longer eligible. ${fallback.title} was selected instead; review it before taking action.`);
+          } else if (current) {
+            setMessage('The requested broadcast is no longer eligible for Studio Lobby controls.');
+          }
+          return fallback?.id || '';
+        });
       })
       .catch((requestError) => setError(readableError(requestError)));
   }, [channelId, organisationId]);
@@ -574,7 +583,7 @@ export function CreatorBackstageWorkspace({
                   value={broadcastId}
                 >
                   <option value="">Select active broadcast</option>
-                  {broadcasts.map((broadcast) => (
+                  {availableBroadcasts.map((broadcast) => (
                     <option key={broadcast.id} value={broadcast.id}>
                       {broadcast.title} · {broadcast.status}
                     </option>
@@ -586,7 +595,11 @@ export function CreatorBackstageWorkspace({
 
             <main className="backstage-panels">
               {!selectedBroadcast ? (
-                <div className="backstage-empty">Select a scheduled or active broadcast.</div>
+                <div className="backstage-empty">
+                  <strong>{draftBroadcast ? `${draftBroadcast.title} is still a draft` : availableBroadcasts.length === 0 ? 'No eligible Studio Lobby broadcast' : 'Select a broadcast'}</strong>
+                  <span>{draftBroadcast ? 'Finish setup or schedule it from Broadcasts before opening Lobby controls.' : 'Only scheduled or active broadcasts can load real guest and call-in controls.'}</span>
+                  <a href="/creator/broadcasts">{draftBroadcast ? 'Continue broadcast setup' : 'Go to Broadcasts'}</a>
+                </div>
               ) : (
                 <>
                   <section className="backstage-panel backstage-invite-panel">

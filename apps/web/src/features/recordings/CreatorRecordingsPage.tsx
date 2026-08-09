@@ -462,7 +462,7 @@ export function CreatorRecordingsPage({
           ) : null}
 
           {recordings.length === 0 ? (
-            <StatePanel kind="empty" title="No recordings yet">
+            <StatePanel compact kind="empty" title="No recordings yet">
               Completed broadcasts appear here after a real recording job is created. Echoo does not invent replay data.
             </StatePanel>
           ) : (

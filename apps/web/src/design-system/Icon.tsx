@@ -14,6 +14,7 @@ export type IconName =
   | 'headphones'
   | 'home'
   | 'info'
+  | 'menu'
   | 'microphone'
   | 'notification'
   | 'offline'
@@ -60,6 +61,8 @@ function IconPaths({ name }: { name: IconName }) {
       return <><path d="m3 11 9-8 9 8" /><path d="M5 10v11h14V10M9 21v-7h6v7" /></>;
     case 'info':
       return <><circle cx="12" cy="12" r="9" /><path d="M12 11v6" /><path d="M12 7h.01" /></>;
+    case 'menu':
+      return <><path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" /></>;
     case 'microphone':
       return <><rect x="8" y="3" width="8" height="13" rx="4" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" /></>;
     case 'notification':

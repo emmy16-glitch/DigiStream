@@ -483,7 +483,7 @@
   }
 
   .workspace-onboarding:has(#creator-intent-title) #creator-intent-title {
-    font-size: clamp(2.05rem, 12vw, 3rem);
+    font-size: clamp(1.85rem, 9vw, 2.5rem);
   }
 
   .workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions {
@@ -491,7 +491,7 @@
   }
 
   .workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button {
-    min-height: 92px;
+    min-height: 68px;
     border-radius: 18px;
   }
 
@@ -502,7 +502,7 @@
   .workspace-onboarding:has(#workspace-onboarding-title) #workspace-onboarding-title,
   .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) #create-channel-title,
   .creator-broadcasts-page:has([aria-label='First broadcast choices']) #create-broadcast-title {
-    font-size: clamp(1.9rem, 10vw, 2.6rem);
+    font-size: clamp(1.7rem, 8vw, 2.25rem);
   }
 
   .workspace-onboarding:has(#workspace-onboarding-title) form,
