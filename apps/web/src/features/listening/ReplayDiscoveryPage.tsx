@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { PublicReplay, PublicReplayListResponse } from '@digistream/contracts';
 import { StatePanel, StatusBadge } from '../../design-system/components';
 import { Icon } from '../../design-system/Icon';
@@ -84,29 +84,25 @@ export function ReplayDiscoveryPage() {
   const [replays, setReplays] = useState<PublicReplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [offline, setOffline] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    async function load() {
-      try {
-        const response = await apiRequest<PublicReplayListResponse>(
-          '/api/v1/replays?limit=60',
-        );
-        if (!active) return;
-        setReplays(response.replays);
-        setError('');
-      } catch (requestError) {
-        if (active) setError(readableError(requestError));
-      } finally {
-        if (active) setLoading(false);
-      }
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    setOffline(false);
+    try {
+      const response = await apiRequest<PublicReplayListResponse>('/api/v1/replays?limit=60');
+      setReplays(response.replays);
+    } catch (requestError) {
+      setReplays([]);
+      setOffline(!navigator.onLine);
+      setError(readableError(requestError));
+    } finally {
+      setLoading(false);
     }
-
-    void load();
-    return () => {
-      active = false;
-    };
   }, []);
+
+  useEffect(() => { void load(); }, [load]);
 
   return (
     <div className="replay-discovery-page">
@@ -128,9 +124,9 @@ export function ReplayDiscoveryPage() {
         {error ? (
           <StatePanel
             actionLabel="Retry"
-            kind="error"
-            onAction={() => window.location.reload()}
-            title="Published replays could not be loaded"
+            kind={offline ? 'offline' : 'error'}
+            onAction={() => void load()}
+            title={offline ? 'You are offline' : 'Published replays could not be loaded'}
           >
             {error}
           </StatePanel>

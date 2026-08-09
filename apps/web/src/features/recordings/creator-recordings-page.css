@@ -398,6 +398,8 @@
     gap: 1.15rem;
   }
 
+  .creator-recordings-page > .ds-state-panel { min-height: auto; padding: 1rem; }
+
   .recordings-reference-header {
     align-items: stretch;
   }

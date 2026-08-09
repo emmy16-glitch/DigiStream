@@ -32,6 +32,7 @@
   font-size: clamp(2rem, 5vw, 4.5rem);
   line-height: 0.98;
   letter-spacing: -0.045em;
+  color: var(--ds-text-primary, #10233f);
 }
 
 .replay-discovery-hero p,
@@ -61,7 +62,11 @@
   margin: 0.25rem 0 0;
   font-size: clamp(1.45rem, 2.5vw, 2.2rem);
   letter-spacing: -0.025em;
+  color: var(--ds-text-primary, #10233f);
 }
+
+.replay-discovery-page .listener-kicker { color: var(--ds-accent, #1769d2); }
+.replay-discovery-section > header > span { color: var(--ds-text-secondary, #4d6078); }
 
 .replay-discovery-section > header > span {
   color: var(--ds-text-tertiary);
@@ -318,6 +323,9 @@
     padding: 1.2rem;
     border-radius: var(--ds-radius-xl);
   }
+
+  .replay-discovery-hero h1 { font-size: clamp(1.8rem, 9vw, 2.5rem); line-height: 1.05; }
+  .replay-discovery-section .ds-state-panel { min-height: auto; padding: 1rem; }
 
   .replay-discovery-grid,
   .replay-details-grid {

@@ -48,6 +48,8 @@ export function CreatorShell({
   workspaceSelectionDisabled?: boolean;
 }) {
   const visibleNavigation = visibleCreatorNavigation(navigation);
+  const primaryMobileNavigation = visibleNavigation.slice(0, 4);
+  const secondaryMobileNavigation = visibleNavigation.slice(4);
   const mainContentRef = useRef<HTMLElement>(null);
   const previousActiveLabel = useRef(activeLabel);
   const canSwitchWorkspace =
@@ -141,6 +143,18 @@ export function CreatorShell({
               </span>
             </div>
             <div className="ds-topbar-actions">{actions}</div>
+            <details className="ds-mobile-account-menu">
+              <summary aria-label="Open account and workspace menu">
+                <Icon name="user" />
+              </summary>
+              <div className="ds-mobile-account-popover">
+                <div>
+                  <strong>{workspaceName}</strong>
+                  <span>Signed in as {workspaceDescription}</span>
+                </div>
+                <div className="ds-mobile-account-actions">{actions}</div>
+              </div>
+            </details>
           </div>
         ) : null}
       </header>
@@ -155,7 +169,7 @@ export function CreatorShell({
       </main>
 
       <nav className="ds-creator-mobile-nav" aria-label="Creator mobile navigation">
-        {visibleNavigation.map((item) => {
+        {primaryMobileNavigation.map((item) => {
           const active = item.label === activeLabel;
           return (
             <button
@@ -170,6 +184,31 @@ export function CreatorShell({
             </button>
           );
         })}
+        {secondaryMobileNavigation.length > 0 ? (
+          <details className="ds-creator-mobile-more">
+            <summary aria-label="More creator destinations">
+              <Icon name="menu" />
+              <span>More</span>
+            </summary>
+            <div className="ds-creator-mobile-more-menu">
+              {secondaryMobileNavigation.map((item) => {
+                const active = item.label === activeLabel;
+                return (
+                  <button
+                    aria-current={active ? 'page' : undefined}
+                    className={active ? 'active' : ''}
+                    key={item.label}
+                    onClick={item.onSelect}
+                    type="button"
+                  >
+                    <Icon name={item.icon} />
+                    <span>{creatorFacingLabel(item.label)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </details>
+        ) : null}
       </nav>
     </div>
   );

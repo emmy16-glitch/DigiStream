@@ -1268,9 +1268,10 @@ export function CreatorBroadcastStudio({
               <strong>{failure?.title ?? 'Studio action needs attention'}</strong>
               <span>{failure?.message ?? error}</span>
               {failure ? <span className="studio-global-alert-recovery">{failure.recovery}</span> : null}
+              {failure && !liveCritical ? <span>The broadcast did not start from this failed Studio action.</span> : null}
               {failure ? (
                 <details>
-                  <summary>Diagnostics</summary>
+                  <summary>Technical details</summary>
                   <small>
                     Stage: {failure.stage}
                     {failure.code ? ` · Code: ${failure.code}` : ''}

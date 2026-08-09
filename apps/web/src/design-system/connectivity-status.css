@@ -17,6 +17,25 @@
   overflow-wrap: anywhere;
 }
 
+.echoo-connectivity-status--restored {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.echoo-connectivity-status--restored button {
+  min-width: 44px;
+  min-height: 44px;
+  padding-inline: 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 0.5rem;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+}
+
 .echoo-connectivity-status--offline {
   border-color: var(--echoo-danger, #a32929);
 }
@@ -29,6 +48,12 @@
   .echoo-connectivity-status {
     inset-block-start: calc(env(safe-area-inset-top, 0px) + 0.375rem);
     padding-block: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .echoo-connectivity-status--restored {
+    align-items: flex-start;
   }
 }
 

@@ -69,6 +69,7 @@ export function CreatorChatWorkspace() {
     () => broadcasts.find((broadcast) => broadcast.id === broadcastId) ?? null,
     [broadcastId, broadcasts],
   );
+  const draftBroadcast = broadcasts.find((broadcast) => broadcast.status === 'draft') ?? null;
 
   useEffect(() => {
     setCheckingSession(true);
@@ -299,7 +300,14 @@ export function CreatorChatWorkspace() {
               ) : (
                 <div className="creator-chat-broadcast-summary">
                   <strong>No chat-capable broadcast selected</strong>
-                  <small>Select a scheduled, active or completed broadcast to open its real conversation history.</small>
+                  <small>
+                    {draftBroadcast
+                      ? `${draftBroadcast.title} is still a draft. Finish its setup or schedule it before opening chat.`
+                      : broadcasts.length === 0
+                        ? 'Create a broadcast before opening a real conversation.'
+                        : 'Select a scheduled, active or completed broadcast to open its real conversation history.'}
+                  </small>
+                  <a href="/creator/broadcasts">{draftBroadcast ? 'Continue broadcast setup' : 'Go to Broadcasts'}</a>
                 </div>
               )}
             </div>
@@ -322,7 +330,7 @@ export function CreatorChatWorkspace() {
                 variant="creator"
               />
             ) : (
-              <div className="creator-chat-loading creator-chat-empty-panel">
+              <div className="creator-chat-empty-panel">
                 <Icon name="chat" size={28} />
                 <strong>Select a broadcast to open its conversation.</strong>
                 <span>No placeholder messages or audience counts are shown.</span>

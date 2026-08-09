@@ -73,6 +73,13 @@
   line-height: var(--ds-leading-body);
 }
 
+.studio-signal-temporal-note {
+  display: block;
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  line-height: 1.45;
+}
+
 .studio-global-alert-recovery {
   color: var(--ds-text-primary) !important;
   font-weight: var(--ds-weight-medium);

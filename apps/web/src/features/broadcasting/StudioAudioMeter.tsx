@@ -53,6 +53,11 @@ export function StudioAudioMeter({
         <span>{finiteDecibels ? `${decibels.toFixed(1)} dBFS` : 'No reading'}</span>
       </div>
       <p>{presentation.guidance}</p>
+      {state === 'clipping' ? (
+        <small className="studio-signal-temporal-note">
+          Recent clipping reflects an earlier peak. The current dBFS reading above continues to update independently.
+        </small>
+      ) : null}
     </div>
   );
 }

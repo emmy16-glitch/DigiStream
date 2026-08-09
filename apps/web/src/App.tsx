@@ -608,7 +608,17 @@ function CreatorDashboard({
       />
     );
   } else if (activeNav === 'Studio Lobby') {
-    pageContent = (
+    const lobbyBroadcast = overviewState.selectedBroadcast;
+    const lobbyEligible = Boolean(lobbyBroadcast && overviewState.canOpenBackstage);
+    pageContent = loadingOverviewState ? (
+      <StatePanel kind="loading" title="Loading Studio Lobby eligibility">
+        Echoo is checking the selected workspace's real broadcast lifecycle.
+      </StatePanel>
+    ) : overviewStateError ? (
+      <StatePanel actionLabel="Retry" kind="error" onAction={() => void loadOverviewState()} title="Studio Lobby eligibility could not load">
+        {overviewStateError}
+      </StatePanel>
+    ) : (
       <>
         <PageIntro title="Studio Lobby and call-ins">
           Review listener requests, create guest invitations, admit waiting participants and manage who can join the live conversation.
@@ -616,17 +626,29 @@ function CreatorDashboard({
         <section className="workspace-action-card">
           <div>
             <StatusBadge tone="info">Guest and call-in moderation</StatusBadge>
-            <h2>Open the Studio Lobby</h2>
+            <h2>{lobbyEligible ? `Open ${lobbyBroadcast?.title ?? 'the broadcast'} Lobby` : 'Studio Lobby is not available yet'}</h2>
             <p>
-              Select a broadcast, review pending listener requests and approve a caller to generate a secure guest link. The same workspace also manages invited guests and connected participants for {selectedOrganisation.name}.
+              {lobbyEligible
+                ? `${lobbyBroadcast?.title ?? 'The selected broadcast'} is ${lobbyBroadcast?.status}. Review real call-ins, invited guests and connected participants.`
+                : lobbyBroadcast?.status === 'draft'
+                  ? `${lobbyBroadcast.title} is still a draft. Finish setup or schedule the broadcast before opening its Studio Lobby.`
+                  : broadcasts.length === 0
+                    ? 'Create a broadcast before opening a Studio Lobby.'
+                    : 'Only scheduled, starting, live or reconnecting broadcasts can open the Studio Lobby.'}
             </p>
           </div>
-          <Button icon="audience" onClick={() => setBackstageOpen(true)} variant="primary">
-            Open Studio Lobby
-          </Button>
+          {lobbyEligible ? (
+            <Button icon="audience" onClick={() => setBackstageOpen(true)} variant="primary">Open Studio Lobby</Button>
+          ) : (
+            <Button icon="broadcast" onClick={() => selectNavigation('Broadcasts')} variant="primary">
+              {lobbyBroadcast?.status === 'draft' ? 'Continue broadcast setup' : 'Go to Broadcasts'}
+            </Button>
+          )}
         </section>
-        <StatePanel kind="empty" title="No broadcast selected for Studio Lobby">
-          Open the Studio Lobby to select a scheduled or active broadcast. Pending requests, guest links and participant controls load only from the selected broadcast.
+        <StatePanel compact kind="empty" title={lobbyEligible ? `${lobbyBroadcast?.title} is eligible` : 'No eligible broadcast selected'}>
+          {lobbyEligible
+            ? 'The Lobby will recheck this broadcast before loading guest and participant controls.'
+            : 'Lobby controls remain unavailable until the backend reports an eligible lifecycle state.'}
         </StatePanel>
       </>
     );
