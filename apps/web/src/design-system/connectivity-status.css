@@ -7,11 +7,12 @@
   margin-inline: auto;
   box-sizing: border-box;
   padding: 0.75rem 1rem;
-  border: 1px solid currentColor;
-  border-radius: 0.75rem;
-  background: var(--echoo-surface, #ffffff);
-  color: var(--echoo-text, #172018);
-  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 18%);
+  border: var(--ds-border);
+  border-radius: 0;
+  background: var(--ds-surface);
+  color: var(--ds-ink);
+  box-shadow: var(--ds-shadow-control);
+  font-family: var(--ds-font-mono);
   font-size: 0.9375rem;
   line-height: 1.4;
   overflow-wrap: anywhere;
@@ -22,26 +23,31 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  border-color: var(--ds-success-foreground);
+  background: var(--ds-success-soft);
 }
 
 .echoo-connectivity-status--restored button {
   min-width: 44px;
   min-height: 44px;
   padding-inline: 0.75rem;
-  border: 1px solid currentColor;
-  border-radius: 0.5rem;
-  color: inherit;
-  background: transparent;
-  font: inherit;
+  border: var(--ds-border);
+  border-radius: 0;
+  color: var(--ds-ink);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-small);
+  font-family: var(--ds-font-mono);
   font-weight: 700;
 }
 
-.echoo-connectivity-status--offline {
-  border-color: var(--echoo-danger, #a32929);
+.echoo-connectivity-status--restored button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ds-ink);
 }
 
-.echoo-connectivity-status--restored {
-  border-color: var(--echoo-success, #267a43);
+.echoo-connectivity-status--offline {
+  border-color: var(--ds-danger);
+  background: var(--ds-danger-soft);
 }
 
 @media (max-height: 480px) {
@@ -60,5 +66,9 @@
 @media (prefers-reduced-motion: reduce) {
   .echoo-connectivity-status {
     scroll-behavior: auto;
+  }
+
+  .echoo-connectivity-status--restored button:active {
+    transform: none;
   }
 }
