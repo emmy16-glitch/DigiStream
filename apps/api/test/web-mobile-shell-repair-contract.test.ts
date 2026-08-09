@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
+const appSourceUrl = new URL('../../web/src/App.tsx', import.meta.url);
 const shellSourceUrl = new URL('../../web/src/design-system/shells.tsx', import.meta.url);
 const shellStylesUrl = new URL('../../web/src/design-system/creator-shell.css', import.meta.url);
 const connectivitySourceUrl = new URL('../../web/src/design-system/ConnectivityStatus.tsx', import.meta.url);
@@ -38,6 +39,18 @@ test('mobile account actions move behind one labelled profile affordance without
   assert.match(
     source,
     /ds-mobile-account-popover[\s\S]*canSwitchWorkspace \? workspaceSelect\(\) : null/,
+  );
+});
+
+test('Studio Lobby direct routes load lifecycle state before deciding eligibility', async () => {
+  const app = await readFile(appSourceUrl, 'utf8');
+  assert.match(
+    app,
+    /activeNav === 'Overview' \|\| activeNav === 'Studio Lobby'\) void loadOverviewState\(\)/,
+  );
+  assert.match(
+    app,
+    /setLoadingOverviewState\(activeNav === 'Overview' \|\| activeNav === 'Studio Lobby'\)/,
   );
 });
 
