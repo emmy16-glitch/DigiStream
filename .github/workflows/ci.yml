@@ -92,51 +92,8 @@ jobs:
       - name: Apply database migrations
         run: npm run db:migrate
 
-      - name: Verify design skills
-        id: skills
-        continue-on-error: true
-        run: npm run skills:verify
-
-      - name: Typecheck
-        id: typecheck
-        continue-on-error: true
-        run: npm run typecheck
-
-      - name: Test
-        id: test
-        continue-on-error: true
-        shell: bash
-        run: |
-          set +e
-          npm run test > /tmp/digistream-test-output.log 2>&1
-          status=$?
-          cat /tmp/digistream-test-output.log
-          if [ "$status" -ne 0 ]; then
-            excerpt="$(grep -n -B 25 -A 45 -E '^not ok [0-9]+ ' /tmp/digistream-test-output.log | head -c 7000)"
-            if [ -z "$excerpt" ]; then
-              excerpt="$(grep -n -B 20 -A 40 -E 'AssertionError|ERR_ASSERTION|error:' /tmp/digistream-test-output.log | head -c 7000)"
-            fi
-            message="$(printf '%s' "$excerpt" | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
-            echo "::error title=API failing test::$message"
-          fi
-          exit "$status"
-
-      - name: Build
-        id: build
-        continue-on-error: true
-        run: npm run build
-
-      - name: Enforce validation result
-        if: always()
-        run: |
-          echo "skills=${{ steps.skills.outcome }}"
-          echo "typecheck=${{ steps.typecheck.outcome }}"
-          echo "test=${{ steps.test.outcome }}"
-          echo "build=${{ steps.build.outcome }}"
-          test "${{ steps.skills.outcome }}" = success
-          test "${{ steps.typecheck.outcome }}" = success
-          test "${{ steps.test.outcome }}" = success
-          test "${{ steps.build.outcome }}" = success
+      - name: Validate workspace
+        run: npm run check
 
   ui-smoke:
     name: Playwright responsive creator smoke
