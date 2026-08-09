@@ -1,64 +1,137 @@
-# DigiStream Approved Screen Reference Index
+# DigiStream Approved 50-Screen Reference Index
 
-The ten approved visual references supplied on 31 July 2026 are preserved in the companion `DigiStream_Design_Source_Pack.zip`. Their dimensions and SHA-256 fingerprints are recorded in `reference/MANIFEST.md` so the originals can be verified after copying them into a design tool, repository asset store or long-term archive.
+Status: **authoritative visual reference inventory**
 
-They define DigiStream's approved visual direction, but they are not evidence that all displayed data and capabilities exist. Sample organisations, dates, people, metrics, verification marks, subscription plans and health values are illustrative.
+The approved final DigiStream redesign contains 50 distinct reference screens. These images define composition, hierarchy, density, spacing, typography character, component geometry, color language, and overall visual identity.
+
+They are not evidence that every sample metric, person, date, role, recording, replay, health value, or capability exists in production. Product state must remain API-backed and truthful.
+
+## Mandatory use
+
+For UI implementation, use the references together with:
+
+1. `DIGISTREAM_UI_CONSTITUTION.md` — visual system and reusable rules;
+2. `DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md` — Codex/Claude implementation behavior;
+3. `DESIGN_TOKENS.md` — normalized production tokens;
+4. root product/lifecycle/quality documents — authoritative product truth;
+5. the existing implementation — responsibilities that should be realigned rather than duplicated.
+
+## Visual identity represented by all references
+
+- cream dotted background;
+- dusty pink accents;
+- bold near-black grotesk headings;
+- monospace/typewriter system text;
+- square cards and controls;
+- thin black borders;
+- hard black offset shadows;
+- restrained semantic colors;
+- generous vertical spacing;
+- no legacy blue/white visual system.
 
 ## Screen map
 
-| # | Recommended file name | Surface | Primary purpose |
-|---|---|---|---|
-| 01 | `01-guest-waiting-room.png` | Guest | Invitation acceptance, microphone readiness and host admission |
-| 02 | `02-public-live-player.png` | Listener | Immersive live playback, recovery, sharing and request to speak |
-| 03 | `03-listener-discovery.png` | Listener | Discover live, upcoming and featured audio |
-| 04 | `04-creator-settings.png` | Creator | Workspace, branding, defaults, notifications, roles and security |
-| 05 | `05-creator-analytics.png` | Creator | Audience, content and stream-quality analytics |
-| 06 | `06-recordings-library.png` | Creator | Recording search, playback, metadata, publishing and retention actions |
-| 07 | `07-guests-backstage.png` | Creator | Guest admission, live stage, listener requests and backstage communication |
-| 08 | `08-live-broadcast-control.png` | Creator | Active broadcast monitoring, controls, audience and event log |
-| 09 | `09-creator-overview.png` | Creator | Operational dashboard and current-broadcast summary |
-| 10 | `10-broadcast-studio.png` | Creator | Broadcast configuration, audio check, scheduling and go-live readiness |
+| # | File | Surface / purpose |
+|---:|---|---|
+| 01 | `01_creator_overview.png` | Creator overview dashboard |
+| 02 | `02_broadcasts.png` | Creator broadcasts management |
+| 03 | `03_studio_lobby.png` | Pre-live Studio Lobby and readiness |
+| 04 | `04_live_chat.png` | Creator live chat / moderation |
+| 05 | `05_public_landing.png` | Public DigiStream landing page |
+| 06 | `06_login.png` | Sign-in flow |
+| 07 | `07_signup_choice.png` | Account creation method choice |
+| 08 | `08_signup_form.png` | Full account creation form |
+| 09 | `09_creator_intent.png` | Creator/listener intent selection |
+| 10 | `10_create_organisation.png` | Creator onboarding — organisation |
+| 11 | `11_create_channel.png` | Creator onboarding — channel |
+| 12 | `12_create_broadcast.png` | Creator onboarding — first broadcast |
+| 13 | `13_listener_discover.png` | Listener discovery |
+| 14 | `14_replay_library.png` | Replay library |
+| 15 | `15_replay_player.png` | Replay playback |
+| 16 | `16_live_listener.png` | Live listener player |
+| 17 | `17_guest_join.png` | Guest join flow |
+| 18 | `18_admin_users.png` | Admin users |
+| 19 | `19_my_library.png` | Listener personal library |
+| 20 | `20_public_channel.png` | Public channel profile |
+| 21 | `21_profile_settings.png` | Profile settings |
+| 22 | `22_active_sessions.png` | Security / active sessions |
+| 23 | `23_notifications.png` | Notification preferences |
+| 24 | `24_organisation_settings.png` | Organisation settings |
+| 25 | `25_team_invitations.png` | Team members and invitations |
+| 26 | `26_accept_invitation.png` | Invitation acceptance |
+| 27 | `27_channel_settings.png` | Channel settings |
+| 28 | `28_forgot_password.png` | Forgot-password flow |
+| 29 | `29_reset_password.png` | Password reset |
+| 30 | `30_verify_email.png` | Email verification |
+| 31 | `31_public_creator_profile.png` | Public creator profile |
+| 32 | `32_account_workspace_menu.png` | Account/workspace switcher |
+| 33 | `33_end_broadcast_confirmation.png` | End-broadcast confirmation |
+| 34 | `34_admin_suspend_confirmation.png` | Admin suspend confirmation |
+| 35 | `35_backstage_creator_dashboard.png` | Backstage creator operations |
+| 36 | `36_broadcast_studio_dashboard.png` | Broadcast Studio operational dashboard |
+| 37 | `37_recordings_dashboard.png` | Recordings workspace |
+| 38 | `38_mobile_analytics_dashboard.png` | Mobile analytics |
+| 39 | `39_studio_reconnecting_live_dashboard.png` | Studio reconnecting/recovery state |
+| 40 | `40_faith_broadcast_countdown.png` | Scheduled broadcast countdown |
+| 41 | `41_request_to_speak_interface.png` | Listener request-to-speak interaction |
+| 42 | `42_live_listening_dashboard.png` | Live listening dashboard |
+| 43 | `43_live_broadcasts_app_interface.png` | Live broadcasts browsing |
+| 44 | `44_about_page_ui.png` | About / product information page |
+| 45 | `45_sign_in_listening_prompt.png` | Listener sign-in prompt |
+| 46 | `46_welcome_back_sign_in_screen.png` | Returning listener sign-in |
+| 47 | `47_live_audio_dashboard.png` | Live audio listener dashboard |
+| 48 | `48_live_audio_discovery_app.png` | Live audio discovery application |
+| 49 | `49_creator_workspace_stats_dashboard.png` | Creator workspace statistics |
+| 50 | `50_creator_analytics_dashboard.png` | Creator analytics dashboard |
 
-## How to use the references
+The expected repository location for the image files is:
 
-For each implementation, use the screenshots together with:
+```text
+docs/design/reference/screens/
+```
 
-- `DIGISTREAM_PRODUCT_DESIGN_BIBLE.md` for product behaviour, hierarchy, state and responsive rules;
-- `DESIGN_TOKENS.md` for shared visual tokens;
-- the existing backend contracts for what data and actions are actually available.
+## How to interpret screenshots
 
-The screenshots are strongest at:
+Screenshots are strongest at:
 
 - overall composition;
-- navigation hierarchy;
-- density and grouping;
-- dark visual identity;
-- audio-first signals;
-- creator/listener distinction;
-- operational state transparency.
+- visual hierarchy;
+- brand personality;
+- spacing rhythm;
+- component shape;
+- typography contrast;
+- density/grouping;
+- relative action importance.
 
-The screenshots are not authoritative for:
+Screenshots are not authoritative for:
 
-- exact metrics or dates;
-- implemented subscriptions or billing;
-- enabled 2FA;
-- verification badges;
-- final role names;
-- exact provider architecture language;
-- exact colour values before contrast validation;
-- mobile layouts, which must be derived from the responsive rules.
+- whether a sample metric exists;
+- exact sample dates or names;
+- authorization;
+- role permissions;
+- lifecycle transitions;
+- provider/backend architecture;
+- whether a feature is currently production-ready.
+
+## Conflict rule
+
+If a screenshot conflicts with backend truth, authorization, privacy, lifecycle, media readiness, accessibility, or established component responsibility, preserve product truth and implement the screenshot's visual intent using the UI Constitution.
+
+Do not solve a conflict by inventing data or creating a duplicate flow.
 
 ## Required review questions
 
-Before merging a screen based on these references, confirm:
+Before merging a UI screen based on these references, confirm:
 
-1. Is every displayed value supplied by a real API or clearly marked unavailable/illustrative?
-2. Does the screen include loading, empty, error, disconnected and unauthorized states?
-3. Does it remain usable at compact mobile, tablet and desktop widths?
-4. Can all actions be completed with a keyboard?
-5. Are focus states and accessible labels present?
-6. Does status meaning survive without colour?
-7. Are destructive actions protected?
-8. Does user-facing copy hide unnecessary provider terminology?
-9. Does the layout preserve task priority rather than merely copy desktop geometry?
-10. Is visual evidence attached to the pull request?
+1. Was the exact numbered reference opened and compared at the target viewport?
+2. Does the screen preserve the cream/pink/ink/square/hard-shadow system?
+3. Is every displayed value real or intentionally omitted/unavailable?
+4. Are loading, empty, error, disconnected and unauthorized states covered?
+5. Is the correct Public, Listener, or Creator shell used?
+6. Does it remain usable on compact mobile, short-height landscape, tablet, and desktop where applicable?
+7. Can actions be completed with keyboard, touch, and mouse where supported?
+8. Are focus states and accessible labels present?
+9. Does status meaning survive without color?
+10. Was an existing surface/component realigned instead of unnecessarily duplicated?
+11. Is any visual deviation documented explicitly?
+12. Would the screen still look recognizably DigiStream if the logo were removed?
