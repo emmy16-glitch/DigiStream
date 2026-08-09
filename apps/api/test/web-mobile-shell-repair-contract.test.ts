@@ -62,9 +62,10 @@ test('Studio diagnostics and Stats preserve truth behind progressive disclosure'
   assert.match(analytics, /<summary>Playback health and advanced analytics<\/summary>/);
 });
 
-test('public discovery distinguishes offline failure and retries without reloading the page', async () => {
+test('public discovery distinguishes offline failure and retries with a visible loading state', async () => {
   const discovery = await readFile(discoverySourceUrl, 'utf8');
   assert.match(discovery, /setOffline\(!navigator\.onLine\)/);
   assert.match(discovery, /kind=\{offline \? 'offline' : 'error'\}/);
-  assert.match(discovery, /onAction=\{\(\) => void refresh\(\)\}/);
+  assert.match(discovery, /onAction=\{\(\) => void refresh\(true\)\}/);
+  assert.match(discovery, /if \(showLoading\) setLoading\(true\)/);
 });
