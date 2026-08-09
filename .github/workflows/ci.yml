@@ -112,8 +112,12 @@ jobs:
           status=$?
           cat /tmp/digistream-test-output.log
           if [ "$status" -ne 0 ]; then
-            message="$(tail -c 3500 /tmp/digistream-test-output.log | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
-            echo "::error title=API test failure::$message"
+            excerpt="$(grep -n -B 25 -A 45 -E '^not ok [0-9]+ ' /tmp/digistream-test-output.log | head -c 7000)"
+            if [ -z "$excerpt" ]; then
+              excerpt="$(grep -n -B 20 -A 40 -E 'AssertionError|ERR_ASSERTION|error:' /tmp/digistream-test-output.log | head -c 7000)"
+            fi
+            message="$(printf '%s' "$excerpt" | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
+            echo "::error title=API failing test::$message"
           fi
           exit "$status"
 
