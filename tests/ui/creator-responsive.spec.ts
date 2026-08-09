@@ -153,26 +153,14 @@ test('creator workflow stays usable at desktop and Android sizes', async ({ page
   const lobbyNavigationLabel = testInfo.project.name.includes('android') ? 'Lobby' : 'Studio Lobby';
   await expect(page.getByRole('button', { name: lobbyNavigationLabel, exact: true }).first()).toBeVisible();
   await expect(page.getByRole('button', { name: 'People', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Open Studio Lobby' }).click();
-  const backstage = page.getByRole('dialog', { name: 'Studio Lobby' });
-  await expect(backstage).toBeVisible();
-
-  if (testInfo.project.name.includes('android')) {
-    const organisationBox = await backstage.getByLabel('Organisation').boundingBox();
-    const channelBox = await backstage.getByLabel('Channel').boundingBox();
-    const broadcastBox = await backstage.getByLabel('Broadcast').boundingBox();
-    expect(organisationBox).not.toBeNull();
-    expect(channelBox).not.toBeNull();
-    expect(broadcastBox).not.toBeNull();
-    expect(channelBox!.y).toBeGreaterThan(organisationBox!.y + organisationBox!.height - 1);
-    expect(broadcastBox!.y).toBeGreaterThan(channelBox!.y + channelBox!.height - 1);
-  }
-
+  await expect(page.getByRole('heading', { name: 'Studio Lobby is not available yet' })).toBeVisible();
+  await expect(page.getByText(`${broadcastTitle} is still a draft. Finish setup or schedule the broadcast before opening its Studio Lobby.`)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Continue broadcast setup' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Studio Lobby' })).toHaveCount(0);
   await expectNoHorizontalOverflow(page);
-  await attachViewport(page, testInfo, 'studio-lobby');
-  await backstage.getByRole('button', { name: 'Close Studio Lobby' }).click();
+  await attachViewport(page, testInfo, 'studio-lobby-draft-guidance');
 
-  await page.getByRole('button', { name: 'Open creator chat' }).click();
+  await page.goto('/creator/chat');
   await expect(page).toHaveURL(/\/creator\/chat$/);
   await expect(page.getByRole('heading', { name: 'Chat', exact: true }).last()).toBeVisible();
   await expect(page.getByText('Real broadcast messages only', { exact: true })).toBeVisible();
