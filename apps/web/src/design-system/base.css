@@ -11,7 +11,9 @@ body {
   min-height: 100vh;
   margin: 0;
   color: var(--ds-text-primary);
-  background: var(--ds-canvas);
+  background-color: var(--ds-bg);
+  background-image: radial-gradient(circle, rgb(31 32 37 / 10%) 1px, transparent 1.1px);
+  background-size: 20px 20px;
   font-family: var(--ds-font-sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -41,7 +43,7 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
 }
 
 ::selection {
-  color: #ffffff;
+  color: var(--ds-ink);
   background: var(--ds-accent);
 }
 
@@ -71,8 +73,10 @@ h1, h2, h3, p {
   left: var(--ds-space-3);
   z-index: 1000;
   padding: var(--ds-space-3) var(--ds-space-4);
-  border-radius: var(--ds-radius-md);
-  color: #ffffff;
+  border: var(--ds-border);
+  border-radius: 0;
+  box-shadow: var(--ds-shadow-control);
+  color: var(--ds-ink);
   background: var(--ds-accent);
   font-weight: var(--ds-weight-bold);
   text-decoration: none;

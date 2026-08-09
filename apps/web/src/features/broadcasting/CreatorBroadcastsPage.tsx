@@ -520,9 +520,7 @@ export function CreatorBroadcastsPage({
     <div className="creator-broadcasts-page echoo-broadcasts-page">
       <header className="echoo-broadcasts-hero">
         <div>
-          <span className="echoo-broadcasts-eyebrow">{organisation.name}</span>
-          <h2>Manage broadcasts</h2>
-          <p>Create, schedule and manage broadcasts for your selected channel.</p>
+          <p>{organisation.name} · create, schedule and manage broadcasts for the selected channel.</p>
         </div>
         {canCreateBroadcast && !firstBroadcastSetup && !showBroadcastForm ? (
           <Button onClick={openBroadcastForm} variant="primary">

@@ -43,6 +43,7 @@ import {
   type StudioFailureStage,
 } from './studio-diagnostics';
 import {
+  browserMediaEndpointProblem,
   loadLiveKitClient,
   type LiveKitLocalAudioTrack,
   type LiveKitRemoteTrack,
@@ -785,6 +786,10 @@ export function CreatorBroadcastStudio({
           body: jsonBody({ participantRole: 'host' }),
         },
       );
+      const endpointProblem = browserMediaEndpointProblem(contribution.credential.url);
+      if (endpointProblem) {
+        throw new ApiClientError(503, 'MEDIA_ENDPOINT_UNREACHABLE', endpointProblem);
+      }
       joinStage = 'livekit-module';
       const sdk = await loadLiveKitClient();
       const room = new sdk.Room({

@@ -48,6 +48,7 @@
   font-weight: var(--ds-weight-medium);
   text-align: left;
 }
+.ds-shell-nav-item .ds-icon { --ds-icon-size: 20px; }
 .ds-shell-nav-item:hover, .ds-shell-nav-item.active { color: var(--ds-text-primary); background: var(--ds-surface-hover); }
 .ds-shell-nav-item.active { border-color: var(--ds-accent-border); box-shadow: inset 3px 0 var(--ds-accent); }
 .ds-workspace-summary {
@@ -189,8 +190,8 @@
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
   }
-  .ds-creator-mobile-nav > button,
-  .ds-creator-mobile-more > summary {
+.ds-creator-mobile-nav > button,
+.ds-creator-mobile-more > button {
     min-height: 52px;
     display: grid;
     place-items: center;
@@ -204,27 +205,28 @@
     cursor: pointer;
     list-style: none;
   }
-  .ds-creator-mobile-more > summary::-webkit-details-marker { display: none; }
+  .ds-creator-mobile-nav > button .ds-icon,
+  .ds-creator-mobile-more > button .ds-icon { --ds-icon-size: 20px; }
   .ds-creator-mobile-nav button.active,
-  .ds-creator-mobile-more[open] > summary,
-  .ds-creator-mobile-more:has([aria-current="page"]) > summary {
+  .ds-creator-mobile-more > button[aria-expanded="true"],
+  .ds-creator-mobile-more:has([aria-current="page"]) > button {
     color: var(--ds-accent);
     background: var(--ds-accent-soft);
   }
   .ds-creator-mobile-more { min-width: 0; }
+  .ds-creator-mobile-more-backdrop {
+    position: fixed; inset: 0; z-index: 70; display: grid; align-items: end;
+    background: rgb(6 18 35 / .42); overscroll-behavior: contain;
+  }
   .ds-creator-mobile-more-menu {
-    position: absolute;
-    right: max(8px, env(safe-area-inset-right));
-    bottom: calc(100% + 8px);
-    width: min(18rem, calc(100vw - 16px));
-    padding: 8px;
+    width: 100%; padding: 12px max(14px, env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
     display: grid;
-    gap: 4px;
-    border: 1px solid var(--ds-border-default);
-    border-radius: var(--ds-radius-lg);
+    gap: 6px; border: 1px solid var(--ds-border-default); border-radius: 20px 20px 0 0;
     background: var(--ds-surface-1);
     box-shadow: 0 -12px 32px rgba(30, 64, 105, .16);
   }
+  .ds-creator-mobile-more-menu > header { min-height: 44px; display: flex; align-items: center; justify-content: space-between; padding-inline: 6px; }
+  .ds-creator-mobile-more-menu > header button { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--ds-surface-2); color: var(--ds-text-primary); }
   .ds-creator-mobile-more-menu button {
     min-height: 48px;
     padding-inline: 12px;
@@ -239,6 +241,7 @@
     font-weight: var(--ds-weight-semibold);
     text-align: left;
   }
+  .ds-creator-mobile-more-menu button .ds-icon { --ds-icon-size: 20px; }
 }
 
 @media (orientation: landscape) and (max-height: 620px) {

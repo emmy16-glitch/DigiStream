@@ -477,11 +477,12 @@
   .creator-chat-page-header { display: none; }
   .creator-chat-body { gap: .85rem; }
   .creator-chat-context, .creator-chat-panel { border-radius: 1rem; }
-  .creator-chat-selection { padding: .9rem; gap: .75rem; }
+  .creator-chat-selection { padding: .75rem .9rem; gap: .65rem; }
   .creator-chat-user { display: none; }
-  .creator-chat-conversation-heading { padding: 1rem; }
+  .creator-chat-conversation-heading { padding: .9rem 1rem; }
   .creator-chat-conversation-heading p { font-size: .78rem; line-height: 1.4; }
   .creator-chat-empty-panel { min-height: 7rem; padding: 1rem; }
+  .creator-chat-panel .broadcast-chat { min-height: calc(100dvh - 12rem); }
 }
 
 @media (max-width: 560px) {

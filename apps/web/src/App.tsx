@@ -620,13 +620,10 @@ function CreatorDashboard({
       </StatePanel>
     ) : (
       <>
-        <PageIntro title="Studio Lobby and call-ins">
-          Review listener requests, create guest invitations, admit waiting participants and manage who can join the live conversation.
-        </PageIntro>
-        <section className="workspace-action-card">
+        <section className="workspace-action-card workspace-lobby-state">
           <div>
             <StatusBadge tone="info">Guest and call-in moderation</StatusBadge>
-            <h2>{lobbyEligible ? `Open ${lobbyBroadcast?.title ?? 'the broadcast'} Lobby` : 'Studio Lobby is not available yet'}</h2>
+            <h2>{lobbyEligible ? lobbyBroadcast?.title ?? 'Studio Lobby is ready' : 'Studio Lobby is not available yet'}</h2>
             <p>
               {lobbyEligible
                 ? `${lobbyBroadcast?.title ?? 'The selected broadcast'} is ${lobbyBroadcast?.status}. Review real call-ins, invited guests and connected participants.`
@@ -645,11 +642,6 @@ function CreatorDashboard({
             </Button>
           )}
         </section>
-        <StatePanel compact kind="empty" title={lobbyEligible ? `${lobbyBroadcast?.title} is eligible` : 'No eligible broadcast selected'}>
-          {lobbyEligible
-            ? 'The Lobby will recheck this broadcast before loading guest and participant controls.'
-            : 'Lobby controls remain unavailable until the backend reports an eligible lifecycle state.'}
-        </StatePanel>
       </>
     );
   } else if (activeNav === 'Chat') {

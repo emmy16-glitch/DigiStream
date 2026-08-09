@@ -1,7 +1,7 @@
 .echoo-broadcasts-page {
   min-width: 0;
   display: grid;
-  gap: clamp(22px, 3vw, 32px);
+  gap: clamp(18px, 2.25vw, 28px);
 }
 
 .echoo-broadcasts-hero {
@@ -37,7 +37,7 @@
 }
 
 .echoo-broadcasts-hero h2 {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.7rem, 3vw, 2.45rem);
   line-height: 1.05;
   text-wrap: balance;
 }
@@ -159,7 +159,7 @@
 }
 
 .channel-strip {
-  padding: clamp(18px, 2.5vw, 26px);
+  padding: clamp(14px, 2vw, 20px);
   display: grid;
   gap: var(--ds-space-4);
 }
@@ -232,7 +232,7 @@
 }
 
 .broadcast-list {
-  padding: clamp(20px, 2.7vw, 28px);
+  padding: clamp(16px, 2vw, 22px);
   display: grid;
   gap: var(--ds-space-4);
 }
@@ -312,7 +312,7 @@
 
 .broadcast-row {
   min-width: 0;
-  padding: var(--ds-space-4);
+  padding: 12px var(--ds-space-3);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
@@ -329,8 +329,8 @@
 }
 
 .echoo-broadcast-artwork {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
@@ -482,7 +482,7 @@
   .creator-form-card,
   .channel-strip,
   .broadcast-list {
-    padding: 17px;
+    padding: 14px;
     border-radius: var(--ds-radius-lg);
   }
 

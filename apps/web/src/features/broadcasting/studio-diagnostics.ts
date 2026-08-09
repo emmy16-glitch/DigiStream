@@ -280,6 +280,12 @@ export function diagnoseStudioFailure(
         message: 'The private Studio could not connect. Your broadcast has not started.',
         recovery: 'Keep this page open and try joining the private Studio again. Return to Broadcasts if it remains unavailable.',
       };
+    case 'MEDIA_ENDPOINT_UNREACHABLE':
+      return {
+        ...diagnostic,
+        title: 'Private Studio needs a reachable media address',
+        recovery: 'For a forwarded HTTPS page, configure LIVEKIT_URL as a public wss:// address. Do not use localhost or 127.0.0.1 for the browser media URL.',
+      };
     case 'MICROPHONE_NOT_PUBLISHED':
       return {
         ...diagnostic,
