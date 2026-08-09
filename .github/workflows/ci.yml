@@ -92,8 +92,37 @@ jobs:
       - name: Apply database migrations
         run: npm run db:migrate
 
-      - name: Validate workspace
-        run: npm run check
+      - name: Verify design skills
+        id: skills
+        continue-on-error: true
+        run: npm run skills:verify
+
+      - name: Typecheck
+        id: typecheck
+        continue-on-error: true
+        run: npm run typecheck
+
+      - name: Test
+        id: test
+        continue-on-error: true
+        run: npm run test
+
+      - name: Build
+        id: build
+        continue-on-error: true
+        run: npm run build
+
+      - name: Enforce validation result
+        if: always()
+        run: |
+          echo "skills=${{ steps.skills.outcome }}"
+          echo "typecheck=${{ steps.typecheck.outcome }}"
+          echo "test=${{ steps.test.outcome }}"
+          echo "build=${{ steps.build.outcome }}"
+          test "${{ steps.skills.outcome }}" = success
+          test "${{ steps.typecheck.outcome }}" = success
+          test "${{ steps.test.outcome }}" = success
+          test "${{ steps.build.outcome }}" = success
 
   ui-smoke:
     name: Playwright responsive creator smoke
