@@ -8,8 +8,12 @@ This directory contains the authoritative visual-design contract for the current
 2. [`DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`](DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md)
 3. [`REFERENCE_INDEX.md`](REFERENCE_INDEX.md)
 4. the exact numbered approved image in `reference/screens/`
-5. [`DESIGN_REVIEW_CHECKLIST.md`](DESIGN_REVIEW_CHECKLIST.md)
-6. product/lifecycle/quality documents referenced by root `AGENTS.md`
+5. [`DESIGN_TOKENS.md`](DESIGN_TOKENS.md)
+6. [`DIGISTREAM_VISUAL_MIGRATION_PLAN.md`](DIGISTREAM_VISUAL_MIGRATION_PLAN.md) when migrating an existing surface
+7. [`DESIGN_REVIEW_CHECKLIST.md`](DESIGN_REVIEW_CHECKLIST.md) before review/merge
+8. product/lifecycle/quality documents referenced by root `AGENTS.md`
+
+A CSS token starter is also available at [`digistream-design-tokens.css`](digistream-design-tokens.css). It is documentation/reference material until deliberately integrated into the existing shared design system.
 
 ## Source-of-truth split
 
@@ -33,7 +37,7 @@ DigiStream uses:
 - generous vertical spacing;
 - restrained semantic green, amber, and rose only when state requires them.
 
-The legacy blue/white DigiStream styling, previous Echoo visual references, and previous dark-theme visual styling are **not** the current visual target.
+The legacy blue/white DigiStream styling, previous Echoo visual references, and previous dark/emerald visual styling are **not** the current visual target.
 
 ## Existing documents
 
