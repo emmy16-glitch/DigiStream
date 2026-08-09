@@ -1,263 +1,282 @@
 # DigiStream Design Tokens
 
-These tokens translate the approved visual direction into an implementation contract. Exact colour values remain provisional until WCAG contrast checks are completed in-browser.
+Status: **authoritative visual token contract**
 
-## Colour roles
+These tokens normalize the approved final 50-screen DigiStream visual direction into reusable implementation values. Small color variations visible in generated references must not become separate production tokens.
+
+## 1. Color
 
 ```css
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  --ds-canvas: #07090d;
-  --ds-surface-1: #0c0f14;
-  --ds-surface-2: #11151b;
-  --ds-surface-3: #171c23;
-  --ds-surface-hover: #1c222a;
+  --ds-bg: #F7F3EE;
+  --ds-surface: #FFFDF9;
+  --ds-surface-warm: #F2ECE6;
 
-  --ds-border-subtle: #20262f;
-  --ds-border-default: #2a313b;
-  --ds-border-strong: #3a434e;
+  --ds-ink: #1F2025;
+  --ds-ink-soft: #4D4A4B;
+  --ds-muted: #6B6464;
+  --ds-line-soft: #D8D0CA;
+  --ds-grid-dot: #DDD6D1;
 
-  --ds-text-primary: #f7f9fb;
-  --ds-text-secondary: #b6bdc7;
-  --ds-text-muted: #858e9a;
-  --ds-text-disabled: #5e6670;
+  --ds-pink-50: #F8ECEB;
+  --ds-pink-100: #F0D2D1;
+  --ds-pink-300: #E7B6B6;
+  --ds-pink-500: #D58F97;
+  --ds-pink-700: #B84E5F;
 
-  --ds-accent: #2ddd59;
-  --ds-accent-hover: #42e86b;
-  --ds-accent-active: #20c94b;
-  --ds-accent-soft: rgba(45, 221, 89, 0.12);
-  --ds-accent-border: rgba(45, 221, 89, 0.42);
-
-  --ds-success: #45df70;
-  --ds-warning: #f3b63f;
-  --ds-danger: #f05b61;
-  --ds-info: #5da8ff;
-
-  --ds-focus-ring: #8df2a4;
-  --ds-overlay: rgba(0, 0, 0, 0.72);
+  --ds-success: #8DBA98;
+  --ds-warning: #C99A61;
+  --ds-danger: #B84E5F;
+  --ds-charcoal-panel: #202126;
 }
 ```
 
-Do not treat these hex values as approved merely because they appear here. Validate small text, buttons, badges, chart lines and focus rings against WCAG 2.2 AA before finalising them.
+### Color rules
 
-## Typography
+- Cream/off-white is the ordinary application canvas.
+- Dusty pink is the primary brand accent.
+- Near-black ink carries headings, borders, icons, and primary text.
+- Do not reintroduce legacy DigiStream brand blue as a general UI accent.
+- Green is semantic only: active, ready, healthy, connected, or successful.
+- Amber is semantic only: waiting, warning, reconnecting, or degraded.
+- Rose/danger is semantic only: destructive, failed, suspended, or critical.
+- Charcoal may be used for immersive player/countdown/media artwork, not as the general application theme.
+- Avoid rainbow charts, electric purple, cyan, neon glow, and arbitrary decorative gradients.
 
-Preferred family:
+## 2. Background grid
+
+The dotted canvas is a brand element.
 
 ```css
---ds-font-sans: Inter, ui-sans-serif, system-ui, -apple-system,
-  BlinkMacSystemFont, "Segoe UI", sans-serif;
---ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+.ds-app-background {
+  background-color: var(--ds-bg);
+  background-image:
+    radial-gradient(circle, rgba(31, 32, 37, 0.10) 1px, transparent 1.1px);
+  background-size: 20px 20px;
+}
 ```
+
+The pattern must remain subtle enough that text and controls dominate.
+
+## 3. Typography
+
+Recommended production families:
+
+```css
+--ds-font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+--ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+--ds-font-editorial: "Instrument Serif", Georgia, serif;
+```
+
+Rules:
+
+- heavy grotesk is the primary visual voice;
+- mono/typewriter is the technical/system voice;
+- do not use Inter as the only product font;
+- editorial serif is optional and restricted to marketing/cover-art moments;
+- long body copy may use the regular grotesk for readability.
 
 Suggested scale:
 
 ```css
---ds-text-xs: 0.75rem;
---ds-text-sm: 0.875rem;
---ds-text-md: 1rem;
---ds-text-lg: 1.125rem;
---ds-text-xl: 1.375rem;
---ds-text-2xl: 1.75rem;
---ds-text-3xl: 2.25rem;
---ds-text-display: clamp(2rem, 4vw, 3.5rem);
+--ds-display-mobile: 2.5rem;
+--ds-display-desktop: 3.25rem;
+--ds-h1-mobile: 2.25rem;
+--ds-h1-desktop: 2.75rem;
+--ds-h2-mobile: 1.75rem;
+--ds-h2-desktop: 2.125rem;
+--ds-h3: 1.375rem;
+--ds-card-title: 1.125rem;
+--ds-body: 1rem;
+--ds-mono-body: 0.9375rem;
+--ds-ui-label: 0.75rem;
+--ds-button-text: 0.875rem;
+--ds-metadata: 0.75rem;
 ```
 
-Line heights:
+Line-height guidance:
 
 ```css
---ds-leading-tight: 1.15;
---ds-leading-heading: 1.25;
+--ds-leading-display: 1.05;
+--ds-leading-heading: 1.15;
 --ds-leading-body: 1.55;
+--ds-leading-mono: 1.55;
 ```
 
-Weights:
+## 4. Spacing
+
+Use a strict 4px base scale.
 
 ```css
---ds-weight-regular: 400;
---ds-weight-medium: 500;
---ds-weight-semibold: 600;
---ds-weight-bold: 700;
+--ds-space-1: 4px;
+--ds-space-2: 8px;
+--ds-space-3: 12px;
+--ds-space-4: 16px;
+--ds-space-5: 20px;
+--ds-space-6: 24px;
+--ds-space-8: 32px;
+--ds-space-10: 40px;
+--ds-space-12: 48px;
+--ds-space-16: 64px;
+--ds-space-20: 80px;
+--ds-space-24: 96px;
 ```
 
-## Spacing
+Page guidance:
 
-Use a 4 px base scale.
+- small mobile horizontal padding: 20px;
+- large mobile: 24px;
+- tablet: 28–32px;
+- desktop: 40–48px;
+- major vertical gaps should generally be larger than horizontal gaps.
+
+## 5. Shape
 
 ```css
---ds-space-1: 0.25rem;
---ds-space-2: 0.5rem;
---ds-space-3: 0.75rem;
---ds-space-4: 1rem;
---ds-space-5: 1.25rem;
---ds-space-6: 1.5rem;
---ds-space-8: 2rem;
---ds-space-10: 2.5rem;
---ds-space-12: 3rem;
---ds-space-16: 4rem;
+--ds-radius-card: 0px;
+--ds-radius-control: 0px;
+--ds-radius-status: 2px;
+--ds-radius-avatar: 999px;
 ```
 
-## Shape
+Rules:
+
+- cards are square;
+- inputs are square;
+- buttons are square;
+- tabs are square;
+- modals are square;
+- small status chips may use a minimal 2–4px radius;
+- circular geometry is reserved for avatars, audio motifs, radio indicators, and intentional icon forms.
+
+Do not introduce 12px–24px generic SaaS card radii.
+
+## 6. Borders and hard shadows
 
 ```css
---ds-radius-sm: 0.5rem;
---ds-radius-md: 0.75rem;
---ds-radius-lg: 1rem;
---ds-radius-xl: 1.25rem;
---ds-radius-pill: 999px;
+--ds-border: 1px solid var(--ds-ink);
+--ds-border-soft: 1px solid var(--ds-line-soft);
+
+--ds-shadow-major: 6px 7px 0 var(--ds-ink);
+--ds-shadow-control: 4px 5px 0 var(--ds-ink);
+--ds-shadow-small: 3px 3px 0 var(--ds-ink);
 ```
 
-Do not create arbitrary radii per component. Nested cards may use one step smaller than their parent.
+Rules:
 
-## Borders and shadows
+- no blur on signature shadows;
+- shadow moves down/right;
+- major cards and dialogs use major shadow;
+- primary buttons/selected controls use control shadow;
+- compact important tiles may use small shadow;
+- internal rows, table cells, and secondary nested surfaces may use border only to control visual noise.
 
-```css
---ds-border-width: 1px;
---ds-shadow-card: 0 12px 32px rgba(0, 0, 0, 0.22);
---ds-shadow-dialog: 0 28px 80px rgba(0, 0, 0, 0.52);
---ds-glow-live: 0 0 24px rgba(45, 221, 89, 0.16);
-```
-
-Prefer borders and tonal separation over heavy shadows.
-
-## Motion
+Pressed interaction:
 
 ```css
---ds-duration-fast: 120ms;
---ds-duration-normal: 200ms;
---ds-duration-slow: 320ms;
---ds-ease-standard: cubic-bezier(0.2, 0, 0, 1);
-```
-
-Motion rules:
-
-- transitions clarify state changes rather than decorate them;
-- live pulses and animated waveforms stop or simplify under `prefers-reduced-motion`;
-- do not animate critical text or controls continuously;
-- reconnecting and loading indicators must include readable labels.
-
-## Layout
-
-```css
---ds-sidebar-width: 228px;
---ds-page-max: 1600px;
---ds-content-gap: 1rem;
---ds-control-min-height: 44px;
-```
-
-Suggested breakpoints:
-
-```css
---ds-breakpoint-mobile: 640px;
---ds-breakpoint-tablet: 900px;
---ds-breakpoint-desktop: 1200px;
-```
-
-CSS custom properties cannot be used directly in media-query conditions in current browser implementations, so keep matching values in the styling build configuration.
-
-## Component state requirements
-
-Every interactive component must support:
-
-- default;
-- hover;
-- pressed/active;
-- focus-visible;
-- disabled;
-- loading;
-- error where applicable.
-
-Minimum interactive target: 44 by 44 px.
-
-Focus style example:
-
-```css
-:focus-visible {
-  outline: 2px solid var(--ds-focus-ring);
-  outline-offset: 3px;
+.ds-button:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 2px 0 var(--ds-ink);
 }
 ```
 
-## Status patterns
+## 7. Controls
 
-### Live
+```css
+--ds-control-min-height: 48px;
+--ds-touch-min: 44px;
+--ds-input-min-height: 52px;
+```
 
-- pulsing broadcast/dot icon;
-- explicit `Live` or `Live now` label;
-- elapsed time where useful;
-- never green colour alone.
+Primary button:
 
-### Healthy
+```css
+.ds-button-primary {
+  min-height: var(--ds-control-min-height);
+  padding: 0 20px;
+  background: var(--ds-pink-300);
+  color: var(--ds-ink);
+  border: var(--ds-border);
+  border-radius: 0;
+  box-shadow: var(--ds-shadow-control);
+  font-family: var(--ds-font-mono);
+  font-weight: 600;
+}
+```
 
-- success icon;
-- `Healthy`, `Good` or `Excellent` label based on defined thresholds;
-- subtle green badge or border.
+Input:
 
-### Waiting
+```css
+.ds-input {
+  min-height: var(--ds-input-min-height);
+  width: 100%;
+  padding: 0 16px;
+  background: var(--ds-surface);
+  color: var(--ds-ink);
+  border: var(--ds-border);
+  border-radius: 0;
+  font-family: var(--ds-font-mono);
+}
 
-- clock/waiting icon;
-- amber treatment;
-- action or explanation.
+.ds-input:focus-visible {
+  outline: 2px solid var(--ds-pink-500);
+  outline-offset: 2px;
+}
+```
 
-### Degraded
+## 8. Motion
 
-- warning icon;
-- amber treatment;
-- impact and recovery guidance.
+```css
+--ds-duration-fast: 120ms;
+--ds-duration-normal: 180ms;
+--ds-duration-slow: 260ms;
+--ds-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+```
 
-### Failed/offline
+Motion should feel mechanical and deliberate rather than glossy or springy.
 
-- error icon;
-- red treatment;
-- direct retry, diagnostics or support action.
+Avoid:
 
-## Data visualisation
+- floating-card hover animation;
+- parallax;
+- permanent glow;
+- large spring effects;
+- decorative continuous animation;
+- motion that implies a state before real API/media confirmation.
 
-- chart colours must remain distinguishable for common colour-vision deficiencies;
-- every chart needs labels, tooltips and a table or textual summary;
-- never rely on green versus red alone;
-- use consistent definitions for listener, unique listener, peak, average listening time and returning listener;
-- show collection windows and update delay.
+Respect `prefers-reduced-motion`.
 
-## Iconography
+## 9. Status treatment
 
-Use one coherent outline icon set. Avoid mixing emoji, text glyphs and unrelated icon styles in production UI.
+- **Live:** rose/pink dot + explicit label; never color alone.
+- **Healthy / ready:** muted green + explicit label/icon.
+- **Scheduled / draft:** pale pink or neutral treatment; no live pulse.
+- **Waiting / reconnecting:** amber + explicit state copy.
+- **Ended / archived:** neutral gray.
+- **Error / suspended / destructive:** dark rose.
 
-Core icons include:
+## 10. Charts
 
-- home/overview;
-- broadcast signal;
-- audience/users;
-- recording/play;
-- analytics/chart;
-- settings;
-- microphone;
-- headphones;
-- volume/mute;
-- share;
-- link/copy;
-- calendar/time;
-- lock/private;
-- check/success;
-- warning;
-- failure/offline;
-- search/filter;
-- notification;
-- more actions.
+- primary series: dusty pink;
+- secondary series: charcoal or pale pink;
+- semantic success series: muted green;
+- grid: warm light gray;
+- labels: mono;
+- chart cards: cream with dark border;
+- avoid default blue chart palettes and rainbow dashboards.
 
-## Naming convention
+## 11. Accessibility
 
-CSS variables: `--ds-*`
+- normal body text target: 16px minimum;
+- touch targets: at least 44×44px;
+- visible focus is mandatory;
+- status meaning must survive without color;
+- dusty-pink text on pale pink must use the darker rose token when contrast requires it;
+- disabled controls must remain clearly different from enabled actions;
+- long names and translated/expanded text must not cause horizontal overflow.
 
-React components: descriptive PascalCase, such as:
+## 12. Relationship to references
 
-- `StatusBadge`
-- `LiveIndicator`
-- `AudioLevelMeter`
-- `WaveformPlayer`
-- `ListenerPreview`
-- `EmptyState`
-- `ConnectionHealthPanel`
-
-Avoid component names tied to one screenshot or sample organisation.
+The approved final 50-screen pack controls screen composition and visual intent. These tokens normalize that appearance into reusable production values. Do not create a new token merely because one generated image contains a slightly different cream, pink, or shadow offset.
