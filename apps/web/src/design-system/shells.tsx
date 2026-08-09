@@ -152,6 +152,7 @@ export function CreatorShell({
                   <strong>{workspaceName}</strong>
                   <span>Signed in as {workspaceDescription}</span>
                 </div>
+                {canSwitchWorkspace ? workspaceSelect() : null}
                 <div className="ds-mobile-account-actions">{actions}</div>
               </div>
             </details>
