@@ -170,7 +170,7 @@ test('Chat, Studio Lobby and Recordings pass the exact responsive matrix', async
     await expect(chat).toBeVisible();
     await expectCreatorShellUsable(page);
     await expectNoInternalOverflow(chat);
-    await expect(chat.getByRole('heading', { name: 'Chat', exact: true })).toBeVisible();
+    await expect(page.locator('.ds-page-heading h1')).toHaveText('Chat');
     await expect(page.getByRole('option', { name: new RegExp(state.broadcastTitle) })).toHaveCount(1);
     const chatSelects = chat.locator('select:visible');
     for (let index = 0; index < await chatSelects.count(); index += 1) {
