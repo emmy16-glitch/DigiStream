@@ -52,9 +52,9 @@
 .echoo-overview-section {
   min-width: 0;
   border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-xl);
+  border-radius: 0;
   background: var(--ds-surface-1);
-  box-shadow: 0 14px 42px rgba(30, 64, 105, .06);
+  box-shadow: var(--ds-shadow-card);
 }
 
 .echoo-overview-feature-card {
@@ -100,18 +100,17 @@
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  border-radius: 20px;
-  color: var(--ds-accent);
-  background:
-    radial-gradient(circle at 72% 22%, rgba(255, 255, 255, .95), transparent 25%),
-    linear-gradient(145deg, #eaf2ff, #cfe0fa);
+  border: 1px solid var(--ds-border-default);
+  border-radius: 0;
+  color: var(--ds-pink-700);
+  background: var(--ds-accent-soft);
+  box-shadow: var(--ds-shadow-small);
 }
 
 .echoo-overview-artwork.is-live {
   color: #ffffff;
-  background:
-    radial-gradient(circle at 68% 18%, rgba(255, 255, 255, .22), transparent 27%),
-    linear-gradient(145deg, #0d5be8, #163f83);
+  border-color: var(--ds-pink-700);
+  background: var(--ds-pink-700);
 }
 
 .echoo-overview-feature-copy,
@@ -146,7 +145,7 @@
 }
 
 .echoo-overview-feature-copy .echoo-overview-starts {
-  color: var(--ds-accent);
+  color: var(--ds-pink-700);
   font-weight: var(--ds-weight-semibold);
 }
 
@@ -168,7 +167,7 @@
   width: auto;
   padding: 0 var(--ds-space-3);
   border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-lg);
+  border-radius: 0;
   color: var(--ds-text-primary);
   background: var(--ds-surface-1);
   box-shadow: none;
@@ -189,7 +188,7 @@
 
 .echoo-overview-quick-action > span,
 .echoo-overview-quick-grid > .ds-button .ds-icon {
-  color: var(--ds-accent);
+  color: var(--ds-pink-700);
 }
 
 .echoo-overview-quick-action:hover,
@@ -206,7 +205,7 @@
 .echoo-overview-recent-list {
   display: grid;
   border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-lg);
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -227,7 +226,7 @@
 .echoo-overview-recent-row .echoo-overview-artwork {
   width: 56px;
   height: 56px;
-  border-radius: 16px;
+  border-radius: 0;
 }
 
 .echoo-overview-recent-copy {
@@ -255,7 +254,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--ds-space-4);
-  color: var(--ds-accent);
+  color: var(--ds-pink-700);
   text-align: left;
 }
 
