@@ -374,7 +374,7 @@ function CreatorDashboard({
   }, [selectedOrganisationId]);
 
   useLayoutEffect(() => {
-    if (activeNav === 'Overview') void loadOverviewState();
+    if (activeNav === 'Overview' || activeNav === 'Studio Lobby') void loadOverviewState();
   }, [activeNav, loadOverviewState]);
 
   useEffect(() => {
@@ -400,7 +400,7 @@ function CreatorDashboard({
     setChannels([]);
     setBroadcasts([]);
     setOverviewStateError('');
-    setLoadingOverviewState(activeNav === 'Overview');
+    setLoadingOverviewState(activeNav === 'Overview' || activeNav === 'Studio Lobby');
     setPreferredOrganisationId(nextOrganisation.id);
     writeCreatorWorkspacePreference(
       window.localStorage,
