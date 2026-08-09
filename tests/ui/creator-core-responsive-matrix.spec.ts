@@ -97,7 +97,7 @@ async function createCreatorCoreState(page: Page, suffix: string) {
     },
   );
 
-  const pendingChannel = await apiJson(
+  await apiJson(
     page,
     `/api/v1/organisations/${organisation.id}/channels/${createdChannel.channel.id}`,
     'PATCH',
@@ -137,25 +137,42 @@ async function auditCreatorShell(page: Page, viewport: (typeof viewports)[number
   await expectNoPageOverflow(page);
   await expectNoInternalOverflow(page.locator('#ds-main-content'));
 
-  const workspaceSelect = page.locator('.ds-workspace-select:visible');
-  await expect(workspaceSelect).toHaveCount(1);
-  await expectTouchTarget(workspaceSelect);
+  if (viewport.width <= 640) {
+    const accountMenu = page.locator('.ds-mobile-account-menu');
+    const accountTrigger = accountMenu.getByLabel('Open account and workspace menu');
+    await expect(accountTrigger).toBeVisible();
+    await expectTouchTarget(accountTrigger);
+    await accountTrigger.click();
 
-  const topbarButtons = page.locator('.ds-topbar-actions .ds-button:visible');
-  for (let index = 0; index < await topbarButtons.count(); index += 1) {
-    await expectTouchTarget(topbarButtons.nth(index));
-  }
+    const workspaceSelect = accountMenu.locator('.ds-mobile-account-popover .ds-workspace-select');
+    await expect(workspaceSelect).toBeVisible();
+    await expectTouchTarget(workspaceSelect);
 
-  if (viewport.width > 640) {
-    const brand = page.getByRole('link', { name: 'Echoo creator home' });
-    await expect(brand).toBeVisible();
-    await expectTouchTarget(brand);
-  } else {
-    const mobileNavigationButtons = page.locator('.ds-creator-mobile-nav button:visible');
+    const accountActions = accountMenu.locator('.ds-mobile-account-actions .ds-button:visible');
+    for (let index = 0; index < await accountActions.count(); index += 1) {
+      await expectTouchTarget(accountActions.nth(index));
+    }
+    await accountTrigger.click();
+
+    const mobileNavigationButtons = page.locator('.ds-creator-mobile-nav > button:visible');
     expect(await mobileNavigationButtons.count()).toBeGreaterThan(0);
     for (let index = 0; index < await mobileNavigationButtons.count(); index += 1) {
       await expectTouchTarget(mobileNavigationButtons.nth(index));
     }
+    await expectTouchTarget(page.locator('.ds-creator-mobile-more > summary'));
+  } else {
+    const workspaceSelect = page.locator('.ds-workspace-select:visible');
+    await expect(workspaceSelect).toHaveCount(1);
+    await expectTouchTarget(workspaceSelect);
+
+    const topbarButtons = page.locator('.ds-topbar-actions .ds-button:visible');
+    for (let index = 0; index < await topbarButtons.count(); index += 1) {
+      await expectTouchTarget(topbarButtons.nth(index));
+    }
+
+    const brand = page.getByRole('link', { name: 'Echoo creator home' });
+    await expect(brand).toBeVisible();
+    await expectTouchTarget(brand);
   }
 }
 
