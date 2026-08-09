@@ -51,6 +51,7 @@ export function CreatorShell({
   const primaryMobileNavigation = visibleNavigation.slice(0, 4);
   const secondaryMobileNavigation = visibleNavigation.slice(4);
   const mainContentRef = useRef<HTMLElement>(null);
+  const mobileMoreRef = useRef<HTMLDetailsElement>(null);
   const previousActiveLabel = useRef(activeLabel);
   const canSwitchWorkspace =
     workspaceOptions.length > 1 && Boolean(workspaceId) && Boolean(onWorkspaceChange);
@@ -186,7 +187,7 @@ export function CreatorShell({
           );
         })}
         {secondaryMobileNavigation.length > 0 ? (
-          <details className="ds-creator-mobile-more">
+          <details className="ds-creator-mobile-more" ref={mobileMoreRef}>
             <summary aria-label="More creator destinations">
               <Icon name="menu" />
               <span>More</span>
@@ -199,7 +200,10 @@ export function CreatorShell({
                     aria-current={active ? 'page' : undefined}
                     className={active ? 'active' : ''}
                     key={item.label}
-                    onClick={item.onSelect}
+                    onClick={() => {
+                      item.onSelect();
+                      if (mobileMoreRef.current) mobileMoreRef.current.open = false;
+                    }}
                     type="button"
                   >
                     <Icon name={item.icon} />
