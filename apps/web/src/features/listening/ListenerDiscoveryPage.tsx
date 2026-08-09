@@ -115,7 +115,8 @@ export function ListenerDiscoveryPage() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<DiscoveryFilter>(initialLiveOnly ? 'live' : 'all');
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
     setError('');
     setOffline(false);
     try {
@@ -131,7 +132,7 @@ export function ListenerDiscoveryPage() {
   }, []);
 
   useEffect(() => {
-    void refresh();
+    void refresh(true);
     const timer = window.setInterval(() => void refresh(), 15_000);
     return () => {
       window.clearInterval(timer);
@@ -214,7 +215,7 @@ export function ListenerDiscoveryPage() {
         <StatePanel
           actionLabel="Retry"
           kind={offline ? 'offline' : 'error'}
-          onAction={() => void refresh()}
+          onAction={() => void refresh(true)}
           title={offline ? 'You are offline' : 'Public broadcasts could not be loaded'}
         >
           {error}
