@@ -66,10 +66,8 @@
 }
 
 .replay-discovery-page .listener-kicker { color: var(--ds-accent, #1769d2); }
-.replay-discovery-section > header > span { color: var(--ds-text-secondary, #4d6078); }
-
 .replay-discovery-section > header > span {
-  color: var(--ds-text-tertiary);
+  color: var(--ds-text-secondary, #4d6078);
   font-size: 0.9rem;
 }
 
