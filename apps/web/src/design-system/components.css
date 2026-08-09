@@ -125,15 +125,16 @@
   border-radius: var(--ds-radius-status);
   color: var(--ds-text-secondary);
   background: var(--ds-surface-3);
+  font-family: var(--ds-font-mono);
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   line-height: 1.2;
 }
 .ds-status .ds-icon { --ds-icon-size: 14px; }
-.ds-status-info { color: #245d99; background: var(--ds-info-soft); border-color: rgba(47,111,179,.28); }
-.ds-status-success { color: #1f6d49; background: var(--ds-success-soft); border-color: rgba(36,135,90,.28); }
-.ds-status-warning { color: #83500d; background: var(--ds-warning-soft); border-color: rgba(166,102,18,.28); }
-.ds-status-danger { color: #a9343d; background: var(--ds-danger-soft); border-color: rgba(199,63,74,.28); }
+.ds-status-info { color: var(--ds-pink-700); background: var(--ds-info-soft); border-color: var(--ds-pink-500); }
+.ds-status-success { color: var(--ds-success-foreground); background: var(--ds-success-soft); border-color: var(--ds-success); }
+.ds-status-warning { color: var(--ds-warning-foreground); background: var(--ds-warning-soft); border-color: var(--ds-warning); }
+.ds-status-danger { color: var(--ds-danger-foreground); background: var(--ds-danger-soft); border-color: var(--ds-danger); }
 .ds-status-live { color: var(--ds-pink-700); background: var(--ds-accent-soft); border-color: var(--ds-accent-border); }
 
 .ds-audio-meter {
@@ -173,7 +174,7 @@
 .ds-audio-meter-bars i.is-active { height: 78%; background: var(--ds-pink-500); }
 .ds-audio-meter-bars i.is-hot { height: 100%; background: var(--ds-warning); }
 .ds-audio-meter.is-muted .ds-audio-meter-bars i { opacity: .45; }
-.ds-audio-meter.is-clipping { border-color: rgba(199, 63, 74, .38); }
+.ds-audio-meter.is-clipping { border-color: var(--ds-danger); }
 .ds-audio-meter-readout {
   color: var(--ds-text-muted);
   font-family: var(--ds-font-mono);
