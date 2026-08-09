@@ -13,6 +13,7 @@ import { resolveInitialRoute } from './routing/initial-route';
 import './design-system/tokens.css';
 import './design-system/base.css';
 import './design-system/components.css';
+import './design-system/primitives.css';
 import './design-system/control-state-consistency.css';
 import './design-system/content-resilience.css';
 import './design-system/feedback.css';
