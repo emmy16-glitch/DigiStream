@@ -31,13 +31,12 @@
   .landing-hero {
     min-height: 0;
     padding: 18px 24px 10px;
-    grid-template-columns: minmax(0, 1.05fr) minmax(280px, .95fr);
     gap: 20px;
   }
 
   .landing-hero-copy {
+    max-width: 640px;
     gap: 14px;
-    padding-bottom: 0;
   }
 
   .landing-hero h1 {
@@ -45,6 +44,7 @@
   }
 
   .landing-hero-description {
+    max-width: 480px;
     font-size: .95rem;
     line-height: 1.45;
   }
@@ -75,8 +75,8 @@
   }
 
   .landing-hero-visual {
-    min-height: 280px;
-    border-radius: 46% 46% 12px 12px;
+    width: min(100%, 640px);
+    min-height: 220px;
   }
 
   .landing-feature-grid {
