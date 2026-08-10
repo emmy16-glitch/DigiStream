@@ -6,6 +6,7 @@ import {
   type FormEvent,
 } from 'react';
 import type { AuthUser, AuthUserResponse } from '@digistream/contracts';
+import { BrandLockup } from '../design-system/components';
 import { ApiClientError, apiRequest, jsonBody } from '../lib/api-client';
 import { GoogleIdentityButton } from './GoogleIdentityButton';
 
@@ -345,7 +346,7 @@ export function AuthScreen({
         ) : null}
 
         <a className="auth-logo-link" href="/" aria-label="Echoo home">
-          <EchooMark />
+          <BrandLockup />
         </a>
 
         {view === 'register-form' ? (
