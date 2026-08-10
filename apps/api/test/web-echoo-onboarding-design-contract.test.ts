@@ -57,8 +57,8 @@ test('Echoo onboarding presentation suppresses normal navigation only during set
   assert.match(css, /:has\(\[aria-label='First broadcast choices'\]\)/);
   assert.match(css, /\.ds-creator-mobile-nav[\s\S]*display:\s*none/);
   assert.match(css, /\.ds-creator-navigation[\s\S]*display:\s*none/);
-  assert.match(css, /--echoo-onboarding-blue:\s*#0d5be8/);
-  assert.match(css, /--echoo-onboarding-navy:\s*#10233f/);
+  assert.match(css, /--echoo-onboarding-blue:\s*var\(--ds-pink-500\)/);
+  assert.match(css, /--echoo-onboarding-navy:\s*var\(--ds-ink\)/);
   assert.match(css, /min-height:\s*118px/);
   assert.match(css, /safe-area-inset-bottom/);
   assert.match(css, /@media \(max-width:\s*640px\)/);
