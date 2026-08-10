@@ -327,12 +327,6 @@ export function AuthScreen({
         className={`auth-mobile-card auth-form-card ${view === 'login' ? 'auth-login-card' : ''}`}
         aria-labelledby="auth-heading"
       >
-        {view === 'register-form' ? (
-          <button className="auth-corner-switch" onClick={() => changeView('login')} type="button">
-            Sign in
-          </button>
-        ) : null}
-
         <a className="auth-logo-link" href="/" aria-label="Echoo home">
           <BrandLockup />
         </a>
@@ -409,7 +403,12 @@ export function AuthScreen({
 
           {error ? <div className="auth-error" role="alert">{error}</div> : null}
 
-          <button className="auth-primary-button" disabled={busy} type="submit">
+          <button
+            aria-busy={busy || undefined}
+            className="auth-primary-button"
+            disabled={busy}
+            type="submit"
+          >
             {busy ? 'Please wait…' : view === 'register-form' ? 'Create account' : 'Login'}
           </button>
         </form>

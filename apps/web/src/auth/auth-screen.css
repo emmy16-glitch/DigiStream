@@ -105,7 +105,6 @@
 
 .auth-provider-pill,
 .auth-primary-button,
-.auth-corner-switch,
 .auth-password-toggle,
 .auth-switch-copy button {
   font: inherit;
@@ -181,28 +180,6 @@
 .auth-login-card {
   justify-content: flex-start;
   padding-top: 54px;
-}
-
-.auth-corner-switch {
-  position: absolute;
-  top: 22px;
-  right: 22px;
-  min-width: 80px;
-  min-height: 44px;
-  padding: 0 16px;
-  border: var(--ds-border);
-  border-radius: 0;
-  color: var(--ds-ink);
-  background: var(--ds-surface);
-  font-family: var(--ds-font-mono);
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background var(--ds-duration-fast) var(--ds-ease-standard), border-color var(--ds-duration-fast) var(--ds-ease-standard);
-}
-
-.auth-corner-switch:hover {
-  background: var(--ds-pink-100);
 }
 
 .auth-logo-link {
@@ -324,7 +301,6 @@
 }
 
 .auth-password-toggle:focus-visible,
-.auth-corner-switch:focus-visible,
 .auth-switch-copy button:focus-visible,
 .auth-provider-pill:focus-visible,
 .auth-primary-button:focus-visible {
@@ -512,11 +488,6 @@
   .auth-login-card {
     padding-top: max(46px, env(safe-area-inset-top));
   }
-
-  .auth-corner-switch {
-    top: max(16px, env(safe-area-inset-top));
-    right: max(16px, env(safe-area-inset-right));
-  }
 }
 
 @media (max-width: 360px) {
@@ -586,8 +557,7 @@
   .auth-field input,
   .auth-hero-artwork,
   .auth-primary-button,
-  .auth-provider-pill,
-  .auth-corner-switch {
+  .auth-provider-pill {
     transition: none;
     transform: none;
   }
