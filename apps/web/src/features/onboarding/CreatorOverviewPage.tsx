@@ -173,7 +173,7 @@ export function CreatorOverviewPage({
 
   const quickActions = [
     ...(overview.canOpenBackstage
-      ? [{ icon: 'audience' as const, label: 'Lobby', onClick: openContextualStudioLobby }]
+      ? [{ icon: 'audience' as const, label: 'Studio Lobby', onClick: openContextualStudioLobby }]
       : []),
     { icon: 'recording' as const, label: 'Recordings', onClick: onOpenRecordings },
   ];
@@ -185,7 +185,7 @@ export function CreatorOverviewPage({
       <header className="echoo-overview-hero">
         <div>
           <h2>{greeting()}, {firstName}</h2>
-          <p>{organisation.name} · your next broadcast task is ready below.</p>
+          <p>Here’s what’s happening with your broadcasts.</p>
         </div>
         <Button onClick={primaryAction.onClick} variant="primary">
           {primaryAction.label}
