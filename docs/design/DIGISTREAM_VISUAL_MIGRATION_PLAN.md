@@ -1,227 +1,391 @@
 # DigiStream Visual Migration Plan
 
-Purpose: migrate the existing web implementation to the approved final 50-screen DigiStream visual system **without** creating duplicate product flows, breaking backend truth, or rewriting the application as one unsafe visual mega-change.
+Purpose: migrate the current web implementation into the **cream-dotted DigiStream + Beautiful UI-quality hybrid system** without creating duplicate product flows, breaking backend truth, or attempting one unsafe visual mega-change.
 
-This plan is subordinate to root product/quality requirements and uses `DIGISTREAM_UI_CONSTITUTION.md` as the visual contract.
+This plan is subordinate to root product/quality requirements and uses:
+
+- `DIGISTREAM_UI_CONSTITUTION.md`;
+- `BEAUTIFUL_UI_ADAPTATION_STANDARD.md`;
+- `DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`;
+- `DESIGN_TOKENS.md`.
+
+External reference: `https://beautiful-ui-five.vercel.app/`
 
 ## Migration principle
 
-The target is not “make screenshots.” The target is to move the existing product surfaces and shared design system into the visual language demonstrated by the 50 references while preserving real behavior.
+The target is not “copy Beautiful UI” and not “copy 50 screenshots exactly.”
+
+The target is:
+
+> preserve DigiStream's warm cream dotted identity while converting the product's inner operational interface into a cleaner, denser, more systematic component language inspired by Beautiful UI.
 
 Do not build a second application beside the existing one.
 
+---
+
 ## Phase 0 — inventory before editing
 
-Before changing CSS:
+Before changing CSS/components:
 
 1. inventory current tokens in `apps/web/src/design-system/`;
-2. identify legacy dark/emerald assumptions;
-3. identify duplicated raw colors, shadows, radii, font stacks, and backgrounds outside the shared design system;
-4. map current creator/listener/public shells;
-5. map each existing route/component to the numbered reference index;
-6. identify reference screens that represent states rather than separate routes;
-7. record current responsive tests and screenshots so regressions can be detected.
+2. locate the current cream/dotted background implementation;
+3. identify oversized repeated cards;
+4. identify heavy nested hard shadows;
+5. identify raw colours/radii/shadows outside shared tokens;
+6. map current creator/listener/public shells;
+7. map each route/component to its existing responsibility;
+8. map each applicable surface to a Beautiful UI pattern;
+9. map the relevant 50-screen reference for product composition/journey intent;
+10. record current responsive/unit/Playwright coverage.
 
-Deliverable: a short migration matrix in the implementation PR description or companion document.
+Deliverable: a migration matrix in the PR description or companion implementation note.
 
-## Phase 1 — shared visual foundation
+Recommended matrix columns:
 
-Migrate shared tokens/primitives before page-by-page polish:
+| Existing surface | Existing owner | Beautiful UI pattern | Shared primitive | Reference screen | Mobile transform | Risk/tests |
+|---|---|---|---|---|---|---|
 
-- canvas/background grid;
-- surface colors;
-- ink and muted text;
-- dusty-pink palette;
-- semantic success/warning/danger;
-- typography families and scale;
-- square radii;
-- border system;
-- hard-shadow hierarchy;
+---
+
+## Phase 1 — shared hybrid foundation
+
+Migrate shared tokens/primitives before broad page polish.
+
+Required foundation:
+
+- cream dotted application canvas;
+- white/warm-white/neutral inner surfaces;
+- dusty-pink brand tokens;
+- supporting lavender/sky/mint/amber/peach accent tokens;
+- fixed live/success/warning/danger/info tokens;
+- typography hierarchy;
+- 4px spacing system;
+- restrained radius;
+- border hierarchy;
+- subtle shadow hierarchy;
+- rare optional brand-offset shadow;
 - focus-visible treatment;
 - buttons;
 - inputs/selects/textareas;
-- cards;
-- icon tiles;
-- status badges;
-- tabs/segmented controls;
+- badges/status dots;
+- tabs/filters;
 - modal/sheet base treatment.
 
 Acceptance:
 
-- no generic rounded-card primitive remains as the default;
-- no legacy green/blue primary button remains as the default;
-- no blurred-shadow primitive remains as the primary elevation treatment;
-- existing behavior/tests still pass.
+- cream/dotted identity is still recognizable;
+- inner operational surfaces no longer rely on all-cream/all-pink treatment;
+- no feature-local rainbow palette exists;
+- supporting accents do not replace semantic states;
+- hard offset shadow is no longer applied to every nested component;
+- existing behavior/tests remain valid.
 
-## Phase 2 — application shells
+---
 
-Realign the shells before individual page polishing.
+## Phase 2 — shared Beautiful UI-inspired primitives
 
-### Public shell
-Reference anchors: 05, 13, 14, 15, 16, 20, 31, 40, 41, 42, 43, 44, 45, 46, 47, 48.
+Create or converge existing components toward reusable equivalents of:
 
-Goals:
-
-- cream dotted canvas;
-- consistent DigiStream header;
-- Discover/Replays/Sign in presentation;
-- listener account state when authenticated;
-- player/discovery surfaces inherit common typography and controls.
-
-### Creator shell
-Reference anchors: 01, 02, 03, 04, 10, 11, 12, 18, 21–27, 32–39, 49, 50.
-
-Goals:
-
-- stable creator header/account/workspace treatment;
-- stable mobile bottom navigation;
-- creator page heading rhythm;
-- consistent major-card width/padding;
-- correct dense-screen shadow hierarchy.
-
-### Listener shell
-Reference anchors: 13–17, 19, 20, 41–48.
-
-Goals:
-
-- stable listener navigation;
-- playback-first hierarchy;
-- consistent sign-in prompts;
-- request-to-speak interaction consistent with listener context.
-
-## Phase 3 — authentication and onboarding
-
-Reference anchors: 06–12, 26, 28–30, 45, 46.
-
-Order:
-
-1. login;
-2. signup choice;
-3. signup form;
-4. intent selection;
-5. organisation step;
-6. channel step;
-7. broadcast step;
-8. invitation acceptance;
-9. password recovery;
-10. email verification.
+- Sidebar/NavItem;
+- CommandSearch/SearchField;
+- TaskRow/TaskList;
+- DataTable/ResponsiveRecordRow;
+- FilterTabs;
+- LoadingState;
+- Approval/ConfirmationDialog;
+- ContextPanel;
+- InsightCard;
+- MessageRow/Composer;
+- SelectionBar;
+- PageHeader/SectionHeader.
 
 Rules:
 
-- reuse current auth/business logic;
-- preserve returning-state behavior;
-- do not invent browser-only onboarding completion;
-- use one obvious primary action per step;
-- retain full keyboard/mobile form usability.
+- reuse before creating;
+- generic components own presentation, not domain truth;
+- every component defines mobile behavior;
+- every component defines loading/focus/disabled/error behavior where applicable.
 
-## Phase 4 — creator operational journey
+---
 
-Reference anchors: 01, 02, 03, 35, 36, 39, 40.
+## Phase 3 — application shells
 
-Order by user journey:
+### Creator shell
 
-1. Overview next action;
-2. Broadcasts list/create/manage;
-3. Studio Lobby/readiness;
-4. Studio operational surface;
-5. Backstage/call-ins;
-6. live/reconnecting state;
-7. end-broadcast confirmation;
-8. post-broadcast continuity.
+Primary goals:
 
-Do not change lifecycle semantics for visual fidelity.
+- preserve cream dotted outer canvas;
+- add/realign compact Beautiful UI-like creator navigation;
+- use white/warm-white sidebar/workspace surfaces where useful;
+- active navigation uses subtle treatment with dusty-pink punctuation/accent;
+- real workspace/account context remains accessible;
+- mobile uses validated mobile navigation instead of a squeezed desktop sidebar.
 
-## Phase 5 — chat, recordings and content management
-
-Reference anchors: 04, 14, 15, 19, 37.
+### Public/listener shell
 
 Goals:
 
-- dense rows use borders more than large shadows;
-- artwork sits inside the approved surrounding UI language;
-- search/filter/control grammar is consistent;
-- replay availability remains real and authorized.
+- preserve the cream/dotted DigiStream identity where compatible with player/discovery readability;
+- keep playback-first hierarchy;
+- use clean white/neutral inner surfaces;
+- do not over-card discovery content;
+- maintain stable navigation vocabulary.
 
-## Phase 6 — settings/admin/account
+Acceptance:
+
+- shell identity is coherent across routes;
+- no generic gray SaaS shell replaces DigiStream;
+- account/sign-out remain discoverable;
+- no ordinary horizontal overflow.
+
+---
+
+## Phase 4 — Creator Overview
+
+Reference anchor: screen 01 plus product-hardening requirements.
+
+Beautiful UI patterns:
+
+- Sidebar Nav;
+- Task Rows;
+- Context Cards;
+- Insight Cards only when real;
+- compact rows.
+
+Required hierarchy:
+
+1. header;
+2. one state-aware primary action;
+3. current/live/recovering state;
+4. next scheduled/draft state;
+5. readiness/task rows if needed;
+6. recent records as compact rows;
+7. trustworthy insight only when available.
+
+Remove:
+
+- generic KPI-card showroom behavior;
+- duplicate headings;
+- repeated generic Studio actions;
+- fake/empty metric cards.
+
+---
+
+## Phase 5 — Broadcasts
+
+Reference anchor: screen 02.
+
+Beautiful UI patterns:
+
+- Filter Table;
+- Records Table;
+- Search;
+- Approval patterns where destructive actions exist.
+
+Required:
+
+- lifecycle filters;
+- searchable/compact rows;
+- contextual row actions;
+- clear empty states;
+- responsive mobile record transformation;
+- real lifecycle status.
+
+Prefer a table/row model over giant repeated cards.
+
+---
+
+## Phase 6 — Studio Lobby / Chat / Guests
+
+Reference anchors: 03, 04, 35 where applicable.
+
+Beautiful UI patterns:
+
+- Chat;
+- Task Rows;
+- Context Cards;
+- Tool Chips;
+- Loading State.
+
+Required:
+
+- compact guest/readiness rows;
+- human chat without AI reasoning traces;
+- clear private contribution/public delivery separation;
+- composer survives virtual keyboard;
+- moderation remains role-aware;
+- technical context is secondary/progressive.
+
+Supporting accent tints may distinguish tabs/context groups but must not become status semantics.
+
+---
+
+## Phase 7 — Studio operational surface
+
+Reference anchors: 36, 39.
+
+Beautiful UI patterns:
+
+- Task Rows;
+- Loading State;
+- Context Cards;
+- Tool Chips;
+- Approval Card for end-broadcast or other live-critical decisions.
+
+Visual rule:
+
+- outer creator shell may retain cream/dots;
+- main Studio work area may be a large solid white/neutral panel to reduce distraction;
+- critical state and action remain stable;
+- live UI becomes calmer, not more animated.
+
+Acceptance:
+
+- microphone/private/public delivery remain separate;
+- reconnecting shows what is healthy/degraded;
+- no fake progress;
+- end action is protected;
+- short-height/mobile access to critical controls is preserved.
+
+---
+
+## Phase 8 — Recordings
+
+Reference anchor: 37.
+
+Beautiful UI patterns:
+
+- Filter Table;
+- Records Table;
+- Search;
+- Loading State;
+- Approval Card for deletion;
+- Context Cards.
+
+Required columns/fields where real:
+
+- title;
+- broadcast/channel context;
+- duration;
+- created/completed time;
+- processing state;
+- publish/replay state;
+- contextual action.
+
+Mobile transforms to compact rows.
+
+---
+
+## Phase 9 — Analytics/statistics
+
+Reference anchors: 38, 49, 50.
+
+Beautiful UI pattern: Insight Cards.
+
+Only implement metrics with trustworthy sources.
+
+Colour strategy:
+
+- cream dotted outer canvas;
+- white/warm-white chart surfaces;
+- dusty pink primary data series;
+- restrained lavender/sky supporting series;
+- mint/amber only where they cannot be misread as semantic success/warning;
+- semantic colours reserved for real state.
+
+Do not create decorative KPI grids with invented zeroes/trends.
+
+---
+
+## Phase 10 — Settings, account and admin
 
 Reference anchors: 18, 21–27, 32, 34.
 
+Beautiful UI patterns:
+
+- Records Table;
+- Context Cards;
+- Search where useful;
+- Approval Card;
+- compact sections/rows.
+
 Goals:
 
-- common settings card grammar;
-- role/permission actions remain truthful;
-- destructive areas isolated;
-- session/security information clearly distinguished from ordinary profile preferences;
-- workspace switcher follows the approved square/card language.
+- reduce giant stacked cards;
+- isolate destructive actions;
+- keep session/security information distinct;
+- preserve permissions/role truth;
+- use confirmation patterns with explicit action labels.
 
-## Phase 7 — listener discovery and playback
+---
+
+## Phase 11 — listener discovery/playback
 
 Reference anchors: 13–17, 19, 20, 31, 40–48.
 
 Goals:
 
-- one coherent discovery visual language;
-- artwork may vary while UI chrome remains cream/pink/ink;
-- playback controls remain obvious and accessible;
-- chat/request-to-speak does not obscure player state;
-- live/scheduled/replay states never visually collapse into one another.
+- retain DigiStream cream identity around listener surfaces where it does not compete with playback;
+- use clean white/neutral panels for content/player controls;
+- keep live/scheduled/replay visually distinct;
+- preserve playback when chat/request-to-speak opens where technically safe;
+- avoid giant cards for every discovery item when compact list/grouping is better.
 
-## Phase 8 — analytics and statistics
+---
 
-Reference anchors: 38, 49, 50.
+## Phase 12 — visual reconciliation
 
-Only implement metrics with trustworthy sources.
+After major migration:
 
-Rules:
+1. search for removed cream/dotted shell styling and verify intentional exceptions;
+2. search for raw feature-local colours;
+3. search for supporting accent misuse as status;
+4. search for oversized repeated cards;
+5. search for excessive hard-offset shadows;
+6. search for 20px+ generic radii;
+7. search for duplicate page headings;
+8. search for obsolete generic Studio actions;
+9. compare surfaces to the current Constitution and Beautiful UI adaptation standard;
+10. inspect relevant 50-screen references for journey/content intent;
+11. run responsive/accessibility matrices;
+12. remove obsolete visual code only after confirming it is unused.
 
-- dusty pink primary series;
-- charcoal/pale-pink secondary series;
-- green only for semantic health/success;
-- mono labels;
-- cream bordered chart cards;
-- no rainbow or default blue chart palette;
-- unavailable metrics are omitted/explained rather than fabricated.
-
-## Phase 9 — visual reconciliation
-
-After all required surfaces are migrated:
-
-1. search the web app for legacy blue/green/dark theme tokens;
-2. search for large rounded radii;
-3. search for blurred shadows;
-4. search for old Echoo visual naming where it affects styling;
-5. identify one-off component colors not represented in the Constitution;
-6. compare all implemented surfaces against their reference images;
-7. test Android portrait, short landscape, desktop, keyboard, focus, long text, and reduced motion;
-8. remove obsolete visual code only after confirming it is unused.
+---
 
 ## Pull-request sizing
 
-Prefer bounded PRs by foundation/shell/journey. Avoid a single repository-wide visual rewrite that is impossible to review.
+Prefer bounded PRs by foundation/shell/journey.
 
-A good migration PR should:
+A migration PR should state:
 
-- name the reference screens it targets;
-- name shared primitives changed;
-- state which existing components/routes were reused;
-- show responsive evidence;
-- preserve real state tests;
-- disclose deliberate visual deviations;
-- leave the repository in a valid buildable state.
+- surfaces targeted;
+- Beautiful UI patterns adapted;
+- reference screen numbers used for composition/journey intent;
+- shared primitives changed;
+- cream/dotted shell treatment;
+- supporting accent mapping;
+- existing components/routes reused;
+- responsive/accessibility evidence;
+- tests run;
+- deliberate deviations.
 
-## Definition of visually migrated
+Avoid one repository-wide visual rewrite that is impossible to review.
+
+---
+
+## Definition of migrated
 
 A surface is migrated only when:
 
-- it uses the approved shared tokens;
-- it uses the correct shell;
-- it has cream/pink/ink visual identity;
-- square geometry is consistent;
-- shadow hierarchy is correct;
-- typography hierarchy matches the system;
-- all real states remain accurate;
-- mobile/desktop behavior works;
-- accessibility is preserved;
-- it has been compared against the relevant numbered reference.
-
-Changing only the background color or primary button does not count as migration.
+- cream dotted DigiStream identity is preserved where appropriate;
+- clean white/neutral operational surfaces are used effectively;
+- dusty pink remains the brand anchor;
+- supporting colours are restrained/intentional;
+- semantic colours remain truthful;
+- repeated data uses efficient rows/tables where appropriate;
+- shared primitives are reused;
+- one clear contextual primary action exists;
+- loading/empty/error/recovery states are coherent;
+- mobile/desktop behavior is complete;
+- accessibility behavior works;
+- relevant tests pass.
