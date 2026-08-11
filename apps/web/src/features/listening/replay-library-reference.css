@@ -1,0 +1,27 @@
+.replay-discovery-page { display: grid; gap: 40px; width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: clamp(48px, 7vw, 88px) 0 56px; color: var(--ds-ink); }
+.replay-discovery-hero { display: grid; gap: 14px; }
+.listener-kicker { color: var(--ds-pink-700); font-family: var(--ds-font-mono); font-size: var(--ds-text-sm); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.replay-discovery-hero h1 { margin: 0; font-size: clamp(46px, 8vw, 76px); line-height: .96; text-transform: uppercase; }
+.replay-discovery-hero p { margin: 0; color: var(--ds-ink-soft); font-family: var(--ds-font-mono); font-size: var(--ds-text-lg); }
+.replay-library-search { display: flex; align-items: center; gap: 16px; min-height: 70px; margin-top: 12px; padding: 0 20px; border: var(--ds-border); background: var(--ds-surface); box-shadow: var(--ds-shadow-control); }
+.replay-library-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ds-ink); font-family: var(--ds-font-mono); font-size: var(--ds-text-lg); }
+.replay-library-search:focus-within { outline: 3px solid var(--ds-focus-ring); outline-offset: 3px; }
+.replay-discovery-section { display: grid; gap: 18px; }
+.replay-discovery-section > header { display: flex; align-items: end; justify-content: space-between; gap: 16px; }
+.replay-discovery-section > header h2 { margin: 4px 0 0; font-size: clamp(30px, 4vw, 40px); }
+.replay-discovery-section > header > span { color: var(--ds-muted); font-family: var(--ds-font-mono); font-size: var(--ds-text-sm); }
+.replay-discovery-grid { display: grid; gap: 18px; }
+.replay-discovery-card { display: grid; grid-template-columns: 302px minmax(0, 1fr) auto; align-items: center; gap: 28px; min-width: 0; padding: 16px; border: var(--ds-border); background: var(--ds-surface); box-shadow: var(--ds-shadow-small); color: var(--ds-ink); text-decoration: none; transition: transform var(--ds-duration-fast) var(--ds-ease-standard), box-shadow var(--ds-duration-fast) var(--ds-ease-standard); }
+.replay-discovery-card:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ds-ink); background: var(--ds-pink-50); }
+.replay-discovery-card:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ds-ink); }
+.replay-card-signal { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 156px; border: 1px solid var(--ds-ink); background: var(--ds-pink-100); }
+.replay-card-signal i { width: 5px; height: 22%; background: var(--ds-pink-700); }
+.replay-card-signal i:nth-child(2n) { height: 54%; }.replay-card-signal i:nth-child(3n) { height: 78%; }.replay-card-signal i:nth-child(5n) { height: 38%; }
+.replay-card-copy { min-width: 0; }.replay-card-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.replay-card-copy h2 { margin: 14px 0 6px; font-size: clamp(26px, 3vw, 34px); line-height: 1.1; }.replay-card-copy > p { display: none; }
+.replay-card-source, .replay-card-meta { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-top: 8px; color: var(--ds-ink-soft); font-family: var(--ds-font-mono); font-size: var(--ds-text-md); }.replay-card-source strong { font-weight: 500; }.replay-card-source span { color: var(--ds-muted); }
+.replay-card-meta { color: var(--ds-ink); }.replay-card-meta small { color: var(--ds-muted); }.replay-card-meta span:not(:first-child)::before { content: '·'; margin-right: 12px; color: var(--ds-pink-700); }
+.replay-card-arrow { color: var(--ds-ink); }.replay-discovery-card:focus-visible { outline: 3px solid var(--ds-focus-ring); outline-offset: 3px; }
+@media (max-width: 700px) { .replay-discovery-page { gap: 32px; width: min(100% - 40px, 1180px); padding-top: 56px; }.replay-discovery-card { grid-template-columns: 128px minmax(0, 1fr); gap: 16px; }.replay-card-signal { min-height: 118px; }.replay-card-arrow { display: none; }.replay-card-copy h2 { margin-top: 10px; font-size: 25px; }.replay-card-meta small { flex-basis: 100%; }.replay-library-search { min-height: 68px; } }
+@media (max-width: 420px) { .replay-discovery-card { grid-template-columns: 1fr; }.replay-card-signal { min-height: 120px; }.replay-discovery-hero h1 { font-size: 52px; } }
+@media (prefers-reduced-motion: reduce) { .replay-discovery-card { transition: none; } }
