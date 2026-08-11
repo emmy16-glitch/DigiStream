@@ -801,3 +801,5 @@
     transition-duration: .01ms;
   }
 }
+/* Screen 39: reconnecting is a warning state, never presented as healthy delivery. */
+.creator-broadcast-studio [data-phase="reconnecting"],.creator-broadcast-studio .studio-delivery-recovery{border-color:var(--ds-warning);background:var(--ds-warning-soft)}
