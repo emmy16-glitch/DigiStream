@@ -34,6 +34,7 @@ import './design-system/manual-review-fixes.css';
 import './design-system/semantic-feedback-contrast.css';
 import './landing/landing-page.css';
 import './landing/landing-entry-responsive.css';
+import './landing/about-page.css';
 import './features/guests/echoo-backstage.css';
 import './features/account/account-pages.css';
 import './features/listening/public-creator-profile.css';
@@ -56,7 +57,7 @@ if (route.replaceHistory) {
 }
 
 function isKnownApplicationPath(pathname: string): boolean {
-  if (pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/reset-password' || pathname === '/verify-email' || pathname === '/creator-profile' || pathname === '/admin' || pathname === '/account/profile' || pathname === '/account/sessions' || pathname === '/account/notifications' || pathname === '/organisation/settings' || pathname === '/organisation/team' || pathname === '/invite' || pathname === '/channel/settings') return true;
+  if (pathname === '/about' || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/reset-password' || pathname === '/verify-email' || pathname === '/creator-profile' || pathname === '/admin' || pathname === '/account/profile' || pathname === '/account/sessions' || pathname === '/account/notifications' || pathname === '/organisation/settings' || pathname === '/organisation/team' || pathname === '/invite' || pathname === '/channel/settings') return true;
   if (pathname === '/creator' || pathname.startsWith('/creator/')) return true;
   return Boolean(parseGuestRoute(pathname) || parseListenerRoute(pathname));
 }

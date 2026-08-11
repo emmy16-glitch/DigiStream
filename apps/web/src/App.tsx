@@ -21,6 +21,7 @@ import type {
   PlatformStatus,
 } from '@digistream/contracts';
 import { AuthScreen } from './auth/AuthScreen';
+import { AboutPage } from './landing/AboutPage';
 import {
   Button,
   LinkButton,
@@ -791,6 +792,7 @@ function CreatorApplication() {
 }
 
 export function App() {
+  if (window.location.pathname === '/about') return <AboutPage />;
   if (window.location.pathname === '/creator-profile') return <PublicCreatorProfilePage />;
   if (window.location.pathname === '/forgot-password') return <ForgotPasswordPage />;
   if (window.location.pathname === '/reset-password') return <ResetPasswordPage />;
