@@ -744,6 +744,7 @@ export function CreatorBroadcastsPage({
                   <div className="creator-form-actions" aria-label="First broadcast choices" role="group">
                     <Button
                       aria-pressed={firstBroadcastChoice === 'go-live'}
+                      icon="broadcast"
                       onClick={() => {
                         setFirstBroadcastChoice('go-live');
                         setBroadcastForm((current) => ({ ...current, scheduledStartAt: '' }));
@@ -754,6 +755,7 @@ export function CreatorBroadcastsPage({
                     </Button>
                     <Button
                       aria-pressed={firstBroadcastChoice === 'schedule'}
+                      icon="calendar"
                       onClick={() => setFirstBroadcastChoice('schedule')}
                       variant={firstBroadcastChoice === 'schedule' ? 'primary' : 'secondary'}
                     >
@@ -761,6 +763,7 @@ export function CreatorBroadcastsPage({
                     </Button>
                     <Button
                       aria-pressed={firstBroadcastChoice === 'finish-later'}
+                      icon="recording"
                       onClick={() => {
                         setFirstBroadcastChoice('finish-later');
                         setBroadcastForm(emptyBroadcastForm);
@@ -853,12 +856,13 @@ export function CreatorBroadcastsPage({
                     <Button onClick={() => setShowBroadcastForm(false)}>Cancel</Button>
                   ) : null}
                   {firstBroadcastSetup && firstBroadcastChoice === 'finish-later' ? (
-                    <Button onClick={finishFirstBroadcastLater} type="button" variant="primary">
+                    <Button icon="recording" onClick={finishFirstBroadcastLater} type="button" variant="primary">
                       Finish setup later
                     </Button>
                   ) : (
                     <Button
                       disabled={firstBroadcastSetup && !firstBroadcastChoice}
+                      icon="broadcast"
                       loading={creatingBroadcast}
                       type="submit"
                       variant="primary"
