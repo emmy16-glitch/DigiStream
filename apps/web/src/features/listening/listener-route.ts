@@ -2,6 +2,7 @@ export type ListenerRoute =
   | { kind: 'discovery' }
   | { kind: 'replay-discovery' }
   | { kind: 'library' }
+  | { kind: 'channel'; organisationSlug: string; channelSlug: string }
   | {
       kind: 'public-replay';
       organisationSlug: string;
@@ -78,6 +79,10 @@ export function parseListenerRoute(pathname: string): ListenerRoute | null {
     return { kind: 'replay-discovery' };
   }
   if (parts[1] === 'library' && parts.length === 2) return { kind: 'library' };
+  if (parts[1] === 'channel' && parts.length === 4) {
+    const organisationSlug = decodeSegment(parts[2] ?? ''); const channelSlug = decodeSegment(parts[3] ?? '');
+    return organisationSlug && channelSlug ? { kind: 'channel', organisationSlug, channelSlug } : null;
+  }
 
   if (parts[1] === 'replay' && parts.length === 5) {
     const organisationSlug = decodeSegment(parts[2] ?? '');

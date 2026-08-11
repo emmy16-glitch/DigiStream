@@ -48,6 +48,7 @@ import { ListenerBroadcastPage } from './features/listening/ListenerBroadcastPag
 import { ListenerCallInPanel } from './features/listening/ListenerCallInPanel';
 import { ListenerDiscoveryPage } from './features/listening/ListenerDiscoveryPage';
 import { ListenerLibraryPage } from './features/listening/ListenerLibraryPage';
+import { PublicChannelPage } from './features/listening/PublicChannelPage';
 import { ReplayDiscoveryPage } from './features/listening/ReplayDiscoveryPage';
 import { ReplayListeningPage } from './features/listening/ReplayListeningPage';
 import { parseListenerRoute } from './features/listening/listener-route';
@@ -797,6 +798,9 @@ export function App() {
   }
   if (listenerRoute?.kind === 'library') {
     return <ListenerShell current="discover"><ListenerLibraryPage /></ListenerShell>;
+  }
+  if (listenerRoute?.kind === 'channel') {
+    return <ListenerShell current="discover"><PublicChannelPage route={listenerRoute} /></ListenerShell>;
   }
   if (
     listenerRoute?.kind === 'public-replay' ||
