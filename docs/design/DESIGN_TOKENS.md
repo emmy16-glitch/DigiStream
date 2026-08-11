@@ -1,113 +1,141 @@
-# DigiStream Design Tokens
+# DigiStream Design Tokens — v2
 
-Status: **authoritative visual token contract**
+Status: **authoritative semantic token contract for the web UI**
 
-These tokens normalize the approved final 50-screen DigiStream visual direction into reusable implementation values. Small color variations visible in generated references must not become separate production tokens.
+These tokens implement the neutral, compact DigiStream v2 system defined by `DIGISTREAM_UI_CONSTITUTION.md` and `BEAUTIFUL_UI_ADAPTATION_STANDARD.md`.
 
-## 1. Color
+The old cream dotted canvas and hard-offset-shadow token set is superseded.
+
+Token values should be implemented centrally in `apps/web/src/design-system/` and consumed semantically. Do not scatter raw color/radius/shadow values across feature CSS.
+
+---
+
+## 1. Color tokens
+
+### 1.1 Neutral foundation
 
 ```css
-:root {
-  color-scheme: light;
+--ds-bg: #F7F7F8;
+--ds-surface: #FFFFFF;
+--ds-surface-subtle: #F3F4F6;
+--ds-surface-hover: #F9FAFB;
+--ds-surface-selected: #F2F4F7;
 
-  --ds-bg: #F7F3EE;
-  --ds-surface: #FFFDF9;
-  --ds-surface-warm: #F2ECE6;
+--ds-text: #101828;
+--ds-text-secondary: #475467;
+--ds-text-tertiary: #667085;
+--ds-text-disabled: #98A2B3;
+--ds-text-inverse: #FFFFFF;
 
-  --ds-ink: #1F2025;
-  --ds-ink-soft: #4D4A4B;
-  --ds-muted: #6B6464;
-  --ds-line-soft: #D8D0CA;
-  --ds-grid-dot: #DDD6D1;
-
-  --ds-pink-50: #F8ECEB;
-  --ds-pink-100: #F0D2D1;
-  --ds-pink-300: #E7B6B6;
-  --ds-pink-500: #D58F97;
-  --ds-pink-700: #B84E5F;
-
-  --ds-success: #8DBA98;
-  --ds-warning: #C99A61;
-  --ds-danger: #B84E5F;
-  --ds-charcoal-panel: #202126;
-}
+--ds-border: #E4E7EC;
+--ds-border-strong: #D0D5DD;
+--ds-border-emphasis: #98A2B3;
 ```
 
-### Color rules
+### 1.2 Brand accent
 
-- Cream/off-white is the ordinary application canvas.
-- Dusty pink is the primary brand accent.
-- Near-black ink carries headings, borders, icons, and primary text.
-- Do not reintroduce legacy DigiStream brand blue as a general UI accent.
-- Green is semantic only: active, ready, healthy, connected, or successful.
-- Amber is semantic only: waiting, warning, reconnecting, or degraded.
-- Rose/danger is semantic only: destructive, failed, suspended, or critical.
-- Charcoal may be used for immersive player/countdown/media artwork, not as the general application theme.
-- Avoid rainbow charts, electric purple, cyan, neon glow, and arbitrary decorative gradients.
-
-## 2. Background grid
-
-The dotted canvas is a brand element.
+DigiStream brand accent remains selective. It must not become a full-page wash.
 
 ```css
-.ds-app-background {
-  background-color: var(--ds-bg);
-  background-image:
-    radial-gradient(circle, rgba(31, 32, 37, 0.10) 1px, transparent 1.1px);
-  background-size: 20px 20px;
-}
+--ds-brand: #D58F97;
+--ds-brand-hover: #C97883;
+--ds-brand-soft: #F8ECEE;
+--ds-brand-border: #E8C4C9;
 ```
 
-The pattern must remain subtle enough that text and controls dominate.
+The brand accent may be changed in a future explicit rebrand, but agents must change it centrally and update this document. Do not invent a different accent per feature.
 
-## 3. Typography
-
-Recommended production families:
+### 1.3 Semantic state
 
 ```css
---ds-font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
---ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
---ds-font-editorial: "Instrument Serif", Georgia, serif;
+--ds-live: #D92D20;
+--ds-live-soft: #FEF3F2;
+--ds-live-border: #FECDCA;
+
+--ds-success: #067647;
+--ds-success-soft: #ECFDF3;
+--ds-success-border: #ABEFC6;
+
+--ds-warning: #B54708;
+--ds-warning-soft: #FFFAEB;
+--ds-warning-border: #FEDF89;
+
+--ds-danger: #B42318;
+--ds-danger-soft: #FEF3F2;
+--ds-danger-border: #FECDCA;
+
+--ds-info: #175CD3;
+--ds-info-soft: #EFF8FF;
+--ds-info-border: #B2DDFF;
 ```
 
 Rules:
 
-- heavy grotesk is the primary visual voice;
-- mono/typewriter is the technical/system voice;
-- do not use Inter as the only product font;
-- editorial serif is optional and restricted to marketing/cover-art moments;
-- long body copy may use the regular grotesk for readability.
+- `live` means actually live/public lifecycle state, not merely healthy;
+- `success` means successful/healthy/ready, not the default primary button;
+- `warning` means attention/degraded/reconnecting;
+- `danger` means destructive/error/failed;
+- `info` is informational, not a general brand replacement;
+- status meaning must also be communicated with text/icon/structure.
 
-Suggested scale:
-
-```css
---ds-display-mobile: 2.5rem;
---ds-display-desktop: 3.25rem;
---ds-h1-mobile: 2.25rem;
---ds-h1-desktop: 2.75rem;
---ds-h2-mobile: 1.75rem;
---ds-h2-desktop: 2.125rem;
---ds-h3: 1.375rem;
---ds-card-title: 1.125rem;
---ds-body: 1rem;
---ds-mono-body: 0.9375rem;
---ds-ui-label: 0.75rem;
---ds-button-text: 0.875rem;
---ds-metadata: 0.75rem;
-```
-
-Line-height guidance:
+### 1.4 Focus
 
 ```css
---ds-leading-display: 1.05;
---ds-leading-heading: 1.15;
---ds-leading-body: 1.55;
---ds-leading-mono: 1.55;
+--ds-focus: #2E90FA;
+--ds-focus-ring: 0 0 0 3px rgba(46, 144, 250, 0.24);
 ```
 
-## 4. Spacing
+Focus color may be blue because it is a semantic accessibility signal, not a brand accent.
 
-Use a strict 4px base scale.
+---
+
+## 2. Typography tokens
+
+Use the existing production-safe sans family unless a repository-approved font is already bundled. Do not add a font dependency merely to mimic an external reference.
+
+```css
+--ds-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+--ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+```
+
+`Inter` is allowed in v2 as an application sans. The previous rule prohibiting Inter-everywhere is superseded. Mono remains reserved for technical metadata/IDs/diagnostics rather than ordinary product prose.
+
+Suggested type tokens:
+
+```css
+--ds-text-xs: 0.75rem;     /* 12 */
+--ds-text-sm: 0.875rem;    /* 14 */
+--ds-text-md: 1rem;        /* 16 */
+--ds-text-lg: 1.125rem;    /* 18 */
+--ds-text-xl: 1.25rem;     /* 20 */
+--ds-text-2xl: 1.5rem;     /* 24 */
+--ds-text-3xl: 1.875rem;   /* 30 */
+--ds-text-4xl: 2.25rem;    /* 36 */
+```
+
+Suggested line heights:
+
+```css
+--ds-leading-tight: 1.2;
+--ds-leading-heading: 1.3;
+--ds-leading-body: 1.5;
+--ds-leading-relaxed: 1.65;
+```
+
+Weights:
+
+```css
+--ds-weight-regular: 400;
+--ds-weight-medium: 500;
+--ds-weight-semibold: 600;
+--ds-weight-bold: 700;
+```
+
+---
+
+## 3. Spacing tokens
+
+Use a 4px base system:
 
 ```css
 --ds-space-1: 4px;
@@ -120,163 +148,231 @@ Use a strict 4px base scale.
 --ds-space-10: 40px;
 --ds-space-12: 48px;
 --ds-space-16: 64px;
---ds-space-20: 80px;
---ds-space-24: 96px;
 ```
 
-Page guidance:
+Semantic spacing guidance:
 
-- small mobile horizontal padding: 20px;
-- large mobile: 24px;
-- tablet: 28–32px;
-- desktop: 40–48px;
-- major vertical gaps should generally be larger than horizontal gaps.
+- compact icon/text gap: 8px;
+- related controls: 8–12px;
+- row internal gap: 12–16px;
+- panel padding: 16–24px;
+- major section gap: 24–40px;
+- page padding: 16–24px mobile, 24–40px desktop.
 
-## 5. Shape
+Do not create arbitrary `17px`, `23px`, `37px` spacing values without a specific layout requirement.
+
+---
+
+## 4. Radius tokens
 
 ```css
---ds-radius-card: 0px;
---ds-radius-control: 0px;
---ds-radius-status: 2px;
---ds-radius-avatar: 999px;
+--ds-radius-xs: 4px;
+--ds-radius-sm: 6px;
+--ds-radius-md: 8px;
+--ds-radius-lg: 10px;
+--ds-radius-xl: 12px;
+--ds-radius-pill: 999px;
 ```
 
-Rules:
+Default usage:
 
-- cards are square;
-- inputs are square;
-- buttons are square;
-- tabs are square;
-- modals are square;
-- small status chips may use a minimal 2–4px radius;
-- circular geometry is reserved for avatars, audio motifs, radio indicators, and intentional icon forms.
+- standard input/button: `--ds-radius-sm` or `--ds-radius-md`;
+- primary panel/card: `--ds-radius-md` or `--ds-radius-lg`;
+- compact badge/status chip: `--ds-radius-pill` when appropriate;
+- avatar: `--ds-radius-pill`.
 
-Do not introduce 12px–24px generic SaaS card radii.
+Avoid 20–28px radii as the default application grammar.
 
-## 6. Borders and hard shadows
+---
+
+## 5. Border tokens
 
 ```css
---ds-border: 1px solid var(--ds-ink);
---ds-border-soft: 1px solid var(--ds-line-soft);
-
---ds-shadow-major: 6px 7px 0 var(--ds-ink);
---ds-shadow-control: 4px 5px 0 var(--ds-ink);
---ds-shadow-small: 3px 3px 0 var(--ds-ink);
+--ds-border-width: 1px;
+--ds-border-default: 1px solid var(--ds-border);
+--ds-border-strong-rule: 1px solid var(--ds-border-strong);
 ```
 
-Rules:
+Use border structure more often than shadow structure for tables, rows and nested panels.
 
-- no blur on signature shadows;
-- shadow moves down/right;
-- major cards and dialogs use major shadow;
-- primary buttons/selected controls use control shadow;
-- compact important tiles may use small shadow;
-- internal rows, table cells, and secondary nested surfaces may use border only to control visual noise.
+---
 
-Pressed interaction:
+## 6. Shadow tokens
+
+The previous hard black offset shadows are obsolete for ordinary application UI.
 
 ```css
-.ds-button:active {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 2px 0 var(--ds-ink);
-}
+--ds-shadow-none: none;
+--ds-shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+--ds-shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+--ds-shadow-md: 0 4px 12px rgba(16, 24, 40, 0.10);
+--ds-shadow-lg: 0 12px 24px rgba(16, 24, 40, 0.12);
 ```
 
-## 7. Controls
+Usage:
+
+- table/row: usually none;
+- card/panel: none or xs;
+- dropdown/command search: md;
+- modal/sheet: lg where appropriate.
+
+No neon glow, no permanent heavy shadow, no nested shadow stacks.
+
+---
+
+## 7. Control sizing
 
 ```css
---ds-control-min-height: 48px;
---ds-touch-min: 44px;
---ds-input-min-height: 52px;
+--ds-control-sm: 32px;
+--ds-control-md: 36px;
+--ds-control-lg: 40px;
+--ds-control-touch: 44px;
 ```
 
-Primary button:
+Desktop compact controls may visually be 32–40px high while still maintaining accessible target area where appropriate. Mobile critical controls should generally reach touch-friendly target sizing.
+
+Do not shrink operational controls below usability requirements to achieve Beautiful UI-like density.
+
+---
+
+## 8. Layout tokens
 
 ```css
-.ds-button-primary {
-  min-height: var(--ds-control-min-height);
-  padding: 0 20px;
-  background: var(--ds-pink-300);
-  color: var(--ds-ink);
-  border: var(--ds-border);
-  border-radius: 0;
-  box-shadow: var(--ds-shadow-control);
-  font-family: var(--ds-font-mono);
-  font-weight: 600;
-}
+--ds-page-max: 1440px;
+--ds-content-max: 1180px;
+--ds-reading-max: 720px;
+--ds-sidebar-width: 240px;
+--ds-sidebar-compact-width: 216px;
 ```
 
-Input:
+These are starting system roles, not fixed requirements for every page. Studio may need wider operational layouts; auth/reading surfaces may use narrower widths.
+
+---
+
+## 9. Motion tokens
+
+Follow the premium motion document for full behavior.
 
 ```css
-.ds-input {
-  min-height: var(--ds-input-min-height);
-  width: 100%;
-  padding: 0 16px;
-  background: var(--ds-surface);
-  color: var(--ds-ink);
-  border: var(--ds-border);
-  border-radius: 0;
-  font-family: var(--ds-font-mono);
-}
+--ds-duration-instant: 80ms;
+--ds-duration-fast: 140ms;
+--ds-duration-normal: 200ms;
+--ds-duration-slow: 280ms;
 
-.ds-input:focus-visible {
-  outline: 2px solid var(--ds-pink-500);
-  outline-offset: 2px;
-}
-```
-
-## 8. Motion
-
-```css
---ds-duration-fast: 120ms;
---ds-duration-normal: 180ms;
---ds-duration-slow: 260ms;
 --ds-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+--ds-ease-enter: cubic-bezier(0, 0, 0, 1);
+--ds-ease-exit: cubic-bezier(0.3, 0, 1, 1);
 ```
 
-Motion should feel mechanical and deliberate rather than glossy or springy.
+Rules:
 
-Avoid:
+- do not use long decorative transitions in operational flows;
+- success timing comes from real state, not animation duration;
+- reduced-motion mode must remain complete and understandable.
 
-- floating-card hover animation;
-- parallax;
-- permanent glow;
-- large spring effects;
-- decorative continuous animation;
-- motion that implies a state before real API/media confirmation.
+---
 
-Respect `prefers-reduced-motion`.
+## 10. Z-index roles
 
-## 9. Status treatment
+Do not invent large arbitrary z-index numbers feature by feature.
 
-- **Live:** rose/pink dot + explicit label; never color alone.
-- **Healthy / ready:** muted green + explicit label/icon.
-- **Scheduled / draft:** pale pink or neutral treatment; no live pulse.
-- **Waiting / reconnecting:** amber + explicit state copy.
-- **Ended / archived:** neutral gray.
-- **Error / suspended / destructive:** dark rose.
+```css
+--ds-z-base: 0;
+--ds-z-sticky: 10;
+--ds-z-dropdown: 30;
+--ds-z-overlay: 40;
+--ds-z-modal: 50;
+--ds-z-toast: 60;
+```
 
-## 10. Charts
+Nested overlay behavior must still follow shared modal/sheet ownership rules.
 
-- primary series: dusty pink;
-- secondary series: charcoal or pale pink;
-- semantic success series: muted green;
-- grid: warm light gray;
-- labels: mono;
-- chart cards: cream with dark border;
-- avoid default blue chart palettes and rainbow dashboards.
+---
 
-## 11. Accessibility
+## 11. Status badge roles
 
-- normal body text target: 16px minimum;
-- touch targets: at least 44×44px;
-- visible focus is mandatory;
-- status meaning must survive without color;
-- dusty-pink text on pale pink must use the darker rose token when contrast requires it;
-- disabled controls must remain clearly different from enabled actions;
-- long names and translated/expanded text must not cause horizontal overflow.
+Status components must use semantic mapping rather than feature-local color decisions.
 
-## 12. Relationship to references
+Example mapping:
 
-The approved final 50-screen pack controls screen composition and visual intent. These tokens normalize that appearance into reusable production values. Do not create a new token merely because one generated image contains a slightly different cream, pink, or shadow offset.
+| Product state | Semantic role |
+|---|---|
+| draft | neutral |
+| scheduled | info/neutral |
+| starting | warning/info depending on actual state |
+| live | live |
+| reconnecting | warning |
+| ending | warning/neutral |
+| completed | success/neutral depending on context |
+| cancelled | neutral |
+| failed | danger |
+| recording processing | info |
+| recording ready | success |
+| recording failed | danger |
+
+Text remains mandatory.
+
+---
+
+## 12. Component token rules
+
+### Buttons
+
+Primary button should usually use a strong neutral/brand treatment with clear enabled/disabled contrast. Do not use success green merely because an action is primary.
+
+### Tables/rows
+
+- white/neutral surface;
+- subtle border/divider;
+- selected row uses `--ds-surface-selected` and/or border emphasis;
+- hover uses `--ds-surface-hover` where hover exists;
+- status remains compact.
+
+### Cards
+
+- white/neutral surface;
+- subtle border;
+- modest radius;
+- minimal/no shadow;
+- no nested decorative frame by default.
+
+### Search/command palette
+
+- elevated overlay may use `--ds-shadow-md`;
+- clear focus and keyboard selection state;
+- rows remain compact.
+
+### Dialog/sheet
+
+- elevated modal surface;
+- strong accessible focus behavior;
+- clear title/consequence/action hierarchy;
+- safe area on mobile.
+
+---
+
+## 13. Raw-value policy
+
+A new raw color, radius, shadow, control height or motion value in feature CSS should be treated as a code-review smell.
+
+Allowed exceptions require a concrete reason such as:
+
+- browser/media element behavior;
+- chart geometry;
+- safe-area calculation;
+- precise icon/artwork requirement;
+- compatibility with an external provider surface.
+
+If the value becomes reusable, promote it to a semantic token.
+
+---
+
+## 14. Migration rule
+
+When touching legacy UI:
+
+1. replace old cream/background/shadow/radius assumptions with semantic v2 tokens;
+2. do not visually migrate an unrelated whole file merely because one selector changed unless the change is bounded and tested;
+3. remove obsolete tokens only after confirming no remaining surface depends on them;
+4. keep compatibility aliases temporarily only when needed for safe staged migration;
+5. document aliases as deprecated and remove them when migration completes.
