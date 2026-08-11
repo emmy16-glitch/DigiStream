@@ -28,6 +28,10 @@ function rgbaToCompositeOnWhite(value: string): Rgb {
   return channels.map((channel) => ((channel / 255) * alpha) + (1 - alpha)) as unknown as Rgb;
 }
 
+function cssColorOnWhite(value: string): Rgb {
+  return value.startsWith('#') ? hexToRgb(value) : rgbaToCompositeOnWhite(value);
+}
+
 function linear(channel: number): number {
   return channel <= 0.04045
     ? channel / 12.92
@@ -43,12 +47,12 @@ function contrastRatio(first: Rgb, second: Rgb): number {
   return (lighter! + 0.05) / (darker! + 0.05);
 }
 
-test('semantic foreground tokens meet WCAG AA on their Echoo soft surfaces', async () => {
+test('semantic foreground tokens meet WCAG AA on their DigiStream soft surfaces', async () => {
   const tokens = await readRepoFile('apps/web/src/design-system/tokens.css');
 
   for (const tone of ['success', 'warning', 'danger', 'info']) {
     const foreground = hexToRgb(cssVariable(tokens, `ds-${tone}-foreground`));
-    const softSurface = rgbaToCompositeOnWhite(cssVariable(tokens, `ds-${tone}-soft`));
+    const softSurface = cssColorOnWhite(cssVariable(tokens, `ds-${tone}-soft`));
     const ratio = contrastRatio(foreground, softSurface);
     assert.ok(ratio >= 4.5, `${tone} foreground contrast ${ratio.toFixed(2)} is below WCAG AA 4.5:1`);
   }

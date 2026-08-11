@@ -63,5 +63,7 @@ test('Echoo Broadcasts remains responsive, focus-visible and touch friendly', as
   assert.match(css, /@media \(max-width:\s*640px\)/);
   assert.match(css, /@media \(orientation:\s*landscape\) and \(max-height:\s*620px\)/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
+  assert.match(css, /background:\s*var\(--ds-surface-white\)/);
+  assert.doesNotMatch(css, /#071a36|#21d07a|translate\(2px,\s*2px\)/);
 }
 );

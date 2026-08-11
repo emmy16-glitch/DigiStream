@@ -1,139 +1,208 @@
 :root {
   color-scheme: light;
 
-  /* Constitution foundation. Legacy aliases below intentionally resolve here. */
-  --ds-bg: #F7F3EE;
-  --ds-surface: #FFFDF9;
-  --ds-surface-warm: #F2ECE6;
-  --ds-ink: #1F2025;
-  --ds-ink-soft: #4D4A4B;
-  --ds-muted: #6B6464;
-  --ds-line-soft: #D8D0CA;
-  --ds-grid-dot: #DDD6D1;
-  --ds-pink-50: #F8ECEB;
-  --ds-pink-100: #F0D2D1;
-  --ds-pink-300: #E7B6B6;
-  --ds-pink-500: #D58F97;
-  --ds-pink-700: #B84E5F;
-  --ds-charcoal-panel: #202126;
+  /* DigiStream canvas and operational surfaces. */
+  --ds-bg: #f7f3ee;
+  --ds-bg-dot: rgb(31 32 37 / 10%);
+  --ds-surface: #fffdf9;
+  --ds-surface-white: #fff;
+  --ds-surface-subtle: #f4f2ef;
+  --ds-surface-neutral: #f7f7f8;
+  --ds-surface-hover: #fafafa;
+  --ds-surface-selected: #f5f2f3;
 
-  --ds-canvas: var(--ds-bg);
-  --ds-surface-1: var(--ds-surface);
-  --ds-surface-2: var(--ds-surface-warm);
-  --ds-surface-3: var(--ds-pink-50);
-  --ds-surface-hover: var(--ds-pink-100);
+  --ds-text: #1f2025;
+  --ds-text-secondary: #4d4a4b;
+  --ds-text-tertiary: #6b6464;
+  --ds-text-disabled: #9a9494;
+  --ds-text-inverse: #fff;
 
-  --ds-border-subtle: var(--ds-line-soft);
-  --ds-border-default: var(--ds-ink);
-  --ds-border-strong: var(--ds-ink);
-  --ds-border: 1px solid var(--ds-ink);
-  --ds-border-soft: 1px solid var(--ds-line-soft);
+  --ds-border-color: #ddd8d3;
+  --ds-border-strong: #c9c2bc;
+  --ds-border-emphasis: #8b8581;
 
-  --ds-text-primary: var(--ds-ink);
-  --ds-text-secondary: var(--ds-ink-soft);
-  --ds-text-muted: var(--ds-muted);
-  --ds-text-disabled: #948B89;
+  /* Principal brand accent. */
+  --ds-brand: #d58f97;
+  --ds-brand-hover: #c97883;
+  --ds-brand-strong: #b85f6e;
+  --ds-brand-soft: #f8ecee;
+  --ds-brand-soft-strong: #f1d9dd;
+  --ds-brand-border: #e7c0c6;
 
-  --ds-accent: var(--ds-pink-300);
-  --ds-accent-hover: var(--ds-pink-100);
-  --ds-accent-active: var(--ds-pink-700);
-  --ds-accent-soft: var(--ds-pink-50);
-  --ds-accent-border: var(--ds-pink-500);
-  --ds-brand-secondary: var(--ds-pink-500);
+  /* Supporting context accents; never lifecycle state. */
+  --ds-accent-lavender: #8474d8;
+  --ds-accent-lavender-soft: #f1eefc;
+  --ds-accent-lavender-border: #d9d2f4;
+  --ds-accent-sky: #4f86c6;
+  --ds-accent-sky-soft: #edf5fd;
+  --ds-accent-sky-border: #cfe1f5;
+  --ds-accent-mint: #5e9d85;
+  --ds-accent-mint-soft: #edf7f2;
+  --ds-accent-mint-border: #cce8dc;
+  --ds-accent-amber: #b98344;
+  --ds-accent-amber-soft: #fff5e7;
+  --ds-accent-amber-border: #f0d9b5;
+  --ds-accent-peach: #c77d6e;
+  --ds-accent-peach-soft: #faeeea;
+  --ds-accent-peach-border: #eccfc7;
 
-  --ds-success: #8DBA98;
-  --ds-success-foreground: #356F47;
-  --ds-success-soft: #E8F1E9;
-  --ds-warning: #C99A61;
-  --ds-warning-foreground: #765021;
-  --ds-warning-soft: #F7ECDD;
-  --ds-danger: var(--ds-pink-700);
-  --ds-danger-foreground: #8D3140;
-  --ds-danger-soft: #F8E5E7;
-  --ds-info: var(--ds-pink-700);
-  --ds-info-foreground: var(--ds-pink-700);
-  --ds-info-soft: var(--ds-pink-50);
+  /* Evidence-backed semantic state. */
+  --ds-live: #c9342c;
+  --ds-live-soft: #fdedec;
+  --ds-live-border: #f3c3bf;
+  --ds-success: #2f7d57;
+  --ds-success-soft: #eaf6ef;
+  --ds-success-border: #b9dfc9;
+  --ds-warning: #a66c2e;
+  --ds-warning-soft: #fff4e5;
+  --ds-warning-border: #eacb9d;
+  --ds-danger: #b53a36;
+  --ds-danger-soft: #fdedec;
+  --ds-danger-border: #f2c3c0;
+  --ds-info: #3f6fa8;
+  --ds-info-soft: #edf4fc;
+  --ds-info-border: #c9daee;
 
-  --ds-focus-ring: var(--ds-pink-700);
-  --ds-overlay: rgba(31, 32, 37, 0.38);
+  --ds-focus: #6a5acd;
+  --ds-focus-ring: 0 0 0 3px rgb(106 90 205 / 24%);
+  --ds-overlay: rgb(31 32 37 / 42%);
 
-  --ds-font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --ds-font-display: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --ds-font-sans: var(--ds-font-display);
-  --ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
   --ds-text-xs: 0.75rem;
   --ds-text-sm: 0.875rem;
   --ds-text-md: 1rem;
   --ds-text-lg: 1.125rem;
-  --ds-text-xl: 1.375rem;
-  --ds-text-2xl: 1.75rem;
-  --ds-text-3xl: 2.25rem;
+  --ds-text-xl: 1.25rem;
+  --ds-text-2xl: 1.5rem;
+  --ds-text-3xl: 1.875rem;
+  --ds-text-4xl: 2.25rem;
   --ds-text-display: clamp(2rem, 4vw, 3.5rem);
 
-  --ds-leading-tight: 1.15;
-  --ds-leading-heading: 1.25;
-  --ds-leading-body: 1.55;
+  --ds-leading-tight: 1.2;
+  --ds-leading-heading: 1.3;
+  --ds-leading-body: 1.5;
+  --ds-leading-relaxed: 1.65;
 
   --ds-weight-regular: 400;
   --ds-weight-medium: 500;
   --ds-weight-semibold: 600;
   --ds-weight-bold: 700;
 
-  --ds-space-1: 0.25rem;
-  --ds-space-2: 0.5rem;
-  --ds-space-3: 0.75rem;
-  --ds-space-4: 1rem;
-  --ds-space-5: 1.25rem;
-  --ds-space-6: 1.5rem;
-  --ds-space-8: 2rem;
-  --ds-space-10: 2.5rem;
-  --ds-space-12: 3rem;
-  --ds-space-16: 4rem;
+  --ds-space-1: 4px;
+  --ds-space-2: 8px;
+  --ds-space-3: 12px;
+  --ds-space-4: 16px;
+  --ds-space-5: 20px;
+  --ds-space-6: 24px;
+  --ds-space-8: 32px;
+  --ds-space-10: 40px;
+  --ds-space-12: 48px;
+  --ds-space-16: 64px;
 
-  --ds-radius-card: 0px;
-  --ds-radius-control: 0px;
-  --ds-radius-status: 2px;
-  --ds-radius-sm: 0px;
-  --ds-radius-md: 0px;
-  --ds-radius-lg: 0px;
-  --ds-radius-xl: 0px;
+  --ds-radius-xs: 4px;
+  --ds-radius-sm: 6px;
+  --ds-radius-md: 8px;
+  --ds-radius-lg: 10px;
+  --ds-radius-xl: 12px;
   --ds-radius-pill: 999px;
+  --ds-radius-card: var(--ds-radius-lg);
+  --ds-radius-control: var(--ds-radius-md);
+  --ds-radius-status: var(--ds-radius-pill);
 
-  --ds-shadow-major: 6px 7px 0 var(--ds-ink);
-  --ds-shadow-control: 4px 5px 0 var(--ds-ink);
-  --ds-shadow-small: 3px 3px 0 var(--ds-ink);
-  --ds-shadow-card: var(--ds-shadow-major);
-  --ds-shadow-dialog: var(--ds-shadow-major);
-  --ds-glow-live: none;
+  --ds-border-width: 1px;
+  --ds-border-rule: 1px solid var(--ds-border-color);
+  --ds-border-default-rule: var(--ds-border-rule);
+  --ds-border-strong-rule: 1px solid var(--ds-border-strong);
 
-  /* Semantic motion foundation. Keep interaction motion short and purposeful. */
-  --ds-motion-instant: 100ms;
-  --ds-motion-control: 160ms;
-  --ds-motion-surface: 200ms;
-  --ds-motion-overlay: 260ms;
-  --ds-motion-workspace: 320ms;
-  --ds-motion-status: 220ms;
-  --ds-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ds-shadow-none: none;
+  --ds-shadow-xs: 0 1px 2px rgb(31 32 37 / 5%);
+  --ds-shadow-sm: 0 1px 4px rgb(31 32 37 / 8%);
+  --ds-shadow-md: 0 6px 18px rgb(31 32 37 / 12%);
+  --ds-shadow-lg: 0 14px 32px rgb(31 32 37 / 15%);
+  --ds-shadow-brand-offset: 4px 5px 0 rgb(31 32 37 / 92%);
 
-  /* Preserve legacy feature timings until each surface is explicitly audited. */
-  --ds-duration-fast: 120ms;
+  --ds-duration-instant: 80ms;
+  --ds-duration-fast: 140ms;
   --ds-duration-normal: 200ms;
-  --ds-duration-slow: 320ms;
+  --ds-duration-slow: 280ms;
+  --ds-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ds-ease-enter: cubic-bezier(0, 0, 0, 1);
+  --ds-ease-exit: cubic-bezier(0.3, 0, 1, 1);
 
-  --ds-sidebar-width: 228px;
-  --ds-page-max: 1240px;
-  --ds-control-min-height: 48px;
-  --ds-input-min-height: 52px;
+  --ds-control-sm: 32px;
+  --ds-control-md: 36px;
+  --ds-control-lg: 40px;
+  --ds-control-touch: 44px;
+  --ds-sidebar-width: 240px;
+  --ds-sidebar-compact-width: 216px;
+  --ds-page-max: 1440px;
+  --ds-content-max: 1180px;
+  --ds-reading-max: 720px;
 
-  /* Compatibility aliases while feature-specific CSS migrates to --ds-* tokens. */
+  --ds-z-base: 0;
+  --ds-z-sticky: 10;
+  --ds-z-dropdown: 30;
+  --ds-z-overlay: 40;
+  --ds-z-modal: 50;
+  --ds-z-toast: 60;
+
+  /* Compatibility aliases for feature CSS while each surface is migrated. */
+  --ds-canvas: var(--ds-bg);
+  --ds-surface-1: var(--ds-surface);
+  --ds-surface-2: var(--ds-surface-subtle);
+  --ds-surface-3: var(--ds-surface-neutral);
+  --ds-surface-warm: var(--ds-surface-subtle);
+  --ds-line-soft: var(--ds-border-color);
+  --ds-border: var(--ds-border-rule);
+  --ds-border-default: var(--ds-border-color);
+  --ds-border-subtle: var(--ds-border-color);
+  --ds-grid-dot: var(--ds-bg-dot);
+  --ds-ink: var(--ds-text);
+  --ds-ink-soft: var(--ds-text-secondary);
+  --ds-muted: var(--ds-text-tertiary);
+  --ds-pink-50: var(--ds-brand-soft);
+  --ds-pink-100: var(--ds-brand-soft-strong);
+  --ds-pink-300: var(--ds-brand);
+  --ds-pink-500: var(--ds-brand);
+  --ds-pink-700: var(--ds-brand-strong);
+  --ds-charcoal-panel: var(--ds-text);
+  --ds-text-primary: var(--ds-text);
+  --ds-text-muted: var(--ds-text-tertiary);
+  --ds-accent: var(--ds-brand);
+  --ds-accent-hover: var(--ds-brand-hover);
+  --ds-accent-active: var(--ds-brand-strong);
+  --ds-accent-soft: var(--ds-brand-soft);
+  --ds-accent-border: var(--ds-brand-border);
+  --ds-brand-secondary: var(--ds-brand);
+  --ds-success-foreground: #2f7d57;
+  --ds-warning-foreground: #7f4d18;
+  --ds-danger-foreground: #b53a36;
+  --ds-info-foreground: #3f6fa8;
+  --ds-shadow-major: var(--ds-shadow-md);
+  --ds-shadow-control: var(--ds-shadow-xs);
+  --ds-shadow-small: var(--ds-shadow-xs);
+  --ds-shadow-card: var(--ds-shadow-xs);
+  --ds-shadow-dialog: var(--ds-shadow-lg);
+  --ds-glow-live: none;
+  --ds-motion-instant: var(--ds-duration-instant);
+  --ds-motion-control: var(--ds-duration-fast);
+  --ds-motion-surface: var(--ds-duration-normal);
+  --ds-motion-overlay: var(--ds-duration-slow);
+  --ds-motion-workspace: var(--ds-duration-slow);
+  --ds-motion-status: var(--ds-duration-normal);
+  --ds-control-min-height: var(--ds-control-lg);
+  --ds-input-min-height: var(--ds-control-touch);
   --bg: var(--ds-canvas);
   --sidebar: var(--ds-surface-1);
   --surface: var(--ds-surface-2);
   --surface-strong: var(--ds-surface-3);
-  --border: var(--ds-border-default);
+  --border: var(--ds-border-emphasis);
   --muted: var(--ds-text-muted);
   --text: var(--ds-text-primary);
-  --green: var(--ds-accent);
-  --green-dark: var(--ds-accent-active);
+  --green: var(--ds-brand);
+  --green-dark: var(--ds-brand-strong);
   --radius: var(--ds-radius-lg);
 }

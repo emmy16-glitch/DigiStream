@@ -9,25 +9,26 @@ test('the design system exposes semantic motion timing tokens', async () => {
   const tokens = await readRepoFile('apps/web/src/design-system/tokens.css');
 
   const expectedTokens = new Map([
-    ['--ds-motion-instant', '100ms'],
-    ['--ds-motion-control', '160ms'],
-    ['--ds-motion-surface', '200ms'],
-    ['--ds-motion-overlay', '260ms'],
-    ['--ds-motion-workspace', '320ms'],
-    ['--ds-motion-status', '220ms'],
+    ['--ds-motion-instant', 'var(--ds-duration-instant)'],
+    ['--ds-motion-control', 'var(--ds-duration-fast)'],
+    ['--ds-motion-surface', 'var(--ds-duration-normal)'],
+    ['--ds-motion-overlay', 'var(--ds-duration-slow)'],
+    ['--ds-motion-workspace', 'var(--ds-duration-slow)'],
+    ['--ds-motion-status', 'var(--ds-duration-normal)'],
   ]);
 
   for (const [token, value] of expectedTokens) {
-    assert.match(tokens, new RegExp(`${token}:\\s*${value}`));
+    assert.ok(tokens.includes(`${token}: ${value}`));
   }
 });
 
-test('legacy feature durations stay unchanged until their surfaces are audited', async () => {
+test('audited feature durations use the v2 semantic timing scale', async () => {
   const tokens = await readRepoFile('apps/web/src/design-system/tokens.css');
 
-  assert.match(tokens, /--ds-duration-fast:\s*120ms/);
+  assert.match(tokens, /--ds-duration-instant:\s*80ms/);
+  assert.match(tokens, /--ds-duration-fast:\s*140ms/);
   assert.match(tokens, /--ds-duration-normal:\s*200ms/);
-  assert.match(tokens, /--ds-duration-slow:\s*320ms/);
+  assert.match(tokens, /--ds-duration-slow:\s*280ms/);
 });
 
 test('the web entrypoint loads the final shared motion ownership layer', async () => {

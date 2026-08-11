@@ -58,7 +58,8 @@ test('Creator Chat follows Echoo light responsive visual system', async () => {
   const css = await readFile(chatCssUrl, 'utf8');
 
   assert.match(css, /grid-template-columns:\s*minmax\(280px, 0\.82fr\) minmax\(0, 1\.18fr\)/);
-  assert.match(css, /linear-gradient\(150deg, #071a36 0%, #0d2c59 56%, #1f4e8c 100%\)/);
+  assert.match(css, /background:\s*var\(--ds-brand-soft\)/);
+  assert.doesNotMatch(css, /#071a36|#0d2c59|#1f4e8c/);
   assert.match(css, /var\(--ds-surface-1\)/);
   assert.match(css, /min-height:\s*var\(--ds-control-min-height\)/);
   assert.match(css, /:focus-visible/);

@@ -22,16 +22,14 @@
   margin-bottom: calc(92px + env(safe-area-inset-bottom));
 }
 
-.broadcast-row-overdue {
-  border-color: color-mix(in srgb, #f3b33d 45%, var(--ds-border-subtle));
-}
+.broadcast-row-overdue { border-color: var(--ds-warning-border); }
 
 .broadcast-overdue-note {
   padding: 10px 12px;
-  border: 1px solid color-mix(in srgb, #f3b33d 30%, transparent);
+  border: 1px solid var(--ds-warning-border);
   border-radius: var(--ds-radius-md);
-  color: #f5d89b !important;
-  background: color-mix(in srgb, #f3b33d 9%, transparent);
+  color: var(--ds-warning) !important;
+  background: var(--ds-warning-soft);
   font-size: var(--ds-text-sm);
 }
 

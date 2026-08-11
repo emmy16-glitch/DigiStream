@@ -4,13 +4,9 @@ const RESTORED_NOTICE_DURATION_MS = 6_000;
 
 type ConnectivityState = 'online' | 'offline';
 
-function readConnectivityState(): ConnectivityState {
-  return navigator.onLine ? 'online' : 'offline';
-}
-
 export function ConnectivityStatus() {
-  const [connectivity, setConnectivity] = useState<ConnectivityState>(readConnectivityState);
-  const [wasOffline, setWasOffline] = useState(!navigator.onLine);
+  const [connectivity, setConnectivity] = useState<ConnectivityState>('online');
+  const [wasOffline, setWasOffline] = useState(false);
 
   useEffect(() => {
     const handleOffline = () => {
@@ -21,7 +17,21 @@ export function ConnectivityStatus() {
 
     window.addEventListener('offline', handleOffline);
     window.addEventListener('online', handleOnline);
+
+    // Some embedded and headless browsers report a disconnected host-network
+    // signal even while the DigiStream origin is reachable. Verify the app
+    // origin before presenting an initial offline claim; subsequent native
+    // online/offline events remain authoritative and immediate.
+    let active = true;
+    if (!navigator.onLine) {
+      void fetch('/api/v1/status', { cache: 'no-store' })
+        .catch(() => {
+          if (active) handleOffline();
+        });
+    }
+
     return () => {
+      active = false;
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('online', handleOnline);
     };

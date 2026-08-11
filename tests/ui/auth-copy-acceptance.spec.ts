@@ -53,13 +53,14 @@ test('password recovery is not presented before backend ownership exists', async
   expect(source).not.toContain('Forgot password?');
 });
 
-test('reference styling preserves the Echoo palette, masked hero and mobile acceptance', async () => {
+test('authentication uses the DigiStream v2 palette and preserves mobile acceptance', async () => {
   const css = await readFile(authCssPath, 'utf8');
 
-  expect(css).toContain('background: #eff5fd;');
-  expect(css).toContain('background: #1f4e8c;');
+  expect(css).toContain('background: var(--ds-surface);');
+  expect(css).toContain('background: var(--ds-brand-strong);');
+  expect(css).toContain('background: var(--ds-pink-50);');
   expect(css).toContain('auth-provider-pill-primary');
-  expect(css).toContain('mask-image: linear-gradient');
+  expect(css).not.toContain('background: #1f4e8c;');
   expect(css).toContain('min-height: 100dvh;');
   expect(css).toContain('env(safe-area-inset-bottom)');
   expect(css).toContain('@media (orientation: landscape) and (max-height: 620px)');

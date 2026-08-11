@@ -1,6 +1,5 @@
 /* DigiStream auth entry — shared by Login (06), Signup choice (07), Signup form (08).
-   Warm cream dotted canvas, square geometry, thin ink borders, dusty-pink primary
-   action, hard black offset shadows, monospace supporting type.
+   Warm cream dotted canvas, compact warm-white surfaces and dusty-pink actions.
 
    Referenced classes must stay aligned with AuthScreen.tsx views. */
 
@@ -11,7 +10,7 @@
   padding: clamp(18px, 3vw, 32px);
   color: var(--ds-ink);
   background-color: var(--ds-bg);
-  background-image: radial-gradient(circle, rgba(31, 32, 37, 0.1) 1px, transparent 1.1px);
+  background-image: radial-gradient(circle, var(--ds-bg-dot) 1px, transparent 1.1px);
   background-size: 20px 20px;
 }
 
@@ -27,10 +26,10 @@
   min-height: min(680px, calc(100dvh - 48px));
   overflow: hidden;
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-xl);
   color: var(--ds-ink);
   background: var(--ds-surface);
-  box-shadow: var(--ds-shadow-major);
+  box-shadow: var(--ds-shadow-md);
 }
 
 .auth-choice-card {
@@ -118,11 +117,11 @@
   width: 100%;
   padding: 0 16px;
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-md);
   color: var(--ds-ink);
   background: var(--ds-surface);
-  box-shadow: var(--ds-shadow-small);
-  font-family: var(--ds-font-mono);
+  box-shadow: var(--ds-shadow-xs);
+  font-family: var(--ds-font-sans);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -131,23 +130,23 @@
 }
 
 .auth-provider-pill:hover:not(:disabled) {
-  background: var(--ds-pink-100);
+  background: var(--ds-brand-soft);
 }
 
 .auth-provider-pill:active:not(:disabled) {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 2px 0 var(--ds-ink);
+  transform: scale(.98);
+  box-shadow: none;
 }
 
 .auth-provider-pill-primary {
-  color: var(--ds-ink);
-  background: var(--ds-pink-300);
-  border-color: var(--ds-ink);
-  box-shadow: var(--ds-shadow-control);
+  color: var(--ds-text-inverse);
+  background: var(--ds-brand-strong);
+  border-color: var(--ds-brand-strong);
+  box-shadow: var(--ds-shadow-xs);
 }
 
 .auth-provider-pill-primary:hover:not(:disabled) {
-  background: var(--ds-pink-100);
+  background: var(--ds-brand-hover);
 }
 
 .auth-provider-pill:disabled,
@@ -163,8 +162,8 @@
   place-items: center;
   width: 30px;
   height: 30px;
-  border: var(--ds-border-soft);
-  border-radius: 0;
+  border: var(--ds-border-rule);
+  border-radius: var(--ds-radius-sm);
   color: var(--ds-pink-700);
   font-size: 17px;
 }
@@ -251,11 +250,11 @@
   min-height: var(--ds-input-min-height);
   padding: 0 16px;
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-md);
   outline: 0;
   color: var(--ds-ink);
   background: var(--ds-surface);
-  font-family: var(--ds-font-mono);
+  font-family: var(--ds-font-sans);
   font-size: 0.94rem;
   transition: border-color var(--ds-duration-fast) var(--ds-ease-standard), box-shadow var(--ds-duration-fast) var(--ds-ease-standard), background var(--ds-duration-fast) var(--ds-ease-standard);
 }
@@ -265,13 +264,14 @@
 }
 
 .auth-field input:hover {
-  border-color: var(--ds-ink);
+  border-color: var(--ds-border-emphasis);
 }
 
 .auth-field input:focus-visible {
-  border-color: var(--ds-ink);
-  outline: 2px solid var(--ds-focus-ring);
+  border-color: var(--ds-focus);
+  outline: 2px solid var(--ds-focus);
   outline-offset: 2px;
+  box-shadow: var(--ds-focus-ring);
 }
 
 .auth-password-field {
@@ -293,7 +293,7 @@
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 0;
+  border-radius: var(--ds-radius-sm);
   color: var(--ds-pink-700);
   background: transparent;
   font-size: 16px;
@@ -304,8 +304,9 @@
 .auth-switch-copy button:focus-visible,
 .auth-provider-pill:focus-visible,
 .auth-primary-button:focus-visible {
-  outline: 2px solid var(--ds-focus-ring);
+  outline: 2px solid var(--ds-focus);
   outline-offset: 2px;
+  box-shadow: var(--ds-focus-ring);
 }
 
 .auth-primary-button {
@@ -313,11 +314,11 @@
   margin-top: 4px;
   padding: 0 20px;
   border: var(--ds-border);
-  border-radius: 0;
-  color: var(--ds-ink);
-  background: var(--ds-pink-300);
-  box-shadow: var(--ds-shadow-control);
-  font-family: var(--ds-font-mono);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text-inverse);
+  background: var(--ds-brand-strong);
+  box-shadow: var(--ds-shadow-xs);
+  font-family: var(--ds-font-sans);
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
@@ -325,18 +326,18 @@
 }
 
 .auth-primary-button:hover:not(:disabled) {
-  background: var(--ds-pink-100);
+  background: var(--ds-brand-hover);
 }
 
 .auth-primary-button:active:not(:disabled) {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 2px 0 var(--ds-ink);
+  transform: scale(.98);
+  box-shadow: none;
 }
 
 .auth-error {
   padding: 11px 13px;
   border: 1px solid var(--ds-danger);
-  border-radius: 0;
+  border-radius: var(--ds-radius-md);
   color: var(--ds-danger-foreground);
   background: var(--ds-danger-soft);
   font-family: var(--ds-font-mono);
@@ -348,7 +349,7 @@
   margin: -6px 0 16px;
   padding: 10px 12px;
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-md);
   color: var(--ds-ink-soft);
   background: var(--ds-pink-50);
   font-family: var(--ds-font-mono);
@@ -406,7 +407,7 @@
   display: grid;
   place-items: center;
   overflow: hidden;
-  border-radius: 0;
+  border-radius: var(--ds-radius-md);
 }
 
 .auth-inline-error {
@@ -562,5 +563,5 @@
     transform: none;
   }
 }
-/* Screen 45: listener sign-in prompts use the public auth surface, never fake access. */
-.listener-sign-in-prompt{border-radius:0;border:1px solid var(--ds-ink);background:var(--ds-surface);box-shadow:var(--ds-shadow-major)}
+/* Listener sign-in prompts reuse the public auth surface and never fake access. */
+.listener-sign-in-prompt{border-radius:var(--ds-radius-lg);border:var(--ds-border-rule);background:var(--ds-surface);box-shadow:var(--ds-shadow-sm)}

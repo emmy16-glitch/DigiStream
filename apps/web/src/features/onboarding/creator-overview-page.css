@@ -44,17 +44,16 @@
 
 .echoo-overview-now-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-3);
 }
 
 .echoo-overview-feature-card,
 .echoo-overview-section {
   min-width: 0;
-  border: 1px solid var(--ds-border-default);
+  border: 0;
   border-radius: 0;
-  background: var(--ds-surface-1);
-  box-shadow: var(--ds-shadow-card);
+  background: transparent;
+  box-shadow: none;
 }
 
 .echoo-overview-feature-card {
@@ -95,22 +94,22 @@
 }
 
 .echoo-overview-artwork {
-  width: 58px;
-  height: 58px;
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  border: 1px solid var(--ds-border-default);
-  border-radius: 0;
-  color: var(--ds-pink-700);
-  background: var(--ds-accent-soft);
-  box-shadow: var(--ds-shadow-small);
+  border: 1px solid var(--ds-brand-border);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-brand-strong);
+  background: var(--ds-brand-soft);
+  box-shadow: none;
 }
 
 .echoo-overview-artwork.is-live {
-  color: #ffffff;
-  border-color: var(--ds-pink-700);
-  background: var(--ds-pink-700);
+  color: var(--ds-text-inverse);
+  border-color: var(--ds-live);
+  background: var(--ds-live);
 }
 
 .echoo-overview-feature-copy,
@@ -150,7 +149,7 @@
 }
 
 .echoo-overview-section {
-  padding: clamp(16px, 2vw, 22px);
+  padding: 0;
   display: grid;
   gap: var(--ds-space-4);
 }
@@ -166,10 +165,10 @@
   min-height: 44px;
   width: auto;
   padding: 0 var(--ds-space-3);
-  border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border: var(--ds-border-rule);
+  border-radius: var(--ds-radius-md);
   color: var(--ds-text-primary);
-  background: var(--ds-surface-1);
+  background: var(--ds-surface-white);
   box-shadow: none;
 }
 
@@ -193,20 +192,18 @@
 
 .echoo-overview-quick-action:hover,
 .echoo-overview-quick-grid > .ds-button:hover {
-  border-color: var(--ds-accent-border);
-  background: var(--ds-accent-soft);
+  border-color: var(--ds-brand-border);
+  background: var(--ds-brand-soft);
 }
 
 .echoo-overview-quick-action:focus-visible {
-  outline: 3px solid var(--ds-info);
-  outline-offset: 3px;
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+  box-shadow: var(--ds-focus-ring);
 }
 
 .echoo-overview-recent-list {
   display: grid;
-  border: 1px solid var(--ds-border-subtle);
-  border-radius: 0;
-  overflow: hidden;
 }
 
 .echoo-overview-recent-row {
@@ -226,7 +223,7 @@
 .echoo-overview-recent-row .echoo-overview-artwork {
   width: 56px;
   height: 56px;
-  border-radius: 0;
+  border-radius: var(--ds-radius-md);
 }
 
 .echoo-overview-recent-copy {
@@ -296,11 +293,7 @@
     width: 100%;
   }
 
-  .echoo-overview-feature-card,
-  .echoo-overview-section {
-    padding: 17px;
-    border-radius: var(--ds-radius-lg);
-  }
+  .echoo-overview-feature-card { padding: 17px; border-radius: var(--ds-radius-lg); }
 
   .echoo-overview-feature-body {
     grid-template-columns: auto minmax(0, 1fr);
@@ -341,7 +334,7 @@
 @media (orientation: landscape) and (max-height: 620px) {
   .echoo-overview-feature-card,
   .echoo-overview-section {
-    padding: 16px 18px;
+    padding: 0;
   }
 
   .echoo-overview-quick-action, .echoo-overview-quick-grid > .ds-button { min-height: 44px; }

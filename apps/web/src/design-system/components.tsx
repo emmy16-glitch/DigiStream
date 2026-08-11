@@ -127,6 +127,21 @@ export function StatusBadge({
   );
 }
 
+export function StatusDot({
+  label,
+  tone = 'neutral',
+}: {
+  label: string;
+  tone?: StatusTone;
+}) {
+  return (
+    <span className={`ds-status-dot ds-status-dot-${tone}`}>
+      <span aria-hidden="true" />
+      <span>{label}</span>
+    </span>
+  );
+}
+
 export function AudioLevelMeter({
   clipping = false,
   decibels,

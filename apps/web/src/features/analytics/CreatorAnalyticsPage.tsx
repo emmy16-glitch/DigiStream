@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Organisation } from '@digistream/contracts';
 import { Button, StatePanel, StatusBadge } from '../../design-system/components';
+import { InsightCard } from '../../design-system/primitives';
 import { ApiClientError, apiRequest } from '../../lib/api-client';
 import './creator-analytics.css';
 
@@ -87,13 +88,15 @@ function failureFrom(error: unknown): Failure {
   };
 }
 
-function MetricCard({ definition, label, value }: { definition: string; label: string; value: number | string }) {
+function MetricCard({ definition, label, tone = 'brand', value }: { definition: string; label: string; tone?: 'brand' | 'lavender' | 'sky' | 'mint' | 'amber' | 'peach'; value: number | string }) {
   return (
-    <article className="metric-card">
-      <span>{label}</span>
-      <strong>{typeof value === 'number' ? value.toLocaleString() : value}</strong>
-      <small>{definition}</small>
-    </article>
+    <InsightCard
+      className="metric-card"
+      detail={definition}
+      label={label}
+      tone={tone}
+      value={typeof value === 'number' ? value.toLocaleString() : value}
+    />
   );
 }
 
@@ -207,16 +210,19 @@ export function CreatorAnalyticsPage({ organisation }: { organisation: Organisat
             <MetricCard
               definition={analytics.definitions.listeningHistoryEntries}
               label="Listening-history entries"
+              tone="lavender"
               value={analytics.audience.listeningHistoryEntries}
             />
             <MetricCard
               definition={analytics.definitions.savedBroadcasts}
               label="Saved broadcasts"
+              tone="sky"
               value={analytics.audience.savedBroadcasts}
             />
             <MetricCard
               definition={analytics.definitions.usersWhoSaved}
               label="Users who saved"
+              tone="peach"
               value={analytics.audience.usersWhoSaved}
             />
           </div>
@@ -238,16 +244,19 @@ export function CreatorAnalyticsPage({ organisation }: { organisation: Organisat
               <MetricCard
                 definition={analytics.definitions.activeSessions}
                 label="Active measured sessions"
+                tone="mint"
                 value={analytics.playback.activeSessions}
               />
               <MetricCard
                 definition={analytics.definitions.measuredListeningSeconds}
                 label="Measured listening time"
+                tone="sky"
                 value={formatMeasuredDuration(analytics.playback.measuredListeningSeconds)}
               />
               <MetricCard
                 definition="Measured playback sessions with no signed-in user attached. This is session count, not unique anonymous reach."
                 label="Anonymous playback sessions"
+                tone="lavender"
                 value={analytics.playback.anonymousSessions}
               />
             </div>
@@ -297,15 +306,15 @@ export function CreatorAnalyticsPage({ organisation }: { organisation: Organisat
                   <tbody>
                     {analytics.channels.breakdown.map((channel) => (
                       <tr key={channel.id}>
-                        <th scope="row">
+                        <th scope="row" data-label="Channel">
                           <strong>{channel.name}</strong>
                           <small>{channel.visibility}</small>
                         </th>
-                        <td>{channel.status.replaceAll('_', ' ')}</td>
-                        <td>{channel.broadcasts.toLocaleString()}</td>
-                        <td>{channel.registeredListeners.toLocaleString()}</td>
-                        <td>{channel.listeningHistoryEntries.toLocaleString()}</td>
-                        <td>{channel.savedBroadcasts.toLocaleString()}</td>
+                        <td data-label="Status">{channel.status.replaceAll('_', ' ')}</td>
+                        <td data-label="Broadcasts">{channel.broadcasts.toLocaleString()}</td>
+                        <td data-label="Registered listeners">{channel.registeredListeners.toLocaleString()}</td>
+                        <td data-label="History entries">{channel.listeningHistoryEntries.toLocaleString()}</td>
+                        <td data-label="Saved">{channel.savedBroadcasts.toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>

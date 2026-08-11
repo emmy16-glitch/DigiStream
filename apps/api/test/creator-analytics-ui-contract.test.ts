@@ -57,9 +57,10 @@ test('Creator Stats remains keyboard and small-screen usable', async () => {
 
   assert.match(analytics, /tabIndex=\{0\}/);
   assert.match(analytics, /<th scope="col">/);
-  assert.match(analytics, /<th scope="row">/);
+  assert.match(analytics, /<th scope="row"/);
   assert.match(css, /overflow-x:\s*auto/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /@media \(max-width:\s*640px\)/);
-  assert.match(css, /grid-template-columns:\s*minmax\(0, 1fr\)/);
+  assert.match(css, /grid-template-columns:\s*minmax\(8rem, \.8fr\) minmax\(0, 1fr\)/);
+  assert.match(css, /content:\s*attr\(data-label\)/);
 });

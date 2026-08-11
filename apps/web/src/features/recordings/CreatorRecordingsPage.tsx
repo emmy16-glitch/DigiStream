@@ -7,6 +7,8 @@ import type {
   Organisation,
 } from '@digistream/contracts';
 import { Button, LinkButton, StatePanel } from '../../design-system/components';
+import { FilterTabs, SearchField } from '../../design-system/primitives';
+import { Icon } from '../../design-system/Icon';
 import { memberReplayPath, publicReplayPath } from '../listening/listener-route';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
 import './creator-recordings-page.css';
@@ -76,6 +78,8 @@ type ReplayDestination = {
 type WorkspaceLoadOptions = {
   background?: boolean;
 };
+
+type RecordingFilter = 'all' | 'replay' | 'processing' | 'private';
 
 const PROCESSING_RECORDING_STATUSES: ReadonlySet<RecordingStatus> = new Set([
   'recording',
@@ -246,6 +250,8 @@ export function CreatorRecordingsPage({
   const [error, setError] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [requestingBroadcastId, setRequestingBroadcastId] = useState<string | null>(null);
+  const [recordingFilter, setRecordingFilter] = useState<RecordingFilter>('all');
+  const [recordingQuery, setRecordingQuery] = useState('');
   const loadSequenceRef = useRef(0);
 
   const canManage =
@@ -349,6 +355,29 @@ export function CreatorRecordingsPage({
       (source) => !recordedBroadcastIds.has(source.broadcast.id),
     );
   }, [completedSources, recordings]);
+
+  const filteredRecordings = useMemo(() => {
+    const query = recordingQuery.trim().toLocaleLowerCase();
+    return recordings.filter((recording) => {
+      const matchesQuery = query.length === 0 || [
+        recording.broadcast.title,
+        recording.channel.name,
+        recording.broadcast.slug,
+      ].some((value) => value.toLocaleLowerCase().includes(query));
+      if (!matchesQuery) return false;
+      if (recordingFilter === 'replay') return recording.replayAvailable;
+      if (recordingFilter === 'processing') return PROCESSING_RECORDING_STATUSES.has(recording.status);
+      if (recordingFilter === 'private') return recording.status === 'private' || recording.status === 'archived';
+      return true;
+    });
+  }, [recordingFilter, recordingQuery, recordings]);
+
+  const recordingTabs = useMemo(() => [
+    { label: 'All', value: 'all', count: recordings.length },
+    { label: 'Replay available', value: 'replay', count: recordings.filter((recording) => recording.replayAvailable).length },
+    { label: 'Processing', value: 'processing', count: recordings.filter((recording) => PROCESSING_RECORDING_STATUSES.has(recording.status)).length },
+    { label: 'Private', value: 'private', count: recordings.filter((recording) => recording.status === 'private' || recording.status === 'archived').length },
+  ], [recordings]);
 
   async function requestRecording(source: CompletedBroadcastSource) {
     setRequestingBroadcastId(source.broadcast.id);
@@ -465,8 +494,27 @@ export function CreatorRecordingsPage({
               Completed broadcasts appear here after a real recording job is created. Echoo does not invent replay data.
             </StatePanel>
           ) : (
-            <section className="recordings-reference-list" aria-label="Organisation recordings">
-              {recordings.map((recording) => {
+            <section className="recordings-library" aria-labelledby="recordings-library-title">
+              <header className="recordings-library-toolbar">
+                <div>
+                  <h3 id="recordings-library-title">Recording library</h3>
+                  <span>{filteredRecordings.length} of {recordings.length}</span>
+                </div>
+                <SearchField
+                  label="Search recordings"
+                  onChange={(event) => setRecordingQuery(event.target.value)}
+                  placeholder="Search title or channel"
+                  value={recordingQuery}
+                />
+              </header>
+              <FilterTabs
+                ariaLabel="Filter recordings"
+                onChange={(value) => setRecordingFilter(value as RecordingFilter)}
+                tabs={recordingTabs}
+                value={recordingFilter}
+              />
+              {filteredRecordings.length > 0 ? <div className="recordings-reference-list" aria-label="Organisation recordings">
+              {filteredRecordings.map((recording) => {
                 const channel = channelById.get(recording.channelId);
                 const destination = replayDestination(recording, organisation, channel);
                 const presentation = statusPresentation(recording.status);
@@ -475,7 +523,7 @@ export function CreatorRecordingsPage({
 
                 return (
                   <article className="recording-reference-row" key={recording.id}>
-                    <div className="recording-reference-artwork" aria-hidden="true" />
+                    <div className="recording-reference-artwork" aria-hidden="true"><Icon name="recording" size={22} /></div>
 
                     <div className="recording-reference-copy">
                       <h3>{recording.broadcast.title}</h3>
@@ -557,6 +605,9 @@ export function CreatorRecordingsPage({
                   </article>
                 );
               })}
+              </div> : <StatePanel compact kind="empty" title="No recordings match">
+                Change the search or filter to see other recordings in this workspace.
+              </StatePanel>}
             </section>
           )}
         </>

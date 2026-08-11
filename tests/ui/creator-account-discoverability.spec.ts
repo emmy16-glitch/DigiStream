@@ -60,9 +60,12 @@ test('account actions retain visible keyboard focus', async () => {
   ]);
 
   expect(base).toContain(':where(a, button, input, select, textarea, [tabindex]):focus-visible');
-  expect(base).toContain('outline: 2px solid var(--ds-focus-ring);');
+  expect(base).toContain('outline: 2px solid var(--ds-focus);');
+  expect(base).toContain('box-shadow: var(--ds-focus-ring);');
   expect(fixes).toContain('.ds-creator-account-area:focus-within');
   expect(styles).toContain('.ds-mobile-account-menu > summary:focus-visible');
+  expect(styles).toContain('outline: 2px solid var(--ds-focus)');
+  expect(styles).toContain('box-shadow: var(--ds-focus-ring)');
 });
 
 test('inline account access does not steal Escape or Android Back history ownership', async () => {
@@ -72,9 +75,13 @@ test('inline account access does not steal Escape or Android Back history owners
     readFile(manualFixesPath, 'utf8'),
   ]);
 
-  expect(shell).not.toContain('aria-modal="true"');
-  expect(shell).not.toContain('useModalHistoryDismiss');
-  expect(shell).not.toContain('history.pushState');
+  const accountMenu = shell.slice(
+    shell.indexOf('<details className="ds-mobile-account-menu">'),
+    shell.indexOf('</details>') + '</details>'.length,
+  );
+  expect(accountMenu).not.toContain('aria-modal="true"');
+  expect(accountMenu).not.toContain('useModalHistoryDismiss');
+  expect(accountMenu).not.toContain('history.pushState');
   expect(app).not.toContain('digistreamCreatorAccount');
   expect(fixes).toContain('does not claim browser/Android');
   expect(fixes).toContain('Back or Escape ownership');

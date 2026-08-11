@@ -1,6 +1,14 @@
 import type { Broadcast, Channel, Organisation } from '@digistream/contracts';
 import { Button, LinkButton, StatusBadge } from '../../design-system/components';
 import { Icon } from '../../design-system/Icon';
+import {
+  PageHeader,
+  RecordList,
+  RecordRow,
+  SectionHeader,
+  TaskList,
+  TaskRow,
+} from '../../design-system/primitives';
 import { requestCreatorStudioLobbyContext } from '../../lib/backstage-context-runtime';
 import {
   presentationLabel,
@@ -182,74 +190,47 @@ export function CreatorOverviewPage({
 
   return (
     <div className="echoo-overview-page">
-      <header className="echoo-overview-hero">
-        <div>
-          <h2>{greeting()}, {firstName}</h2>
-          <p>Here’s what’s happening with your broadcasts.</p>
-        </div>
-        <Button onClick={primaryAction.onClick} variant="primary">
-          {primaryAction.label}
-        </Button>
-      </header>
+      <PageHeader
+        action={<Button onClick={primaryAction.onClick} variant="primary">{primaryAction.label}</Button>}
+        description="Here’s what’s happening with your broadcasts."
+        eyebrow={organisation.name}
+        title={`${greeting()}, ${firstName}`}
+      />
 
-      <section className="echoo-overview-now-grid" aria-label="Current and upcoming broadcasts">
-        <article className="echoo-overview-feature-card">
-          <header>
-            <h3>Live now</h3>
-            {liveBroadcast ? <StatusBadge tone="live">Live</StatusBadge> : null}
-            {recoveringBroadcast ? <StatusBadge tone="warning">Reconnecting</StatusBadge> : null}
-          </header>
+      <section className="echoo-overview-now-grid" aria-labelledby="echoo-current-work-title">
+        <SectionHeader id="echoo-current-work-title" title="Current work" />
+        <TaskList label="Current and upcoming broadcasts">
           {currentBroadcast ? (
-            <div className="echoo-overview-feature-body">
-              <BroadcastArtwork live={Boolean(liveBroadcast)} />
-              <div className="echoo-overview-feature-copy">
-                <strong>{currentBroadcast.title}</strong>
-                <span>{channelName(channels, currentBroadcast)}</span>
-                {liveBroadcast?.liveStartedAt ? <small>Started {formatTime(liveBroadcast.liveStartedAt)}</small> : null}
-                {recoveringBroadcast ? <small>Echoo is recovering the public delivery path.</small> : null}
-              </div>
-              <Button onClick={onOpenStudio} variant="secondary">
-                Open Studio
-              </Button>
-            </div>
+            <TaskRow
+              action={<Button onClick={onOpenStudio} variant="secondary">Open Studio</Button>}
+              icon="broadcast"
+              title={currentBroadcast.title}
+              tone={liveBroadcast ? 'live' : 'warning'}
+            >
+              <span>{channelName(channels, currentBroadcast)}</span>
+              {liveBroadcast?.liveStartedAt ? <span> · Started {formatTime(liveBroadcast.liveStartedAt)}</span> : null}
+              {recoveringBroadcast ? <span> · Public delivery is reconnecting.</span> : null}
+            </TaskRow>
           ) : (
-            <div className="echoo-overview-empty-card">
-              <BroadcastArtwork />
-              <div>
-                <strong>No broadcast is live</strong>
-                <span>Prepare an existing broadcast or create your next one.</span>
-              </div>
-            </div>
+            <TaskRow icon="broadcast" title="No broadcast is live">
+              Prepare an existing broadcast or create your next one.
+            </TaskRow>
           )}
-        </article>
-
-        <article className="echoo-overview-feature-card">
-          <header>
-            <h3>Next up</h3>
-            {scheduledBroadcast ? <StatusBadge tone="info">Scheduled</StatusBadge> : null}
-          </header>
           {scheduledBroadcast ? (
-            <div className="echoo-overview-feature-body">
-              <BroadcastArtwork />
-              <div className="echoo-overview-feature-copy">
-                <strong>{scheduledBroadcast.title}</strong>
-                <span>{formatDateTime(scheduledBroadcast.scheduledStartAt)}</span>
-                <small className="echoo-overview-starts">{relativeStart(scheduledBroadcast.scheduledStartAt)}</small>
-              </div>
-              <Button onClick={onOpenBroadcasts} variant="secondary">
-                Manage schedule
-              </Button>
-            </div>
+            <TaskRow
+              action={<Button onClick={onOpenBroadcasts} variant="secondary">Manage schedule</Button>}
+              icon="calendar"
+              title={scheduledBroadcast.title}
+              tone="info"
+            >
+              {formatDateTime(scheduledBroadcast.scheduledStartAt)} · {relativeStart(scheduledBroadcast.scheduledStartAt)}
+            </TaskRow>
           ) : (
-            <div className="echoo-overview-empty-card">
-              <BroadcastArtwork />
-              <div>
-                <strong>Nothing scheduled</strong>
-                <span>Create a broadcast when you’re ready.</span>
-              </div>
-            </div>
+            <TaskRow icon="calendar" title="Nothing scheduled">
+              Create a broadcast when you’re ready.
+            </TaskRow>
           )}
-        </article>
+        </TaskList>
       </section>
 
       {quickActions.length > 0 ? <section className="echoo-overview-section echoo-overview-utilities" aria-labelledby="echoo-quick-actions-title">
@@ -270,39 +251,39 @@ export function CreatorOverviewPage({
       </section> : null}
 
       <section className="echoo-overview-section" aria-labelledby="echoo-recent-broadcasts-title">
-        <header className="echoo-overview-section-heading">
-          <h3 id="echoo-recent-broadcasts-title">Recent broadcasts</h3>
-          <Button onClick={onOpenBroadcasts} variant="ghost">View all</Button>
-        </header>
+        <SectionHeader
+          action={<Button onClick={onOpenBroadcasts} variant="ghost">View all</Button>}
+          id="echoo-recent-broadcasts-title"
+          title="Recent broadcasts"
+        />
 
         {recentBroadcasts.length > 0 ? (
-          <div className="echoo-overview-recent-list">
+          <RecordList className="echoo-overview-recent-list" label="Recent broadcasts">
             {recentBroadcasts.map((broadcast) => {
               const status = presentationStatus(broadcast.status, broadcast.scheduledStartAt);
               const duration = durationLabel(broadcast);
               const date = broadcast.liveStartedAt ?? broadcast.scheduledStartAt ?? broadcast.createdAt;
 
               return (
-                <article className="echoo-overview-recent-row" key={broadcast.id}>
-                  <BroadcastArtwork live={status === 'live'} />
-                  <div className="echoo-overview-recent-copy">
-                    <strong>{broadcast.title}</strong>
-                    <div className="echoo-overview-recent-meta">
+                <RecordRow
+                  action={<Button onClick={onOpenBroadcasts} variant="secondary">View</Button>}
+                  key={broadcast.id}
+                  leading={<BroadcastArtwork live={status === 'live'} />}
+                  meta={(
+                    <>
                       <span>{channelName(channels, broadcast)}</span>
                       <span>{formatDateTime(date)}</span>
                       {duration ? <span>{duration}</span> : null}
-                    </div>
-                  </div>
-                  <StatusBadge tone={status === 'live' ? 'live' : status === 'completed' ? 'success' : status === 'failed' || status === 'cancelled' ? 'danger' : status === 'overdue' || status === 'ending' ? 'warning' : 'info'}>
+                    </>
+                  )}
+                  status={<StatusBadge tone={status === 'live' ? 'live' : status === 'completed' ? 'success' : status === 'failed' || status === 'cancelled' ? 'danger' : status === 'overdue' || status === 'ending' ? 'warning' : 'info'}>
                     {presentationLabel(status)}
-                  </StatusBadge>
-                  <Button onClick={onOpenBroadcasts} variant="secondary">
-                    View
-                  </Button>
-                </article>
+                  </StatusBadge>}
+                  title={broadcast.title}
+                />
               );
             })}
-          </div>
+          </RecordList>
         ) : (
           <div className="echoo-overview-recent-empty">
             <Icon name="broadcast" size={30} />

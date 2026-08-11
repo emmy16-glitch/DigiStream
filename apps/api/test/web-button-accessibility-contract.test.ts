@@ -14,9 +14,9 @@ async function loadButtonCss(): Promise<string> {
 test('shared buttons expose visible keyboard focus without relying on hover', async () => {
   const css = await loadButtonCss();
 
-  assert.match(css, /\.ds-button:focus-visible\s*\{[^}]*outline:\s*3px solid var\(--ds-info\)/s);
-  assert.match(css, /\.ds-icon-button:focus-visible\s*\{[^}]*outline:\s*3px solid var\(--ds-info\)/s);
-  assert.match(css, /outline-offset:\s*3px/);
+  assert.match(css, /\.ds-button:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--ds-focus\)[^}]*box-shadow:\s*var\(--ds-focus-ring\)/s);
+  assert.match(css, /\.ds-icon-button:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--ds-focus\)[^}]*box-shadow:\s*var\(--ds-focus-ring\)/s);
+  assert.match(css, /outline-offset:\s*2px/);
 });
 
 test('shared button controls keep touch targets and explicit press feedback', async () => {

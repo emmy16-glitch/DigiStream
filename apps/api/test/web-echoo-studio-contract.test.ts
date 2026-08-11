@@ -16,9 +16,10 @@ test('Echoo Studio preserves microphone, contribution and delivery as separate t
 
   assert.match(source, /<h3 id="studio-audio-title">Prepare studio audio<\/h3>/);
   assert.match(source, /<h3 id="studio-delivery-title">Verify and go live<\/h3>/);
-  assert.match(source, /<strong>Microphone permission and input<\/strong>/);
-  assert.match(source, /<strong>Private studio connection<\/strong>/);
-  assert.match(source, /<strong>Public listener delivery<\/strong>/);
+  assert.match(source, /title="Microphone permission and input"/);
+  assert.match(source, /title="Private studio connection"/);
+  assert.match(source, /title="Public listener delivery"/);
+  assert.match(source, /<TaskList/);
   assert.match(source, /microphoneReadyForDelivery/);
   assert.match(source, /publicDeliveryIsLive\(delivery\)/);
   assert.match(source, /Contribution and public delivery are verified/);
@@ -47,7 +48,8 @@ test('Echoo Studio uses the approved operational hierarchy instead of a decorati
   assert.match(css, /\.studio-status-card\s*\{[\s\S]*grid-area:\s*state/);
   assert.match(css, /\.studio-audio-card\s*\{[\s\S]*grid-area:\s*audio/);
   assert.match(css, /\.studio-delivery-card\s*\{[\s\S]*grid-area:\s*delivery/);
-  assert.match(css, /linear-gradient\(145deg, #071a36 0%, #0b2449 56%, #123a70 100%\)/);
+  assert.match(css, /background:\s*var\(--ds-accent-sky-soft\)/);
+  assert.doesNotMatch(css, /#071a36|#0b2449|#123a70/);
   assert.doesNotMatch(css, /animation:\s*[^;]+infinite/);
 });
 

@@ -48,7 +48,7 @@
     min-height: 72px;
     padding: 12px 14px;
     gap: 10px;
-    border-bottom: 1px solid var(--ds-ink);
+    border-bottom: var(--ds-border-rule);
     background: var(--ds-surface-1);
   }
 
@@ -112,7 +112,7 @@
     align-content: center;
     gap: 3px;
     border: 1px solid transparent;
-    border-radius: 0;
+    border-radius: var(--ds-radius-sm);
     color: var(--ds-text-muted);
     background: transparent;
     font-family: var(--ds-font-mono);
@@ -120,10 +120,9 @@
   }
 
   .ds-creator-mobile-nav button.active {
-    color: var(--ds-ink);
-    background: var(--ds-pink-100);
-    border-color: var(--ds-ink);
-    box-shadow: inset 0 -3px var(--ds-pink-700);
+    color: var(--ds-brand-strong);
+    background: var(--ds-brand-soft);
+    border-color: var(--ds-brand-border);
   }
 
   .workspace-welcome {
@@ -194,7 +193,7 @@
     min-height: 100dvh;
     max-height: 100dvh;
     border: 0;
-    border-radius: 0;
+    border-radius: var(--ds-radius-lg);
     box-shadow: none;
   }
 
@@ -250,7 +249,7 @@
   .studio-delivery-card {
     gap: 14px;
     padding: 16px;
-    border-radius: 0;
+    border-radius: var(--ds-radius-lg);
   }
 
   .studio-field select,
@@ -305,7 +304,7 @@
     min-height: 100dvh;
     max-height: 100dvh;
     border: 0;
-    border-radius: 0;
+    border-radius: var(--ds-radius-lg);
     box-shadow: none;
   }
 
@@ -346,7 +345,7 @@
 
   .backstage-panel {
     padding: 16px;
-    border-radius: 0;
+    border-radius: var(--ds-radius-lg);
   }
 
   .backstage-invite-form {
@@ -419,7 +418,7 @@
   .creator-chat-panel:has(> .creator-chat-loading) .creator-chat-loading {
     min-height: 150px;
     border: 1px dashed var(--ds-border-default);
-    border-radius: 0;
+    border-radius: var(--ds-radius-lg);
   }
 }
 

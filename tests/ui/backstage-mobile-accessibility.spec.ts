@@ -21,7 +21,8 @@ test('Backstage protects mobile safe areas and minimum touch targets', () => {
 
 test('Backstage keeps keyboard focus visible and scrolling contained', () => {
   expect(backstageCss).toContain('.backstage-close:focus-visible');
-  expect(backstageCss).toContain('outline: 3px solid var(--ds-focus-ring)');
+  expect(backstageCss).toContain('outline: 2px solid var(--ds-focus)');
+  expect(backstageCss).toContain('box-shadow: var(--ds-focus-ring)');
   expect(backstageCss).toContain('overscroll-behavior: contain');
   expect(backstageCss).toContain('scrollbar-gutter: stable');
   expect(backstageCss).toContain('scroll-padding-block:');

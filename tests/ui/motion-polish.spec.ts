@@ -64,7 +64,7 @@ test('final motion cascade uses semantic compositor feedback on audited surfaces
   expect(result.cardProperty).toBe('transform, border-color, background-color');
   expect(everyDurationIs(result.cardDuration, '0.2s')).toBe(true);
   expect(result.studioMeterProperty).toBe('transform, opacity');
-  expect(everyDurationIs(result.studioMeterDuration, '0.1s')).toBe(true);
+  expect(everyDurationIs(result.studioMeterDuration, '0.08s')).toBe(true);
   expect(result.studioMeterTransform).not.toBe('none');
   expect(result.guestMeterTransform).not.toBe('none');
 });

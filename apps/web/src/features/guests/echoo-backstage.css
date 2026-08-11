@@ -2,8 +2,7 @@
   display: grid;
   place-items: center;
   padding: clamp(14px, 2vw, 28px);
-  background: rgba(7, 26, 54, 0.5);
-  backdrop-filter: blur(14px);
+  background: var(--ds-overlay);
 }
 
 .backstage-workspace {
@@ -11,22 +10,21 @@
   max-height: calc(100dvh - clamp(28px, 4vw, 56px));
   margin: 0;
   overflow: auto;
-  border: 1px solid rgba(159, 178, 202, 0.72);
-  border-radius: 28px;
-  background: var(--ds-canvas);
-  box-shadow: 0 34px 90px rgba(7, 26, 54, 0.24);
+  border: var(--ds-border-rule);
+  border-radius: var(--ds-radius-xl);
+  background: var(--ds-surface-subtle);
+  box-shadow: var(--ds-shadow-lg);
   scrollbar-gutter: stable;
 }
 
 .backstage-header {
   position: sticky;
   top: 0;
-  z-index: 8;
+  z-index: var(--ds-z-sticky);
   align-items: center;
   padding: 18px 22px;
   border-bottom: 1px solid var(--ds-border-subtle);
-  background: color-mix(in srgb, #ffffff 96%, transparent);
-  backdrop-filter: blur(18px);
+  background: var(--ds-surface);
 }
 
 .backstage-header > div {
@@ -34,7 +32,7 @@
 }
 
 .backstage-header .eyebrow {
-  color: var(--ds-accent);
+  color: var(--ds-brand-strong);
   font-size: 0.72rem;
   font-weight: var(--ds-weight-bold);
   letter-spacing: 0.11em;
@@ -58,10 +56,10 @@
   min-width: 46px;
   height: 46px;
   border-color: var(--ds-border-subtle);
-  border-radius: 14px;
+  border-radius: var(--ds-radius-md);
   color: var(--ds-text-primary);
-  background: #ffffff;
-  box-shadow: 0 6px 18px rgba(30, 64, 105, 0.08);
+  background: var(--ds-surface-white);
+  box-shadow: var(--ds-shadow-xs);
 }
 
 .backstage-close:hover {
@@ -74,24 +72,24 @@
   margin: 14px 22px 0;
   border: 1px solid var(--ds-border-subtle);
   color: var(--ds-text-secondary);
-  background: #ffffff;
+  background: var(--ds-surface-white);
 }
 
 .backstage-alert.error {
-  border-color: rgba(199, 63, 74, 0.3);
-  color: #7f2630;
+  border-color: var(--ds-danger-border);
+  color: var(--ds-danger);
   background: var(--ds-danger-soft);
 }
 
 .backstage-alert.warning {
-  border-color: rgba(166, 102, 18, 0.28);
-  color: #75460c;
+  border-color: var(--ds-warning-border);
+  color: var(--ds-warning);
   background: var(--ds-warning-soft);
 }
 
 .backstage-login {
   border-color: var(--ds-border-subtle);
-  background: #ffffff;
+  background: var(--ds-surface-white);
 }
 
 .backstage-body {
@@ -110,14 +108,15 @@
   gap: 16px;
   border-right: 0;
   border-bottom: 0;
-  background: linear-gradient(160deg, #071a36 0%, #0b2449 58%, #123a70 100%);
+  border-right: var(--ds-border-rule);
+  background: var(--ds-accent-lavender-soft);
 }
 
 .backstage-selection::before {
   content: "Broadcast context";
   display: block;
   margin-bottom: -2px;
-  color: rgba(226, 238, 252, 0.7);
+  color: var(--ds-accent-lavender);
   font-size: 0.7rem;
   font-weight: var(--ds-weight-bold);
   letter-spacing: 0.1em;
@@ -126,39 +125,39 @@
 
 .backstage-user {
   padding: 14px;
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--ds-accent-lavender-border);
+  background: var(--ds-surface-white);
 }
 
 .backstage-user span,
 .backstage-user small {
-  color: rgba(228, 238, 251, 0.7);
+  color: var(--ds-text-tertiary);
 }
 
 .backstage-user strong {
-  color: #ffffff;
+  color: var(--ds-text);
 }
 
 .backstage-selection label {
-  color: rgba(240, 246, 255, 0.86);
+  color: var(--ds-text-secondary);
 }
 
 .backstage-selection select {
   min-height: 46px;
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--ds-border-strong);
   color: var(--ds-text-primary);
-  background: #ffffff;
+  background: var(--ds-surface-white);
 }
 
 .backstage-selection select:disabled {
   color: var(--ds-text-disabled);
-  background: #edf3fb;
+  background: var(--ds-surface-subtle);
 }
 
 .backstage-selection-note {
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(226, 238, 252, 0.72);
+  border-top: 1px solid var(--ds-accent-lavender-border);
+  color: var(--ds-text-tertiary);
   line-height: 1.55;
 }
 
@@ -190,9 +189,9 @@
   min-width: 0;
   padding: 18px;
   border: 1px solid var(--ds-border-subtle);
-  border-radius: 20px;
-  background: #ffffff;
-  box-shadow: 0 10px 28px rgba(30, 64, 105, 0.07);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-white);
+  box-shadow: var(--ds-shadow-xs);
 }
 
 .backstage-panel > header {
@@ -226,7 +225,7 @@
 .backstage-invite-form button,
 .backstage-login button {
   min-height: 44px;
-  border-radius: 12px;
+  border-radius: var(--ds-radius-md);
 }
 
 .backstage-refresh {
@@ -241,7 +240,7 @@
   margin-bottom: 16px;
   padding: 14px;
   border: 1px solid var(--ds-border-subtle);
-  border-radius: 16px;
+  border-radius: var(--ds-radius-md);
   background: var(--ds-surface-2);
 }
 
@@ -250,19 +249,19 @@
 .backstage-login input {
   min-height: 44px;
   border-color: var(--ds-border-default);
-  background: #ffffff;
+  background: var(--ds-surface-white);
 }
 
 .backstage-login button,
 .backstage-invite-form button {
   border-color: var(--ds-accent);
-  color: #ffffff;
-  background: var(--ds-accent);
+  color: var(--ds-text-inverse);
+  background: var(--ds-brand-strong);
 }
 
 .backstage-login button:hover,
 .backstage-invite-form button:hover {
-  background: var(--ds-accent-hover);
+  background: var(--ds-brand-hover);
 }
 
 .backstage-list {
@@ -274,8 +273,8 @@
   gap: 14px;
   padding: 14px;
   border-color: var(--ds-border-subtle);
-  border-radius: 16px;
-  background: #ffffff;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-white);
   transition:
     border-color var(--ds-duration-fast) var(--ds-ease-standard),
     box-shadow var(--ds-duration-fast) var(--ds-ease-standard),
@@ -284,12 +283,12 @@
 
 .backstage-row:hover {
   border-color: var(--ds-border-default);
-  box-shadow: 0 8px 20px rgba(30, 64, 105, 0.07);
+  box-shadow: var(--ds-shadow-xs);
 }
 
 /* Pending call-ins are the first producer decision, so make them easiest to scan. */
 .backstage-panels > .backstage-panel:nth-of-type(3) .backstage-row {
-  border-left: 3px solid var(--ds-accent);
+  border-left: 3px solid var(--ds-brand);
 }
 
 .backstage-row strong {
@@ -306,7 +305,7 @@
 .backstage-row code {
   max-width: 100%;
   border-color: var(--ds-border-subtle);
-  color: var(--ds-accent-active);
+  color: var(--ds-brand-strong);
   background: var(--ds-surface-2);
 }
 
@@ -322,38 +321,38 @@
 
 .backstage-row-actions button:hover {
   border-color: var(--ds-accent-border);
-  color: var(--ds-accent-active);
+  color: var(--ds-brand-strong);
   background: var(--ds-accent-soft);
 }
 
 .backstage-row-actions button.danger {
-  border-color: rgba(199, 63, 74, 0.3);
-  color: #a12f3a;
+  border-color: var(--ds-danger-border);
+  color: var(--ds-danger);
   background: var(--ds-danger-soft);
 }
 
 .backstage-row-actions button.danger:hover {
-  border-color: rgba(199, 63, 74, 0.48);
-  color: #81232c;
-  background: rgba(199, 63, 74, 0.14);
+  border-color: var(--ds-danger);
+  color: var(--ds-danger);
+  background: var(--ds-danger-soft);
 }
 
 .backstage-empty {
   min-height: 170px;
   border-color: var(--ds-border-default);
-  border-radius: 18px;
+  border-radius: var(--ds-radius-lg);
   color: var(--ds-text-muted);
-  background: color-mix(in srgb, var(--ds-surface-2) 70%, #ffffff);
+  background: var(--ds-surface-subtle);
 }
 
 .backstage-empty strong,
 .backstage-empty span { display: block; }
 .backstage-empty span { margin-top: var(--ds-space-2); color: var(--ds-text-muted); line-height: 1.5; }
-.backstage-empty a { display: inline-flex; margin-top: var(--ds-space-3); color: var(--ds-accent); font-weight: var(--ds-weight-semibold); }
+.backstage-empty a { display: inline-flex; margin-top: var(--ds-space-3); color: var(--ds-brand-strong); font-weight: var(--ds-weight-semibold); }
 
 .backstage-empty.small {
   min-height: 82px;
-  border-radius: 14px;
+  border-radius: var(--ds-radius-md);
 }
 
 .backstage-close:focus-visible,
@@ -365,8 +364,9 @@
 .backstage-selection select:focus-visible,
 .backstage-invite-form input:focus-visible,
 .backstage-invite-form select:focus-visible {
-  outline: 3px solid var(--ds-focus-ring);
-  outline-offset: 3px;
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+  box-shadow: var(--ds-focus-ring);
 }
 
 @media (max-width: 1100px) {
@@ -540,7 +540,7 @@
 
   .backstage-panel {
     padding: 12px;
-    border-radius: 14px;
+    border-radius: var(--ds-radius-md);
   }
 
   .backstage-panels > .backstage-panel:nth-of-type(3) {

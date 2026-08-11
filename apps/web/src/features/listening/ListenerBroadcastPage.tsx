@@ -275,7 +275,9 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
     if (route.kind === 'public-broadcast') {
       const response = await apiRequest<PublicBroadcastResponse>(metadataPath);
       const normalised = normalisePublicBroadcast(response.broadcast);
-      if (mountedRef.current) setBroadcast(normalised);
+      if (mountedRef.current) {
+        setBroadcast(normalised);
+      }
       return normalised;
     }
 
@@ -315,7 +317,9 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
           category: channel?.category ?? null,
         },
       };
-      if (mountedRef.current) setBroadcast(normalised);
+      if (mountedRef.current) {
+        setBroadcast(normalised);
+      }
       return normalised;
     } catch (requestError) {
       if (requestError instanceof ApiClientError && requestError.status === 401) {
@@ -521,6 +525,10 @@ export function ListenerBroadcastPage({ route }: ListenerBroadcastPageProps) {
     void loadMetadata()
       .then((current) => {
         if (!mountedRef.current) return;
+        // A successful initial metadata request is stronger reachability
+        // evidence than a stale host-network hint. Later browser offline
+        // events remain authoritative and are not overwritten by polling.
+        setOnline(true);
         setPhase(
           current.status === 'completed'
             ? 'ended'

@@ -23,6 +23,7 @@ import {
   StatusBadge,
   type StatusTone,
 } from '../../design-system/components';
+import { TaskList, TaskRow } from '../../design-system/primitives';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
 import { useModalHistoryDismiss } from '../../lib/use-modal-history-dismiss';
 import { startAudioMeter, type AudioMeterController } from './audio-meter';
@@ -1560,45 +1561,35 @@ export function CreatorBroadcastStudio({
                   </StatusBadge>
                 </div>
 
-                <ol className="studio-readiness-list">
-                  <li className={microphoneReadyForDelivery ? 'complete' : ''}>
-                    <span aria-hidden="true">1</span>
-                    <div>
-                      <strong>Microphone permission and input</strong>
-                      <small>{microphoneReadyForDelivery ? `${microphoneSignal.label}: ${microphoneSignal.guidance}` : microphoneSignal.guidance}</small>
-                    </div>
-                  </li>
-                  <li className={connected ? 'complete' : ''}>
-                    <span aria-hidden="true">2</span>
-                    <div>
-                      <strong>Private studio connection</strong>
-                      <small>{connected ? 'Microphone is published to the authorised room.' : 'Join the studio after the input is ready.'}</small>
-                    </div>
-                  </li>
-                  <li
-                    className={
-                      phase === 'live'
-                        ? 'complete live'
-                        : phase === 'starting-delivery' || deliveryRecovery
-                          ? 'active'
-                          : ''
-                    }
+                <TaskList className="studio-readiness-list" label="Broadcast readiness">
+                  <TaskRow
+                    icon="microphone"
+                    title="Microphone permission and input"
+                    tone={microphoneReadyForDelivery ? 'success' : phase === 'checking-microphone' ? 'info' : 'neutral'}
                   >
-                    <span aria-hidden="true">3</span>
-                    <div>
-                      <strong>Public listener delivery</strong>
-                      <small>
-                        {phase === 'live'
-                          ? 'Contribution and public delivery are verified.'
-                          : deliveryRecovery
-                            ? 'Private Studio audio is healthy while public delivery waits for a retry or status check.'
-                            : phase === 'starting-delivery'
-                              ? 'DigiStream is waiting for verified delivery readiness.'
-                              : 'Public playback remains unavailable until Go live succeeds.'}
-                      </small>
-                    </div>
-                  </li>
-                </ol>
+                    {microphoneReadyForDelivery ? `${microphoneSignal.label}: ${microphoneSignal.guidance}` : microphoneSignal.guidance}
+                  </TaskRow>
+                  <TaskRow
+                    icon="broadcast"
+                    title="Private studio connection"
+                    tone={connected ? 'success' : 'neutral'}
+                  >
+                    {connected ? 'Microphone is published to the authorised room.' : 'Join the studio after the input is ready.'}
+                  </TaskRow>
+                  <TaskRow
+                    icon="headphones"
+                    title="Public listener delivery"
+                    tone={phase === 'live' ? 'live' : phase === 'starting-delivery' || deliveryRecovery ? 'warning' : 'neutral'}
+                  >
+                    {phase === 'live'
+                      ? 'Contribution and public delivery are verified.'
+                      : deliveryRecovery
+                        ? 'Private Studio audio is healthy while public delivery waits for a retry or status check.'
+                        : phase === 'starting-delivery'
+                          ? 'DigiStream is waiting for verified delivery readiness.'
+                          : 'Public playback remains unavailable until Go live succeeds.'}
+                  </TaskRow>
+                </TaskList>
 
                 {deliveryRecovery ? (
                   <div className="studio-inline-alert studio-inline-warning" role="status">

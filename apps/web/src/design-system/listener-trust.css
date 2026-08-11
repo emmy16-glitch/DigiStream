@@ -1,104 +1,22 @@
-/* Phase 6A trust fixes shared by public and member listener routes. */
-
-.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-orb::after {
-  content: none;
-}
-
-.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-orb {
-  border-color: rgba(153, 167, 159, .22);
-  background:
-    radial-gradient(circle at 50% 42%, rgba(153, 167, 159, .12), transparent 34%),
-    linear-gradient(145deg, #171b19, #0d100f 72%);
-  box-shadow: 0 35px 90px rgba(0, 0, 0, .36);
-}
-
-.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-orb i {
-  background: #7f8a84;
-  opacity: .25;
-  animation: none !important;
-}
-
-.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-live-badge {
-  font-size: 0;
-  text-transform: none;
-}
-
-.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-live-badge::after {
-  content: 'Upcoming';
-  font-size: .75rem;
-}
-
-.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-live-badge i {
-  background: #9aa59f;
-  box-shadow: none;
-}
-
-.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-controls {
-  display: none;
-}
-
-.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-secondary-actions button:first-child {
-  display: none;
-}
-
-.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-status small {
-  display: none;
-}
-
-body.ds-listener-fixed-action-visible .ds-listener-content {
-  padding-bottom: calc(92px + env(safe-area-inset-bottom));
-}
-
-.broadcast-chat.broadcast-chat-scheduled-state {
-  grid-template-rows: auto;
-  min-height: 0;
-}
-
-.broadcast-chat-scheduled-copy {
-  margin: 0 28px 24px;
-  padding: 16px 18px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  border: 1px solid rgba(255, 255, 255, .08);
-  border-radius: 16px;
-  color: #c7d0ca;
-  background: rgba(255, 255, 255, .025);
-}
-
-.broadcast-chat-scheduled-copy > .ds-icon {
-  flex: 0 0 auto;
-  margin-top: 1px;
-  color: #42dd8d;
-}
-
-.broadcast-chat-scheduled-copy > div {
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-}
-
-.broadcast-chat-scheduled-copy strong {
-  font-size: .92rem;
-}
-
-.broadcast-chat-scheduled-copy span {
-  color: #89958e;
-  font-size: .78rem;
-  line-height: 1.45;
-}
-
+/* Listener trust rules shared by public and member routes. */
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-orb::after { content: none; }
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-orb { border-color: var(--ds-border); background: var(--ds-surface-subtle); box-shadow: var(--ds-shadow-sm); }
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-orb i { background: var(--ds-border-emphasis); opacity: .25; animation: none !important; }
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-live-badge { font-size: 0; text-transform: none; }
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-live-badge::after { content: 'Upcoming'; font-size: var(--ds-text-xs); }
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-live-badge i { background: var(--ds-info); box-shadow: none; }
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-controls,
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-secondary-actions button:first-child,
+.ds-listener-shell:has(.listener-live-badge.scheduled) .listener-status small { display: none; }
+body.ds-listener-fixed-action-visible .ds-listener-content { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
+.broadcast-chat.broadcast-chat-scheduled-state { grid-template-rows: auto; min-height: 0; }
+.broadcast-chat-scheduled-copy { margin: 0 var(--ds-space-5) var(--ds-space-5); padding: var(--ds-space-4); display: flex; align-items: flex-start; gap: var(--ds-space-3); border: 1px solid var(--ds-info-border); border-radius: var(--ds-radius-md); color: var(--ds-text-secondary); background: var(--ds-info-soft); }
+.broadcast-chat-scheduled-copy > .ds-icon { flex: 0 0 auto; margin-top: 1px; color: var(--ds-info); }
+.broadcast-chat-scheduled-copy > div { min-width: 0; display: grid; gap: 4px; }
+.broadcast-chat-scheduled-copy strong { color: var(--ds-text); font-size: var(--ds-text-sm); }
+.broadcast-chat-scheduled-copy span { color: var(--ds-text-tertiary); font-size: var(--ds-text-xs); line-height: var(--ds-leading-body); }
 @media (max-width: 620px) {
-  .listener-controls {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .listener-volume {
-    display: none;
-  }
-
-  .broadcast-chat-scheduled-copy {
-    margin: 0 16px 16px;
-    padding: 14px;
-  }
+  .listener-controls { grid-template-columns: minmax(0, 1fr) auto; }
+  .listener-volume { display: none; }
+  .broadcast-chat-scheduled-copy { margin: 0 var(--ds-space-4) var(--ds-space-4); padding: var(--ds-space-3); }
 }

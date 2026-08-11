@@ -122,7 +122,7 @@ export function ReplayDiscoveryPage() {
       <section className="replay-discovery-hero">
         <span className="listener-kicker">Listen again</span>
         <h1>Replay library</h1>
-        <p>Listen again to completed broadcasts.</p>
+        <p>Replay completed broadcasts. Choose a published recording and continue listening at your own pace.</p>
         <label className="replay-library-search">
           <span className="sr-only">Search replays</span>
           <Icon aria-hidden="true" name="search" size={24} />

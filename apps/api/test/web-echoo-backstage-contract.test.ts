@@ -48,7 +48,8 @@ test('Echoo Backstage presents Call-ins before invited guests and on-stage parti
   assert.match(css, /\.backstage-panels > \.backstage-panel:nth-of-type\(1\)[\s\S]*order:\s*2/);
   assert.match(css, /\.backstage-panels > \.backstage-panel:nth-of-type\(2\)[\s\S]*order:\s*3/);
   assert.match(css, /grid-template-columns:\s*minmax\(255px, 290px\) minmax\(0, 1fr\)/);
-  assert.match(css, /linear-gradient\(160deg, #071a36 0%, #0b2449 58%, #123a70 100%\)/);
+  assert.match(css, /background:\s*var\(--ds-accent-lavender-soft\)/);
+  assert.doesNotMatch(css, /#071a36|#0b2449|#123a70/);
 });
 
 test('Echoo Backstage stays responsive, safe-area aware and focus visible', async () => {

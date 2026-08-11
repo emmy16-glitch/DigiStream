@@ -21,6 +21,7 @@ import {
   type StatusTone,
 } from '../../design-system/components';
 import { Icon } from '../../design-system/Icon';
+import { FilterTabs } from '../../design-system/primitives';
 import { ApiClientError, apiRequest, jsonBody } from '../../lib/api-client';
 import {
   presentationLabel,
@@ -916,22 +917,17 @@ export function CreatorBroadcastsPage({
                 </div>
               </header>
 
-              <div className="echoo-broadcast-tabs" aria-label="Filter broadcasts" role="tablist">
-                {broadcastFilters.map((filter) => (
-                  <button
-                    aria-controls="echoo-broadcast-filter-panel"
-                    aria-selected={broadcastFilter === filter.value}
-                    className={broadcastFilter === filter.value ? 'is-active' : ''}
-                    id={`broadcast-filter-${filter.value}`}
-                    key={filter.value}
-                    onClick={() => setBroadcastFilter(filter.value)}
-                    role="tab"
-                    type="button"
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
+              <FilterTabs
+                ariaLabel="Filter broadcasts"
+                controls="echoo-broadcast-filter-panel"
+                idPrefix="broadcast-filter"
+                onChange={(value) => setBroadcastFilter(value as BroadcastFilter)}
+                tabs={broadcastFilters.map((filter) => ({
+                  ...filter,
+                  count: broadcasts.filter((broadcast) => filterMatches(broadcast, filter.value)).length,
+                }))}
+                value={broadcastFilter}
+              />
 
               <div
                 aria-labelledby={`broadcast-filter-${broadcastFilter}`}

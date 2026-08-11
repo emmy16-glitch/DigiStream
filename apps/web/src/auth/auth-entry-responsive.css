@@ -10,5 +10,5 @@
   display: grid;
   place-items: center;
 }
-/* Screen 46: returning listeners receive the same focused square sign-in surface. */
-.auth-screen .auth-form{border-radius:0;box-shadow:var(--ds-shadow-major)}
+/* Returning listeners use the same warm-white, keyboard-safe sign-in surface. */
+.auth-screen .auth-form { border-radius: var(--ds-radius-xl); box-shadow: var(--ds-shadow-md); }

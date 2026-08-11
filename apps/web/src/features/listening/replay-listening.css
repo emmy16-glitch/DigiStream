@@ -15,10 +15,10 @@
   min-height: 260px;
   padding: clamp(1.5rem, 4vw, 3.5rem);
   border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-2xl);
+  border-radius: var(--ds-radius-xl);
   background:
     radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--ds-accent) 25%, transparent), transparent 34%),
-    linear-gradient(145deg, var(--ds-surface-raised), var(--ds-surface));
+    linear-gradient(145deg, var(--ds-surface-white), var(--ds-surface-subtle));
 }
 
 .replay-discovery-hero {
@@ -32,7 +32,7 @@
   font-size: clamp(2rem, 5vw, 4.5rem);
   line-height: 0.98;
   letter-spacing: -0.045em;
-  color: var(--ds-text-primary, #10233f);
+  color: var(--ds-text-primary);
 }
 
 .replay-discovery-hero p,
@@ -62,12 +62,12 @@
   margin: 0.25rem 0 0;
   font-size: clamp(1.45rem, 2.5vw, 2.2rem);
   letter-spacing: -0.025em;
-  color: var(--ds-text-primary, #10233f);
+  color: var(--ds-text-primary);
 }
 
-.replay-discovery-page .listener-kicker { color: var(--ds-accent, #1769d2); }
+.replay-discovery-page .listener-kicker { color: var(--ds-brand-strong); }
 .replay-discovery-section > header > span {
-  color: var(--ds-text-secondary, #4d6078);
+  color: var(--ds-text-secondary);
   font-size: 0.9rem;
 }
 
@@ -89,15 +89,15 @@
   text-decoration: none;
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-xl);
-  background: var(--ds-surface-raised);
-  transition: transform var(--ds-motion-fast), border-color var(--ds-motion-fast), background var(--ds-motion-fast);
+  background: var(--ds-surface-white);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-standard), border-color var(--ds-duration-fast) var(--ds-ease-standard), background var(--ds-duration-fast) var(--ds-ease-standard);
 }
 
 .replay-discovery-card:hover,
 .replay-discovery-card:focus-visible {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--ds-accent) 55%, var(--ds-border-subtle));
-  background: var(--ds-surface-overlay);
+  background: var(--ds-surface-hover);
 }
 
 .replay-card-signal,
@@ -222,7 +222,7 @@
   padding: clamp(1.25rem, 3vw, 2rem);
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-xl);
-  background: var(--ds-surface-raised);
+  background: var(--ds-surface-white);
 }
 
 .replay-player-panel > .ds-button {
@@ -275,7 +275,7 @@
   padding: 1rem;
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-lg);
-  background: var(--ds-surface-raised);
+  background: var(--ds-surface-white);
 }
 
 .replay-details-grid span {

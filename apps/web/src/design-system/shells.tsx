@@ -3,6 +3,7 @@ import { BrandLockup } from './components';
 import { visibleCreatorNavigation } from './creator-navigation-visibility';
 import { Icon, type IconName } from './Icon';
 import { useModalHistoryDismiss } from '../lib/use-modal-history-dismiss';
+import { useModalDialog } from '../lib/use-modal-dialog';
 import './listener-trust.css';
 
 export type CreatorNavigationItem = {
@@ -64,23 +65,7 @@ export function CreatorShell({
     onDismiss: closeMobileMore,
     stateKey: 'creator-mobile-more',
   });
-
-  useEffect(() => {
-    if (!mobileMoreOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') dismissMobileMore();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    window.requestAnimationFrame(() => {
-      document.querySelector<HTMLElement>('.ds-creator-mobile-more-menu header button')?.focus();
-    });
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [dismissMobileMore, mobileMoreOpen]);
+  const mobileMoreDialogRef = useModalDialog<HTMLElement>(mobileMoreOpen, dismissMobileMore);
 
   useEffect(() => {
     if (previousActiveLabel.current === activeLabel) return;
@@ -217,8 +202,8 @@ export function CreatorShell({
               <span>More</span>
             </button>
             {mobileMoreOpen ? <div className="ds-creator-mobile-more-backdrop" onMouseDown={dismissMobileMore} role="presentation">
-            <section aria-label="More creator destinations" aria-modal="true" className="ds-creator-mobile-more-menu" onMouseDown={(event) => event.stopPropagation()} role="dialog">
-              <header><strong>More</strong><button aria-label="Close more menu" onClick={dismissMobileMore} type="button"><Icon name="close" /></button></header>
+            <section aria-label="More creator destinations" aria-modal="true" className="ds-creator-mobile-more-menu" onMouseDown={(event) => event.stopPropagation()} ref={mobileMoreDialogRef} role="dialog" tabIndex={-1}>
+              <header><strong>More</strong><button aria-label="Close more menu" data-dialog-initial-focus onClick={dismissMobileMore} type="button"><Icon name="close" /></button></header>
               {secondaryMobileNavigation.map((item) => {
                 const active = item.label === activeLabel;
                 return (

@@ -45,7 +45,7 @@
   min-height: 44px; display: flex; align-items: center; cursor: pointer;
   color: var(--ds-text-primary); font-weight: var(--ds-weight-semibold);
 }
-.creator-analytics-advanced summary:focus-visible { outline: 3px solid var(--ds-focus-ring); outline-offset: 2px; }
+.creator-analytics-advanced summary:focus-visible { outline: 2px solid var(--ds-focus); outline-offset: 2px; box-shadow: var(--ds-focus-ring); }
 .creator-analytics-advanced dl { margin-top: var(--ds-space-3); }
 .creator-analytics-advanced p { color: var(--ds-text-secondary); line-height: var(--ds-leading-body); }
 
@@ -70,8 +70,9 @@
 }
 
 .creator-analytics-table-wrap:focus-visible {
-  outline: 3px solid var(--ds-focus-ring);
-  outline-offset: 3px;
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+  box-shadow: var(--ds-focus-ring);
 }
 
 .creator-analytics table {
@@ -147,7 +148,17 @@
   }
 
   .creator-analytics .metric-card { min-height: auto; padding: var(--ds-space-4); }
-  .creator-analytics-table-wrap { margin-inline: calc(var(--ds-space-4) * -1); border-inline: 0; border-radius: 0; }
+  .creator-analytics-table-wrap { overflow: visible; }
+  .creator-analytics table,
+  .creator-analytics tbody { min-width: 0; display: grid; gap: var(--ds-space-3); }
+  .creator-analytics thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .creator-analytics tbody tr { display: grid; overflow: hidden; border: var(--ds-border-rule); border-radius: var(--ds-radius-md); background: var(--ds-surface-white); }
+  .creator-analytics th,
+  .creator-analytics td { display: grid; grid-template-columns: minmax(8rem, .8fr) minmax(0, 1fr); gap: var(--ds-space-3); padding: var(--ds-space-3); border-bottom: var(--ds-border-rule); text-align: right; }
+  .creator-analytics th::before,
+  .creator-analytics td::before { content: attr(data-label); color: var(--ds-text-tertiary); font-size: var(--ds-text-xs); font-weight: var(--ds-weight-semibold); text-align: left; }
+  .creator-analytics tbody tr > :last-child { border-bottom: 0; }
+  .creator-analytics tbody th { background: var(--ds-surface-subtle); }
 
   .creator-analytics .panel {
     padding: var(--ds-space-4);
@@ -159,9 +170,3 @@
     scroll-behavior: auto;
   }
 }
-/* Screen 38: mobile statistics retain the no-data state instead of decorative charts. */
-@media(max-width:640px){.creator-analytics-page .analytics-metrics,.creator-analytics-page .analytics-grid{grid-template-columns:1fr}.creator-analytics-page .analytics-card{border-radius:0;box-shadow:var(--ds-shadow-small)}}
-/* Screen 49: workspace totals use the server projection and an explicit no-data state. */
-.creator-analytics-page .analytics-summary-card{border-radius:0;border-color:var(--ds-ink)}
-/* Screen 50: analytics filters and charts remain secondary to trustworthy metric definitions. */
-.creator-analytics-page select,.creator-analytics-page .analytics-chart,.creator-analytics-page .analytics-card{border-radius:0}.creator-analytics-page .analytics-card{border-color:var(--ds-ink)}

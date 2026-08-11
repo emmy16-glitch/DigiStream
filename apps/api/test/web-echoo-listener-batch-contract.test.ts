@@ -43,10 +43,11 @@ test('Listener Discovery follows the Echoo reference without fake audience metri
   assert.doesNotMatch(source, /Worship Night/);
   assert.doesNotMatch(source, /Tech Talk Live/);
 
-  assert.match(css, /grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(css, /background:\s*#071f43/);
-  assert.match(css, /@media \(max-width:\s*620px\)/);
+  assert.match(css, /grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /background:\s*var\(--ds-brand-soft\)/);
+  assert.match(css, /@media \(max-width:\s*640px\)/);
   assert.match(css, /:focus-visible/);
+  assert.doesNotMatch(css, /#071f43|#21d07a/);
 });
 
 test('Listener call-in keeps the authoritative request and status workflow under the Echoo request design', async () => {
@@ -97,7 +98,7 @@ test('Replay player keeps short-lived access and real media metadata while rejec
 
   assert.match(css, /echoo-replay-hero-play/);
   assert.match(css, /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
-  assert.match(css, /@media \(max-width:\s*720px\)/);
-  assert.match(css, /@media \(max-width:\s*430px\)/);
+  assert.match(css, /@media \(max-width:\s*640px\)/);
+  assert.match(css, /@media \(max-width:\s*420px\)/);
   assert.match(css, /:focus-visible/);
 });

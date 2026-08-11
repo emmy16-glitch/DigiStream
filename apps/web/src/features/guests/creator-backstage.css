@@ -1,7 +1,7 @@
 .backstage-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: var(--ds-z-modal);
   padding:
     max(var(--ds-space-5), env(safe-area-inset-top))
     max(var(--ds-space-5), env(safe-area-inset-right))
@@ -9,7 +9,6 @@
     max(var(--ds-space-5), env(safe-area-inset-left));
   overflow: auto;
   background: var(--ds-overlay);
-  backdrop-filter: blur(10px);
   overscroll-behavior: contain;
   scrollbar-gutter: stable both-edges;
 }
@@ -38,10 +37,7 @@
   gap: var(--ds-space-5);
   padding: var(--ds-space-5) var(--ds-space-6);
   border-bottom: 1px solid var(--ds-border-subtle);
-  background:
-    linear-gradient(135deg, var(--ds-accent-soft), transparent 42%),
-    color-mix(in srgb, var(--ds-surface-1) 95%, transparent);
-  backdrop-filter: blur(16px);
+  background: var(--ds-surface);
 }
 
 .backstage-header h2 {
@@ -83,8 +79,9 @@
 .backstage-selection select:focus-visible,
 .backstage-invite-form input:focus-visible,
 .backstage-invite-form select:focus-visible {
-  outline: 3px solid var(--ds-focus-ring);
-  outline-offset: 3px;
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+  box-shadow: var(--ds-focus-ring);
 }
 
 .backstage-alert,
@@ -97,15 +94,15 @@
 }
 
 .backstage-alert.error {
-  border: 1px solid rgba(240, 91, 97, .42);
-  color: #ffc5c8;
+  border: 1px solid var(--ds-danger-border);
+  color: var(--ds-danger);
   background: var(--ds-danger-soft);
 }
 
 .backstage-alert.warning {
   margin: 0 0 var(--ds-space-4);
-  border: 1px solid rgba(243, 182, 63, .4);
-  color: #ffe2a5;
+  border: 1px solid var(--ds-warning-border);
+  color: var(--ds-warning);
   background: var(--ds-warning-soft);
 }
 
@@ -164,7 +161,7 @@
 }
 
 .backstage-login button,
-.backstage-invite-form button { color: #06100a; border-color: var(--ds-accent); background: var(--ds-accent); }
+.backstage-invite-form button { color: var(--ds-text-inverse); border-color: var(--ds-brand-strong); background: var(--ds-brand-strong); }
 .backstage-login button:hover,
 .backstage-invite-form button:hover { background: var(--ds-accent-hover); }
 
@@ -247,8 +244,8 @@
 .backstage-row-actions button:hover { background: var(--ds-surface-hover); }
 
 .backstage-row-actions button.danger {
-  border-color: rgba(240, 91, 97, .42);
-  color: #ffc5c8;
+  border-color: var(--ds-danger-border);
+  color: var(--ds-danger);
   background: var(--ds-danger-soft);
 }
 
@@ -266,7 +263,7 @@
   place-items: center;
   border: 1px solid var(--ds-accent-border);
   border-radius: var(--ds-radius-pill);
-  color: #bff4cf;
+  color: var(--ds-brand-strong);
   background: var(--ds-accent-soft);
   font-weight: var(--ds-weight-bold);
 }
@@ -319,7 +316,7 @@
   overflow: hidden;
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-sm);
-  color: #bff4cf;
+  color: var(--ds-brand-strong);
   background: var(--ds-canvas);
   font-family: var(--ds-font-mono);
   font-size: var(--ds-text-xs);
@@ -456,5 +453,7 @@
     transition: none !important;
   }
 }
-/* Screen 35: keep live call-in work grouped by real invitation and admission state. */
-.creator-backstage-workspace{background:var(--ds-bg)}.backstage-panel,.backstage-invitation-row,.backstage-call-in-row{border-radius:0;border-color:var(--ds-ink)}.backstage-panel{box-shadow:var(--ds-shadow-major)}
+/* Live call-in work remains grouped by real invitation and admission state. */
+.creator-backstage-workspace { background: var(--ds-bg); }
+.backstage-panel, .backstage-invitation-row, .backstage-call-in-row { border-radius: var(--ds-radius-lg); border-color: var(--ds-border-color); }
+.backstage-panel { box-shadow: var(--ds-shadow-xs); }

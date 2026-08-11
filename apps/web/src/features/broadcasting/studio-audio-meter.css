@@ -86,7 +86,7 @@
 }
 
 .studio-global-alert small {
-  color: #e8aeb1;
+  color: var(--ds-brand);
   font-family: var(--ds-font-mono);
   font-size: var(--ds-text-xs);
   line-height: var(--ds-leading-body);

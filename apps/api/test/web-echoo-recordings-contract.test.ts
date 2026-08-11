@@ -14,8 +14,10 @@ const recordingsCssUrl = new URL(
 test('Creator Recordings follows the Echoo completed-broadcast reference', async () => {
   const source = await readFile(recordingsPageUrl, 'utf8');
 
-  assert.match(source, /<h2>Recordings<\/h2>/);
   assert.match(source, /<p>Your completed broadcasts\.<\/p>/);
+  assert.match(source, /<h3 id="recordings-library-title">Recording library<\/h3>/);
+  assert.match(source, /<SearchField/);
+  assert.match(source, /<FilterTabs/);
   assert.match(source, /recordings-reference-list/);
   assert.match(source, /recording-reference-row/);
   assert.match(source, /recording-reference-artwork/);
@@ -64,15 +66,16 @@ test('Creator Recordings preserves lifecycle and access truth instead of referen
 test('Creator Recordings uses the Echoo light responsive visual system', async () => {
   const css = await readFile(recordingsCssUrl, 'utf8');
 
-  assert.match(css, /grid-template-columns:\s*4\.5rem minmax\(0, 1\.55fr\)/);
-  assert.match(css, /background:\s*#e4edf9/);
+  assert.match(css, /grid-template-columns:\s*2\.75rem minmax\(0, 1\.55fr\)/);
+  assert.match(css, /background:\s*var\(--ds-accent-sky-soft\)/);
   assert.match(css, /var\(--ds-surface-1\)/);
   assert.match(css, /var\(--ds-text-primary\)/);
-  assert.match(css, /var\(--ds-accent-soft\)/);
+  assert.match(css, /var\(--ds-brand-soft\)/);
   assert.match(css, /min-height:\s*var\(--ds-control-min-height\)/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /@media \(max-width:\s*900px\)/);
   assert.match(css, /@media \(max-width:\s*620px\)/);
   assert.match(css, /@media \(max-width:\s*430px\)/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)/);
+  assert.doesNotMatch(css, /#071a36|#21d07a/);
 });

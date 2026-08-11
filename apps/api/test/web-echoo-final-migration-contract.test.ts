@@ -22,7 +22,8 @@ test('final Echoo migration exposes the four truthful system-state references', 
   assert.match(state, /'session-expired'/);
   assert.match(state, /'not-found'/);
   assert.match(state, /echoo-system-spinner/);
-  assert.match(css, /background:\s*#f4f8fd/);
+  assert.match(css, /background-color:\s*var\(--ds-bg\)/);
+  assert.match(css, /background-image:\s*radial-gradient\(circle, var\(--ds-bg-dot\)/);
   assert.match(css, /@media \(max-width:\s*520px\)/);
 
   assert.match(components, /title === 'Opening DigiStream'/);
@@ -65,7 +66,8 @@ test('guest invitation adopts the Echoo join reference without weakening guest a
   assert.doesNotMatch(source, /Alex Morgan/);
   assert.doesNotMatch(source, />LIVE</);
 
-  assert.match(css, /background:\s*#f4f8fd/);
+  assert.match(css, /background-color:\s*var\(--ds-bg\)/);
+  assert.match(css, /background-image:\s*radial-gradient\(circle, var\(--ds-bg-dot\)/);
   assert.match(css, /guest-audio-check/);
   assert.match(css, /guest-check-row/);
   assert.match(css, /@media \(max-width:\s*520px\)/);

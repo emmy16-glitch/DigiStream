@@ -134,7 +134,7 @@ function CreatorIntentChoice({ onBroadcast }: { onBroadcast(): void }) {
     <section className="workspace-onboarding" aria-labelledby="creator-intent-title">
       <div>
         <h2 id="creator-intent-title">What would you like to do?</h2>
-        <p>Choose how you want to continue. You can switch later.</p>
+        <p>Choose whether you want to listen or create a broadcast.</p>
       </div>
       <div className="workspace-welcome-actions">
         <article className="creator-intent-option">

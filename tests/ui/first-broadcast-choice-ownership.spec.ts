@@ -34,7 +34,7 @@ test('first broadcast setup has one contextual final primary action', async () =
   const source = await readFile(broadcastsPagePath, 'utf8');
 
   expect(source).toContain("firstBroadcastSetup && firstBroadcastChoice === 'finish-later'");
-  expect(source).toContain('<Button onClick={finishFirstBroadcastLater} type="button" variant="primary">');
+  expect(source).toContain('<Button icon="recording" onClick={finishFirstBroadcastLater} type="button" variant="primary">');
   expect(source).toContain("? 'Create broadcast and open Studio'");
   expect(source).toContain("? 'Schedule broadcast'");
   expect(source).toContain("? 'Choose how to continue'");

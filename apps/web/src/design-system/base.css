@@ -12,7 +12,7 @@ body {
   margin: 0;
   color: var(--ds-text-primary);
   background-color: var(--ds-bg);
-  background-image: radial-gradient(circle, rgb(31 32 37 / 10%) 1px, transparent 1.1px);
+  background-image: radial-gradient(circle, var(--ds-bg-dot) 1px, transparent 1.1px);
   background-size: 20px 20px;
   font-family: var(--ds-font-sans);
   font-synthesis: none;
@@ -38,8 +38,9 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
 }
 
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--ds-focus-ring);
-  outline-offset: 3px;
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+  box-shadow: var(--ds-focus-ring);
 }
 
 ::selection {
@@ -73,11 +74,11 @@ h1, h2, h3, p {
   left: var(--ds-space-3);
   z-index: 1000;
   padding: var(--ds-space-3) var(--ds-space-4);
-  border: var(--ds-border);
-  border-radius: 0;
-  box-shadow: var(--ds-shadow-control);
-  color: var(--ds-ink);
-  background: var(--ds-accent);
+  border: var(--ds-border-strong-rule);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-md);
+  color: var(--ds-text-inverse);
+  background: var(--ds-brand-strong);
   font-weight: var(--ds-weight-bold);
   text-decoration: none;
   transform: translateY(calc(-100% - var(--ds-space-8)));

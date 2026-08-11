@@ -1,6 +1,15 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('global connectivity state', () => {
+  test.beforeEach(async ({ context, page }) => {
+    // Headless Chromium can inherit a disconnected host-network signal in
+    // containers. Toggle emulation so each test starts from a known online
+    // state before exercising the real browser online/offline events.
+    await page.goto('about:blank');
+    await context.setOffline(true);
+    await context.setOffline(false);
+  });
+
   test.afterEach(async ({ context }) => {
     await context.setOffline(false);
   });

@@ -20,7 +20,8 @@ test('mobile creator navigation keeps four primary destinations and an accessibl
 
   assert.match(source, /visibleNavigation\.slice\(0, 4\)/);
   assert.match(source, /aria-label="More creator destinations"/);
-  assert.match(source, /mobileMoreRef\.current\.open = false/);
+  assert.match(source, /useModalDialog/);
+  assert.match(source, /closeMobileMore/);
   assert.match(styles, /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/);
 });
 

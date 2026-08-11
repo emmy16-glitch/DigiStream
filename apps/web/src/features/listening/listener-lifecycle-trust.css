@@ -1,168 +1,57 @@
 .listener-orb::after {
   content: attr(data-lifecycle-label);
   max-width: 80%;
-  padding-inline: 16px;
-  font-size: clamp(2.5rem, 7vw, 5.5rem);
-  line-height: .86;
-  letter-spacing: -.065em;
+  padding-inline: var(--ds-space-4);
+  font-size: clamp(2.3rem, 7vw, 5rem);
+  line-height: .9;
+  letter-spacing: -.06em;
   text-align: center;
   overflow-wrap: anywhere;
 }
 
 .listener-orb.scheduled,
-.listener-orb.starting {
-  border-color: rgba(243, 179, 61, .34);
-  background:
-    radial-gradient(circle at 50% 42%, rgba(243, 179, 61, .18), transparent 33%),
-    linear-gradient(145deg, #261f13, #11100d 72%);
-  box-shadow: 0 35px 90px rgba(0, 0, 0, .42), inset 0 0 50px rgba(243, 179, 61, .06);
-}
-
+.listener-orb.starting { border-color: var(--ds-warning-border); background: var(--ds-warning-soft); box-shadow: var(--ds-shadow-md); }
 .listener-orb.scheduled i,
-.listener-orb.starting i {
-  background: linear-gradient(to top, #9f6817, #f5c766);
-  opacity: .32;
-}
-
+.listener-orb.starting i { background: var(--ds-warning); opacity: .3; }
 .listener-orb.overdue,
 .listener-orb.failed,
-.listener-orb.cancelled {
-  border-color: rgba(255, 96, 120, .28);
-  background:
-    radial-gradient(circle at 50% 42%, rgba(255, 96, 120, .13), transparent 34%),
-    linear-gradient(145deg, #251518, #100d0e 72%);
-}
-
+.listener-orb.cancelled { border-color: var(--ds-danger-border); background: var(--ds-danger-soft); }
 .listener-orb.overdue i,
 .listener-orb.failed i,
-.listener-orb.cancelled i {
-  background: linear-gradient(to top, #8d3041, #e68091);
-  opacity: .24;
-}
-
+.listener-orb.cancelled i { background: var(--ds-danger); opacity: .25; }
 .listener-orb.completed,
-.listener-orb.draft {
-  border-color: rgba(170, 180, 174, .2);
-  background:
-    radial-gradient(circle at 50% 42%, rgba(170, 180, 174, .09), transparent 34%),
-    linear-gradient(145deg, #1b1f1c, #0e100f 72%);
-}
-
+.listener-orb.draft { border-color: var(--ds-border); background: var(--ds-surface-subtle); }
 .listener-orb.completed i,
-.listener-orb.draft i {
-  background: linear-gradient(to top, #59645e, #aeb8b2);
-  opacity: .2;
-}
+.listener-orb.draft i { background: var(--ds-border-emphasis); opacity: .2; }
 
-.listener-countdown {
-  margin: 18px 0 0;
-  padding: 14px 16px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  column-gap: 11px;
-  row-gap: 3px;
-  align-items: center;
-  border: 1px solid rgba(243, 179, 61, .2);
-  border-radius: 14px;
-  color: #f0d9a9;
-  background: rgba(243, 179, 61, .07);
-}
-
-.listener-countdown .ds-icon {
-  grid-row: 1 / span 2;
-}
-
-.listener-countdown strong {
-  font-size: .9rem;
-}
-
-.listener-countdown span:last-child {
-  color: #bcae90;
-  font-size: .75rem;
-  line-height: 1.45;
-}
-
-.listener-waiting-actions {
-  margin-top: 22px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
+.listener-countdown { margin: var(--ds-space-4) 0 0; padding: var(--ds-space-3); display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--ds-space-3); row-gap: 3px; align-items: center; border: 1px solid var(--ds-warning-border); border-radius: var(--ds-radius-md); color: var(--ds-warning); background: var(--ds-warning-soft); }
+.listener-countdown .ds-icon { grid-row: 1 / span 2; }
+.listener-countdown strong { font-size: var(--ds-text-sm); }
+.listener-countdown span:last-child { color: var(--ds-text-secondary); font-size: var(--ds-text-xs); line-height: var(--ds-leading-body); }
+.listener-waiting-actions { margin-top: var(--ds-space-4); display: flex; flex-wrap: wrap; gap: var(--ds-space-2); }
 .listener-waiting-actions button,
 .listener-waiting-actions a,
-.listener-secondary-actions a {
-  min-height: 44px;
-  padding: 0 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid #303832;
-  border-radius: 11px;
-  color: #d5ddd8;
-  background: #1b211d;
-  font-size: .79rem;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.listener-waiting-actions button {
-  cursor: pointer;
-}
-
+.listener-secondary-actions a { min-height: var(--ds-control-touch); padding: 0 var(--ds-space-3); display: inline-flex; align-items: center; justify-content: center; gap: var(--ds-space-2); border: var(--ds-border-rule); border-radius: var(--ds-radius-md); color: var(--ds-text-secondary); background: var(--ds-surface-white); font-size: var(--ds-text-xs); font-weight: var(--ds-weight-semibold); text-decoration: none; }
+.listener-waiting-actions button { cursor: pointer; }
 .listener-waiting-actions button:hover:not(:disabled),
 .listener-waiting-actions a:hover,
-.listener-secondary-actions a:hover {
-  color: #fff;
-  border-color: #465149;
-  background: #222a25;
-}
-
-.listener-waiting-actions button:disabled {
-  cursor: wait;
-  opacity: .6;
-}
-
-.listener-secondary-actions a {
-  min-height: auto;
-  padding-block: 9px;
-  color: #bac4be;
-  background: transparent;
-  font-size: .75rem;
-}
+.listener-secondary-actions a:hover { color: var(--ds-text); border-color: var(--ds-border-emphasis); background: var(--ds-surface-hover); }
+.listener-waiting-actions button:disabled { cursor: wait; opacity: .6; }
+.listener-secondary-actions a { min-height: var(--ds-control-md); }
 
 .listener-lifecycle-scheduled .listener-status-dot,
-.listener-lifecycle-starting .listener-status-dot {
-  background: #f3b33d;
-  box-shadow: 0 0 0 6px rgba(243, 179, 61, .1);
-}
-
+.listener-lifecycle-starting .listener-status-dot { background: var(--ds-warning); }
 .listener-lifecycle-overdue .listener-status-dot,
 .listener-lifecycle-failed .listener-status-dot,
-.listener-lifecycle-cancelled .listener-status-dot {
-  background: #ff6078;
-  box-shadow: 0 0 0 6px rgba(255, 96, 120, .08);
-}
-
-.listener-lifecycle-completed .listener-status-dot {
-  background: #8f9a94;
-}
+.listener-lifecycle-cancelled .listener-status-dot { background: var(--ds-danger); }
+.listener-lifecycle-completed .listener-status-dot { background: var(--ds-border-emphasis); }
 
 @media (max-width: 640px) {
-  .listener-waiting-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
+  .listener-waiting-actions { display: grid; grid-template-columns: 1fr; }
   .listener-waiting-actions button,
-  .listener-waiting-actions a {
-    width: 100%;
-  }
-
-  .listener-countdown {
-    align-items: start;
-  }
+  .listener-waiting-actions a { width: 100%; }
+  .listener-countdown { align-items: start; }
 }
-/* Screen 40: scheduled broadcasts use exact server schedule, with no live pulse. */
-.listener-broadcast-page[data-lifecycle="scheduled"] .listener-live-indicator{animation:none;background:var(--ds-pink-50);color:var(--ds-ink)}
+
+/* Scheduled state is quiet and never receives live animation. */
+.listener-broadcast-page[data-lifecycle="scheduled"] .listener-live-indicator { animation: none; background: var(--ds-info-soft); color: var(--ds-info); }

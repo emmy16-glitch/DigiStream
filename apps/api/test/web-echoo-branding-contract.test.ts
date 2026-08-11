@@ -34,7 +34,7 @@ test('shared brand lockup uses the Echoo two-oval mark and wordmark', async () =
   assert.match(css, /\.ds-brand-petal-primary[^}]*background:\s*var\(--ds-accent\)/s);
   assert.match(css, /\.ds-brand-petal-secondary[^}]*background:\s*var\(--ds-brand-secondary\)/s);
   assert.match(css, /\.ds-brand-petal[^}]*border-radius:\s*999px[^}]*rotate\(-28deg\)/s);
-  assert.match(tokens, /--ds-brand-secondary:\s*#9ab0ca/);
+  assert.match(tokens, /--ds-brand-secondary:\s*var\(--ds-brand\)/);
 });
 
 test('creator and listener shared shells expose Echoo branding consistently', async () => {
