@@ -1,6 +1,7 @@
 export type ListenerRoute =
   | { kind: 'discovery' }
   | { kind: 'replay-discovery' }
+  | { kind: 'library' }
   | {
       kind: 'public-replay';
       organisationSlug: string;
@@ -76,6 +77,7 @@ export function parseListenerRoute(pathname: string): ListenerRoute | null {
   if (parts[1] === 'replays' && parts.length === 2) {
     return { kind: 'replay-discovery' };
   }
+  if (parts[1] === 'library' && parts.length === 2) return { kind: 'library' };
 
   if (parts[1] === 'replay' && parts.length === 5) {
     const organisationSlug = decodeSegment(parts[2] ?? '');
