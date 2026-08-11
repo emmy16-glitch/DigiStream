@@ -1,296 +1,324 @@
 # DigiStream AI Implementation Guardrails
 
-This file is written for Codex, Claude Code, coding agents, and human implementers. It exists to stop visual drift while the approved 50-screen DigiStream redesign is implemented.
+This file is written for Codex, Claude Code, Cline, Copilot-style agents, repository agents, and human implementers. It exists to prevent visual drift, duplicate product flows, fake state, and low-quality template UI.
 
-## 1. Read-before-edit contract
+## 1. Mandatory read-before-edit contract
 
-For any change that touches frontend layout, CSS, design-system primitives, navigation presentation, authentication UI, creator UI, listener UI, Studio, Backstage, Recordings, analytics, settings, modals, forms, or responsive behavior, read these sources before editing:
+Before any work involving frontend layout, CSS, design-system primitives, navigation presentation, authentication UI, creator UI, listener UI, Studio, Studio Lobby, Backstage, Recordings, analytics, settings, modals, forms, tables, search, chat, loading states, or responsive behavior, read in this order:
 
-1. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`
-2. `docs/design/REFERENCE_INDEX.md`
-3. the exact reference image(s) for the screen being changed in `docs/design/reference/screens/`
-4. `apps/web/AGENTS.md`
-5. product-truth and lifecycle documents referenced by root `AGENTS.md`
-6. existing implementation and tests
+1. root `AGENTS.md`;
+2. nearest scoped `AGENTS.md` (especially `apps/web/AGENTS.md` for web work);
+3. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`;
+4. `docs/design/BEAUTIFUL_UI_ADAPTATION_STANDARD.md`;
+5. this file;
+6. the relevant product/lifecycle/quality document referenced by root `AGENTS.md`;
+7. `docs/design/REFERENCE_INDEX.md` and the matching 50-screen reference only for content/flow/composition intent;
+8. existing implementation and tests.
 
-Do not begin implementation from memory after scanning one image.
+Do not begin UI implementation from memory after seeing one screenshot or one component demo.
 
-## 2. Two authorities: visual truth and product truth
+## 2. Authority split
 
-The approved reference images are authoritative for:
+### Product truth controls
 
-- composition and hierarchy;
-- the cream dotted canvas;
-- dusty-pink visual language;
-- square geometry;
-- hard black offset shadows;
-- typographic contrast between heavy grotesk and mono/typewriter text;
-- spacing rhythm;
-- card density;
-- control shape;
-- overall personality.
-
-The backend/API/product documents and current validated domain logic are authoritative for:
-
-- permissions and roles;
+- authorization and roles;
 - tenant isolation;
 - lifecycle transitions;
+- organization/channel/broadcast ownership;
 - whether a metric exists;
 - whether a user may perform an action;
-- whether a broadcast is scheduled, live, reconnecting, ended, failed, or completed;
+- whether a broadcast is scheduled, starting, live, reconnecting, ending, completed, cancelled, or failed;
 - recording/replay availability;
-- media readiness;
-- error handling and recovery.
+- microphone/private-contribution/public-delivery readiness;
+- error and recovery behavior;
+- privacy/security boundaries.
 
-Never fabricate product state to make a screenshot appear more exact.
+### UI Constitution controls
 
-## 3. Absolute visual prohibitions
+- reusable visual grammar;
+- neutral surface system;
+- density;
+- typography hierarchy;
+- border/radius/elevation treatment;
+- navigation presentation;
+- table/row/card usage;
+- shared component expectations;
+- responsive and accessibility presentation rules.
 
-A change fails design review if it introduces any of the following without explicit written approval:
+### Beautiful UI adaptation standard controls
 
-- blue as the general brand/accent color;
-- the original blue/white DigiStream visual system;
-- the previous near-black/emerald design as the general application theme;
-- generic gray SaaS dashboard backgrounds;
-- 12px–24px rounded cards;
-- pill-shaped primary navigation;
-- blurred drop shadows for primary surfaces;
-- glassmorphism or frosted panels;
-- gradient-heavy primary UI;
-- Inter used as the only product font;
-- arbitrary colors for each chart/status;
-- decorative neon glows;
-- Material-UI-looking default components;
-- a different bottom-navigation vocabulary on every screen;
-- one-off CSS values when an existing design token should be used.
+- which Beautiful UI patterns are appropriate for DigiStream;
+- how Sidebar Nav, Search, Task Rows, Filter/Records Tables, Loading State, Approval Card, Chat, Context Cards, Insight Cards and related patterns map to DigiStream responsibilities;
+- what must not be copied because it is AI-agent-specific;
+- external-reference licensing/copy restrictions.
 
-## 4. Required visual signature
+### 50-screen reference pack controls
 
-Every ordinary DigiStream application screen must preserve the recognizable signature:
+The screenshots are now secondary references for:
 
-- warm cream/off-white base;
-- subtle repeating dot grid;
-- near-black ink;
-- dusty pink primary accent;
-- strong black grotesk display hierarchy;
-- mono/typewriter labels, metadata, controls, and system text;
-- square cards and controls;
-- thin visible borders;
-- zero-blur hard shadows offset down/right;
-- deliberate negative space;
-- restrained semantic green/amber/rose.
+- screen responsibility;
+- journey intent;
+- content grouping;
+- relative hierarchy;
+- examples of which information belongs together.
 
-A screen should still look like DigiStream with the logo removed.
+They are **not** authoritative for the old cream dotted canvas, hard offset shadows, poster-like card geometry, or dusty-pink-heavy application treatment.
 
-## 5. Screenshot implementation protocol
+## 3. Absolute prohibitions
 
-Before implementing a screen:
+A change fails agent self-review if it introduces any of the following without explicit written approval:
 
-1. Locate the exact numbered reference image.
-2. Open it and inspect the whole page, not only the target component.
-3. List the shared components visible in it.
-4. Reuse existing product components where their responsibility is already correct.
-5. Map screenshot colors, spacing, type, borders, and shadows to Constitution tokens.
-6. Identify screenshot data that is illustrative only.
-7. Replace illustrative data with real API-backed state.
-8. Implement desktop/mobile behavior from system rules, not by hardcoding screenshot dimensions.
-9. Add loading, empty, error, unauthorized, offline, long-content, and recovery states in the same visual language.
-10. Compare the finished screen against the reference at the same viewport.
-11. Fix obvious drift before requesting review.
+- fake metrics, fake listener counts, fake analytics, fake health scores or fake percentages;
+- fake progress stages used only because Beautiful UI demonstrates task progress;
+- duplicate Studio, Broadcasts, Recordings, Studio Lobby, authentication or onboarding implementations;
+- generic giant-card dashboards for repeated record data;
+- mandatory cream dotted application backgrounds;
+- hard black offset shadows as the default surface treatment;
+- heavy dusty-pink page washes;
+- glassmorphism/frosted panels;
+- neon glow;
+- decorative gradients across operational UI;
+- 20px+ radius on every card/control;
+- AI Thinking, model picker, prompt bar or reasoning trace UI without a real DigiStream AI feature;
+- destructive actions labeled only `Confirm`, `Continue`, `Yes`, or similarly vague copy;
+- hidden primary action caused by decorative content or oversized empty-state art;
+- feature-local state machines inside generic design-system components;
+- client-only permissions or fake onboarding completion;
+- weakening lifecycle/security/accessibility tests to make a visual redesign pass.
 
-## 6. Component-first rule
+## 4. Beautiful UI inspection protocol
 
-Do not reproduce the 50 references by creating 50 isolated CSS files full of copied pixel values.
+External reference: `https://beautiful-ui-five.vercel.app/`
 
-Implement and reuse shared primitives for:
+When network access is available and the task uses a Beautiful UI-inspired pattern:
 
-- shells and headers;
-- bottom navigation;
-- page headings;
-- cards and compact rows;
-- buttons;
-- fields and selectors;
-- icon tiles;
-- status badges;
-- metric cards;
-- broadcast artwork containers;
-- tabs and filters;
-- modals and sheets;
-- tables;
-- charts;
-- empty/loading/error states.
+1. open the live reference;
+2. identify the specific pattern being adapted;
+3. inspect hierarchy, density, border treatment, text hierarchy, action placement and state presentation;
+4. map the pattern to an existing DigiStream responsibility;
+5. implement it using DigiStream components and domain state;
+6. do not copy AI-specific language/data;
+7. do not paste external source code/assets unless license terms have been verified.
 
-If three screens use nearly the same visual pattern, that pattern should normally become or reuse a shared component.
+When network access is unavailable, `BEAUTIFUL_UI_ADAPTATION_STANDARD.md` is the canonical local description. Do not hallucinate missing Beautiful UI details from memory.
 
-Do not create a second page, second modal, second Studio, second Broadcasts implementation, or duplicate API flow merely because a screenshot appears different from the current component. Realign the existing responsibility.
+## 5. Component-first implementation rule
 
-## 7. Fidelity hierarchy
+Before creating a new component:
 
-When deciding what to match most closely, use this order:
+1. search `apps/web/src/design-system/`;
+2. search adjacent feature components;
+3. determine whether an existing primitive can be extended safely;
+4. preserve its accessibility/state behavior;
+5. only add a new primitive when there is a genuinely reusable responsibility.
 
-1. overall shell and page composition;
-2. typography hierarchy;
-3. spacing rhythm;
-4. component geometry;
-5. cream/pink/ink palette;
-6. hard-shadow treatment;
-7. icon sizing/alignment;
-8. fine decorative details.
+Expected reusable primitives include equivalents of:
 
-Do not spend time reproducing a decorative line while the typography, spacing, or card geometry is visibly wrong.
+- Button / IconButton;
+- Badge / StatusBadge / StatusDot;
+- PageHeader / SectionHeader;
+- Sidebar / NavItem;
+- SearchField / CommandSearch;
+- FilterTabs;
+- DataTable / responsive record row;
+- TaskRow / TaskList;
+- LoadingState;
+- EmptyState / ErrorState;
+- ContextPanel;
+- ConfirmationDialog / ApprovalCard;
+- InsightCard;
+- MessageRow / Composer;
+- SelectionBar;
+- modal/sheet primitives.
 
-## 8. Dense-screen exception
+Do not create 50 page-local visual systems for 50 screens.
 
-Studio, Backstage, Recordings, Live Chat, Team/Admin, and analytics screens may become visually noisy if every nested element receives a large hard shadow.
+## 6. Pattern choice rules
 
-Use the Constitution hierarchy:
+Use **rows/tables** when users compare repeated records.
 
-- major surfaces: major shadow;
-- primary/selected controls: control shadow;
-- compact important tiles: small shadow;
-- nested rows, internal cells, table rows, and low-priority metadata: border only.
+Use **cards** when information forms one meaningful contained decision/context.
 
-Do not abandon the system; reduce elevation intelligently.
+Use **task rows** for real staged work/readiness.
 
-## 9. Responsive rule
+Use **loading states** for real asynchronous wait.
 
-The reference images are targets, not fixed canvases.
+Use **approval/confirmation** for consequential actions.
 
-Implementation must work at:
+Use **insight cards** only when analytics are trustworthy.
+
+Use **context cards/panels** for secondary selected-resource context.
+
+Use **chips/badges** for compact semantic state, not as decoration.
+
+Use **search/command search** only when results/actions are authorized and real.
+
+## 7. Copy-contract rule
+
+DigiStream has acceptance tests that intentionally protect terminology and product meaning.
+
+Before changing user-visible product copy:
+
+- search tests for the current phrase;
+- check product docs for mandated vocabulary;
+- determine whether the change is intentional product evolution or accidental redesign drift;
+- update tests only when the authoritative contract has actually changed.
+
+Never shorten important product language only to make a layout look cleaner.
+
+Examples of protected semantic distinctions include:
+
+- `Studio Lobby` versus an ambiguous `Lobby`;
+- Studio/private contribution versus public delivery;
+- scheduled versus live;
+- completed broadcast versus recording/replay ready.
+
+## 8. Responsive protocol
+
+Every changed UI pattern must define behavior for applicable viewports before the implementation is considered complete:
 
 - small Android portrait;
-- large Android/iPhone portrait;
+- large phone portrait;
 - short-height landscape;
-- tablet;
-- desktop;
-- Android desktop-site simulation where current tests require it.
+- desktop Chromium;
+- Android desktop-site simulation where CI covers it;
+- 200% zoom where acceptance tests cover it.
 
-Never solve responsiveness by shrinking text until it becomes unreadable.
-Never allow horizontal overflow for ordinary app content.
-Use progressive disclosure for dense operational details.
-Preserve safe-area and virtual-keyboard behavior.
+Rules:
 
-## 10. Navigation rule
+- no ordinary horizontal page overflow;
+- do not solve narrow layouts by shrinking text into unreadability;
+- desktop tables transform into compact mobile record rows when needed;
+- sticky/fixed controls must reserve content clearance;
+- virtual keyboard must not hide active forms/chat composer/critical primary action;
+- browser/Android Back closes the top transient layer first;
+- focus is restored on close;
+- account/sign-out remain discoverable.
 
-Do not infer navigation independently on each page.
+## 9. Accessibility protocol
 
-Public shell:
+For every added/changed component verify:
 
-- Discover
-- Replays
-- Sign in
+- semantic element choice;
+- accessible name;
+- keyboard operation;
+- obvious focus-visible state;
+- touch target size;
+- contrast;
+- status meaning without color;
+- correct heading relationships;
+- dialog/sheet focus trapping and restoration;
+- reduced-motion behavior;
+- screen-reader announcement for meaningful async state changes without excessive chatter.
 
-Listener shell:
+## 10. State completeness protocol
 
-- Home
-- Discover
-- Replays
-- My Library
-- More
+Do not implement only the screenshot happy path.
 
-Creator shell:
+For affected surfaces cover relevant states:
 
-- Home
-- Broadcasts
-- Lobby
-- Chat
-- More
+- loading;
+- empty;
+- unauthorized/private-not-found;
+- offline/network failure;
+- stale session;
+- validation error;
+- request failure;
+- retry/recovery;
+- long content;
+- disabled permission state;
+- lifecycle transitions;
+- mobile keyboard open/closed;
+- reconnecting/return from background where operationally relevant.
 
-Existing product architecture may use internal route names that differ. Preserve route compatibility while presenting consistent user-facing vocabulary.
+## 11. Broadcast truth guardrails
 
-## 11. State integrity
+Agents must preserve these distinctions:
 
-Never show:
+- microphone detected != microphone signal healthy;
+- microphone healthy != private Studio connected;
+- private Studio connected != public delivery ready;
+- public delivery ready != broadcast live unless lifecycle confirms it;
+- scheduled != starting;
+- starting != live;
+- reconnecting != healthy live;
+- completed != recording ready;
+- recording ready != replay published;
+- replay published != public if visibility is private/unlisted.
 
-- fake listener numbers;
-- fake analytics;
-- fake health percentages;
-- fake duration;
-- replay buttons for nonexistent artifacts;
-- green readiness without evidence;
-- live styling for scheduled content;
-- active controls that the current user is not authorized to use;
-- fake successful uploads;
-- fake recording availability;
-- fake public delivery merely because a private microphone connection exists.
+Do not collapse states merely to simplify a component.
 
-A visually accurate lie is a product bug.
+## 12. Loading/progress guardrails
 
-## 12. Accessibility gate
+- percentage requires measurable progress;
+- elapsed time should help a user understand a wait, not create false precision;
+- scheduled waiting content must not show fake active progress;
+- success waits for real response/media evidence;
+- loading controls preserve width/layout;
+- retries are bounded and state-aware;
+- an animation must not become a second state machine.
 
-Before considering a UI slice complete:
+## 13. Destructive-action guardrails
 
-- text and controls meet practical contrast requirements;
-- focus-visible is obvious;
-- mouse/touch/keyboard states exist;
-- 44px minimum touch targets are preserved;
-- color is never the only status signal;
-- long names and translated/expanded copy do not break layouts;
-- reduced motion remains usable;
-- dialogs/sheets restore focus and respect Back/Escape behavior;
-- audio controls have accessible names;
-- disabled and loading states remain understandable.
+For actions such as End broadcast, Delete recording, Suspend user, Remove participant or Revoke session:
 
-## 13. Do not redesign while implementing
+- state the exact action in the title/button;
+- explain the real consequence;
+- provide a safe cancel/return action;
+- preserve server authorization;
+- prevent accidental double submission;
+- handle stale/conflicting state safely.
 
-The 50-screen pack already establishes the direction. Implementation is not permission to “improve” it into a different aesthetic.
+## 14. Analytics guardrails
 
-If an agent believes a different visual solution is necessary, it must first document:
+Do not show Analytics because a reference looks attractive.
 
-- what problem exists in the approved reference;
-- why the Constitution cannot solve it;
-- the proposed deviation;
-- accessibility/product impact;
-- affected shared components;
-- whether the deviation should become a new system rule or remain screen-specific.
+Every displayed metric needs:
 
-Without explicit approval, stay inside the approved language.
+- trustworthy source;
+- authorized scope;
+- time range;
+- unit;
+- unavailable/partial-data handling;
+- consistent comparison basis.
 
-## 14. Existing legacy documents
+If the system does not have trustworthy data, keep the metric/surface hidden or explicitly unavailable according to product documents.
 
-Some older repository documents and existing CSS were written around an earlier dark/emerald or Echoo-influenced visual direction. Those files remain useful where they describe product behavior, accessibility, reliability, authorization, lifecycle, media handling, or component responsibility.
+## 15. External-source licensing guardrail
 
-They are **not** visual authority when they conflict with:
+Beautiful UI is a design reference.
 
-- `DIGISTREAM_UI_CONSTITUTION.md`;
-- `DESIGN_TOKENS.md`;
-- the approved 50-screen reference pack.
+Agents may reimplement publicly visible interaction ideas. Do not paste substantial external implementation code, proprietary icons, images, illustrations or other assets unless the applicable license is verified and repository notices are updated if required.
 
-Do not perform a mechanical global replacement of legacy CSS without understanding affected surfaces. Migrate visual primitives deliberately through the shared design system.
+When uncertain, reimplement from first principles using DigiStream's own React/CSS/design-system architecture.
 
-## 15. PR description requirement
+## 16. Test discipline
 
-Every UI/design PR should include a short section similar to:
+Before claiming a UI change complete:
 
-```text
-Design references: 01, 02, 03
-Constitution sections: 2, 4, 6, 13
-Existing surfaces reused: CreatorShell, BroadcastCard, Studio readiness panel
-Deliberate deviations: none
-Truth sources: organisation/channel/broadcast APIs
-Responsive evidence: Android portrait, short landscape, desktop
-Accessibility checks: focus, keyboard, touch targets, contrast, reduced motion
-```
+- typecheck;
+- run affected unit/API tests;
+- run production build;
+- run relevant Playwright suites;
+- run the responsive matrix applicable to the change;
+- inspect the first real failure instead of rerunning blindly;
+- preserve product/copy/accessibility tests unless the authority actually changed;
+- update obsolete purely visual assertions only when the new Constitution explicitly supersedes them.
 
-## 16. Visual completion checklist
+A redesign is not a justification for deleting meaningful acceptance coverage.
 
-Before closing a frontend PR, answer YES to all applicable items:
+## 17. Agent completion report
 
-- I opened the relevant reference image(s).
-- I read the UI Constitution.
-- I used the cream dotted canvas where required.
-- I used dusty pink, not legacy blue/green, for brand emphasis.
-- Heading hierarchy uses the heavy grotesk voice.
-- Metadata/labels use the mono voice.
-- Cards/controls remain square.
-- Shadows are hard, black, down/right, and blur-free.
-- Navigation matches the correct shell.
-- Real backend state drives actions/statuses.
-- I did not duplicate an existing flow/component.
-- Loading/empty/error/unauthorized states match the same design language.
-- Mobile and desktop were both checked.
-- No horizontal overflow was introduced.
-- Accessibility states were checked.
-- I compared the result against the reference before declaring completion.
+When finishing UI work, report:
 
-If any answer is NO, the work is not visually complete.
+- existing surfaces reused;
+- Beautiful UI pattern(s) adapted;
+- shared primitives created/changed;
+- product contracts intentionally changed, if any;
+- tests run and results;
+- responsive evidence;
+- accessibility checks;
+- remaining limitations or blocked states;
+- any external asset/code licensing decision.
+
+Do not describe unfinished or untested visual work as complete.
