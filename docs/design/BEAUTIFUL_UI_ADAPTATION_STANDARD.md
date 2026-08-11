@@ -4,39 +4,62 @@ Status: **mandatory frontend implementation standard**
 
 External design reference: `https://beautiful-ui-five.vercel.app/`
 
-This document defines how DigiStream should adapt the strongest interaction and component patterns from Beautiful UI without turning DigiStream into an AI-agent product, copying illustrative data, duplicating existing product flows, or weakening DigiStream's broadcast-specific product truth.
+This document defines how DigiStream adapts the strongest component, density, interaction and colour-composition ideas from Beautiful UI **without replacing DigiStream's own visual identity**.
 
-It is written for humans and implementation agents including Codex, Claude Code, Cline, Copilot-style agents, repository agents, and future automated contributors.
+DigiStream remains a broadcasting, listening, Studio, guest, recording and replay product. Beautiful UI is a reference for interface grammar, not a product specification and not a theme to clone.
 
 ---
 
-## 1. Authority and intent
+## 1. The core hybrid rule
 
-For frontend presentation and reusable UI composition, use this order:
+The correct target is:
 
-1. product truth, authorization, lifecycle, media-readiness, reliability, accessibility, and privacy rules referenced by root `AGENTS.md`;
+> **DigiStream cream dotted canvas + DigiStream dusty-pink brand anchor + Beautiful UI-style clean inner surfaces, compact information density, restrained mixed accent colours, tables/rows, clear status hierarchy, search, loading, approval and insight patterns.**
+
+Do **not** remove the cream dotted background.
+
+Do **not** make every component cream/pink either.
+
+The page should visually work in layers:
+
+```text
+Layer 1 — DigiStream identity
+Warm cream dotted application canvas
+
+Layer 2 — operational surfaces
+White / near-white / soft-neutral cards, tables, sheets and panels
+
+Layer 3 — brand + supporting accents
+Dusty pink remains primary brand accent
+Restrained lavender / sky / mint / amber / peach tints may differentiate secondary component families
+
+Layer 4 — semantic state
+Live / success / warning / danger colours are fixed by real product meaning
+```
+
+This is the most important rule in this document.
+
+---
+
+## 2. Authority and precedence
+
+For frontend work, use this order:
+
+1. product truth, authorization, lifecycle, media readiness, reliability, privacy and accessibility rules referenced by root `AGENTS.md`;
 2. `DIGISTREAM_UI_CONSTITUTION.md`;
 3. this Beautiful UI adaptation standard;
 4. `DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`;
 5. feature-specific product documents;
-6. the 50-screen reference pack for screen responsibility, content grouping, and journey intent;
-7. existing implementation details that do not conflict with the sources above.
+6. the 50-screen reference pack for screen responsibility, journey, hierarchy and content grouping;
+7. current implementation details that do not conflict with the above.
 
-Beautiful UI is a **design-system and interaction reference**, not a product specification. DigiStream remains a broadcasting, listening, Studio, guest, recording, and replay product.
-
-The target is:
-
-> calm, compact, highly legible broadcast operations software with strong hierarchy, restrained surfaces, useful density, and clear state communication.
-
-The target is not:
-
-> an AI chat product, an oversized card gallery, a decorative mock-up, a cream poster layout, or a generic template dashboard.
+No screenshot or external component demo can justify fake state, fake metrics, duplicate flows, unauthorized actions or inaccurate live/readiness claims.
 
 ---
 
-## 2. What is being adopted from Beautiful UI
+## 3. What we are adapting from Beautiful UI
 
-The reference demonstrates the following reusable patterns:
+Beautiful UI currently demonstrates reusable patterns including:
 
 - Loading State;
 - Approval Card;
@@ -52,106 +75,203 @@ The reference demonstrates the following reusable patterns:
 - Insight Cards;
 - Selection Actions.
 
-DigiStream should adapt those patterns where they improve a real existing responsibility.
+These are useful to DigiStream because they emphasize compact hierarchy, calm state communication and efficient repeated-data layouts.
 
-The following Beautiful UI patterns are **not default DigiStream components** because they are AI-agent-specific:
+The following AI-specific patterns are **not default DigiStream patterns**:
 
-- Thinking traces;
-- Streaming Text as an assistant response pattern;
-- Prompt Bar with model selection;
+- Thinking/reasoning traces;
+- assistant Streaming Text;
+- Prompt Bar with model picker;
 - Fine-tune inspector;
-- agent reasoning timelines;
-- code-generation surfaces.
+- code-generation UI;
+- agent tool-call history presented to normal users.
 
-Do not introduce those patterns unless DigiStream gains a real product feature that requires them and the product specification is updated first.
+Do not introduce them unless DigiStream later gains a real product feature that needs them.
 
 ---
 
-## 3. The adaptation rule: borrow grammar, not product identity
+## 4. What to borrow versus what to preserve
 
-Agents must not copy the Beautiful UI page wholesale.
+### Borrow from Beautiful UI
 
-Borrow:
-
-- compact information density;
-- thin borders;
-- subtle surface separation;
-- muted secondary text;
+- compact sidebar/navigation rows;
+- clear section grouping;
+- subtle borders;
+- mostly neutral surfaces;
 - small state indicators;
-- clear row hierarchy;
-- restrained shadows;
-- one dominant action per state;
-- command-search ergonomics;
-- tables for repeated structured records;
-- inline loading/progress when appropriate;
-- approval patterns before consequential actions;
-- calm empty states;
-- useful negative space;
-- predictable component rhythm.
+- muted secondary text;
+- strong alignment;
+- tables for structured repeated records;
+- filters that reorganize real data;
+- search with live filtering and empty states;
+- task rows for real progress/readiness;
+- approval cards/dialogs before consequential actions;
+- compact chat/message hierarchy;
+- context cards for supporting resource information;
+- insight cards for trustworthy analytics;
+- restrained, intentional colour variation;
+- minimal shadow use inside dense application surfaces;
+- one clear primary action.
 
-Do not borrow:
+### Preserve from DigiStream
 
-- AI-specific vocabulary;
-- fake agent progress;
-- fake confidence percentages;
-- model selectors;
-- tool-call traces;
-- reasoning panels;
-- sample creamery/vendor data;
-- decorative behavior that has no DigiStream product meaning.
+- the warm cream dotted application canvas;
+- dusty pink as the main brand accent;
+- near-black primary ink;
+- the broadcast-specific lifecycle language;
+- real creator/listener shells and responsibilities;
+- the existing product journeys and API-backed state;
+- truthful Studio contribution/public-delivery separation;
+- accessibility and responsive acceptance requirements;
+- selective tactile personality rather than generic SaaS blandness.
 
----
+### Do not preserve blindly from the older implementation
 
-## 4. Visual direction that supersedes the old cream-poster treatment
-
-The earlier cream dotted canvas, heavy dusty-pink usage, square poster cards, and hard black offset-shadow treatment are no longer mandatory application-wide rules.
-
-The v2 product UI should instead use a neutral operational foundation:
-
-- neutral light page canvas;
-- white or near-white primary surfaces;
-- near-black primary text;
-- cool/neutral muted text;
-- light gray borders;
-- restrained elevation;
-- compact component spacing;
-- modest corner radius where it improves grouping;
-- brand accent used selectively rather than as a page wash;
-- semantic green/amber/red only for actual semantic state.
-
-The old 50-screen images remain useful for **what belongs on a screen, relative hierarchy, journey responsibility, and content grouping**. They no longer override the v2 system for background color, shadow style, radius, density, table treatment, or navigation treatment.
+- huge cards for every item;
+- heavy hard shadow on every nested surface;
+- all-pink component treatment;
+- excessive vertical travel;
+- repeated headings;
+- decorative statistics without real data;
+- giant empty-state illustration before the user's next action;
+- page-local CSS systems that fight the shared design system.
 
 ---
 
-## 5. Required component mapping
+## 5. Colour composition: the Beautiful UI mix on top of DigiStream cream
 
-### 5.1 Sidebar Nav -> Creator shell
+### 5.1 Base canvas
 
-Beautiful UI reference: **Sidebar Nav**.
+The cream dotted canvas is mandatory on ordinary application pages.
 
-DigiStream use:
+Recommended:
 
-- Creator Overview;
-- Broadcasts;
-- Studio;
-- Recordings;
-- Analytics only when trustworthy and enabled;
-- Studio Lobby / audience operations where product terminology requires it;
-- account/workspace access;
-- settings.
+```css
+background-color: #F7F3EE;
+background-image: radial-gradient(circle, rgba(31, 32, 37, 0.09) 1px, transparent 1.1px);
+background-size: 20px 20px;
+```
 
 Rules:
 
-- desktop creator navigation should be a compact, stable sidebar or equivalent persistent navigation region;
-- navigation rows are compact and aligned, not large cards;
-- active state uses a subtle background/accent/border treatment, not a giant filled panel;
-- icons support labels but never replace essential labels;
-- optional counts use small badges aligned to the row end;
-- workspace switcher belongs near the top or account region and must use real organization membership data;
-- account/settings remain discoverable without competing with primary product navigation;
-- mobile uses the repository's validated mobile navigation behavior rather than squeezing the desktop sidebar into a narrow viewport.
+- keep dots subtle;
+- never allow the dot pattern to reduce text readability;
+- a large inner workspace may use a solid surface while cream/dots remain visible around or behind it;
+- modal overlays may suppress the visible pattern temporarily;
+- dense Studio panels may use solid neutral surfaces for calm operational focus;
+- mobile may reduce dot opacity slightly, but should not silently switch to generic gray SaaS background.
 
-Recommended creator grouping:
+### 5.2 Primary surfaces
+
+Use white/near-white surfaces to create the Beautiful UI-like contrast against cream:
+
+- white or warm white cards;
+- soft neutral rows;
+- light border separators;
+- selected/hover states that are subtle, not giant filled blocks.
+
+The cream canvas should be visible enough that the application still feels distinctly DigiStream.
+
+### 5.3 Brand anchor
+
+Dusty pink remains the principal brand accent.
+
+Use it for:
+
+- primary brand action where appropriate;
+- selected navigation punctuation;
+- focus/active brand detail where accessibility allows;
+- important non-semantic product emphasis;
+- occasional key chart series;
+- subtle icon tile/background tints.
+
+Do not paint the whole page pink.
+
+### 5.4 Supporting accent palette
+
+Beautiful UI feels richer because not every component is forced into one accent. DigiStream may use a **restrained supporting palette** for non-critical grouping and visual distinction.
+
+Recommended families:
+
+- lavender;
+- sky blue;
+- mint;
+- amber;
+- peach/rose.
+
+Use pale tints for backgrounds and stronger tones only for small icons, borders or data series.
+
+Example roles:
+
+- lavender tint: contextual/creative secondary panel;
+- sky tint: informational/search/context treatment;
+- mint tint: calm supportive tile where it cannot be confused with success;
+- amber tint: attention/supportive highlight where it cannot be confused with warning;
+- peach/rose tint: brand-adjacent supporting content.
+
+These roles are **visual grouping**, not lifecycle truth.
+
+### 5.5 Semantic colour is separate
+
+Never use the decorative accent palette to redefine status meaning.
+
+- `live` has one consistent live treatment;
+- `success/ready/healthy` has one semantic success treatment;
+- `warning/reconnecting/degraded` has one warning treatment;
+- `danger/failed/destructive` has one danger treatment;
+- `info` has one informational treatment.
+
+A lavender card does not mean a new lifecycle state. A mint tile does not automatically mean healthy.
+
+### 5.6 Colour-count discipline
+
+For an ordinary screen:
+
+- cream + white/neutral + near-black are the foundation;
+- dusty pink is the main brand accent;
+- normally use no more than 1–2 supporting accent families in the same visible region;
+- semantic colours appear only when real state requires them.
+
+Do not create a rainbow dashboard.
+
+---
+
+## 6. Surface, border, radius and shadow rules
+
+The hybrid system is neither flat generic SaaS nor the old hard-shadow poster system.
+
+### Surfaces
+
+- page = cream dotted;
+- primary operational surfaces = white/warm-white;
+- secondary surfaces = soft neutral or pale accent tint;
+- dense table/list rows = usually border/divider only.
+
+### Borders
+
+Use light neutral borders for ordinary structure and stronger contrast for selected/focus/important boundaries.
+
+### Radius
+
+Use restrained radius, generally 6–10px for normal panels and controls. Small chips/badges may be more rounded. Avoid 20–28px radius everywhere.
+
+### Shadows
+
+- tables and nested rows: usually no shadow;
+- ordinary card: none or subtle shadow;
+- dropdown/search palette: modest floating shadow;
+- modal: stronger but still soft elevation;
+- optional DigiStream hard-offset shadow may survive only as a **rare signature accent** on a hero/marketing panel or intentionally emphasized brand moment, never on every operational component.
+
+---
+
+## 7. Required Beautiful UI -> DigiStream mapping
+
+### 7.1 Sidebar Nav -> Creator shell
+
+Use Beautiful UI's compact workspace-navigation idea for DigiStream's creator shell.
+
+Likely real responsibilities:
 
 ```text
 WORKSPACE
@@ -159,11 +279,11 @@ Overview
 Broadcasts
 Studio
 Recordings
-Analytics          # only when real and available
+Analytics          # only when trustworthy and enabled
 
-AUDIENCE
+AUDIENCE / PRODUCTION
 Studio Lobby       # when applicable
-Chat               # when distinct in the product
+Chat               # when distinct
 Guests             # when applicable
 
 ACCOUNT
@@ -171,55 +291,40 @@ Account
 Settings
 ```
 
-Do not add a route merely because a navigation label exists in this example. Navigation must map to real existing responsibilities.
+Rules:
 
-### 5.2 Search -> command search
+- map only to real routes/responsibilities;
+- navigation rows are compact, not cards;
+- active state may use warm-white surface + dusty-pink punctuation or pale tint;
+- counts use small badges;
+- workspace selector uses real organization memberships;
+- mobile uses the validated mobile navigation pattern.
 
-Beautiful UI reference: **Search**.
+### 7.2 Search -> command search and resource search
 
-DigiStream use:
+Use for:
 
-- creator command search;
-- broadcast search;
-- recording search;
-- workspace navigation;
-- quick actions.
+- broadcasts;
+- recordings;
+- workspace switch;
+- authorized navigation;
+- safe quick actions.
 
-A future global command search may support `Ctrl/Cmd + K` when implemented accessibly.
-
-Possible actions:
+A future `Ctrl/Cmd + K` command search may expose actions such as:
 
 - Create broadcast;
 - Open Studio;
 - Open current live broadcast;
-- Find broadcast by title;
+- Find broadcast;
 - Find recording;
 - Switch workspace;
 - Open settings.
 
-Rules:
+All results/actions must be authorized and API-backed.
 
-- search results must derive from authorized data;
-- no result may reveal a private resource the user cannot access;
-- keyboard navigation must be complete;
-- an empty state explains that no authorized match exists;
-- a command palette is not permission to duplicate routing/business logic.
+### 7.3 Task Rows -> readiness, progress and recovery
 
-### 5.3 Task Rows -> lifecycle and readiness
-
-Beautiful UI reference: **Task Rows**.
-
-DigiStream use:
-
-- onboarding progress;
-- Studio preparation;
-- contribution readiness;
-- public-delivery readiness;
-- recording processing;
-- recovery operations;
-- multi-stage actions with real stage evidence.
-
-Examples:
+Use for real staged work:
 
 ```text
 Getting your broadcast ready
@@ -230,7 +335,7 @@ Getting your broadcast ready
 ○ Ready to go live
 ```
 
-and:
+or:
 
 ```text
 Broadcast health
@@ -242,19 +347,16 @@ Broadcast health
 
 Rules:
 
-- completed/running/failed state comes from real evidence;
-- a percentage is shown only when progress is actually measurable;
-- never fake `68%` because the reference shows a progress percentage;
-- never use animated running state for a scheduled item that is simply waiting for time;
-- do not imply public delivery from microphone or private LiveKit state.
+- stage state comes from real evidence;
+- percentage only when measurable;
+- scheduled waiting is not animated as active work;
+- microphone/private contribution/public delivery remain separate.
 
-### 5.4 Filter Table -> Broadcasts and Recordings
+### 7.4 Filter Table -> Broadcasts and Recordings
 
-Beautiful UI reference: **Filter Table**.
+Prefer filterable rows/tables when users compare records.
 
-Use for repeated records with lifecycle filters.
-
-Broadcast example:
+Broadcasts example:
 
 ```text
 [All] [Live] [Scheduled] [Draft] [Completed]
@@ -265,7 +367,7 @@ Morning Devotion   Devotional    Tomorrow        Scheduled
 Youth Connect      Youth         Aug 09          Completed
 ```
 
-Recording example:
+Recordings example:
 
 ```text
 [All] [Processing] [Ready] [Published] [Failed]
@@ -276,56 +378,40 @@ Morning Devotion   38m           Aug 09          Published
 Youth Connect      —             Aug 08          Processing
 ```
 
-Rules:
+Desktop uses aligned columns. Mobile transforms to compact stacked record rows rather than forcing desktop-table horizontal scroll for the main workflow.
 
-- prefer rows/tables over giant repeated cards when users compare multiple records;
-- desktop tables must have a defined mobile transformation;
-- mobile may use compact stacked rows, not a horizontally scrolling desktop table by default;
-- row actions are lifecycle-specific;
-- table filters change real data presentation, not fake tab content;
-- status and action text must remain understandable without color.
+### 7.5 Records Table -> admin/management records
 
-### 5.5 Records Table -> admin and structured management
+Strong candidates:
 
-Beautiful UI reference: **Records Table**.
-
-DigiStream use:
-
-- users/team members;
+- team members;
 - invitations;
 - channels;
-- recordings;
-- admin management;
-- session/security records where appropriate.
+- sessions;
+- admin users;
+- recordings.
 
-Rules:
+Use compact tags/status and contextual row actions.
 
-- structured records should be aligned for scanning;
-- use compact metadata, tags, and row actions;
-- destructive row actions require confirmation where consequence warrants it;
-- selection controls must have a real bulk action owner before being shown.
+### 7.6 Loading State -> asynchronous work
 
-### 5.6 Loading State -> asynchronous operations
-
-Beautiful UI reference: **Loading State**.
-
-Use for:
+Adapt Beautiful UI's calm loading pattern for:
 
 - Studio connection;
-- microphone permission/device discovery;
+- device permission/discovery;
 - delivery start;
-- recording preparation/processing;
-- authentication/session restoration;
-- data fetches that exceed the threshold where feedback is useful.
+- recording processing;
+- session restoration;
+- slow data load.
 
-Preferred pattern:
+Examples:
 
 ```text
 Connecting to Studio
 Establishing secure connection…     3.4s
 ```
 
-or, when determinate:
+and only when measurable:
 
 ```text
 Processing recording
@@ -333,28 +419,18 @@ Processing recording
 Encoding audio…
 ```
 
-Rules:
+Never invent progress.
 
-- use elapsed time only when it helps the user understand a real wait;
-- percentage requires measurable progress;
-- loading must not move primary controls around unpredictably;
-- preserve control width while loading;
-- success appears only after authoritative confirmation;
-- failures include a bounded recovery action.
+### 7.7 Approval Card -> consequential actions
 
-### 5.7 Approval Card -> consequential actions
+Use for:
 
-Beautiful UI reference: **Approval Card**.
-
-DigiStream use:
-
-- Go live when an explicit final confirmation is appropriate;
 - End broadcast;
 - Delete recording;
 - Remove participant;
 - Suspend user;
 - revoke session;
-- destructive workspace/admin changes.
+- other destructive or live-critical actions.
 
 Example:
 
@@ -365,323 +441,250 @@ Listeners will be disconnected and recording processing may begin.
 Keep broadcasting     End broadcast
 ```
 
-Rules:
+Use explicit action labels, never vague `Confirm`/`Yes` copy.
 
-- title states the consequence;
-- supporting copy is short and factual;
-- safe action appears first;
-- destructive action is visually distinct;
-- never hide important consequence behind vague `Are you sure?` copy;
-- irreversible operations require server-side authorization regardless of UI confirmation.
+### 7.8 Chat -> Studio Lobby / live communication
 
-### 5.8 Chat -> Studio Lobby and audience communication
+Use Beautiful UI's compact chat hierarchy, not its AI reasoning behavior.
 
-Beautiful UI reference: **Chat**.
+- compact messages;
+- clear sender/body/time hierarchy;
+- restrained message surfaces;
+- composer reachable with keyboard open;
+- moderation actions secondary;
+- no AI-thinking trace inside human chat.
 
-Use for:
+### 7.9 Context Cards -> selected-resource context
 
-- live chat;
-- Studio Lobby communication;
-- guest/backstage messaging where supported.
+Use compact context panels for:
 
-Rules:
-
-- message density should be compact and scannable;
-- sender, timestamp/state, body, moderation/action controls have a stable hierarchy;
-- composer remains reachable when the virtual keyboard is open;
-- opening chat must not silently stop listener playback or Studio audio where technically avoidable;
-- moderation actions remain role-aware;
-- do not import AI reasoning/reply UI into ordinary human chat.
-
-### 5.9 Context Cards -> resource context
-
-Beautiful UI reference: **Context Cards**.
-
-Use for compact contextual information such as:
-
-- selected channel;
-- selected broadcast;
-- guest identity/status;
-- delivery endpoint summary;
+- channel;
+- broadcast;
+- guest;
 - recording source;
-- workspace information;
-- technical reference details.
+- delivery summary;
+- workspace context;
+- secondary technical details.
 
-Rules:
+Do not duplicate the entire page in a context card.
 
-- context cards explain the current resource, not duplicate the whole page;
-- prefer key-value density over decorative illustration;
-- technical IDs/providers stay secondary unless needed for troubleshooting;
-- do not expose secrets.
+### 7.10 Insight Cards -> trustworthy analytics
 
-### 5.10 Insight Cards -> Analytics
+Use only when data exists.
 
-Beautiful UI reference: **Insight Cards**.
-
-Use only when the repository has trustworthy analytics data.
-
-Possible metrics:
+Possible examples:
 
 - peak listeners;
 - average listening duration;
 - replay plays;
-- audience retention;
-- broadcast-to-broadcast comparison.
+- retention;
+- comparison with previous broadcast.
 
-Rules:
+Insight cards can use restrained mixed accents: e.g. pink primary series, lavender or sky secondary series, mint/amber only where interpretation remains clear.
 
-- no fake zeroes;
-- no placeholder growth percentage;
-- every chart/metric needs a known source and time range;
-- insight copy must describe what the data actually supports;
-- charts use restrained color and a consistent scale;
-- analytics cards should not become a grid of decorative KPIs with no decision value.
+No fake zeroes, fake trends or placeholder growth percentages.
 
-### 5.11 Recommendation Card -> evidence-backed operational guidance
+### 7.11 Recommendation Card -> evidence-backed guidance
 
-Use sparingly for real, explainable recommendations, for example:
+Use sparingly for real recommendations such as:
 
-- microphone has no signal and a detected alternate input is available;
-- reconnecting public delivery can be retried;
-- a scheduled broadcast is overdue and can be started/rescheduled;
-- recording is ready for an allowed next action.
+- detected microphone issue with a real alternative device;
+- recoverable delivery failure;
+- overdue scheduled broadcast with valid options;
+- recording ready for an authorized next action.
 
-Do not show AI-style confidence percentages unless a real model and calibrated confidence contract exist.
+Do not show AI-like confidence percentages without a real calibrated model contract.
 
-### 5.12 Tool Chips -> diagnostics/status details
+### 7.12 Tool Chips -> secondary diagnostics
 
-Use compact chips for secondary technical information such as:
+Use compact chips for supporting technical information such as:
 
+- selected microphone;
 - contribution connected;
 - public delivery reconnecting;
 - recording processing;
-- selected microphone;
-- transport/fallback mode when relevant to diagnostics.
+- fallback transport when relevant.
 
-Do not expose infrastructure noise to ordinary users by default.
+Do not expose provider/infrastructure noise to ordinary users by default.
 
-### 5.13 Selection Actions -> bulk operations
+### 7.13 Selection Actions -> real bulk operations
 
-Use only where users can truly select multiple records and perform a supported bulk action.
+Only show selection controls if the product actually supports a bulk action.
 
-Examples:
-
-- archive selected recordings when the API supports it;
-- revoke selected invitations when supported.
-
-Do not render checkboxes as decoration.
+Checkboxes are not decoration.
 
 ---
 
-## 6. DigiStream page architecture
+## 8. Screen architecture
 
 ### Creator Overview
 
-Overview is not a card showroom.
+Overview must answer:
 
-Required hierarchy:
+1. What is happening now?
+2. What should I do next?
+3. What is blocked or recovering?
 
-1. concise page header;
+Preferred hierarchy:
+
+1. concise header;
 2. one state-aware primary action;
-3. current/next broadcast state;
-4. compact task/readiness rows if work is in progress;
-5. recent broadcasts or recordings as compact rows;
-6. insights only when trustworthy analytics exist;
-7. secondary actions with lower visual weight.
+3. current/live/recovering broadcast context;
+4. next scheduled/draft item;
+5. task/readiness rows when work is in progress;
+6. recent broadcasts/recordings as compact rows;
+7. trustworthy insights only when available;
+8. secondary actions with lower visual weight.
+
+The cream dotted canvas remains behind the Overview. Inner content uses warm-white/white and occasional pale accent surfaces.
 
 ### Broadcasts
 
 Prefer:
 
 - page header + create action;
-- filter chips/tabs;
+- filter tabs/chips;
 - compact table/rows;
-- lifecycle-specific actions;
+- lifecycle-specific row actions;
 - clear empty state.
 
-Avoid:
-
-- one giant card per broadcast;
-- repeated generic `Open Studio` buttons;
-- status duplicated in three places;
-- decorative metrics that are unavailable.
+Avoid giant repeated cards.
 
 ### Studio
 
-Studio is operational software. Optimize for state clarity and task completion.
+Studio is operational software.
 
-Preferred regions:
+Use a solid calm inner workspace on top of/within the cream shell where necessary. The dotted canvas may remain visible in outer gutters/header/shell but should not compete with operational controls.
 
-- broadcast identity/context;
-- contribution/audio readiness;
-- public-delivery readiness;
-- live state and elapsed time when real;
-- critical primary control;
-- recovery information;
-- secondary diagnostics progressively disclosed.
+Primary regions:
+
+- resource identity;
+- microphone/device readiness;
+- private contribution;
+- public delivery;
+- live state/duration when real;
+- critical action;
+- bounded recovery;
+- secondary diagnostics.
 
 ### Recordings
 
-Prefer searchable/filterable rows with:
-
-- title;
-- broadcast/channel context;
-- duration when known;
-- created/completed time;
-- processing/publish state;
-- contextual actions.
+Use searchable/filterable rows with title, context, duration, created/completed time, process/publish state and contextual action.
 
 ### Analytics
 
-Use Beautiful UI-style insight density only after data is trustworthy. Until then, keep Analytics hidden or explicitly unavailable according to product documents.
+Use Beautiful UI-style insight density plus DigiStream's cream/brand identity. Mixed accent colours are welcome **only with disciplined mapping and real data**.
 
 ### Settings/Admin
 
-Use sections, tables, compact rows, and contextual confirmation. Avoid stacking large cards merely to separate every preference.
+Use sections, compact rows and tables. Avoid putting every preference in a giant decorative card.
 
 ---
 
-## 7. Density and spacing
+## 9. Density and spacing
 
-DigiStream v2 should feel efficient rather than empty or cramped.
+DigiStream should feel efficient, not sterile and not cramped.
 
 Guidelines:
 
-- page max width should be deliberate, not full-screen text lines;
-- major section gap: approximately 24–40px depending on viewport;
-- card/panel padding: approximately 16–24px;
-- compact row vertical padding: approximately 10–14px;
-- control height: generally 36–44px depending on importance and touch context;
-- touch targets must still meet accessibility requirements;
-- repeated rows should align to a common grid;
-- use whitespace to separate groups rather than adding a new card around every group.
+- page padding: roughly 16–24px mobile, 24–40px desktop;
+- major section gap: roughly 24–40px;
+- panel padding: roughly 16–24px;
+- compact row vertical padding: roughly 10–14px;
+- controls: roughly 36–44px depending on context;
+- touch targets must remain accessible;
+- use whitespace/dividers before wrapping every group in another card;
+- avoid duplicate headings and unnecessary vertical wrappers.
 
-Do not make mobile interfaces merely `desktop but stacked` if that causes excessive vertical travel.
-
----
-
-## 8. Borders, radius, and elevation
-
-Use subtle structure.
-
-- borders: light neutral by default, stronger on focus/selected state;
-- radius: restrained and consistent, generally 6–10px for surfaces/controls unless a component responsibility requires otherwise;
-- badges/chips may use a slightly larger pill radius where compact semantics benefit;
-- shadows: low blur/low opacity and rare; many surfaces need only a border;
-- no hard black offset shadows as an application-wide signature;
-- no glassmorphism;
-- no heavy gradient cards;
-- no neon glow;
-- no permanent floating-card illusion for ordinary table rows.
-
----
-
-## 9. Color system
-
-The application foundation is neutral. Brand color is an accent, not the background architecture.
-
-Recommended semantic roles:
-
-- page background: neutral very-light gray;
-- primary surface: white;
-- secondary surface: subtle neutral gray;
-- primary text: near-black;
-- secondary text: medium neutral gray;
-- border: light neutral gray;
-- brand accent: existing approved DigiStream accent used selectively;
-- success: only healthy/ready/completed state;
-- warning: only degraded/reconnecting/attention state;
-- danger: only destructive/error/failed state;
-- live: use a consistent live semantic treatment, not generic success green.
-
-Do not introduce a rainbow of feature-local colors.
+Do not implement mobile as `desktop stacked forever` if it causes excessive vertical travel.
 
 ---
 
 ## 10. Typography
 
-The UI should be readable before it is expressive.
+Use readable application typography with clear hierarchy.
 
-- one primary sans-serif family for application text;
-- optional mono only for technical metadata, IDs, timestamps, diagnostics, or places where it improves scanning;
-- do not set ordinary paragraphs in monospace;
-- headings use weight/size/spacing for hierarchy rather than decorative typefaces;
-- avoid oversized display headings inside operational creator surfaces;
+- primary sans-serif for ordinary UI;
+- mono only for technical metadata/IDs/diagnostics where useful;
+- avoid oversized marketing headings in operational screens;
+- use weight and spacing more than novelty fonts;
 - labels remain concise;
-- preserve readable line height and text wrapping on mobile.
+- long content must wrap/truncate intentionally and accessibly.
+
+The cream/dotted identity does not require every label to be typewriter-styled.
 
 ---
 
-## 11. Interaction and motion
+## 11. Motion
 
-Beautiful UI's calmness comes partly from not animating everything.
+Beautiful UI's calmness comes partly from restraint.
 
 Required:
 
-- immediate pressed/hover/focus response;
-- short transitions for state changes;
-- no animation that delays a real action;
-- no fake success animation before server/media confirmation;
-- determinate progress only for measurable work;
+- immediate hover/pressed/focus acknowledgement;
+- short state transitions;
+- no fake success before server/media confirmation;
+- no fake progress;
 - reduced-motion support;
-- no continuous decorative parallax, blur, glow, particles, or pulsing scheduled content;
-- live/reconnecting animation must represent actual state.
+- no continuous decorative particles/parallax/glow;
+- scheduled content never pulses as though live;
+- reconnect/live animation represents real state.
 
-Follow `PREMIUM_INTERACTION_MOTION_AND_PRODUCT_POLISH.md` for authoritative motion behavior.
+Use `PREMIUM_INTERACTION_MOTION_AND_PRODUCT_POLISH.md` for full motion authority.
 
 ---
 
-## 12. Responsive implementation
+## 12. Responsive behavior
 
-Every adapted component must define desktop and mobile behavior before implementation is considered complete.
+Every adapted pattern needs explicit desktop and mobile behavior.
 
-Test at minimum:
+Validate at minimum where applicable:
 
 - small Android portrait;
 - large phone portrait;
 - short-height landscape;
 - desktop Chromium;
-- Android desktop-site simulation where CI requires it;
-- 200% zoom where existing acceptance tests require it.
+- Android desktop-site simulation required by CI;
+- 200% zoom where current acceptance tests cover it.
 
 Rules:
 
-- no ordinary horizontal page overflow;
+- no ordinary horizontal overflow;
 - desktop tables become compact mobile record rows where needed;
-- sidebar becomes the approved mobile navigation pattern rather than remaining fixed off-screen;
-- action bars do not cover content;
-- virtual keyboard does not hide the active field/composer/primary action;
-- browser/Android Back closes the top transient layer correctly;
-- focus is restored after closing dialogs/sheets/search.
+- sidebar becomes the validated mobile navigation pattern;
+- sticky/fixed actions reserve content clearance;
+- virtual keyboard does not hide active input/composer/critical action;
+- Back/Escape closes the correct top layer;
+- focus restores correctly.
 
 ---
 
 ## 13. Accessibility
 
-All Beautiful UI-inspired work remains subordinate to DigiStream accessibility requirements.
+Beautiful UI inspiration never overrides accessibility.
 
 Required:
 
 - semantic HTML;
 - visible focus;
-- keyboard-complete navigation;
+- keyboard-complete operation;
 - accessible names for icon-only controls;
-- minimum usable touch targets;
+- usable touch targets;
 - sufficient contrast;
-- status not communicated by color alone;
+- status not communicated by colour alone;
+- logical headings;
+- correct table headers/relationships;
 - reduced motion;
-- logical heading structure;
-- live regions used carefully for asynchronous status changes;
-- tables expose correct headers/relationships;
-- dialogs trap and restore focus correctly.
+- dialog/sheet focus trap and restoration;
+- careful live-region announcements for meaningful async state.
 
 ---
 
-## 14. Code architecture
+## 14. Shared-component architecture
 
 Do not implement Beautiful UI patterns as page-local copies.
 
-Prefer shared primitives under `apps/web/src/design-system/` such as:
+Prefer shared primitives under `apps/web/src/design-system/` such as equivalents of:
 
 ```text
 Button
@@ -689,16 +692,18 @@ IconButton
 Badge
 StatusDot
 Sidebar
+NavItem
 CommandSearch
 PageHeader
 SectionHeader
 TaskRow
 TaskList
 DataTable
+ResponsiveRecordRow
 FilterTabs
 EmptyState
 LoadingState
-ApprovalDialog / ConfirmationCard
+ConfirmationDialog / ApprovalCard
 SearchField
 Toolbar
 MessageRow
@@ -708,63 +713,67 @@ InsightCard
 SelectionBar
 ```
 
-Names may differ if equivalent primitives already exist. Reuse before creating.
+Reuse existing equivalents before creating new names.
 
-Feature folders own domain composition. The design system owns reusable presentation behavior.
-
-Do not move authorization, broadcast lifecycle, recording state, or media readiness into generic UI components.
+Generic design-system components own presentation behavior. Feature/domain code owns authorization, lifecycle, recording and media truth.
 
 ---
 
 ## 15. Migration protocol for agents
 
-Before editing an existing DigiStream screen:
+Before changing a DigiStream UI surface:
 
-1. Read root `AGENTS.md` and the nearest scoped `AGENTS.md`.
-2. Read `DIGISTREAM_UI_CONSTITUTION.md`.
-3. Read this file.
-4. Read `DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`.
-5. Identify the existing component and API/domain owner.
-6. Identify which Beautiful UI pattern actually fits the responsibility.
-7. Open the Beautiful UI reference if network access is available; otherwise use the pattern descriptions in this document.
-8. Inspect the relevant 50-screen reference only for journey/content/composition intent.
-9. Inventory existing shared primitives before creating new ones.
-10. Implement the smallest reusable system change that improves the target surface.
-11. Preserve all loading/empty/error/unauthorized/offline/recovery states.
-12. Run affected unit, type, build, and responsive tests.
-13. Do not weaken tests just to make a redesign pass; update a test only when the authoritative product/design contract intentionally changed.
-14. Document deliberate deviations in the PR.
+1. read root and scoped `AGENTS.md` files;
+2. read `DIGISTREAM_UI_CONSTITUTION.md`;
+3. read this document;
+4. read `DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`;
+5. identify the current component/API/domain owner;
+6. identify the Beautiful UI pattern that actually fits;
+7. open `https://beautiful-ui-five.vercel.app/` when network access is available;
+8. if offline, use this document rather than guessing the external reference from memory;
+9. inspect the relevant 50-screen reference for product composition/journey intent;
+10. inventory shared primitives before creating another component;
+11. define colour role, including which supporting accent is used and why;
+12. define desktop/mobile behavior;
+13. cover loading/empty/error/unauthorized/offline/recovery states;
+14. implement the smallest reusable change;
+15. run type, unit, build and responsive tests;
+16. do not weaken product/copy/accessibility tests merely to make a redesign pass;
+17. document deliberate deviations in the PR.
 
 ---
 
-## 16. Licensing and source-copy rule
+## 16. External-source and licensing rule
 
 Beautiful UI is an external design reference.
 
-Agents may use its publicly visible interaction ideas and visual patterns as inspiration. Do **not** paste substantial source code, assets, illustrations, proprietary icons, or other copyrighted implementation material into DigiStream unless the applicable license has been verified and repository notices are updated when required.
+Agents may use publicly visible interaction and visual ideas as inspiration. Do **not** paste substantial source code, proprietary assets, illustrations or icons unless the applicable license has been verified and repository notices are updated where required.
 
-When license status is unclear, reimplement the pattern using DigiStream's existing React/CSS/design-system architecture.
+When uncertain, reimplement the pattern using DigiStream's own React/CSS/design-system architecture.
 
 ---
 
-## 17. Acceptance checklist for a Beautiful UI-inspired change
+## 17. Acceptance checklist
 
-A change is not complete unless all applicable answers are yes:
+A Beautiful UI-inspired DigiStream change is incomplete unless applicable answers are yes:
 
-- Does it solve a real DigiStream product responsibility?
-- Does it reuse an existing surface rather than creating a duplicate?
-- Is the information density more efficient without becoming cramped?
-- Is there one clear primary action for the current state?
-- Are repeated records represented as rows/tables where comparison matters?
-- Is every status backed by real state?
-- Are loading/progress indicators truthful?
-- Are destructive actions explicit and confirmed appropriately?
-- Does the mobile transformation remain usable without horizontal overflow?
-- Are keyboard, focus, touch, Back/Escape, and reduced-motion behaviors correct?
-- Are data and authorization boundaries preserved?
-- Does the implementation use shared primitives rather than page-local visual duplication?
-- Did the change avoid AI-specific patterns unless an actual AI feature exists?
-- Did the change avoid returning to the obsolete cream dotted / hard-shadow poster treatment?
+- Is the cream dotted DigiStream canvas still present where the ordinary application shell calls for it?
+- Are white/neutral surfaces used to create clean contrast against the cream canvas?
+- Is dusty pink still the principal brand accent?
+- Are supporting colours restrained and intentionally mapped rather than random?
+- Are lifecycle semantic colours kept separate from decorative accents?
+- Does the change solve a real DigiStream responsibility?
+- Does it reuse an existing surface rather than create a duplicate?
+- Is information density more efficient without becoming cramped?
+- Is there one clear primary action?
+- Are repeated records rows/tables when comparison matters?
+- Are all statuses and progress indicators truthful?
+- Are destructive actions explicit and appropriately confirmed?
+- Is mobile usable without ordinary horizontal overflow or excessive vertical travel?
+- Are keyboard, focus, touch, Back/Escape and reduced-motion behaviors correct?
+- Are authorization/data boundaries preserved?
+- Are shared components reused?
+- Were AI-specific patterns avoided unless an actual AI feature exists?
 - Does CI remain green?
 
-If not, the adaptation is incomplete.
+The visual identity should feel like **DigiStream using Beautiful UI-quality interaction grammar**, not Beautiful UI with a DigiStream logo pasted on it.
