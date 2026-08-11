@@ -62,7 +62,7 @@
   justify-content: space-between;
   gap: var(--ds-space-6);
   border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-surface-2);
 }
 
@@ -126,9 +126,9 @@
 
 .workspace-inline-error {
   padding: var(--ds-space-4);
-  border: 1px solid rgba(240, 91, 97, .42);
+  border: 1px solid var(--ds-danger);
   border-radius: var(--ds-radius-md);
-  color: #ffc5c8;
+  color: var(--ds-danger-foreground);
   background: var(--ds-danger-soft);
   font-size: var(--ds-text-sm);
   overflow-wrap: anywhere;
@@ -211,11 +211,11 @@
 .audio-device span { color: var(--ds-text-muted); font-size: var(--ds-text-xs); line-height: 1.45; }
 
 .ds-state-error,
-.ds-state-offline { border-color: rgba(240, 91, 97, .42); }
+.ds-state-offline { border-color: var(--ds-danger); }
 .ds-state-error .ds-state-icon,
-.ds-state-offline .ds-state-icon { color: #ffc5c8; background: var(--ds-danger-soft); }
-.ds-state-unauthorized .ds-state-icon { color: #ffe2a5; background: var(--ds-warning-soft); }
-.ds-state-loading .ds-state-icon { color: #b9d9ff; background: var(--ds-info-soft); }
+.ds-state-offline .ds-state-icon { color: var(--ds-danger-foreground); background: var(--ds-danger-soft); }
+.ds-state-unauthorized .ds-state-icon { color: var(--ds-warning-foreground); background: var(--ds-warning-soft); }
+.ds-state-loading .ds-state-icon { color: var(--ds-info-foreground); background: var(--ds-info-soft); }
 .ds-state-loading .ds-state-icon .ds-icon { animation: ds-spin 1s linear infinite; }
 
 .ds-state-panel,
@@ -284,7 +284,7 @@
   .panel,
   .metric-card,
   .ds-state-panel {
-    border-radius: 0;
+    border-radius: var(--ds-radius-control);
   }
 
   .workspace-page-intro h2 { font-size: clamp(1.45rem, 8vw, 1.95rem); }

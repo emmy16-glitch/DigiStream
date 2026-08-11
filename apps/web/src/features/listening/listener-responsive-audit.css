@@ -131,7 +131,7 @@
 
   .listener-card {
     padding: 18px;
-    border-radius: 18px;
+    border-radius: var(--ds-radius-card);
   }
 
   .listener-card h1 {
@@ -175,7 +175,7 @@
     min-height: 0;
     overflow-y: auto;
     padding: 0.9rem 0.9rem calc(0.9rem + env(safe-area-inset-bottom));
-    border-radius: 0;
+    border-radius: var(--ds-radius-control);
   }
 
   .echoo-call-in-panel.listener-call-in-panel > .echoo-call-in-header {

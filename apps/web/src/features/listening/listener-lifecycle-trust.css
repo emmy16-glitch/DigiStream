@@ -63,7 +63,7 @@
   row-gap: 3px;
   align-items: center;
   border: 1px solid rgba(243, 179, 61, .2);
-  border-radius: 14px;
+  border-radius: var(--ds-radius-card);
   color: #f0d9a9;
   background: rgba(243, 179, 61, .07);
 }

@@ -3,7 +3,7 @@
   max-height: min(90dvh, 48rem);
   padding: 1.2rem;
   border: 1px solid var(--ds-border-default);
-  border-radius: 1.35rem;
+  border-radius: var(--ds-radius-card);
   background: var(--ds-surface-1);
   color: var(--ds-text-primary);
   box-shadow: 0 24px 70px rgb(12 38 74 / 24%);
@@ -31,7 +31,7 @@
   height: 2.75rem;
   flex: 0 0 auto;
   border: 1px solid var(--ds-border-default);
-  border-radius: 0.8rem;
+  border-radius: var(--ds-radius-card);
   background: var(--ds-surface-1);
   color: var(--ds-text-secondary);
   cursor: pointer;
@@ -42,7 +42,7 @@
   gap: 1.1rem;
   padding: clamp(1.25rem, 4vw, 2rem);
   border: 1px solid var(--ds-border-default);
-  border-radius: 1.2rem;
+  border-radius: var(--ds-radius-card);
   background: #fbfcfe;
   text-align: center;
 }
@@ -107,7 +107,7 @@
   width: 100%;
   box-sizing: border-box;
   border: 1px solid var(--ds-border-default);
-  border-radius: 0.8rem;
+  border-radius: var(--ds-radius-card);
   background: var(--ds-surface-1);
   color: var(--ds-text-primary);
   font: inherit;
@@ -135,7 +135,7 @@
   width: 100%;
   min-height: 3.25rem;
   border: 0;
-  border-radius: 0.85rem;
+  border-radius: var(--ds-radius-card);
   background: var(--ds-accent);
   color: #fff;
   font: inherit;
@@ -165,7 +165,7 @@
 .echoo-call-in-actions.listener-call-in-actions button {
   width: 100%;
   min-height: var(--ds-control-min-height);
-  border-radius: 0.8rem;
+  border-radius: var(--ds-radius-card);
 }
 
 .echoo-call-in-panel .listener-call-in-guidance {
@@ -213,4 +213,4 @@
   }
 }
 /* Screen 41: request-to-speak remains visibly pending until the host admits it. */
-.listener-call-in-panel,.listener-call-in-sheet{border-radius:0;border-color:var(--ds-ink);box-shadow:var(--ds-shadow-major)}.listener-call-in-panel [aria-busy="true"]{min-width:0}
+.listener-call-in-panel,.listener-call-in-sheet{border-radius: var(--ds-radius-control);border-color:var(--ds-ink);box-shadow:var(--ds-shadow-major)}.listener-call-in-panel [aria-busy="true"]{min-width:0}

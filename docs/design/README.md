@@ -30,11 +30,11 @@ DigiStream uses:
 - warm cream dotted backgrounds;
 - dusty-pink accents;
 - near-black grotesk headings;
-- mono/typewriter labels, metadata, and technical UI copy;
-- square cards, inputs, tabs, and controls;
-- thin visible black borders;
-- hard black offset shadows with zero blur;
-- generous vertical spacing;
+- readable sans-serif product copy with mono/typewriter reserved for technical metadata and diagnostics;
+- restrained 6–10px cards, inputs, tabs, and controls;
+- thin soft borders with stronger focus/emphasis boundaries;
+- restrained elevation, with hard-offset shadow limited to rare brand moments;
+- compact operational spacing with deliberate hierarchy;
 - restrained semantic green, amber, and rose only when state requires them.
 
 The legacy blue/white DigiStream styling, previous Echoo visual references, and previous dark/emerald visual styling are **not** the current visual target.

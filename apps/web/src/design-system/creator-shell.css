@@ -44,7 +44,7 @@
   align-items: center;
   gap: 12px;
   border: 1px solid transparent;
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   color: var(--ds-text-muted);
   background: transparent;
   font-family: var(--ds-font-mono);
@@ -60,7 +60,7 @@
   display: grid;
   gap: 5px;
   border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-surface-2);
   box-shadow: var(--ds-shadow-small);
 }
@@ -71,7 +71,7 @@
   min-height: 44px;
   padding: 8px 30px 8px 10px;
   border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   color: var(--ds-text-primary);
   background: var(--ds-surface-1);
   font-family: var(--ds-font-mono);
@@ -168,7 +168,7 @@
   .ds-mobile-account-popover {
     position: absolute; z-index: 80; top: calc(100% + 8px); right: 0;
     width: min(20rem, calc(100vw - 28px)); padding: 14px; display: grid; gap: 12px;
-    border: 1px solid var(--ds-border-default); border-radius: 0;
+    border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-control);
     background: var(--ds-surface-1); box-shadow: var(--ds-shadow-card);
   }
   .ds-mobile-account-popover > div:first-child { min-width: 0; display: grid; gap: 3px; }
@@ -199,7 +199,7 @@
     align-content: center;
     gap: 3px;
     border: 1px solid transparent;
-    border-radius: 0;
+    border-radius: var(--ds-radius-control);
     color: var(--ds-text-muted);
     background: transparent;
     font-family: var(--ds-font-mono);
@@ -225,7 +225,7 @@
   .ds-creator-mobile-more-menu {
     width: 100%; padding: 12px max(14px, env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
     display: grid;
-    gap: 6px; border: 1px solid var(--ds-border-default); border-radius: 0;
+    gap: 6px; border: 1px solid var(--ds-border-default); border-radius: var(--ds-radius-control);
     background: var(--ds-surface-1);
     box-shadow: var(--ds-shadow-major);
   }
@@ -238,7 +238,7 @@
     align-items: center;
     gap: 10px;
     border: 1px solid transparent;
-    border-radius: 0;
+    border-radius: var(--ds-radius-control);
     color: var(--ds-text-primary);
     background: transparent;
     font-family: var(--ds-font-mono);

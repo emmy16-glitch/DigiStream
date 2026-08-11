@@ -1,6 +1,6 @@
 # DigiStream Design System / UI Constitution
 
-Version 1.0 — derived from the approved final 50-screen DigiStream reference pack
+Version 2.0 — DigiStream identity with Beautiful UI operational discipline
 
 ## 0. Purpose
 
@@ -14,7 +14,7 @@ The visual identity must read as:
 
 Never as:
 
-> generic blue SaaS + rounded cards + soft shadows + Inter-everywhere dashboard
+> generic gray SaaS, an all-pink poster system, or an AI-agent interface
 
 ---
 
@@ -23,13 +23,13 @@ Never as:
 1. **Warm cream dotted canvas** is the default application background.
 2. **Dusty pink is the primary brand accent.** Blue is not a DigiStream brand UI color.
 3. **Near-black grotesk headings** carry hierarchy and personality.
-4. **Monospace/typewriter typography** carries metadata, labels, controls, system states, timestamps, and technical copy.
-5. **Cards and controls are square or almost square.** Rounded SaaS cards are not part of the system.
-6. **Hard black offset shadows** are the signature elevation treatment.
-7. **Borders are visible and intentional.** Components should feel constructed, printed, and tactile.
-8. **Spacing is generous vertically and disciplined horizontally.**
+4. **Monospace/typewriter typography** is reserved for technical metadata, identifiers, timestamps and diagnostics; normal UI copy remains readable sans-serif.
+5. **Operational cards and controls use restrained 6–10px radii.** Pills remain reserved for compact statuses and chips.
+6. **Operational elevation is restrained.** Most rows and tables use borders only; a hard offset shadow is a rare brand accent.
+7. **Borders are subtle and intentional.** Strong ink borders are reserved for emphasis and focus, not every nested surface.
+8. **Spacing is compact in operational workspaces and generous only where hierarchy benefits.**
 9. **Color is restrained.** Semantic colors must mean something.
-10. **Dense screens reduce shadow usage rather than abandon the design language.**
+10. **Dense screens use compact rows, tables, dividers and progressive disclosure.**
 11. **Real product state always overrides decorative screenshot data.**
 12. **Existing product surfaces are realigned, not duplicated merely to copy references.**
 
@@ -56,6 +56,11 @@ The values below are normalized production tokens based on the approved pack. Th
 | `--ds-pink-300` | `#E7B6B6` | Icon tiles, secondary accents |
 | `--ds-pink-500` | `#D58F97` | Main dusty pink accent |
 | `--ds-pink-700` | `#B84E5F` | Strong pink text, active states, destructive emphasis |
+| `--ds-lavender-50` | `#F1EEFA` | Secondary grouping and workspace context |
+| `--ds-sky-50` | `#EAF4FA` | Search, filter and informational grouping |
+| `--ds-mint-50` | `#EAF5EF` | Calm non-semantic supporting context |
+| `--ds-amber-50` | `#FBF1DF` | Warm emphasis distinct from semantic warnings |
+| `--ds-peach-50` | `#FCEBE4` | Warm secondary grouping |
 | `--ds-success` | `#8DBA98` | Healthy / active / ready only |
 | `--ds-warning` | `#C99A61` | Warning / reconnecting only |
 | `--ds-danger` | `#B84E5F` | Destructive/error |
@@ -68,7 +73,8 @@ The values below are normalized production tokens based on the approved pack. Th
 - Green is semantic only: active, healthy, connected, ready, successful.
 - Amber is semantic only: warning, reconnecting, degraded.
 - Red/dark rose is semantic only: destructive, failed, suspended, ended.
-- Use pure white sparingly. Most large surfaces should be warm rather than clinical.
+- White and warm-white are the normal operational surfaces above the cream canvas.
+- Lavender, sky, mint, amber and peach are supporting grouping tints, never invented lifecycle state.
 - Decorative broadcast cover art should stay inside cream / pink / charcoal / muted semantic colors.
 - A color appearing once in a generated image does not automatically become a product token.
 
@@ -184,58 +190,55 @@ Use a strict 4px base scale.
 ## 6.1 Borders
 
 ```css
---ds-border: 1px solid #1F2025;
---ds-border-soft: 1px solid #D8D0CA;
+  --ds-border: 1px solid #D8D0CA;
+  --ds-border-soft: 1px solid #D8D0CA;
 ```
 
-Major cards, modal surfaces, primary buttons, tab groups, and large form panels use the dark border.
+Most cards, rows, inputs and tables use the soft border. Strong ink or brand borders are reserved for primary emphasis, focus and consequential confirmation.
 
 Internal dividers and secondary information use the soft border.
 
 ## 6.2 Radius
 
 ```css
---ds-radius-card: 0px;
---ds-radius-control: 0px;
---ds-radius-status: 2px;
+--ds-radius-card: 8px;
+--ds-radius-control: 7px;
+--ds-radius-status: 999px;
 --ds-radius-avatar: 999px;
 ```
 
 Rules:
 
-- Cards: square.
-- Buttons: square.
-- Inputs: square.
-- Modals: square.
-- Tabs: square.
-- Tiny status pills may use 2–4px.
+- Cards and panels: normally 8px.
+- Buttons, inputs and tabs: normally 6–8px.
+- Modals and sheets: normally 8–10px, with mobile sheet edge exceptions.
+- Tiny status chips may use a pill radius.
 - Circular shapes are reserved for avatars, audio artwork motifs, radio indicators, and icon geometry.
-- Never introduce 12px, 16px, or 24px SaaS card radii.
+- Avoid 20–28px radii across ordinary operational surfaces.
 
-## 6.3 Hard shadows
+## 6.3 Elevation
 
 ```css
---ds-shadow-major: 6px 7px 0 #1F2025;
---ds-shadow-control: 4px 5px 0 #1F2025;
---ds-shadow-small: 3px 3px 0 #1F2025;
+--ds-shadow-major: 0 8px 24px rgba(31, 32, 37, 0.08);
+--ds-shadow-control: 0 2px 5px rgba(31, 32, 37, 0.10);
+--ds-shadow-small: 0 1px 2px rgba(31, 32, 37, 0.08);
 ```
 
 Rules:
 
-- No blur.
-- No translucent floating shadow.
-- Large cards and modals: major shadow.
-- Buttons and selected controls: control shadow.
-- Very dense rows may use only border or small shadow.
-- Shadow must always move down/right.
-- Nested surfaces must not all receive the largest shadow.
+- Tables, list rows and nested panels normally use no shadow.
+- Ordinary cards use no shadow or the small shadow.
+- Dialogs, sheets and command/search palettes may use major elevation.
+- Primary controls may use the control shadow while retaining stable layout.
+- A hard offset shadow may appear only on a rare marketing or brand-emphasis surface.
+- Nested surfaces must never all receive elevation.
 
 ### Press interaction
 
 ```css
 .ds-button:active {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 2px 0 #1F2025;
+  transform: translateY(1px);
+  box-shadow: none;
 }
 ```
 
@@ -252,7 +255,7 @@ Rules:
 - Default icon color: `--ds-ink`.
 - Pink is allowed for active/brand controls.
 - Avoid mixed filled icon families.
-- Icon tiles are square, bordered, and usually use `--ds-pink-50` or `--ds-pink-100`.
+- Icon tiles use the shared control radius, a subtle border, and usually `--ds-pink-50` or one restrained supporting tint.
 - Do not use multicolor decorative icons for normal controls.
 - Photos are acceptable for real people/participants; decorative illustration should stay within the system palette.
 
@@ -265,8 +268,9 @@ Recommended icon tile:
   display: grid;
   place-items: center;
   background: #F0D2D1;
-  border: 1px solid #1F2025;
-  box-shadow: 3px 3px 0 #1F2025;
+  border: 1px solid #D8D0CA;
+  border-radius: 7px;
+  box-shadow: 0 1px 2px rgba(31, 32, 37, 0.08);
 }
 ```
 
@@ -277,10 +281,10 @@ Recommended icon tile:
 ## 8.1 Primary
 
 - Dusty pink background.
-- Dark border.
+- Dusty-pink border.
 - Dark text/icon.
-- Hard offset shadow.
-- No radius.
+- Restrained control elevation.
+- Shared control radius.
 - Minimum height: 48px.
 - Minimum touch target: 44×44px.
 - Use clear verbs: `Go live`, `Continue`, `Join backstage`, `Listen live`, `Save changes`.
@@ -291,20 +295,21 @@ Recommended icon tile:
   padding: 0 20px;
   background: #E7B6B6;
   color: #1F2025;
-  border: 1px solid #1F2025;
-  box-shadow: 4px 5px 0 #1F2025;
-  font-family: var(--font-mono);
+  border: 1px solid #B84E5F;
+  border-radius: 7px;
+  box-shadow: 0 2px 5px rgba(31, 32, 37, 0.10);
+  font-family: var(--font-display);
   font-weight: 600;
 }
 ```
 
 ## 8.2 Secondary
 
-Cream/surface background with the same dark border and hard shadow.
+White/warm-white background with a soft border and restrained control elevation.
 
 ## 8.3 Quiet
 
-Text-only or border-only. No hard shadow unless the control is a major action.
+Text-only or soft-border treatment without elevation.
 
 ## 8.4 Destructive
 
@@ -328,8 +333,9 @@ Use for primary content, broadcast summaries, stats groups, forms, and modal-lik
 ```css
 .ds-card {
   background: #FFFDF9;
-  border: 1px solid #1F2025;
-  box-shadow: 6px 7px 0 #1F2025;
+  border: 1px solid #D8D0CA;
+  border-radius: 8px;
+  box-shadow: none;
   padding: 24px;
 }
 ```
@@ -338,8 +344,8 @@ Use for primary content, broadcast summaries, stats groups, forms, and modal-lik
 
 For recordings, team members, saved broadcasts, sessions, and settings.
 
-- Border is mandatory.
-- Shadow may be small or omitted on very dense lists.
+- Divider or soft border separation is mandatory.
+- Shadow is normally omitted.
 - 16–20px vertical padding.
 - Keep one clear title, one metadata line, one action area.
 
@@ -398,18 +404,18 @@ Rules:
 
 # 11. Tabs, segmented controls, and filters
 
-Use bordered rectangular segments.
+Use compact bordered segments with the shared control radius.
 
 Selected state:
 
 - Pale pink fill.
 - Dark text.
 - Optional dusty pink bottom rule.
-- No pill-shaped tabs.
+- Full pill navigation remains prohibited; compact filter chips may be pill-shaped when they remain clearly secondary.
 
 For a five-part status filter such as `All / Draft / Scheduled / Live / Ended`, use equal-width rectangular segments where possible.
 
-Compact category filters may be separate square buttons with a small hard shadow.
+Compact category filters may use separate quiet buttons or chips without repeated shadows.
 
 On mobile, horizontally scrollable tab groups are acceptable when all labels remain readable and the active item remains obvious.
 
@@ -500,12 +506,12 @@ User-facing vocabulary may evolve while internal route names remain stable. Pres
 
 - Brand left.
 - Account/workspace identity right.
-- Square avatar tile may use pink fill and hard shadow.
-- Dropdown menus use cream surface, dark border, hard shadow.
+- Avatar tiles may use pink fill and restrained control elevation.
+- Dropdown menus use white/warm-white surfaces, soft borders and floating overlay elevation.
 
 ### Creator utility header
 
-Notifications, monitoring/headphone controls, and account controls may appear, but they must use the same square control language and must not visually compete with the page primary action.
+Notifications, monitoring/headphone controls, and account controls use the shared compact control language and must not visually compete with the page primary action.
 
 ---
 
@@ -514,12 +520,12 @@ Notifications, monitoring/headphone controls, and account controls may appear, b
 - Fixed visual grid.
 - Equal-width items.
 - Cream surface.
-- 1px dark border.
-- Optional major/control shadow depending on container treatment.
+- 1px soft border.
+- No repeated item shadows; the navigation container may use subtle elevation.
 - Active item uses pale pink fill and/or dusty pink underline.
 - Icons sit above labels.
 - Label family: mono.
-- No rounded floating nav bar.
+- Do not turn the mobile navigation into a detached oversized floating pill.
 - Mobile safe-area padding must be respected.
 - Labels must not change simply because the current screen changes.
 
@@ -532,9 +538,9 @@ Examples include end-broadcast confirmation, suspend-account confirmation, invit
 Rules:
 
 - Warm cream surface.
-- Dark 1px border.
-- Major hard shadow.
-- No generic rounded dialog.
+- Soft 1px border, with stronger danger/warning border only when semantically required.
+- Overlay elevation from the shared major shadow.
+- Shared dialog radius, normally 8–10px.
 - Central warning icon tile may use dusty pink/semantic treatment.
 - One clear H2.
 - Short consequence statement.
@@ -545,7 +551,7 @@ Rules:
 - Escape/browser Back/Android Back behavior must be safe and deterministic.
 - Focus must restore to the invoking control after closure.
 
-Bottom sheets may be used for mobile interactions. The sheet container may use a minimal platform-level top radius only when needed for native affordance, but its inner cards/controls remain square and system-compliant.
+Bottom sheets may be used for mobile interactions. The sheet uses the shared top radius and safe-area clearance; inner cards and controls retain the compact shared radius scale.
 
 ---
 
@@ -585,11 +591,11 @@ Rules:
 - Warning series: amber only where semantically warranted.
 - Grid lines: light warm gray.
 - Labels: mono.
-- Cards: cream with dark border.
+- Cards: white/warm-white with a soft border above the cream canvas.
 - Avoid blue default chart palettes.
 - Avoid rainbow dashboards.
 - Prefer direct labels and simple line/bar charts.
-- Reduce hard shadows on nested mini-chart cards when the page is already dense.
+- Omit shadows on nested mini-chart cards and use dividers or whitespace instead.
 - Never invent analytics to fill an empty reference state.
 - When a metric does not exist, omit it or explain availability honestly rather than displaying fake zeroes.
 
@@ -597,7 +603,7 @@ Rules:
 
 # 19. Density hierarchy
 
-Hard shadow is a hierarchy tool, not mandatory decoration on every object.
+Elevation is a hierarchy tool, not mandatory decoration on every object.
 
 Use:
 
@@ -847,11 +853,11 @@ Use the approved DigiStream 50-screen reference pack for screen intent and this 
 - use the warm cream dotted background;
 - use dusty pink as the brand accent;
 - use heavy near-black grotesk headings;
-- use monospace/typewriter labels, metadata and controls;
-- use square cards, inputs and buttons;
-- use 1px dark borders;
-- use hard down-right black shadows with zero blur;
-- preserve generous vertical spacing;
+- reserve monospace/typewriter typography for technical metadata and diagnostics;
+- use the shared 6–10px operational radius scale;
+- use soft borders for normal surfaces and strong borders only for emphasis;
+- keep operational elevation subtle and reserve hard-offset shadow for rare brand moments;
+- preserve compact, task-efficient spacing in operational screens;
 - preserve the correct Public / Listener / Creator shell;
 - reuse shared components and tokens;
 - use semantic green/amber/rose only for states;
@@ -907,17 +913,27 @@ When either conflicts with product truth:
   --ds-pink-500: #D58F97;
   --ds-pink-700: #B84E5F;
 
+  --ds-lavender-50: #F1EEFA;
+  --ds-sky-50: #EAF4FA;
+  --ds-mint-50: #EAF5EF;
+  --ds-amber-50: #FBF1DF;
+  --ds-peach-50: #FCEBE4;
+
   --ds-success: #8DBA98;
   --ds-warning: #C99A61;
   --ds-danger: #B84E5F;
   --ds-charcoal-panel: #202126;
 
-  --ds-border: 1px solid var(--ds-ink);
+  --ds-border: 1px solid var(--ds-line-soft);
   --ds-border-soft: 1px solid var(--ds-line-soft);
 
-  --ds-shadow-major: 6px 7px 0 var(--ds-ink);
-  --ds-shadow-control: 4px 5px 0 var(--ds-ink);
-  --ds-shadow-small: 3px 3px 0 var(--ds-ink);
+  --ds-radius-card: 8px;
+  --ds-radius-control: 7px;
+  --ds-radius-status: 999px;
+
+  --ds-shadow-major: 0 8px 24px rgba(31, 32, 37, 0.08);
+  --ds-shadow-control: 0 2px 5px rgba(31, 32, 37, 0.10);
+  --ds-shadow-small: 0 1px 2px rgba(31, 32, 37, 0.08);
 
   --ds-font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
@@ -946,9 +962,10 @@ A screen should not be approved until the answer to every applicable item is **y
 - Does the page use the cream dotted canvas where expected?
 - Is dusty pink the primary brand accent?
 - Are headings heavy, near-black and grotesk?
-- Are system labels/metadata mono?
-- Are cards/controls square?
-- Are major shadows hard, black, offset down/right, and blur-free?
+- Is mono reserved for useful technical metadata and diagnostics?
+- Do cards/controls use the shared restrained radius scale?
+- Do operational rows avoid unnecessary elevation, with overlays receiving the strongest shadow?
+- Are supporting tints restrained and separate from semantic state colours?
 - Is the page using the correct Public, Listener, or Creator shell?
 - Are navigation labels stable for that shell?
 - Are colors coming from shared tokens?

@@ -1,5 +1,5 @@
 import type { Broadcast, Channel, Organisation } from '@digistream/contracts';
-import { Button, LinkButton, StatusBadge } from '../../design-system/components';
+import { Button, LinkButton, StatusBadge, TaskRow } from '../../design-system/components';
 import { Icon } from '../../design-system/Icon';
 import { requestCreatorStudioLobbyContext } from '../../lib/backstage-context-runtime';
 import {
@@ -173,9 +173,9 @@ export function CreatorOverviewPage({
 
   const quickActions = [
     ...(overview.canOpenBackstage
-      ? [{ icon: 'audience' as const, label: 'Lobby', onClick: openContextualStudioLobby }]
+      ? [{ icon: 'audience' as const, label: 'Studio Lobby', onClick: openContextualStudioLobby, tone: 'lavender' as const }]
       : []),
-    { icon: 'recording' as const, label: 'Recordings', onClick: onOpenRecordings },
+    { icon: 'recording' as const, label: 'Recordings', onClick: onOpenRecordings, tone: 'peach' as const },
   ];
 
   const currentBroadcast = liveBroadcast ?? recoveringBroadcast;
@@ -258,12 +258,12 @@ export function CreatorOverviewPage({
         </header>
         <div className="echoo-overview-quick-grid">
           {quickActions.map((action) => (
-            <button className="echoo-overview-quick-action" key={action.label} onClick={action.onClick} type="button">
+            <button className={`echoo-overview-quick-action is-${action.tone}`} key={action.label} onClick={action.onClick} type="button">
               <span aria-hidden="true"><Icon name={action.icon} size={28} /></span>
               <strong>{action.label}</strong>
             </button>
           ))}
-          <LinkButton href="/listen" icon="headphones" variant="secondary">
+          <LinkButton className="echoo-overview-listener-action" href="/listen" icon="headphones" variant="secondary">
             Listener app
           </LinkButton>
         </div>
@@ -283,23 +283,19 @@ export function CreatorOverviewPage({
               const date = broadcast.liveStartedAt ?? broadcast.scheduledStartAt ?? broadcast.createdAt;
 
               return (
-                <article className="echoo-overview-recent-row" key={broadcast.id}>
-                  <BroadcastArtwork live={status === 'live'} />
-                  <div className="echoo-overview-recent-copy">
-                    <strong>{broadcast.title}</strong>
-                    <div className="echoo-overview-recent-meta">
-                      <span>{channelName(channels, broadcast)}</span>
-                      <span>{formatDateTime(date)}</span>
-                      {duration ? <span>{duration}</span> : null}
-                    </div>
-                  </div>
-                  <StatusBadge tone={status === 'live' ? 'live' : status === 'completed' ? 'success' : status === 'failed' || status === 'cancelled' ? 'danger' : status === 'overdue' || status === 'ending' ? 'warning' : 'info'}>
-                    {presentationLabel(status)}
-                  </StatusBadge>
-                  <Button onClick={onOpenBroadcasts} variant="secondary">
-                    View
-                  </Button>
-                </article>
+                <TaskRow
+                  action={<Button onClick={onOpenBroadcasts} variant="secondary">View</Button>}
+                  icon="broadcast"
+                  key={broadcast.id}
+                  status={(
+                    <StatusBadge tone={status === 'live' ? 'live' : status === 'completed' ? 'success' : status === 'failed' || status === 'cancelled' ? 'danger' : status === 'overdue' || status === 'ending' ? 'warning' : 'info'}>
+                      {presentationLabel(status)}
+                    </StatusBadge>
+                  )}
+                  title={broadcast.title}
+                >
+                  {[channelName(channels, broadcast), formatDateTime(date), duration].filter(Boolean).join(' · ')}
+                </TaskRow>
               );
             })}
           </div>

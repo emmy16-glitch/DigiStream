@@ -61,7 +61,7 @@ body.ds-listener-fixed-action-visible .ds-listener-content {
   align-items: flex-start;
   gap: 12px;
   border: 1px solid rgba(255, 255, 255, .08);
-  border-radius: 16px;
+  border-radius: var(--ds-radius-card);
   color: #c7d0ca;
   background: rgba(255, 255, 255, .025);
 }

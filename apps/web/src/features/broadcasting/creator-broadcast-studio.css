@@ -6,7 +6,7 @@
   place-items: center;
   padding: clamp(14px, 2vw, 28px);
   background: rgba(7, 26, 54, .48);
-  backdrop-filter: blur(14px);
+  backdrop-filter: none;
 }
 
 .creator-studio {
@@ -15,7 +15,7 @@
   overflow: auto;
   overscroll-behavior: contain;
   border: 1px solid rgba(159, 178, 202, .7);
-  border-radius: 28px;
+  border-radius: var(--ds-radius-card);
   background: var(--ds-canvas);
   box-shadow: 0 34px 90px rgba(7, 26, 54, .24);
 }
@@ -32,7 +32,7 @@
   padding: 22px clamp(20px, 2.8vw, 34px);
   border-bottom: 1px solid var(--ds-border-subtle);
   background: color-mix(in srgb, var(--ds-surface-1) 96%, transparent);
-  backdrop-filter: blur(18px);
+  backdrop-filter: none;
 }
 
 .studio-title-group {
@@ -151,7 +151,7 @@
   gap: var(--ds-space-5);
   padding: clamp(22px, 3vw, 32px);
   border: 1px solid var(--ds-border-default);
-  border-radius: 22px;
+  border-radius: var(--ds-radius-card);
   background: var(--ds-surface-1);
   box-shadow: var(--ds-shadow-card);
 }
@@ -181,7 +181,7 @@
 .studio-delivery-card {
   min-width: 0;
   border: 1px solid var(--ds-border-default);
-  border-radius: 22px;
+  border-radius: var(--ds-radius-card);
 }
 
 .studio-setup-panel {
@@ -328,7 +328,7 @@
   gap: 5px;
   padding: 14px;
   border: 1px solid var(--ds-border-subtle);
-  border-radius: 15px;
+  border-radius: var(--ds-radius-card);
   background: var(--ds-surface-2);
 }
 
@@ -419,7 +419,7 @@
   display: grid;
   gap: 5px;
   border: 1px solid var(--ds-border-default);
-  border-radius: 14px;
+  border-radius: var(--ds-radius-card);
   font-size: var(--ds-text-sm);
   line-height: var(--ds-leading-body);
 }
@@ -470,7 +470,7 @@
   gap: var(--ds-space-3);
   padding: 13px 14px;
   border: 1px solid var(--ds-border-subtle);
-  border-radius: 14px;
+  border-radius: var(--ds-radius-card);
   background: var(--ds-surface-2);
   transition:
     border-color var(--ds-duration-fast) var(--ds-ease-standard),
@@ -567,7 +567,7 @@
   place-items: center;
   padding: var(--ds-space-5);
   background: rgba(7, 26, 54, .70);
-  backdrop-filter: blur(8px);
+  backdrop-filter: none;
 }
 
 .studio-confirmation {
@@ -576,13 +576,13 @@
   gap: var(--ds-space-4);
   padding: clamp(22px, 3vw, 30px);
   border: 1px solid rgba(199, 63, 74, .28);
-  border-radius: 22px;
+  border-radius: var(--ds-radius-card);
   background: var(--ds-surface-1);
   box-shadow: var(--ds-shadow-dialog);
 }
-.studio-confirmation{border:1px solid var(--ds-ink);border-radius:0;background:var(--ds-surface);box-shadow:var(--ds-shadow-major)}.studio-confirmation .ds-status{margin-bottom:8px}.studio-confirmation-actions .ds-button{min-height:52px}
+.studio-confirmation{border:1px solid var(--ds-ink);border-radius: var(--ds-radius-control);background:var(--ds-surface);box-shadow:var(--ds-shadow-major)}.studio-confirmation .ds-status{margin-bottom:8px}.studio-confirmation-actions .ds-button{min-height:52px}
 /* Screen 36: operational state remains calm; only verified health gets semantic green. */
-.creator-broadcast-studio .studio-panel,.creator-broadcast-studio .studio-readiness-item{border-radius:0}.creator-broadcast-studio .studio-panel{box-shadow:var(--ds-shadow-small)}
+.creator-broadcast-studio .studio-panel,.creator-broadcast-studio .studio-readiness-item{border-radius:var(--ds-radius-control)}.creator-broadcast-studio .studio-panel{box-shadow:var(--ds-shadow-small)}
 
 .studio-confirmation h3 {
   margin: 0;
@@ -621,7 +621,7 @@
   .creator-studio {
     width: 100%;
     max-height: 96dvh;
-    border-radius: 24px 24px 0 0;
+    border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
   }
 
   .studio-body {
@@ -655,7 +655,7 @@
   .creator-studio {
     max-height: 100dvh;
     border: 0;
-    border-radius: 0;
+    border-radius: var(--ds-radius-control);
   }
 
   .studio-header {
@@ -713,14 +713,14 @@
   .studio-setup-panel {
     grid-template-columns: minmax(0, 1fr);
     padding: 16px;
-    border-radius: 18px;
+    border-radius: var(--ds-radius-card);
   }
 
   .studio-status-card,
   .studio-audio-card,
   .studio-delivery-card {
     padding: 17px;
-    border-radius: 18px;
+    border-radius: var(--ds-radius-card);
   }
 
   .studio-status-card {
@@ -761,7 +761,7 @@
     padding: 12px 17px 17px;
     border-top: 1px solid var(--ds-border-default);
     background: color-mix(in srgb, var(--ds-surface-1) 97%, transparent);
-    backdrop-filter: blur(16px);
+    backdrop-filter: none;
   }
 
   .studio-primary-actions .ds-button {
@@ -776,7 +776,7 @@
   .studio-confirmation {
     width: 100%;
     padding-bottom: calc(22px + env(safe-area-inset-bottom));
-    border-radius: 22px 22px 0 0;
+    border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
   }
 }
 

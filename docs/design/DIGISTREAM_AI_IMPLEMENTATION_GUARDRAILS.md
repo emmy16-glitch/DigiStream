@@ -7,11 +7,13 @@ This file is written for Codex, Claude Code, coding agents, and human implemente
 For any change that touches frontend layout, CSS, design-system primitives, navigation presentation, authentication UI, creator UI, listener UI, Studio, Backstage, Recordings, analytics, settings, modals, forms, or responsive behavior, read these sources before editing:
 
 1. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`
-2. `docs/design/REFERENCE_INDEX.md`
-3. the exact reference image(s) for the screen being changed in `docs/design/reference/screens/`
-4. `apps/web/AGENTS.md`
-5. product-truth and lifecycle documents referenced by root `AGENTS.md`
-6. existing implementation and tests
+2. `docs/design/BEAUTIFUL_UI_ADAPTATION_STANDARD.md`
+3. `docs/design/DESIGN_TOKENS.md`
+4. `docs/design/REFERENCE_INDEX.md`
+5. the exact reference image(s) for the screen being changed in `docs/design/reference/screens/`
+6. `apps/web/AGENTS.md`
+7. product-truth and lifecycle documents referenced by root `AGENTS.md`
+8. existing implementation and tests
 
 Do not begin implementation from memory after scanning one image.
 
@@ -22,8 +24,8 @@ The approved reference images are authoritative for:
 - composition and hierarchy;
 - the cream dotted canvas;
 - dusty-pink visual language;
-- square geometry;
-- hard black offset shadows;
+- content grouping and journey intent;
+- the tactile DigiStream personality where it does not conflict with the V2 operational system;
 - typographic contrast between heavy grotesk and mono/typewriter text;
 - spacing rhythm;
 - card density;
@@ -52,9 +54,9 @@ A change fails design review if it introduces any of the following without expli
 - the original blue/white DigiStream visual system;
 - the previous near-black/emerald design as the general application theme;
 - generic gray SaaS dashboard backgrounds;
-- 12px–24px rounded cards;
+- oversized 20px–28px rounded cards as an application-wide default;
 - pill-shaped primary navigation;
-- blurred drop shadows for primary surfaces;
+- heavy or repeated drop shadows on rows, tables and nested surfaces;
 - glassmorphism or frosted panels;
 - gradient-heavy primary UI;
 - Inter used as the only product font;
@@ -73,11 +75,11 @@ Every ordinary DigiStream application screen must preserve the recognizable sign
 - near-black ink;
 - dusty pink primary accent;
 - strong black grotesk display hierarchy;
-- mono/typewriter labels, metadata, controls, and system text;
-- square cards and controls;
-- thin visible borders;
-- zero-blur hard shadows offset down/right;
-- deliberate negative space;
+- readable sans-serif product copy with mono reserved for technical metadata and diagnostics;
+- restrained 6–10px operational radii;
+- thin soft borders with strong focus and emphasis boundaries;
+- white/warm-white operational surfaces with restrained elevation;
+- compact, deliberate spacing;
 - restrained semantic green/amber/rose.
 
 A screen should still look like DigiStream with the logo removed.
@@ -132,8 +134,8 @@ When deciding what to match most closely, use this order:
 2. typography hierarchy;
 3. spacing rhythm;
 4. component geometry;
-5. cream/pink/ink palette;
-6. hard-shadow treatment;
+5. cream/pink/ink palette with restrained supporting tints;
+6. border and elevation hierarchy;
 7. icon sizing/alignment;
 8. fine decorative details.
 
@@ -145,10 +147,10 @@ Studio, Backstage, Recordings, Live Chat, Team/Admin, and analytics screens may 
 
 Use the Constitution hierarchy:
 
-- major surfaces: major shadow;
-- primary/selected controls: control shadow;
-- compact important tiles: small shadow;
-- nested rows, internal cells, table rows, and low-priority metadata: border only.
+- dialogs, sheets and search palettes: major elevation;
+- primary controls: control elevation;
+- ordinary cards: none or small elevation;
+- nested rows, internal cells, table rows and low-priority metadata: border/divider only.
 
 Do not abandon the system; reduce elevation intelligently.
 
@@ -282,8 +284,9 @@ Before closing a frontend PR, answer YES to all applicable items:
 - I used dusty pink, not legacy blue/green, for brand emphasis.
 - Heading hierarchy uses the heavy grotesk voice.
 - Metadata/labels use the mono voice.
-- Cards/controls remain square.
-- Shadows are hard, black, down/right, and blur-free.
+- Cards/controls use the shared compact radius scale.
+- Rows/tables avoid unnecessary shadow and overlays use shared elevation.
+- Supporting tints remain restrained and separate from lifecycle semantics.
 - Navigation matches the correct shell.
 - Real backend state drives actions/statuses.
 - I did not duplicate an existing flow/component.

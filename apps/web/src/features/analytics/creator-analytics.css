@@ -147,7 +147,7 @@
   }
 
   .creator-analytics .metric-card { min-height: auto; padding: var(--ds-space-4); }
-  .creator-analytics-table-wrap { margin-inline: calc(var(--ds-space-4) * -1); border-inline: 0; border-radius: 0; }
+  .creator-analytics-table-wrap { margin-inline: calc(var(--ds-space-4) * -1); border-inline: 0; border-radius: var(--ds-radius-control); }
 
   .creator-analytics .panel {
     padding: var(--ds-space-4);
@@ -160,8 +160,8 @@
   }
 }
 /* Screen 38: mobile statistics retain the no-data state instead of decorative charts. */
-@media(max-width:640px){.creator-analytics-page .analytics-metrics,.creator-analytics-page .analytics-grid{grid-template-columns:1fr}.creator-analytics-page .analytics-card{border-radius:0;box-shadow:var(--ds-shadow-small)}}
+@media(max-width:640px){.creator-analytics-page .analytics-metrics,.creator-analytics-page .analytics-grid{grid-template-columns:1fr}.creator-analytics-page .analytics-card{border-radius: var(--ds-radius-control);box-shadow:var(--ds-shadow-small)}}
 /* Screen 49: workspace totals use the server projection and an explicit no-data state. */
-.creator-analytics-page .analytics-summary-card{border-radius:0;border-color:var(--ds-ink)}
+.creator-analytics-page .analytics-summary-card{border-radius: var(--ds-radius-control);border-color:var(--ds-ink)}
 /* Screen 50: analytics filters and charts remain secondary to trustworthy metric definitions. */
-.creator-analytics-page select,.creator-analytics-page .analytics-chart,.creator-analytics-page .analytics-card{border-radius:0}.creator-analytics-page .analytics-card{border-color:var(--ds-ink)}
+.creator-analytics-page select,.creator-analytics-page .analytics-chart,.creator-analytics-page .analytics-card{border-radius:var(--ds-radius-control)}.creator-analytics-page .analytics-card{border-color:var(--ds-ink)}

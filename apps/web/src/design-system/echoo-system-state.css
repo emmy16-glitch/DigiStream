@@ -35,7 +35,7 @@
   gap: 2rem;
   padding: clamp(1.25rem, 4vw, 2rem);
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-surface);
   box-shadow: var(--ds-shadow-major);
 }
@@ -144,7 +144,7 @@
   justify-content: center;
   padding: .85rem 1rem;
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-pink-300);
   color: var(--ds-ink);
   box-shadow: var(--ds-shadow-control);
@@ -160,7 +160,7 @@
 
 .echoo-system-action:active {
   transform: translate(3px, 3px);
-  box-shadow: 1px 2px 0 var(--ds-ink);
+  box-shadow: none;
 }
 
 .echoo-system-action:focus-visible {

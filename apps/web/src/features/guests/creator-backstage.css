@@ -9,7 +9,7 @@
     max(var(--ds-space-5), env(safe-area-inset-left));
   overflow: auto;
   background: var(--ds-overlay);
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
   overscroll-behavior: contain;
   scrollbar-gutter: stable both-edges;
 }
@@ -41,7 +41,7 @@
   background:
     linear-gradient(135deg, var(--ds-accent-soft), transparent 42%),
     color-mix(in srgb, var(--ds-surface-1) 95%, transparent);
-  backdrop-filter: blur(16px);
+  backdrop-filter: none;
 }
 
 .backstage-header h2 {
@@ -98,14 +98,14 @@
 
 .backstage-alert.error {
   border: 1px solid rgba(240, 91, 97, .42);
-  color: #ffc5c8;
+  color: var(--ds-danger-foreground);
   background: var(--ds-danger-soft);
 }
 
 .backstage-alert.warning {
   margin: 0 0 var(--ds-space-4);
   border: 1px solid rgba(243, 182, 63, .4);
-  color: #ffe2a5;
+  color: var(--ds-warning-foreground);
   background: var(--ds-warning-soft);
 }
 
@@ -248,7 +248,7 @@
 
 .backstage-row-actions button.danger {
   border-color: rgba(240, 91, 97, .42);
-  color: #ffc5c8;
+  color: var(--ds-danger-foreground);
   background: var(--ds-danger-soft);
 }
 
@@ -367,7 +367,7 @@
     min-height: 100dvh;
     max-height: 100dvh;
     border: 0;
-    border-radius: 0;
+    border-radius: var(--ds-radius-control);
   }
   .backstage-header {
     padding:
@@ -422,7 +422,7 @@
     height: 100dvh;
     max-height: 100dvh;
     border: 0;
-    border-radius: 0;
+    border-radius: var(--ds-radius-control);
     box-shadow: none;
   }
   .backstage-header {
@@ -457,4 +457,4 @@
   }
 }
 /* Screen 35: keep live call-in work grouped by real invitation and admission state. */
-.creator-backstage-workspace{background:var(--ds-bg)}.backstage-panel,.backstage-invitation-row,.backstage-call-in-row{border-radius:0;border-color:var(--ds-ink)}.backstage-panel{box-shadow:var(--ds-shadow-major)}
+.creator-backstage-workspace{background:var(--ds-bg)}.backstage-panel,.backstage-invitation-row,.backstage-call-in-row{border-radius: var(--ds-radius-control);border-color:var(--ds-ink)}.backstage-panel{box-shadow:var(--ds-shadow-major)}

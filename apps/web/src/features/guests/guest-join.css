@@ -95,7 +95,7 @@
   min-width: 0;
   padding: clamp(1rem, 3vw, 1.45rem);
   border: 1px solid #dfe8f2;
-  border-radius: 1.6rem;
+  border-radius: var(--ds-radius-card);
   background: #fff;
   box-shadow: 0 24px 70px rgb(34 67 104 / 12%);
 }
@@ -108,7 +108,7 @@
   margin-bottom: 1rem;
   padding: .9rem;
   border: 1px solid #e4ebf4;
-  border-radius: 1.15rem;
+  border-radius: var(--ds-radius-card);
   background: #f8fbff;
 }
 
@@ -261,7 +261,7 @@
   margin-top: .2rem;
   padding: 1rem;
   border: 1px solid #e1e9f2;
-  border-radius: 1.15rem;
+  border-radius: var(--ds-radius-card);
   background: #fbfdff;
 }
 
@@ -475,7 +475,7 @@
 
   .guest-card {
     padding: .85rem;
-    border-radius: 1.15rem;
+    border-radius: var(--ds-radius-card);
     box-shadow: none;
   }
 

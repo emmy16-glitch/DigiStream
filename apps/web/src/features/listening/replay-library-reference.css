@@ -12,8 +12,8 @@
 .replay-discovery-section > header > span { color: var(--ds-muted); font-family: var(--ds-font-mono); font-size: var(--ds-text-sm); }
 .replay-discovery-grid { display: grid; gap: 18px; }
 .replay-discovery-card { display: grid; grid-template-columns: 302px minmax(0, 1fr) auto; align-items: center; gap: 28px; min-width: 0; padding: 16px; border: var(--ds-border); background: var(--ds-surface); box-shadow: var(--ds-shadow-small); color: var(--ds-ink); text-decoration: none; transition: transform var(--ds-duration-fast) var(--ds-ease-standard), box-shadow var(--ds-duration-fast) var(--ds-ease-standard); }
-.replay-discovery-card:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ds-ink); background: var(--ds-pink-50); }
-.replay-discovery-card:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ds-ink); }
+.replay-discovery-card:hover { transform: translate(-2px, -2px); box-shadow: var(--ds-shadow-control); background: var(--ds-pink-50); }
+.replay-discovery-card:active { transform: translate(2px, 2px); box-shadow: none; }
 .replay-card-signal { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 156px; border: 1px solid var(--ds-ink); background: var(--ds-pink-100); }
 .replay-card-signal i { width: 5px; height: 22%; background: var(--ds-pink-700); }
 .replay-card-signal i:nth-child(2n) { height: 54%; }.replay-card-signal i:nth-child(3n) { height: 78%; }.replay-card-signal i:nth-child(5n) { height: 38%; }

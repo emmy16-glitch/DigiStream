@@ -11,4 +11,4 @@
   place-items: center;
 }
 /* Screen 46: returning listeners receive the same focused square sign-in surface. */
-.auth-screen .auth-form{border-radius:0;box-shadow:var(--ds-shadow-major)}
+.auth-screen .auth-form{border-radius: var(--ds-radius-control);box-shadow:var(--ds-shadow-major)}

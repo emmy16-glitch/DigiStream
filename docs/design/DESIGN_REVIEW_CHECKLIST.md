@@ -10,16 +10,18 @@ Use this checklist for human review and AI-agent self-review before merging UI w
 - [ ] No previous dark/emerald application theme has returned except intentional dark media artwork.
 - [ ] Near-black ink provides the main contrast.
 - [ ] Large headings use the heavy grotesk voice.
-- [ ] Labels/metadata/controls use the mono voice consistently.
-- [ ] Cards, fields, tabs, and buttons remain square.
-- [ ] Hard shadows are offset down/right with zero blur.
+- [ ] Mono is reserved for technical metadata, timestamps, identifiers and diagnostics.
+- [ ] Operational cards and controls use the shared restrained radius scale.
+- [ ] Rows and tables avoid unnecessary shadow; stronger elevation is reserved for overlays or rare brand emphasis.
+- [ ] White/warm-white operational surfaces remain visually distinct from the cream dotted canvas.
+- [ ] Supporting lavender/sky/mint/amber/peach tints are restrained and never imply lifecycle state.
 
 ## Structure
 
 - [ ] The implemented page was compared with its numbered reference.
 - [ ] Screen hierarchy matches the reference intent.
 - [ ] Major spacing feels deliberate rather than cramped.
-- [ ] Dense screens reduce nested shadows instead of abandoning the system.
+- [ ] Dense screens use compact rows/tables, dividers and progressive disclosure rather than nested cards.
 - [ ] Reusable patterns are shared components, not one-off copies.
 - [ ] The change does not create a duplicate screen or parallel product flow.
 

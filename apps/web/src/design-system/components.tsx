@@ -156,12 +156,14 @@ export function TaskRow({
 /** Supporting resource facts, deliberately separate from lifecycle ownership. */
 export function ContextCard({
   children,
+  className = '',
   title,
 }: {
   children: ReactNode;
+  className?: string;
   title: ReactNode;
 }) {
-  return <section className="ds-context-card"><h3>{title}</h3><div>{children}</div></section>;
+  return <section className={`ds-context-card ${className}`.trim()}><h3>{title}</h3><div>{children}</div></section>;
 }
 
 export function AudioLevelMeter({

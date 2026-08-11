@@ -30,7 +30,7 @@
   align-items: center;
   gap: 7px;
   border: 1px solid transparent;
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   color: var(--ds-text-secondary);
   font-family: var(--ds-font-mono);
   font-size: var(--ds-text-sm);

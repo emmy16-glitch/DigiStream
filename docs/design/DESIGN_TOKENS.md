@@ -26,6 +26,12 @@ These tokens normalize the approved final 50-screen DigiStream visual direction 
   --ds-pink-500: #D58F97;
   --ds-pink-700: #B84E5F;
 
+  --ds-lavender-50: #F1EEFA;
+  --ds-sky-50: #EAF4FA;
+  --ds-mint-50: #EAF5EF;
+  --ds-amber-50: #FBF1DF;
+  --ds-peach-50: #FCEBE4;
+
   --ds-success: #8DBA98;
   --ds-warning: #C99A61;
   --ds-danger: #B84E5F;
@@ -42,6 +48,7 @@ These tokens normalize the approved final 50-screen DigiStream visual direction 
 - Green is semantic only: active, ready, healthy, connected, or successful.
 - Amber is semantic only: waiting, warning, reconnecting, or degraded.
 - Rose/danger is semantic only: destructive, failed, suspended, or critical.
+- Lavender, sky, mint, amber and peach are restrained grouping tints, not lifecycle semantics.
 - Charcoal may be used for immersive player/countdown/media artwork, not as the general application theme.
 - Avoid rainbow charts, electric purple, cyan, neon glow, and arbitrary decorative gradients.
 
@@ -135,50 +142,47 @@ Page guidance:
 ## 5. Shape
 
 ```css
---ds-radius-card: 0px;
---ds-radius-control: 0px;
---ds-radius-status: 2px;
+--ds-radius-card: 8px;
+--ds-radius-control: 7px;
+--ds-radius-status: 999px;
 --ds-radius-avatar: 999px;
 ```
 
 Rules:
 
-- cards are square;
-- inputs are square;
-- buttons are square;
-- tabs are square;
-- modals are square;
-- small status chips may use a minimal 2–4px radius;
+- cards and panels normally use 8px;
+- inputs, buttons and tabs normally use 6–8px;
+- modals and sheets normally use 8–10px, with edge-attached mobile exceptions;
+- small status chips may use a pill radius;
 - circular geometry is reserved for avatars, audio motifs, radio indicators, and intentional icon forms.
 
-Do not introduce 12px–24px generic SaaS card radii.
+Do not use oversized 20–28px radius as the application-wide default.
 
-## 6. Borders and hard shadows
+## 6. Borders and elevation
 
 ```css
---ds-border: 1px solid var(--ds-ink);
+--ds-border: 1px solid var(--ds-line-soft);
 --ds-border-soft: 1px solid var(--ds-line-soft);
 
---ds-shadow-major: 6px 7px 0 var(--ds-ink);
---ds-shadow-control: 4px 5px 0 var(--ds-ink);
---ds-shadow-small: 3px 3px 0 var(--ds-ink);
+--ds-shadow-major: 0 8px 24px rgba(31, 32, 37, 0.08);
+--ds-shadow-control: 0 2px 5px rgba(31, 32, 37, 0.10);
+--ds-shadow-small: 0 1px 2px rgba(31, 32, 37, 0.08);
 ```
 
 Rules:
 
-- no blur on signature shadows;
-- shadow moves down/right;
-- major cards and dialogs use major shadow;
-- primary buttons/selected controls use control shadow;
-- compact important tiles may use small shadow;
-- internal rows, table cells, and secondary nested surfaces may use border only to control visual noise.
+- table rows and secondary nested surfaces use dividers or soft borders without shadow;
+- ordinary cards use no shadow or the small shadow;
+- dialogs, sheets and command/search palettes may use major elevation;
+- primary buttons may use control elevation without shifting layout;
+- a zero-blur hard-offset shadow is reserved for a rare marketing or brand-emphasis moment.
 
 Pressed interaction:
 
 ```css
 .ds-button:active {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 2px 0 var(--ds-ink);
+  transform: translateY(1px);
+  box-shadow: none;
 }
 ```
 

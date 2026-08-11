@@ -34,9 +34,9 @@ Migrate shared tokens/primitives before page-by-page polish:
 - dusty-pink palette;
 - semantic success/warning/danger;
 - typography families and scale;
-- square radii;
+- restrained 6–10px operational radii;
 - border system;
-- hard-shadow hierarchy;
+- restrained elevation hierarchy;
 - focus-visible treatment;
 - buttons;
 - inputs/selects/textareas;
@@ -48,9 +48,9 @@ Migrate shared tokens/primitives before page-by-page polish:
 
 Acceptance:
 
-- no generic rounded-card primitive remains as the default;
+- no oversized 20–28px generic rounded-card primitive remains as the default;
 - no legacy green/blue primary button remains as the default;
-- no blurred-shadow primitive remains as the primary elevation treatment;
+- rows/tables use borders rather than repeated card shadows and hard-offset shadow remains rare;
 - existing behavior/tests still pass.
 
 ## Phase 2 — application shells
@@ -152,7 +152,7 @@ Goals:
 - role/permission actions remain truthful;
 - destructive areas isolated;
 - session/security information clearly distinguished from ordinary profile preferences;
-- workspace switcher follows the approved square/card language.
+- workspace switcher follows the approved compact shared-control language.
 
 ## Phase 7 — listener discovery and playback
 
@@ -216,8 +216,8 @@ A surface is migrated only when:
 - it uses the approved shared tokens;
 - it uses the correct shell;
 - it has cream/pink/ink visual identity;
-- square geometry is consistent;
-- shadow hierarchy is correct;
+- operational radius geometry is consistent;
+- restrained elevation and border hierarchy are correct;
 - typography hierarchy matches the system;
 - all real states remain accurate;
 - mobile/desktop behavior works;

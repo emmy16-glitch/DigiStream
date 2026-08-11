@@ -21,12 +21,12 @@ For UI implementation, use the references together with:
 - cream dotted background;
 - dusty pink accents;
 - bold near-black grotesk headings;
-- monospace/typewriter system text;
-- square cards and controls;
-- thin black borders;
-- hard black offset shadows;
-- restrained semantic colors;
-- generous vertical spacing;
+- readable product text with mono/typewriter technical metadata;
+- restrained-radius cards and controls;
+- thin soft borders with strong focus/emphasis boundaries;
+- restrained operational elevation;
+- restrained supporting tints and truthful semantic colors;
+- task-efficient spacing;
 - no legacy blue/white visual system.
 
 ## Screen map
@@ -124,7 +124,7 @@ Do not solve a conflict by inventing data or creating a duplicate flow.
 Before merging a UI screen based on these references, confirm:
 
 1. Was the exact numbered reference opened and compared at the target viewport?
-2. Does the screen preserve the cream/pink/ink/square/hard-shadow system?
+2. Does the screen preserve the cream-dotted/pink/ink identity with clean operational surfaces and restrained elevation?
 3. Is every displayed value real or intentionally omitted/unavailable?
 4. Are loading, empty, error, disconnected and unauthorized states covered?
 5. Is the correct Public, Listener, or Creator shell used?

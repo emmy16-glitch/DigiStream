@@ -34,7 +34,7 @@ body:has(.landing-page) {
   z-index: 100;
   padding: 10px 14px;
   border: 1px solid var(--ds-ink);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   color: var(--ds-ink) !important;
   background: var(--ds-accent);
   font-size: 0.875rem;
@@ -52,7 +52,7 @@ body:has(.landing-page) {
   margin: 0 auto;
   overflow: hidden;
   border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-surface);
   box-shadow: var(--ds-shadow-card);
 }
@@ -126,7 +126,7 @@ body:has(.landing-page) {
   bottom: 2px;
   left: 0;
   height: 2px;
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--landing-accent);
   transform: scaleX(0);
   transform-origin: center;
@@ -159,7 +159,7 @@ body:has(.landing-page) {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--ds-ink);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   color: var(--ds-ink);
   background: var(--ds-surface);
   font-family: var(--ds-font-mono);
@@ -180,7 +180,7 @@ body:has(.landing-page) {
 
 .landing-button:active {
   transform: translate(3px, 3px);
-  box-shadow: 1px 2px 0 var(--ds-ink);
+  box-shadow: none;
 }
 
 .landing-button-primary {
@@ -281,7 +281,7 @@ body:has(.landing-page) {
   border: 3px solid var(--ds-surface);
   border-radius: 50%;
   background: linear-gradient(145deg, #e7b6b6, #8d3140);
-  box-shadow: 2px 2px 0 var(--ds-ink);
+  box-shadow: var(--ds-shadow-control);
 }
 
 .landing-avatar-one {
@@ -318,7 +318,7 @@ body:has(.landing-page) {
   justify-content: center;
   overflow: hidden;
   border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-pink-50);
   box-shadow: var(--ds-shadow-card);
 }
@@ -346,7 +346,7 @@ body:has(.landing-page) {
   align-items: center;
   gap: 18px;
   border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-surface);
   box-shadow: var(--ds-shadow-small);
 }
@@ -357,7 +357,7 @@ body:has(.landing-page) {
   display: grid;
   place-items: center;
   border: 1px solid var(--ds-ink);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   color: var(--landing-accent);
   background: var(--landing-accent-soft);
   box-shadow: var(--ds-shadow-small);
@@ -385,7 +385,7 @@ body:has(.landing-page) {
   grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.6fr);
   gap: clamp(36px, 5vw, 76px);
   border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-surface);
   box-shadow: var(--ds-shadow-card);
 }
@@ -427,7 +427,7 @@ body:has(.landing-page) {
   align-content: start;
   gap: 12px;
   border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-surface);
   box-shadow: var(--ds-shadow-small);
 }
@@ -462,7 +462,7 @@ body:has(.landing-page) {
   justify-content: space-between;
   gap: 24px;
   border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-surface);
 }
 

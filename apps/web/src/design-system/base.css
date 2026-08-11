@@ -74,7 +74,7 @@ h1, h2, h3, p {
   z-index: 1000;
   padding: var(--ds-space-3) var(--ds-space-4);
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   box-shadow: var(--ds-shadow-control);
   color: var(--ds-ink);
   background: var(--ds-accent);

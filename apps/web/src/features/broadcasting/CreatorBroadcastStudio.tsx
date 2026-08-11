@@ -17,6 +17,7 @@ import type {
 } from '@digistream/contracts';
 import {
   Button,
+  ContextCard,
   IconButton,
   LinkButton,
   StatePanel,
@@ -1432,15 +1433,12 @@ export function CreatorBroadcastStudio({
               ) : null}
 
               {selectedBroadcast ? (
-                <article className="studio-selected-broadcast">
-                  <div>
-                    <span>Selected broadcast</span>
-                    <strong>{selectedBroadcast.title}</strong>
-                  </div>
+                <ContextCard className="studio-selected-broadcast" title="Selected broadcast">
+                  <strong>{selectedBroadcast.title}</strong>
                   <StatusBadge tone={broadcastStatusTone(selectedBroadcast.status)}>
                     {formatStatus(selectedBroadcast.status)}
                   </StatusBadge>
-                </article>
+                </ContextCard>
               ) : null}
             </aside>
 

@@ -8,7 +8,7 @@
   box-sizing: border-box;
   padding: 0.75rem 1rem;
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-surface);
   color: var(--ds-ink);
   box-shadow: var(--ds-shadow-control);
@@ -32,7 +32,7 @@
   min-height: 44px;
   padding-inline: 0.75rem;
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   color: var(--ds-ink);
   background: var(--ds-surface);
   box-shadow: var(--ds-shadow-small);
@@ -42,7 +42,7 @@
 
 .echoo-connectivity-status--restored button:active {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--ds-ink);
+  box-shadow: none;
 }
 
 .echoo-connectivity-status--offline {

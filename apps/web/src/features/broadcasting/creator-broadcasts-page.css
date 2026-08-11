@@ -61,7 +61,7 @@
 .broadcast-list {
   min-width: 0;
   border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: var(--ds-surface-1);
   box-shadow: var(--ds-shadow-card);
 }
@@ -282,7 +282,7 @@
   bottom: -1px;
   left: var(--ds-space-4);
   height: 2px;
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   background: transparent;
   content: '';
 }
@@ -299,14 +299,14 @@
 .echoo-broadcast-tabs button:focus-visible {
   outline: 3px solid var(--ds-focus-ring);
   outline-offset: -3px;
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
 }
 
 .broadcast-list-items {
   min-width: 0;
   display: grid;
   border: 1px solid var(--ds-border-subtle);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   overflow: hidden;
 }
 
@@ -335,7 +335,7 @@
   display: grid;
   place-items: center;
   border: 1px solid var(--ds-border-default);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   color: var(--ds-pink-700);
   background: var(--ds-accent-soft);
   box-shadow: var(--ds-shadow-small);
@@ -482,7 +482,7 @@
   .channel-strip,
   .broadcast-list {
     padding: 14px;
-    border-radius: 0;
+    border-radius: var(--ds-radius-control);
   }
 
   .creator-form-grid {
@@ -536,7 +536,7 @@
   .echoo-broadcast-artwork {
     width: 52px;
     height: 52px;
-    border-radius: 0;
+    border-radius: var(--ds-radius-control);
   }
 
   .echoo-broadcast-tabs button {
