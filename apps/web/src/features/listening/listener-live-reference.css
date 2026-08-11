@@ -10,3 +10,5 @@
 @media (max-width: 760px) { .listener-shell { width: min(100% - 40px, 1180px); grid-template-columns: 1fr; padding-top: 32px; }.listener-stage { min-height: 270px; }.listener-card { padding: 28px; }.listener-controls { grid-template-columns: auto auto minmax(0, 1fr); }.listener-volume output { display: none; } }
 @media (max-width: 430px) { .listener-controls { grid-template-columns: 1fr auto; }.listener-play-button { grid-column: 1 / -1; }.listener-volume { grid-column: 1 / -1; } }
 @media (prefers-reduced-motion: reduce) { .listener-orb.playing i { animation: none; } }
+/* Screen 42: live listening keeps artwork, transport and verified lifecycle state together. */
+.listener-live-page .listener-player,.listener-live-page .listener-detail-card{border-radius:0}.listener-live-page .listener-player{box-shadow:var(--ds-shadow-major)}
