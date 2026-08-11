@@ -456,3 +456,5 @@
     transition: none !important;
   }
 }
+/* Screen 35: keep live call-in work grouped by real invitation and admission state. */
+.creator-backstage-workspace{background:var(--ds-bg)}.backstage-panel,.backstage-invitation-row,.backstage-call-in-row{border-radius:0;border-color:var(--ds-ink)}.backstage-panel{box-shadow:var(--ds-shadow-major)}
