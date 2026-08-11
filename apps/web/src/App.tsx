@@ -27,6 +27,7 @@ import {
   StatePanel,
   StatusBadge,
 } from './design-system/components';
+import { Icon } from './design-system/Icon';
 import {
   CreatorShell,
   ListenerShell,
@@ -127,17 +128,30 @@ function CreatorIntentChoice({ onBroadcast }: { onBroadcast(): void }) {
   return (
     <section className="workspace-onboarding" aria-labelledby="creator-intent-title">
       <div>
-        <StatusBadge tone="info">Choose how to continue</StatusBadge>
         <h2 id="creator-intent-title">What would you like to do?</h2>
-        <p>Choose whether you want to listen or create a broadcast.</p>
+        <p>Choose how you want to continue. You can switch later.</p>
       </div>
       <div className="workspace-welcome-actions">
-        <Button icon="broadcast" onClick={onBroadcast} variant="primary">
-          Broadcast audio
-        </Button>
-        <LinkButton href="/listen" icon="headphones">
-          Listen to broadcasts
-        </LinkButton>
+        <article className="creator-intent-option">
+          <span className="creator-intent-option-icon" aria-hidden="true">
+            <Icon name="broadcast" />
+          </span>
+          <h3>Broadcast audio</h3>
+          <p>Create and manage broadcasts for your audience.</p>
+          <Button className="creator-intent-option-action" fullWidth icon="arrow-right" onClick={onBroadcast} variant="primary">
+            Continue
+          </Button>
+        </article>
+        <article className="creator-intent-option">
+          <span className="creator-intent-option-icon" aria-hidden="true">
+            <Icon name="headphones" />
+          </span>
+          <h3>Listen to broadcasts</h3>
+          <p>Discover and listen to live audio.</p>
+          <LinkButton className="creator-intent-option-action" fullWidth href="/listen" icon="arrow-right" variant="primary">
+            Continue
+          </LinkButton>
+        </article>
       </div>
     </section>
   );

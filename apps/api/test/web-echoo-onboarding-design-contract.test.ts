@@ -24,8 +24,11 @@ test('focused onboarding reuses the existing intent and organisation flow', asyn
   const app = await readFile(appUrl, 'utf8');
 
   assert.match(app, /id="creator-intent-title">What would you like to do\?/);
-  assert.match(app, />\s*Broadcast audio\s*<\/Button>/);
-  assert.match(app, /href="\/listen"[\s\S]*Listen to broadcasts/);
+  assert.match(app, /className="creator-intent-option"/);
+  assert.match(app, />\s*Broadcast audio\s*<\/h3>/);
+  assert.match(app, />\s*Listen to broadcasts\s*<\/h3>/);
+  assert.match(app, /href="\/listen"[\s\S]*>\s*Continue\s*<\/LinkButton>/);
+  assert.match(app, /Create and manage broadcasts for your audience\./);
   assert.match(app, /Step 1 of 3/);
   assert.match(app, /Set up your creator workspace/);
   assert.match(app, /Continue to channel setup/);
@@ -59,7 +62,8 @@ test('Echoo onboarding presentation suppresses normal navigation only during set
   assert.match(css, /\.ds-creator-navigation[\s\S]*display:\s*none/);
   assert.match(css, /--echoo-onboarding-blue:\s*var\(--ds-pink-500\)/);
   assert.match(css, /--echoo-onboarding-navy:\s*var\(--ds-ink\)/);
-  assert.match(css, /min-height:\s*118px/);
+  assert.match(css, /\.creator-intent-option\s*\{/);
+  assert.match(css, /box-shadow:\s*var\(--ds-shadow-major\)/);
   assert.match(css, /safe-area-inset-bottom/);
   assert.match(css, /@media \(max-width:\s*640px\)/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);

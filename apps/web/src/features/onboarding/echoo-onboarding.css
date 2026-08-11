@@ -75,7 +75,6 @@
 }
 
 .ds-creator-shell:has(#creator-intent-title) .ds-page-heading,
-.ds-creator-shell:has(#creator-intent-title) .ds-creator-account-summary,
 .ds-creator-shell:has(#workspace-onboarding-title) .ds-page-heading,
 .ds-creator-shell:has(#workspace-onboarding-title) .ds-creator-account-summary,
 .ds-creator-shell:has(.creator-broadcasts-page:not(:has(.channel-strip)) #create-channel-title) .ds-page-heading,
@@ -83,6 +82,10 @@
 .ds-creator-shell:has([aria-label='First broadcast choices']) .ds-page-heading,
 .ds-creator-shell:has([aria-label='First broadcast choices']) .ds-creator-account-summary {
   display: none;
+}
+
+.ds-creator-shell:has(#creator-intent-title) .ds-creator-account-summary {
+  display: grid;
 }
 
 .ds-creator-shell:has(#creator-intent-title) .ds-topbar-actions > :not(:last-child),
@@ -111,77 +114,108 @@
 
 /* Intent choice */
 .workspace-onboarding:has(#creator-intent-title) {
-  width: min(100%, 820px);
-  min-height: 520px;
-  margin: clamp(20px, 5vh, 58px) auto 0;
-  padding: clamp(34px, 6vw, 64px);
+  width: min(100%, 1000px);
+  min-height: 620px;
+  margin: clamp(30px, 7vh, 92px) auto 0;
+  padding: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-content: center;
-  justify-items: center;
-  gap: clamp(28px, 5vw, 46px);
-  border: 1px solid var(--echoo-onboarding-line);
-  border-radius: 0;
-  background: var(--echoo-onboarding-panel);
-  box-shadow: var(--echoo-onboarding-shadow);
-  text-align: center;
+  justify-items: start;
+  gap: clamp(38px, 5vw, 56px);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
 }
 
 .workspace-onboarding:has(#creator-intent-title) > div:first-child {
-  max-width: 610px;
+  max-width: 650px;
   display: grid;
-  justify-items: center;
-  gap: 14px;
+  justify-items: start;
+  gap: 20px;
 }
 
 .workspace-onboarding:has(#creator-intent-title) #creator-intent-title {
-  max-width: 620px;
+  max-width: 650px;
   color: var(--echoo-onboarding-navy);
-  font-size: clamp(2.2rem, 5vw, 3.6rem);
-  line-height: .98;
+  font-size: clamp(2.8rem, 6vw, 4.7rem);
+  line-height: .94;
   letter-spacing: -.055em;
 }
 
 .workspace-onboarding:has(#creator-intent-title) p {
-  max-width: 520px;
+  max-width: 540px;
   color: var(--echoo-onboarding-copy);
-  font-size: 1rem;
+  font-family: var(--ds-font-mono);
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  line-height: 1.7;
 }
 
 .workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: clamp(18px, 3vw, 40px);
 }
 
-.workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button {
-  width: 100%;
-  min-height: 118px;
-  padding: 22px;
-  justify-content: flex-start;
-  gap: 14px;
-  border-radius: 0;
+.creator-intent-option {
+  min-width: 0;
+  min-height: 390px;
+  padding: clamp(24px, 3vw, 34px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: var(--ds-border);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-major);
+}
+
+.creator-intent-option-icon {
+  width: 62px;
+  height: 62px;
+  margin-bottom: 42px;
+  display: grid;
+  place-items: center;
+  border: var(--ds-border);
+  color: var(--ds-pink-700);
+  background: var(--ds-pink-50);
+}
+
+.creator-intent-option-icon .ds-icon {
+  --ds-icon-size: 32px;
+}
+
+.creator-intent-option h3 {
+  margin: 0;
+  color: var(--ds-ink);
+  font-family: var(--ds-font-display);
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: -.04em;
+}
+
+.creator-intent-option p {
+  min-height: 84px;
+  margin: 28px 0 24px;
+  padding-top: 24px;
+  border-top: 1px dashed var(--ds-line-soft);
+}
+
+.creator-intent-option .creator-intent-option-action {
+  min-height: 58px;
+  margin-top: auto;
+  justify-content: center;
+  color: var(--ds-pink-700);
+  background: var(--ds-pink-50);
   font-size: 1rem;
-  text-align: left;
-  white-space: normal;
+  letter-spacing: .05em;
+  text-transform: uppercase;
 }
 
-.workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button .ds-icon {
-  --ds-icon-size: 28px;
-}
-
-.workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button-primary {
-  border-color: var(--echoo-onboarding-blue);
-  background: var(--echoo-onboarding-blue);
-  box-shadow: var(--ds-shadow-control);
-}
-
-.workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button-secondary {
-  color: var(--echoo-onboarding-navy);
-  border-color: var(--echoo-onboarding-line);
-  background: var(--echoo-onboarding-soft);
-  box-shadow: none;
+.creator-intent-option .creator-intent-option-action:hover:not(:disabled):not([aria-disabled='true']):not([aria-busy='true']) {
+  color: var(--ds-ink);
+  background: var(--ds-pink-100);
 }
 
 /* Organisation — setup step 1 */
@@ -474,7 +508,7 @@
   .workspace-onboarding:has(#creator-intent-title) {
     min-height: auto;
     align-content: start;
-    gap: 28px;
+    gap: 36px;
     text-align: left;
   }
 
@@ -483,16 +517,28 @@
   }
 
   .workspace-onboarding:has(#creator-intent-title) #creator-intent-title {
-    font-size: clamp(1.85rem, 9vw, 2.5rem);
+    font-size: clamp(2.55rem, 13vw, 3.5rem);
   }
 
   .workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button {
-    min-height: 68px;
-    border-radius: 0;
+  .creator-intent-option {
+    min-height: 340px;
+    padding: 24px;
+  }
+
+  .creator-intent-option-icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 30px;
+  }
+
+  .creator-intent-option p {
+    min-height: 0;
+    margin-top: 22px;
+    padding-top: 20px;
   }
 
   .workspace-onboarding:has(#workspace-onboarding-title) {
@@ -548,8 +594,12 @@
     padding-block: 24px;
   }
 
-  .workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button {
-    min-height: 72px;
+  .creator-intent-option {
+    min-height: 280px;
+  }
+
+  .creator-intent-option-icon {
+    margin-bottom: 22px;
   }
 }
 
