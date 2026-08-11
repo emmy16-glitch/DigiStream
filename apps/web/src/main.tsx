@@ -35,6 +35,7 @@ import './design-system/semantic-feedback-contrast.css';
 import './landing/landing-page.css';
 import './landing/landing-entry-responsive.css';
 import './features/guests/echoo-backstage.css';
+import './features/account/account-pages.css';
 import './design-system/phase9-flow-resilience.css';
 import './features/listening/listener-responsive-audit.css';
 import './features/guests/guest-responsive-audit.css';
@@ -54,7 +55,7 @@ if (route.replaceHistory) {
 }
 
 function isKnownApplicationPath(pathname: string): boolean {
-  if (pathname === '/login' || pathname === '/signup' || pathname === '/admin') return true;
+  if (pathname === '/login' || pathname === '/signup' || pathname === '/admin' || pathname === '/account/profile') return true;
   if (pathname === '/creator' || pathname.startsWith('/creator/')) return true;
   return Boolean(parseGuestRoute(pathname) || parseListenerRoute(pathname));
 }

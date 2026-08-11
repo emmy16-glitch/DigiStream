@@ -61,6 +61,7 @@ import { creatorSetupState } from './features/onboarding/creator-setup-state';
 import { CreatorOverviewPage } from './features/onboarding/CreatorOverviewPage';
 import { creatorOverviewDerivation } from './features/onboarding/overview-state';
 import { CreatorRecordingsPage } from './features/recordings/CreatorRecordingsPage';
+import { ProfileSettingsPage } from './features/account/ProfileSettingsPage';
 import { ApiClientError, apiRequest, jsonBody } from './lib/api-client';
 
 type CreatorPage =
@@ -768,6 +769,8 @@ function CreatorApplication() {
       />
     );
   }
+
+  if (window.location.pathname === '/account/profile') return <ProfileSettingsPage />;
 
   return (
     <CreatorDashboard
