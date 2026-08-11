@@ -265,7 +265,7 @@ function OrganisationSetup({
         {submissionError ? (
           <div className="workspace-inline-error" role="alert">{submissionError}</div>
         ) : null}
-        <Button loading={busy} type="submit" variant="primary">
+        <Button icon="broadcast" loading={busy} type="submit" variant="primary">
           Continue to channel setup
         </Button>
       </form>

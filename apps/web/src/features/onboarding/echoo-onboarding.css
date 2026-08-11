@@ -220,53 +220,82 @@
 
 /* Organisation — setup step 1 */
 .workspace-onboarding:has(#workspace-onboarding-title) {
-  width: min(100%, 980px);
-  margin: clamp(12px, 4vh, 46px) auto 0;
-  padding: clamp(28px, 5vw, 52px);
+  width: min(100%, 760px);
+  margin: clamp(30px, 7vh, 92px) auto 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: minmax(240px, .78fr) minmax(0, 1.22fr);
-  gap: clamp(30px, 5vw, 58px);
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(34px, 5vw, 48px);
   align-items: start;
-  border: 1px solid var(--echoo-onboarding-line);
-  border-radius: 0;
-  background: var(--echoo-onboarding-panel);
-  box-shadow: var(--echoo-onboarding-shadow);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) > div:first-child {
   display: grid;
   justify-items: start;
-  gap: 14px;
+  gap: 20px;
+}
+
+.workspace-onboarding:has(#workspace-onboarding-title) .ds-status {
+  min-height: 42px;
+  padding: 8px 16px;
+  border-color: var(--ds-ink);
+  box-shadow: var(--ds-shadow-small);
+  color: var(--ds-ink);
+  background: var(--ds-pink-50);
+  font-size: 1rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.workspace-onboarding:has(#workspace-onboarding-title) .ds-status .ds-icon {
+  display: none;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) #workspace-onboarding-title {
   color: var(--echoo-onboarding-navy);
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1;
+  max-width: 700px;
+  font-size: clamp(2.8rem, 6vw, 4.7rem);
+  line-height: .94;
   letter-spacing: -.05em;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) p {
   color: var(--echoo-onboarding-copy);
+  font-family: var(--ds-font-mono);
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  line-height: 1.7;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) form {
-  padding: clamp(20px, 3vw, 30px);
-  border: 1px solid #e3ebf5;
+  padding: clamp(28px, 4vw, 44px);
+  gap: 28px;
+  border: var(--ds-border);
   border-radius: 0;
-  background: #fbfdff;
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-major);
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) label {
-  color: #41546e;
+  color: var(--ds-ink);
+  font-family: var(--ds-font-mono);
+  font-size: .9rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) input {
-  min-height: 54px;
-  border-color: #ccd9e9;
+  min-height: 64px;
+  padding-inline: 18px;
+  border-color: var(--ds-ink);
   border-radius: 0;
   color: var(--echoo-onboarding-navy);
   background: var(--ds-surface);
+  font-family: var(--ds-font-mono);
+  font-size: 1.1rem;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) input:focus-visible {
@@ -277,9 +306,12 @@
 
 .workspace-onboarding:has(#workspace-onboarding-title) form > .ds-button:last-child {
   width: 100%;
-  min-height: 52px;
-  margin-top: 4px;
+  min-height: 62px;
+  margin-top: 8px;
   border-radius: 0;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 /* Existing first-channel form — setup step 2 */
@@ -542,7 +574,7 @@
   }
 
   .workspace-onboarding:has(#workspace-onboarding-title) {
-    gap: 24px;
+    gap: 32px;
   }
 
   .workspace-onboarding:has(#workspace-onboarding-title) #workspace-onboarding-title,
