@@ -13,6 +13,21 @@ Before changing DigiStream, read and follow these sources in this order:
 7. `docs/ARCHITECTURE.md`
 8. feature-specific documents and the current implementation
 
+For **frontend/UI/UX/design-system work**, the product-truth documents above remain authoritative for behavior, while reusable visual implementation additionally requires:
+
+1. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`
+2. `docs/design/BEAUTIFUL_UI_ADAPTATION_STANDARD.md`
+3. `docs/design/DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`
+4. `docs/design/DESIGN_TOKENS.md`
+5. `docs/design/REFERENCE_INDEX.md` and the relevant 50-screen reference for product composition/journey intent
+6. the nearest scoped agent instructions, especially `apps/web/AGENTS.md`
+
+External Beautiful UI reference: `https://beautiful-ui-five.vercel.app/`
+
+The mandatory visual rule is: **preserve DigiStream's warm cream dotted application canvas; use clean white/warm-white/neutral operational surfaces on top; keep dusty pink as the principal brand accent; use restrained lavender/sky/mint/amber/peach supporting tints; adapt Beautiful UI's compact navigation, rows/tables, search, task, loading, approval, chat, context and insight patterns where they fit real DigiStream responsibilities; and keep all lifecycle semantic colours/state truthful.**
+
+Do not remove the cream dotted DigiStream identity to create generic SaaS UI. Do not make every inner component a giant cream/pink card with heavy hard shadow either.
+
 A decorative reference, stale test, generic dashboard pattern, fashionable animation or old copy does not override the quality, authorization, lifecycle, onboarding, product-flow or interaction contracts above.
 
 ## Immediate product priority
@@ -33,7 +48,7 @@ Finish every mandatory onboarding and activation slice in `docs/CREATOR_ONBOARDI
 
 After onboarding and activation is implemented, merged, verified and reconciled with documentation, immediately execute `docs/PRODUCT_DESIGN_AND_FLOW_HARDENING.md` through bounded dependency-ordered pull requests.
 
-That document is mandatory product architecture and interaction quality. It requires agents to connect the existing capable surfaces into one coherent product while preserving DigiStream’s dark design identity, truthful lifecycle communication, backend authority and media reliability.
+That document is mandatory product architecture and interaction quality. It requires agents to connect the existing capable surfaces into one coherent product while preserving DigiStream’s **cream-dotted hybrid visual identity defined by the current UI Constitution**, truthful lifecycle communication, backend authority and media reliability.
 
 The programme includes:
 
