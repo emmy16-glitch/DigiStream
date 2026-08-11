@@ -562,3 +562,5 @@
     transform: none;
   }
 }
+/* Screen 45: listener sign-in prompts use the public auth surface, never fake access. */
+.listener-sign-in-prompt{border-radius:0;border:1px solid var(--ds-ink);background:var(--ds-surface);box-shadow:var(--ds-shadow-major)}
