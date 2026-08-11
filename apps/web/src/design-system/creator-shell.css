@@ -276,3 +276,4 @@
     scroll-padding-bottom: 32px;
   }
 }
+.ds-mobile-account-menu{position:relative}.ds-mobile-account-menu summary{list-style:none}.ds-mobile-account-menu summary::-webkit-details-marker{display:none}.ds-mobile-account-popover{min-width:300px;padding:20px;border:1px solid var(--ds-ink);background:var(--ds-surface);box-shadow:var(--ds-shadow-major)}.ds-mobile-account-popover>div:first-child{padding-bottom:16px;border-bottom:1px solid var(--ds-ink);display:grid;gap:4px}.ds-mobile-account-popover span{font:var(--ds-text-xs) var(--ds-font-mono);color:var(--ds-muted)}.ds-mobile-account-actions{padding-top:12px;display:grid;gap:8px}.ds-mobile-account-actions .ds-button{justify-content:flex-start}@media(max-width:640px){.ds-mobile-account-popover{position:fixed;z-index:40;right:16px;top:72px;width:min(340px,calc(100vw - 32px))}}

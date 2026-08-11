@@ -543,6 +543,9 @@ function CreatorDashboard({
       >
         Listen
       </LinkButton>
+      <LinkButton aria-label="Open profile settings" href="/account/profile" icon="user" title="Profile settings" variant="ghost">
+        Profile
+      </LinkButton>
       <Button
         aria-label={`Sign out ${user.displayName}`}
         icon="user"
