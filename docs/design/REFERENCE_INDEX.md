@@ -1,33 +1,36 @@
 # DigiStream Approved 50-Screen Reference Index
 
-Status: **authoritative visual reference inventory**
+Status: **authoritative screen/journey reference inventory, subordinate to the v2.1 reusable UI system**
 
-The approved final DigiStream redesign contains 50 distinct reference screens. These images define composition, hierarchy, density, spacing, typography character, component geometry, color language, and overall visual identity.
+The DigiStream reference pack contains 50 distinct screens. These images remain important for screen responsibility, product journey, information grouping, relative hierarchy and content intent.
 
-They are not evidence that every sample metric, person, date, role, recording, replay, health value, or capability exists in production. Product state must remain API-backed and truthful.
+They are **not** the sole reusable visual authority.
 
-## Mandatory use
+For reusable styling, component density, colour layering, navigation, rows/tables, radius, elevation and Beautiful UI adaptation, follow:
 
-For UI implementation, use the references together with:
+1. `DIGISTREAM_UI_CONSTITUTION.md`;
+2. `BEAUTIFUL_UI_ADAPTATION_STANDARD.md`;
+3. `DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`;
+4. `DESIGN_TOKENS.md`.
 
-1. `DIGISTREAM_UI_CONSTITUTION.md` — visual system and reusable rules;
-2. `DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md` — Codex/Claude implementation behavior;
-3. `DESIGN_TOKENS.md` — normalized production tokens;
-4. root product/lifecycle/quality documents — authoritative product truth;
-5. the existing implementation — responsibilities that should be realigned rather than duplicated.
+The images are never evidence that sample metrics, people, dates, roles, recordings, replay, health values or capabilities exist in production. Product state remains API-backed and truthful.
 
-## Visual identity represented by all references
+## Current visual interpretation
 
-- cream dotted background;
-- dusty pink accents;
-- bold near-black grotesk headings;
-- monospace/typewriter system text;
-- square cards and controls;
-- thin black borders;
-- hard black offset shadows;
-- restrained semantic colors;
-- generous vertical spacing;
-- no legacy blue/white visual system.
+When translating these references into production:
+
+- **keep the warm cream dotted DigiStream application canvas**;
+- keep dusty pink as the main brand anchor;
+- use clean white/warm-white/neutral operational surfaces inside that canvas;
+- borrow Beautiful UI-style compact density and component hierarchy;
+- use restrained lavender/sky/mint/amber/peach supporting tints where useful;
+- keep live/success/warning/danger/info semantic colours separate and truthful;
+- prefer rows/tables for repeated comparable records;
+- reduce heavy nested shadows;
+- use restrained radius rather than forcing every component square or every component extremely rounded;
+- preserve product hierarchy without recreating oversized decorative cards blindly.
+
+The correct goal is **DigiStream + Beautiful UI-quality interface grammar**, not a literal screenshot reconstruction.
 
 ## Screen map
 
@@ -84,54 +87,64 @@ For UI implementation, use the references together with:
 | 49 | `49_creator_workspace_stats_dashboard.png` | Creator workspace statistics |
 | 50 | `50_creator_analytics_dashboard.png` | Creator analytics dashboard |
 
-The expected repository location for the image files is:
+Expected repository location:
 
 ```text
 docs/design/reference/screens/
 ```
 
-## How to interpret screenshots
+## What screenshots are strongest at
 
-Screenshots are strongest at:
+Use them to understand:
 
-- overall composition;
-- visual hierarchy;
-- brand personality;
-- spacing rhythm;
-- component shape;
-- typography contrast;
-- density/grouping;
-- relative action importance.
+- what the screen is for;
+- overall information hierarchy;
+- content grouping;
+- relative action importance;
+- user journey continuity;
+- likely state/context relationships;
+- brand personality that does not conflict with the current Constitution.
 
-Screenshots are not authoritative for:
+## What screenshots are not authoritative for
 
-- whether a sample metric exists;
-- exact sample dates or names;
+- sample metric existence;
+- exact sample dates/names;
 - authorization;
 - role permissions;
 - lifecycle transitions;
 - provider/backend architecture;
-- whether a feature is currently production-ready.
+- production feature readiness;
+- whether a capability exists;
+- exact reusable token value;
+- forcing square geometry on every current component;
+- forcing hard offset shadows on every current component;
+- forcing every inner surface to remain cream/pink instead of using the current white/neutral Beautiful UI hybrid.
 
 ## Conflict rule
 
-If a screenshot conflicts with backend truth, authorization, privacy, lifecycle, media readiness, accessibility, or established component responsibility, preserve product truth and implement the screenshot's visual intent using the UI Constitution.
+If a screenshot conflicts with backend truth, authorization, privacy, lifecycle, media readiness, accessibility or established component responsibility, preserve product truth.
 
-Do not solve a conflict by inventing data or creating a duplicate flow.
+If a screenshot conflicts with reusable v2.1 UI-system rules, preserve the screenshot's **content/journey intent** while implementing it with the current Constitution and Beautiful UI adaptation standard.
+
+Do not resolve conflict by inventing data or duplicating a flow.
 
 ## Required review questions
 
-Before merging a UI screen based on these references, confirm:
+Before merging a UI change based on these references, confirm:
 
-1. Was the exact numbered reference opened and compared at the target viewport?
-2. Does the screen preserve the cream/pink/ink/square/hard-shadow system?
-3. Is every displayed value real or intentionally omitted/unavailable?
-4. Are loading, empty, error, disconnected and unauthorized states covered?
-5. Is the correct Public, Listener, or Creator shell used?
-6. Does it remain usable on compact mobile, short-height landscape, tablet, and desktop where applicable?
-7. Can actions be completed with keyboard, touch, and mouse where supported?
-8. Are focus states and accessible labels present?
-9. Does status meaning survive without color?
-10. Was an existing surface/component realigned instead of unnecessarily duplicated?
-11. Is any visual deviation documented explicitly?
-12. Would the screen still look recognizably DigiStream if the logo were removed?
+1. Was the relevant numbered reference opened for product composition/journey intent?
+2. Was `BEAUTIFUL_UI_ADAPTATION_STANDARD.md` followed for the adapted component pattern?
+3. Is the cream dotted DigiStream shell still recognizable where appropriate?
+4. Are white/neutral inner surfaces used where they improve density and readability?
+5. Is dusty pink still the principal brand accent?
+6. Are supporting accent colours restrained and intentionally mapped?
+7. Are semantic state colours truthful and separate from decorative accents?
+8. Is every displayed value real or intentionally unavailable/omitted?
+9. Are loading, empty, error, disconnected and unauthorized states covered?
+10. Is the correct Public, Listener or Creator responsibility reused rather than duplicated?
+11. Does the layout work on compact mobile, short-height landscape and desktop where applicable?
+12. Are keyboard, touch, focus and Back/Escape behaviors correct?
+13. Are repeated records rows/tables when comparison matters?
+14. Is there one clear contextual primary action?
+15. Is any deliberate deviation documented?
+16. Would the screen still feel like DigiStream if the logo were removed?
