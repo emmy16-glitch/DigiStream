@@ -55,7 +55,7 @@ if (route.replaceHistory) {
 }
 
 function isKnownApplicationPath(pathname: string): boolean {
-  if (pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/admin' || pathname === '/account/profile' || pathname === '/account/sessions' || pathname === '/account/notifications' || pathname === '/organisation/settings' || pathname === '/organisation/team' || pathname === '/invite' || pathname === '/channel/settings') return true;
+  if (pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/reset-password' || pathname === '/admin' || pathname === '/account/profile' || pathname === '/account/sessions' || pathname === '/account/notifications' || pathname === '/organisation/settings' || pathname === '/organisation/team' || pathname === '/invite' || pathname === '/channel/settings') return true;
   if (pathname === '/creator' || pathname.startsWith('/creator/')) return true;
   return Boolean(parseGuestRoute(pathname) || parseListenerRoute(pathname));
 }
