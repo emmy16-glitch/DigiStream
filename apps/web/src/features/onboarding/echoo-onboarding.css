@@ -316,8 +316,8 @@
 
 /* Existing first-channel form — setup step 2 */
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) {
-  width: min(100%, 980px);
-  margin: clamp(12px, 4vh, 46px) auto 0;
+  width: min(100%, 860px);
+  margin: clamp(30px, 7vh, 92px) auto 0;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-broadcasts-intro {
@@ -325,48 +325,88 @@
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-card {
-  padding: clamp(28px, 5vw, 52px);
-  grid-template-columns: minmax(240px, .78fr) minmax(0, 1.22fr);
-  gap: clamp(30px, 5vw, 58px);
-  border-color: var(--echoo-onboarding-line);
-  border-radius: 0;
-  background: var(--echoo-onboarding-panel);
-  box-shadow: var(--echoo-onboarding-shadow);
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(34px, 5vw, 48px);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-copy {
-  gap: 14px;
+  gap: 20px;
+}
+
+.creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-copy .ds-status {
+  min-height: 42px;
+  padding: 8px 16px;
+  border-color: var(--ds-ink);
+  box-shadow: var(--ds-shadow-small);
+  color: var(--ds-ink);
+  background: var(--ds-pink-50);
+  font-size: 1rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-copy .ds-status .ds-icon {
+  display: none;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) #create-channel-title {
   color: var(--echoo-onboarding-navy);
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1;
+  font-size: clamp(2.8rem, 6vw, 4.7rem);
+  line-height: .94;
   letter-spacing: -.05em;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-copy p {
   color: var(--echoo-onboarding-copy);
+  font-family: var(--ds-font-mono);
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  line-height: 1.7;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-grid {
-  padding: clamp(20px, 3vw, 30px);
-  border: 1px solid #e3ebf5;
+  padding: clamp(28px, 4vw, 44px);
+  gap: 28px;
+  border: var(--ds-border);
   border-radius: 0;
-  background: #fbfdff;
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-major);
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-grid :is(input, select, textarea) {
-  border-color: #ccd9e9;
+  min-height: 64px;
+  border-color: var(--ds-ink);
   border-radius: 0;
   color: var(--echoo-onboarding-navy);
   background: var(--ds-surface);
+  font-family: var(--ds-font-mono);
+  font-size: 1.05rem;
+}
+
+.creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-grid textarea {
+  min-height: 124px;
+}
+
+.creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-grid label {
+  color: var(--ds-ink);
+  font-family: var(--ds-font-mono);
+  font-size: .9rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-actions .ds-button-primary {
-  min-height: 52px;
-  min-width: 220px;
+  min-height: 62px;
+  min-width: 0;
   border-radius: 0;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 /* Existing first-broadcast decision — setup step 3 */

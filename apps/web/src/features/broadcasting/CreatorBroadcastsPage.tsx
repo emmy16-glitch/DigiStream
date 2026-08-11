@@ -623,7 +623,7 @@ export function CreatorBroadcastsPage({
               </select>
             </label>
             <label className="creator-form-wide">
-              Description
+              Description (optional)
               <textarea
                 maxLength={2000}
                 onChange={(event) => setChannelForm((current) => ({
@@ -639,7 +639,7 @@ export function CreatorBroadcastsPage({
               {!firstChannelSetup ? (
                 <Button onClick={() => setShowChannelForm(false)}>Cancel</Button>
               ) : null}
-              <Button loading={creatingChannel} type="submit" variant="primary">
+              <Button icon="broadcast" loading={creatingChannel} type="submit" variant="primary">
                 {firstChannelSetup && canApproveChannel
                   ? 'Create and activate channel'
                   : 'Create channel'}
