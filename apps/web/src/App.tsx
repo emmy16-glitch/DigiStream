@@ -61,7 +61,7 @@ import { creatorSetupState } from './features/onboarding/creator-setup-state';
 import { CreatorOverviewPage } from './features/onboarding/CreatorOverviewPage';
 import { creatorOverviewDerivation } from './features/onboarding/overview-state';
 import { CreatorRecordingsPage } from './features/recordings/CreatorRecordingsPage';
-import { AcceptInvitationPage, ActiveSessionsPage, ChannelSettingsPage, ForgotPasswordPage, NotificationsPage, OrganisationSettingsPage, ProfileSettingsPage, ResetPasswordPage, TeamInvitationsPage } from './features/account/ProfileSettingsPage';
+import { AcceptInvitationPage, ActiveSessionsPage, ChannelSettingsPage, ForgotPasswordPage, NotificationsPage, OrganisationSettingsPage, ProfileSettingsPage, ResetPasswordPage, TeamInvitationsPage, VerifyEmailPage } from './features/account/ProfileSettingsPage';
 import { ApiClientError, apiRequest, jsonBody } from './lib/api-client';
 
 type CreatorPage =
@@ -789,6 +789,7 @@ function CreatorApplication() {
 export function App() {
   if (window.location.pathname === '/forgot-password') return <ForgotPasswordPage />;
   if (window.location.pathname === '/reset-password') return <ResetPasswordPage />;
+  if (window.location.pathname === '/verify-email') return <VerifyEmailPage />;
   const guestRoute = parseGuestRoute(window.location.pathname);
   if (guestRoute) return <GuestJoinPage route={guestRoute} />;
 
