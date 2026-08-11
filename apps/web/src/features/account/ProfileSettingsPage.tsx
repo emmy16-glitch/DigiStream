@@ -9,6 +9,15 @@ function message(error: unknown) {
     : 'Your profile could not be updated.';
 }
 
+type Session = { id: string; createdAt: string; lastSeenAt: string; current: boolean; userAgent: string | null };
+export function ActiveSessionsPage() {
+  const [sessions, setSessions] = useState<Session[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [revoking, setRevoking] = useState<string | null>(null);
+  const load = useCallback(async () => { setLoading(true); setError(''); try { const response = await apiRequest<{ sessions: Session[] }>('/api/v1/auth/sessions'); setSessions(response.sessions); } catch (cause) { setError(message(cause)); } finally { setLoading(false); } }, []);
+  useEffect(() => { void load(); }, [load]);
+  async function revoke(id: string) { setRevoking(id); setError(''); try { await apiRequest(`/api/v1/auth/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' }); setSessions((current) => current.filter((session) => session.id !== id)); } catch (cause) { setError(message(cause)); } finally { setRevoking(null); } }
+  return <main className="account-page"><header className="account-header"><LinkButton href="/account/profile" variant="ghost">Profile settings</LinkButton><span className="account-brand">DigiStream</span></header><section className="account-intro"><span>Security</span><h1>Active sessions</h1><p>Review where your account is signed in.</p></section>{loading ? <StatePanel kind="loading" title="Loading active sessions">Checking your secure sessions.</StatePanel> : error && !sessions.length ? <StatePanel actionLabel="Try again" kind="error" onAction={() => void load()} title="Sessions could not load">{error}</StatePanel> : <section className="account-card account-list"><div>{error ? <p className="account-error" role="alert">{error}</p> : null}{sessions.length ? sessions.map((session) => <article className="account-row" key={session.id}><div><strong>{session.current ? 'This device' : 'Signed-in device'}</strong><small>{session.userAgent || 'Device details are unavailable'} · Last active {new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(session.lastSeenAt))}</small></div>{session.current ? <StatusBadge tone="success">Current session</StatusBadge> : <Button loading={revoking === session.id} onClick={() => void revoke(session.id)} variant="danger">Sign out</Button>}</article>) : <StatePanel kind="empty" title="No other active sessions">This account is not signed in on another device.</StatePanel>}</div></section>}</main>;
+}
+
 export function ProfileSettingsPage() {
   const [profile, setProfile] = useState<OwnProfile | null>(null);
   const [loading, setLoading] = useState(true);

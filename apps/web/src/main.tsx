@@ -55,7 +55,7 @@ if (route.replaceHistory) {
 }
 
 function isKnownApplicationPath(pathname: string): boolean {
-  if (pathname === '/login' || pathname === '/signup' || pathname === '/admin' || pathname === '/account/profile') return true;
+  if (pathname === '/login' || pathname === '/signup' || pathname === '/admin' || pathname === '/account/profile' || pathname === '/account/sessions') return true;
   if (pathname === '/creator' || pathname.startsWith('/creator/')) return true;
   return Boolean(parseGuestRoute(pathname) || parseListenerRoute(pathname));
 }
