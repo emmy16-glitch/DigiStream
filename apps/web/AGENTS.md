@@ -20,6 +20,22 @@ External Beautiful UI reference:
 
 Open the live reference when network access is available and the task adapts one of its patterns. If it is unavailable, use the local adaptation standard rather than guessing.
 
+## Legacy visual documents are not authority
+
+`../../docs/design/DIGISTREAM_PRODUCT_DESIGN_BIBLE.md` is a compatibility/deprecation document only.
+
+Do **not** recover or implement historical visual rules from old commits, cached context, screenshots, comments or previous versions of that file, including:
+
+- dark/near-black application canvas as the default;
+- emerald/green product-wide primary actions;
+- square-everywhere controls;
+- hard black offset shadows everywhere;
+- all-cream/all-pink card stacks;
+- giant repeated cards where users need comparison;
+- literal recreation of the 50-screen pack when it conflicts with the current reusable system.
+
+If an old source conflicts with the current Constitution + Beautiful UI adaptation standard, the current Constitution/adaptation standard wins for reusable presentation.
+
 ## The mandatory hybrid visual rule
 
 **Do not remove the cream dotted DigiStream identity.**
@@ -38,6 +54,35 @@ The correct implementation is:
 Do not turn the product into generic gray SaaS.
 
 Do not turn every component into a cream/pink poster card either.
+
+## No blind repository-wide visual replacement
+
+A UI migration must be **semantic and component-led**, not a regex sweep.
+
+Do not run broad `perl`, `sed`, regex, search/replace or codemod operations across many feature CSS/TSX files merely to change:
+
+- `border-radius`;
+- `box-shadow`;
+- colors;
+- backgrounds;
+- padding/spacing;
+- typography;
+- component class names;
+- product copy.
+
+Do not globally replace every `border-radius: 0`, every hard shadow, or every legacy token without understanding the responsibility of the affected component.
+
+Required migration approach:
+
+1. inspect the existing shared token/primitives first;
+2. update or add semantic shared tokens;
+3. update shared components deliberately;
+4. migrate one product surface/responsibility at a time using those shared primitives;
+5. inspect the diff after each bounded migration;
+6. run the relevant tests before proceeding;
+7. preserve intentional exceptions such as avatars, artwork, waveform geometry, mobile sheets, media controls, focus rings and feature-specific shapes.
+
+If a change unexpectedly touches dozens of unrelated files, stop and inspect the diff before continuing. Do not accept a large mechanical visual diff simply because it compiles.
 
 ## Beautiful UI component mapping
 
