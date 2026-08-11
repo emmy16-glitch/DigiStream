@@ -1,990 +1,606 @@
 # DigiStream Design System / UI Constitution
 
-Version 1.0 — derived from the approved final 50-screen DigiStream reference pack
+Version 2.0 — neutral broadcast-operations system with Beautiful UI adaptation rules
 
-## 0. Purpose
+## 0. Purpose and authority
 
-This document is the implementation contract for DigiStream UI. The approved 50-screen reference pack defines the product's visual direction; this Constitution turns that direction into reusable rules so engineers, Codex, Claude, designers, and future contributors do not drift into a generic SaaS interface.
+This document is the reusable visual and interaction contract for DigiStream.
 
-If a screenshot and this Constitution disagree, **this Constitution wins for reusable system rules** and the screenshot wins for **screen-specific composition/content intent**. Backend/API/product documentation always wins for product truth, authorization, lifecycle, privacy, and real data availability.
+For any frontend change, product truth remains more authoritative than presentation. Authorization, lifecycle, tenant isolation, media readiness, recording/replay availability, privacy, reliability and accessibility must never be fabricated or weakened to satisfy a visual reference.
 
-The visual identity must read as:
+For reusable frontend presentation use this order:
 
-> warm editorial broadcast tooling + technical console + community audio product
+1. root product/quality/lifecycle requirements in `AGENTS.md`;
+2. this Constitution;
+3. `BEAUTIFUL_UI_ADAPTATION_STANDARD.md`;
+4. `DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`;
+5. feature-specific product documents;
+6. the 50-screen reference pack for screen responsibility, flow, information grouping and relative hierarchy;
+7. current implementation details that do not conflict with the rules above.
+
+The former application-wide cream dotted canvas, dusty-pink-heavy poster treatment, square-card mandate and hard black offset-shadow mandate are **superseded** by this version.
+
+The 50-screen pack remains useful for product composition and journey intent, but it no longer overrides this Constitution for reusable color, density, radius, elevation, table, navigation or surface rules.
+
+The UI should read as:
+
+> calm, premium, compact broadcast operations software + clear listener experience + trustworthy live-state tooling.
 
 Never as:
 
-> generic blue SaaS + rounded cards + soft shadows + Inter-everywhere dashboard
+> a generic template dashboard, oversized card gallery, cream editorial poster, AI-agent clone, or decorative mock-up disconnected from product state.
 
 ---
 
-## 1. Non-negotiable visual principles
+## 1. Non-negotiable principles
 
-1. **Warm cream dotted canvas** is the default application background.
-2. **Dusty pink is the primary brand accent.** Blue is not a DigiStream brand UI color.
-3. **Near-black grotesk headings** carry hierarchy and personality.
-4. **Monospace/typewriter typography** carries metadata, labels, controls, system states, timestamps, and technical copy.
-5. **Cards and controls are square or almost square.** Rounded SaaS cards are not part of the system.
-6. **Hard black offset shadows** are the signature elevation treatment.
-7. **Borders are visible and intentional.** Components should feel constructed, printed, and tactile.
-8. **Spacing is generous vertically and disciplined horizontally.**
-9. **Color is restrained.** Semantic colors must mean something.
-10. **Dense screens reduce shadow usage rather than abandon the design language.**
-11. **Real product state always overrides decorative screenshot data.**
-12. **Existing product surfaces are realigned, not duplicated merely to copy references.**
-
----
-
-# 2. Core design tokens
-
-The values below are normalized production tokens based on the approved pack. They intentionally remove small color variations introduced by generated reference images.
-
-## 2.1 Color
-
-| Token | Value | Usage |
-|---|---:|---|
-| `--ds-bg` | `#F7F3EE` | Main cream page background |
-| `--ds-surface` | `#FFFDF9` | Cards, sheets, inputs, elevated surfaces |
-| `--ds-surface-warm` | `#F2ECE6` | Subtle alternate surface |
-| `--ds-ink` | `#1F2025` | Headings, borders, icons, primary text |
-| `--ds-ink-soft` | `#4D4A4B` | Secondary readable text |
-| `--ds-muted` | `#6B6464` | Metadata and subdued copy |
-| `--ds-line-soft` | `#D8D0CA` | Internal rules, dividers, subtle borders |
-| `--ds-grid-dot` | `#DDD6D1` | Background dot pattern |
-| `--ds-pink-50` | `#F8ECEB` | Very light pink wash |
-| `--ds-pink-100` | `#F0D2D1` | Soft selected states |
-| `--ds-pink-300` | `#E7B6B6` | Icon tiles, secondary accents |
-| `--ds-pink-500` | `#D58F97` | Main dusty pink accent |
-| `--ds-pink-700` | `#B84E5F` | Strong pink text, active states, destructive emphasis |
-| `--ds-success` | `#8DBA98` | Healthy / active / ready only |
-| `--ds-warning` | `#C99A61` | Warning / reconnecting only |
-| `--ds-danger` | `#B84E5F` | Destructive/error |
-| `--ds-charcoal-panel` | `#202126` | Rare dark broadcast hero/player panels |
-
-### Color rules
-
-- Do not introduce brand blue, electric purple, cyan, or glossy gradients.
-- Pink is for brand emphasis, selected states, primary actions, live accents, and important UI punctuation.
-- Green is semantic only: active, healthy, connected, ready, successful.
-- Amber is semantic only: warning, reconnecting, degraded.
-- Red/dark rose is semantic only: destructive, failed, suspended, ended.
-- Use pure white sparingly. Most large surfaces should be warm rather than clinical.
-- Decorative broadcast cover art should stay inside cream / pink / charcoal / muted semantic colors.
-- A color appearing once in a generated image does not automatically become a product token.
+1. **Truth before appearance.** Every status, metric, progress state, availability claim and action is backed by real authorized state.
+2. **One primary action per state.** Secondary actions must not compete visually with the next valid action.
+3. **Compact, useful density.** Repeated records use rows/tables when comparison matters rather than giant cards.
+4. **Neutral foundation.** Large application surfaces are neutral; brand accent is used selectively.
+5. **Clear hierarchy without decoration overload.** Typography, spacing, alignment and borders do most of the work.
+6. **Subtle elevation.** Borders and surface contrast are preferred over heavy shadows.
+7. **Consistent component grammar.** Reusable patterns live in the shared design system.
+8. **Responsive by design.** Desktop and mobile behavior are defined together.
+9. **Accessible interaction.** Keyboard, touch, focus, reduced motion, Back/Escape and screen-reader semantics are first-class.
+10. **No duplicate product surfaces.** Existing responsibilities are realigned, not forked for visual reasons.
+11. **Operational screens stay calm.** Live/Studio interfaces reduce distraction as operational importance increases.
+12. **External references are adapted, not blindly copied.** Beautiful UI contributes interaction grammar; DigiStream remains a broadcast product.
 
 ---
 
-# 3. Background system
+## 2. Core token direction
 
-The DigiStream dotted field is a brand element, not decoration.
+Production token definitions live in `DESIGN_TOKENS.md` and the shared design-system implementation. This section defines their semantic roles.
 
-```css
-.ds-app-background {
-  background-color: #F7F3EE;
-  background-image:
-    radial-gradient(circle, rgba(31, 32, 37, 0.10) 1px, transparent 1.1px);
-  background-size: 20px 20px;
-}
-```
+### 2.1 Color roles
+
+Use a neutral light system:
+
+- `--ds-bg`: very-light neutral application background;
+- `--ds-surface`: primary white/near-white surface;
+- `--ds-surface-subtle`: secondary neutral surface;
+- `--ds-text`: near-black primary text;
+- `--ds-text-secondary`: readable muted text;
+- `--ds-text-tertiary`: metadata only, still contrast-safe;
+- `--ds-border`: light neutral boundary;
+- `--ds-border-strong`: selected/focus/structural boundary;
+- `--ds-brand`: DigiStream accent used selectively;
+- `--ds-live`: live semantic state;
+- `--ds-success`: healthy/ready/completed where success is truly meant;
+- `--ds-warning`: degraded/reconnecting/attention;
+- `--ds-danger`: failed/destructive/error;
+- `--ds-focus`: high-visibility focus ring.
 
 Rules:
 
-- Dot opacity should remain subtle. The pattern must never compete with text.
-- Do not remove the dot grid on normal application screens merely to simplify implementation.
-- Modal overlays may visually suppress the grid, but the underlying page should still use it.
-- Dark player artwork may sit on top of the cream grid, but the surrounding page returns to cream.
-- Do not use a blue-tinted gray application canvas.
-- Large plain surfaces may use `--ds-surface` while the page behind them remains dotted.
+- no cream page wash as a mandatory brand canvas;
+- no dotted background as an application-wide requirement;
+- no rainbow feature palette;
+- no semantic green for actions that are merely primary;
+- live state must be visually distinct from generic success;
+- color never carries status meaning alone;
+- avoid large saturated panels unless a real state deserves emphasis.
+
+### 2.2 Surfaces
+
+Prefer three levels:
+
+1. page background;
+2. primary surface;
+3. subtle secondary/selected surface.
+
+Do not wrap every subsection in another card. A divider, heading, spacing, or row group is often sufficient.
 
 ---
 
-# 4. Typography
+## 3. Typography
 
-## 4.1 Font families
+The application should be readable before it is expressive.
 
-Production recommendation:
+Recommended role split:
 
-```css
---font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
---font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
-```
+- primary sans-serif for headings, body copy, controls and navigation;
+- optional monospace for technical metadata, IDs, timestamps, diagnostics and code-like information only.
 
-Optional editorial accent for rare marketing-only moments:
+Rules:
 
-```css
---font-editorial: "Instrument Serif", Georgia, serif;
-```
+- do not set normal product paragraphs in monospace;
+- do not use oversized marketing-scale headings in operational creator screens;
+- use weight, spacing and hierarchy rather than decorative fonts to communicate importance;
+- labels are concise and sentence case unless a compact metadata convention clearly benefits from uppercase;
+- long names and titles wrap or truncate intentionally with accessible full-value access where needed;
+- avoid shrinking text merely to fit a narrow layout.
 
-### Rules
+Suggested scale:
 
-- **Archivo** or an equivalent bold grotesk is the primary visual voice.
-- **IBM Plex Mono** or an equivalent is the system/technical voice.
-- Do not use Inter as the default for everything.
-- Long paragraphs may use the grotesk regular face for readability; metadata and system copy remain mono.
-- Editorial serif is optional and restricted to marketing hero statements or cover-art typography. It must never become the default app font.
-- Font substitutions must preserve the same visual character: heavy neutral grotesk + readable technical mono.
+| Role | Mobile | Desktop | Typical weight |
+|---|---:|---:|---:|
+| Page title | 28–32px | 30–36px | 650–750 |
+| Section title | 20–24px | 22–26px | 600–700 |
+| Card/row title | 15–17px | 15–18px | 550–650 |
+| Body | 14–16px | 14–16px | 400–500 |
+| Metadata | 12–14px | 12–14px | 400–500 |
+| Button/label | 13–15px | 13–15px | 550–650 |
 
-## 4.2 Type scale
-
-| Style | Mobile | Desktop | Weight | Family |
-|---|---|---|---|---|
-| Display | 40/44 | 52/56 | 800 | Grotesk |
-| H1 | 36/40 | 44/48 | 800 | Grotesk |
-| H2 | 28/34 | 34/40 | 750–800 | Grotesk |
-| H3 | 22/28 | 24/30 | 700 | Grotesk |
-| Card title | 18/24 | 20/26 | 700 | Grotesk |
-| Body | 16/25 | 17/27 | 400–500 | Grotesk or mono by context |
-| Mono body | 15/24 | 16/25 | 400 | Mono |
-| UI label | 12/18 | 13/18 | 600 | Mono |
-| Button | 14/18 | 15/20 | 600 | Mono |
-| Metadata | 12/18 | 13/19 | 400 | Mono |
-
-### Typography behavior
-
-- H1/H2 should be near-black and visually heavy.
-- Large headings may wrap deliberately; do not shrink text merely to force one-line headings.
-- Labels may use uppercase with `letter-spacing: 0.06em–0.10em`.
-- Do not set long paragraphs in all caps.
-- Do not use light font weights for important UI.
-- Use mono to communicate system-ness, not as a novelty on every sentence.
-- On dense screens, use the grotesk for longer explanatory copy so scanning remains comfortable.
+Do not treat these ranges as excuses for feature-local one-off values. Map them to shared tokens.
 
 ---
 
-# 5. Spacing system
+## 4. Spacing and density
 
-Use a strict 4px base scale.
+Use a 4px base scale and shared spacing tokens.
+
+Recommended roles:
 
 ```text
-4  8  12  16  20  24  32  40  48  64  80  96
+4 8 12 16 20 24 32 40 48 64
 ```
 
-## 5.1 Page spacing
+Guidelines:
 
-| Context | Horizontal padding | Major vertical gap |
-|---|---:|---:|
-| Small mobile | 20px | 32–40px |
-| Large mobile | 24px | 40–48px |
-| Tablet | 28–32px | 48–64px |
-| Desktop | 40–48px | 64–96px |
+- ordinary page padding: 16–24px mobile, 24–40px desktop;
+- major section gap: 24–40px;
+- primary panel padding: 16–24px;
+- compact row vertical padding: 10–14px;
+- related controls: 8–12px gaps;
+- unrelated groups: 20–32px gaps.
 
-### Rules
+Density rules:
 
-- Use tighter horizontal spacing than vertical spacing.
-- Give major sections breathing room.
-- Do not fill every empty area with cards.
-- Dense operational screens may use 20–24px vertical card gaps but should retain strong page-level separation.
-- Internal component spacing should be systematic rather than eyeballed screen by screen.
-- Repeated rows should use consistent padding and alignment.
+- repeated data should become rows before it becomes a grid of large cards;
+- mobile density is not achieved by shrinking touch targets;
+- desktop density is not achieved by making text lines excessively wide;
+- avoid excessive vertical travel caused by stacked wrappers, repeated headings or duplicate status blocks;
+- if a screen requires constant scrolling to reach its main action, reassess hierarchy before adding more containers.
 
 ---
 
-# 6. Borders, corners, and elevation
+## 5. Borders, radius and elevation
 
-## 6.1 Borders
+### Borders
 
-```css
---ds-border: 1px solid #1F2025;
---ds-border-soft: 1px solid #D8D0CA;
-```
+Use subtle neutral borders for structure. Increase boundary contrast for selected, focused or high-importance states.
 
-Major cards, modal surfaces, primary buttons, tab groups, and large form panels use the dark border.
+### Radius
 
-Internal dividers and secondary information use the soft border.
+Use restrained, consistent radius.
 
-## 6.2 Radius
+Recommended defaults:
 
-```css
---ds-radius-card: 0px;
---ds-radius-control: 0px;
---ds-radius-status: 2px;
---ds-radius-avatar: 999px;
-```
+- standard control/surface: 6–10px;
+- compact chip/badge: may be more rounded where semantics benefit;
+- avatar: circular;
+- media artwork: may use feature-specific radius within system bounds.
+
+Do not use giant 20–28px SaaS radii for ordinary creator panels.
+
+### Elevation
+
+- many surfaces need border only;
+- use low-opacity/low-blur shadow for floating overlays when needed;
+- do not use hard black offset shadows as the default application signature;
+- do not use permanent glow;
+- do not use glassmorphism/frosted panels for core product surfaces;
+- avoid nested shadows inside already-elevated components.
+
+---
+
+## 6. Navigation constitution
+
+### Creator desktop
+
+Prefer a stable compact sidebar or equivalent persistent navigation region inspired by Beautiful UI's Sidebar Nav pattern.
+
+Navigation should represent real product responsibilities, typically:
+
+- Overview;
+- Broadcasts;
+- Studio;
+- Recordings;
+- Analytics only when real/available;
+- Studio Lobby / Chat / Guests where distinct responsibilities exist;
+- account/workspace/settings access.
 
 Rules:
 
-- Cards: square.
-- Buttons: square.
-- Inputs: square.
-- Modals: square.
-- Tabs: square.
-- Tiny status pills may use 2–4px.
-- Circular shapes are reserved for avatars, audio artwork motifs, radio indicators, and icon geometry.
-- Never introduce 12px, 16px, or 24px SaaS card radii.
+- navigation rows are compact, label-first and easy to scan;
+- active item uses a subtle selected treatment;
+- do not create navigation cards;
+- counts use small badges only when meaningful;
+- workspace switching uses real memberships and preserves valid context;
+- labels must remain stable across pages.
 
-## 6.3 Hard shadows
+### Mobile
 
-```css
---ds-shadow-major: 6px 7px 0 #1F2025;
---ds-shadow-control: 4px 5px 0 #1F2025;
---ds-shadow-small: 3px 3px 0 #1F2025;
-```
+Use the validated mobile navigation model. Do not compress the desktop sidebar into an unusable narrow strip.
+
+Mobile navigation must preserve:
+
+- primary task discoverability;
+- browser/Android Back behavior;
+- safe areas;
+- virtual keyboard behavior;
+- clear account access;
+- no covered primary action.
+
+---
+
+## 7. Page architecture
+
+### 7.1 Page header
+
+A standard page header contains only what the user needs:
+
+- title;
+- optional short supporting sentence;
+- optional primary action;
+- optional compact contextual controls.
+
+Avoid repeated page titles inside the first card.
+
+### 7.2 Sections
+
+Use section headers, spacing and dividers before adding containers.
+
+A section should have one clear responsibility.
+
+### 7.3 Cards
+
+Cards are for meaningful grouping, not default layout.
+
+Use cards for:
+
+- one state-aware current task;
+- approval/confirmation;
+- compact insight;
+- contextual resource summary;
+- contained form/setting group;
+- media/player surface where enclosure is useful.
+
+Do not use a card for every broadcast row, metric, line of helper text and action.
+
+---
+
+## 8. Required reusable patterns
+
+The shared design system should support or converge toward reusable versions of:
+
+- Button;
+- IconButton;
+- Badge / StatusBadge / StatusDot;
+- PageHeader;
+- SectionHeader;
+- Sidebar / navigation row;
+- SearchField;
+- CommandSearch;
+- FilterTabs / status filters;
+- DataTable / responsive record rows;
+- TaskRow / TaskList;
+- LoadingState;
+- EmptyState;
+- ErrorState;
+- ContextPanel / ContextCard;
+- ConfirmationDialog / ApprovalCard;
+- InsightCard;
+- MessageRow;
+- Composer;
+- SelectionBar;
+- Toolbar;
+- Modal/Sheet primitives.
+
+Equivalent existing components should be reused rather than renamed for style alone.
+
+Feature components own domain composition. Generic design-system components must not become business-state authorities.
+
+---
+
+## 9. Tables and repeated records
+
+Use a table/row model when users compare multiple structured resources.
+
+Strong candidates:
+
+- Broadcasts;
+- Recordings;
+- Admin users;
+- Team members;
+- Invitations;
+- sessions/security records;
+- channels where comparison matters.
+
+Desktop:
+
+- aligned columns;
+- compact filters;
+- lifecycle/status column;
+- contextual row action;
+- sensible truncation and accessible title/label behavior.
+
+Mobile:
+
+- convert to compact stacked record rows/cards;
+- preserve the most decision-relevant fields;
+- move secondary metadata behind disclosure when necessary;
+- avoid horizontal scrolling for the primary workflow unless the data genuinely requires it.
+
+---
+
+## 10. Status and lifecycle presentation
+
+DigiStream has critical lifecycle distinctions. Presentation must preserve them.
+
+At minimum distinguish truthfully:
+
+- draft;
+- scheduled;
+- overdue scheduled;
+- starting;
+- live;
+- reconnecting;
+- ending;
+- completed;
+- cancelled;
+- failed;
+- recording requested/processing/ready/published/failed where applicable.
 
 Rules:
 
-- No blur.
-- No translucent floating shadow.
-- Large cards and modals: major shadow.
-- Buttons and selected controls: control shadow.
-- Very dense rows may use only border or small shadow.
-- Shadow must always move down/right.
-- Nested surfaces must not all receive the largest shadow.
-
-### Press interaction
-
-```css
-.ds-button:active {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 2px 0 #1F2025;
-}
-```
-
-This gives controls a tactile printed-button feel without relying on glossy animation.
+- scheduled content never pulses or looks live;
+- reconnecting is not represented as healthy live;
+- microphone signal does not imply public delivery;
+- private Studio contribution does not imply listener delivery;
+- completed does not imply recording/replay availability;
+- status badges combine text/icon/shape with color;
+- status copy uses stable terminology established by product tests/docs.
 
 ---
 
-# 7. Iconography
+## 11. Loading, progress and recovery
 
-Use one consistent outline icon family, preferably Lucide or an equivalent 1.75–2px stroke system.
-
-Rules:
-
-- Default icon color: `--ds-ink`.
-- Pink is allowed for active/brand controls.
-- Avoid mixed filled icon families.
-- Icon tiles are square, bordered, and usually use `--ds-pink-50` or `--ds-pink-100`.
-- Do not use multicolor decorative icons for normal controls.
-- Photos are acceptable for real people/participants; decorative illustration should stay within the system palette.
-
-Recommended icon tile:
-
-```css
-.ds-icon-tile {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  background: #F0D2D1;
-  border: 1px solid #1F2025;
-  box-shadow: 3px 3px 0 #1F2025;
-}
-```
-
----
-
-# 8. Buttons
-
-## 8.1 Primary
-
-- Dusty pink background.
-- Dark border.
-- Dark text/icon.
-- Hard offset shadow.
-- No radius.
-- Minimum height: 48px.
-- Minimum touch target: 44×44px.
-- Use clear verbs: `Go live`, `Continue`, `Join backstage`, `Listen live`, `Save changes`.
-
-```css
-.ds-button-primary {
-  min-height: 48px;
-  padding: 0 20px;
-  background: #E7B6B6;
-  color: #1F2025;
-  border: 1px solid #1F2025;
-  box-shadow: 4px 5px 0 #1F2025;
-  font-family: var(--font-mono);
-  font-weight: 600;
-}
-```
-
-## 8.2 Secondary
-
-Cream/surface background with the same dark border and hard shadow.
-
-## 8.3 Quiet
-
-Text-only or border-only. No hard shadow unless the control is a major action.
-
-## 8.4 Destructive
-
-Use dusty rose/danger, not bright system red. The label must clearly state the consequence: `End broadcast`, `Suspend account`, `Sign out`.
-
-## 8.5 Disabled and loading
-
-- Disabled must never look like a usable pink primary action.
-- Loading must preserve button width and surrounding layout.
-- Do not display success until the real operation succeeds.
-- Spinner/progress treatment must remain readable in the mono/system language.
-
----
-
-# 9. Cards and containers
-
-## 9.1 Major card
-
-Use for primary content, broadcast summaries, stats groups, forms, and modal-like blocks.
-
-```css
-.ds-card {
-  background: #FFFDF9;
-  border: 1px solid #1F2025;
-  box-shadow: 6px 7px 0 #1F2025;
-  padding: 24px;
-}
-```
-
-## 9.2 Compact row
-
-For recordings, team members, saved broadcasts, sessions, and settings.
-
-- Border is mandatory.
-- Shadow may be small or omitted on very dense lists.
-- 16–20px vertical padding.
-- Keep one clear title, one metadata line, one action area.
-
-## 9.3 Pink feature card
-
-Use pale pink for featured/selected/live areas. Do not use pink on every card.
-
-## 9.4 Dark media card
-
-Charcoal is allowed for immersive broadcast artwork, countdown/player hero modules, or replay cover art. It must never become the general application background.
-
-## 9.5 Nested hierarchy
-
-Do not create card-inside-card-inside-card compositions where every level has a border and major shadow. Use dividers, whitespace, and flat inner rows where appropriate.
-
----
-
-# 10. Inputs and forms
-
-Inputs are rectangular, warm, and deliberately visible.
-
-```css
-.ds-input {
-  min-height: 52px;
-  width: 100%;
-  padding: 0 16px;
-  background: #FFFDF9;
-  color: #1F2025;
-  border: 1px solid #1F2025;
-  border-radius: 0;
-  font-family: var(--font-mono);
-}
-```
-
-Focus:
-
-```css
-.ds-input:focus-visible {
-  outline: 2px solid #D58F97;
-  outline-offset: 2px;
-}
-```
-
-Rules:
-
-- Labels sit above inputs.
-- Labels use mono, often uppercase.
-- Help text uses muted mono.
-- Error text uses `--ds-danger`.
-- Do not rely on pink/red color alone; pair errors with text/icon.
-- Form sections should be grouped into bordered panels, not floating unstructured fields.
-- Required/optional status must be written clearly.
-- Long validation messages must wrap without breaking card width.
-
----
-
-# 11. Tabs, segmented controls, and filters
-
-Use bordered rectangular segments.
-
-Selected state:
-
-- Pale pink fill.
-- Dark text.
-- Optional dusty pink bottom rule.
-- No pill-shaped tabs.
-
-For a five-part status filter such as `All / Draft / Scheduled / Live / Ended`, use equal-width rectangular segments where possible.
-
-Compact category filters may be separate square buttons with a small hard shadow.
-
-On mobile, horizontally scrollable tab groups are acceptable when all labels remain readable and the active item remains obvious.
-
----
-
-# 12. Status system
-
-Status labels use mono typography and restrained semantic color.
-
-| Status | Treatment |
-|---|---|
-| Live | pink/rose dot + label |
-| Active / Ready / Healthy | muted green |
-| Scheduled | pale pink or neutral |
-| Draft | neutral gray |
-| Processing | dusty pink with progress indicator |
-| Warning / Reconnecting | amber |
-| Ended / Archived | neutral gray |
-| Error / Suspended | dark rose |
-
-Rules:
-
-- Never use random colors merely to make statuses look different.
-- Every color must have semantic meaning.
-- Status text must remain understandable without color.
-- Scheduled content must never use live pulse animation.
-- Healthy/private contribution must not be presented as public-delivery readiness unless real delivery evidence exists.
-
----
-
-# 13. Navigation architecture
-
-The reference pack contains public, listener, and creator contexts. These are separate shells. Individual screens must not invent new primary navigation.
-
-## 13.1 Public shell
-
-Top navigation:
-
-`DigiStream` | `Discover` | `Replays` | `Sign in`
-
-No creator tools. No account workspace selector for signed-out public users.
-
-## 13.2 Listener shell
-
-Header:
-
-`DigiStream` + listener profile/account affordance.
-
-Primary mobile navigation:
-
-`Home` | `Discover` | `Replays` | `My Library` | `More`
-
-Do not rename these per screen.
-
-## 13.3 Creator shell
-
-Header:
-
-`DigiStream` or `DigiStream Creator` + account/workspace control. Notification and monitoring controls may appear where relevant.
-
-Primary mobile navigation:
-
-`Home` | `Broadcasts` | `Lobby` | `Chat` | `More`
-
-`Recordings`, `Stats`, `Settings`, and workspace utilities belong inside `More`, a desktop navigation region, or contextual subnavigation based on the current product architecture. Do not randomly replace primary navigation labels from screen to screen.
-
-## 13.4 Live studio context
-
-When live, contextual Studio actions may appear above the stable navigation. Product-critical controls must remain reachable without turning the entire application navigation into a different system.
-
-## 13.5 Route compatibility
-
-User-facing vocabulary may evolve while internal route names remain stable. Preserve route/backward compatibility where product docs require it; do not fork routes solely to match screenshot wording.
-
----
-
-# 14. Header rules
-
-### Public header
-
-- Brand left.
-- Public links right on desktop.
-- Thin bottom divider.
-- No heavy floating shadow.
-- Mobile may reduce public links into a compact menu if necessary.
-
-### Authenticated header
-
-- Brand left.
-- Account/workspace identity right.
-- Square avatar tile may use pink fill and hard shadow.
-- Dropdown menus use cream surface, dark border, hard shadow.
-
-### Creator utility header
-
-Notifications, monitoring/headphone controls, and account controls may appear, but they must use the same square control language and must not visually compete with the page primary action.
-
----
-
-# 15. Bottom navigation
-
-- Fixed visual grid.
-- Equal-width items.
-- Cream surface.
-- 1px dark border.
-- Optional major/control shadow depending on container treatment.
-- Active item uses pale pink fill and/or dusty pink underline.
-- Icons sit above labels.
-- Label family: mono.
-- No rounded floating nav bar.
-- Mobile safe-area padding must be respected.
-- Labels must not change simply because the current screen changes.
-
----
-
-# 16. Modals, confirmations, and sheets
-
-Examples include end-broadcast confirmation, suspend-account confirmation, invitation flows, and request-to-speak.
-
-Rules:
-
-- Warm cream surface.
-- Dark 1px border.
-- Major hard shadow.
-- No generic rounded dialog.
-- Central warning icon tile may use dusty pink/semantic treatment.
-- One clear H2.
-- Short consequence statement.
-- Secondary action first, destructive/primary action second where appropriate.
-- Destructive action must be explicit, never `OK`.
-- Overlay: neutral dark at approximately 30–40% opacity.
-- Focus must be trapped while modal is active.
-- Escape/browser Back/Android Back behavior must be safe and deterministic.
-- Focus must restore to the invoking control after closure.
-
-Bottom sheets may be used for mobile interactions. The sheet container may use a minimal platform-level top radius only when needed for native affordance, but its inner cards/controls remain square and system-compliant.
-
----
-
-# 17. Broadcast artwork
-
-Broadcast artwork is where the product can have the most visual variation, but it must not break the brand.
-
-Approved art palette:
-
-- Dusty pink
-- Pale blush
-- Warm peach
-- Warm cream
-- Charcoal / near-black
-- Muted green only where conceptually appropriate
-
-Rules:
-
-- Avoid bright blue and electric purple.
-- Avoid glossy gradients.
-- Prefer circles, waves, thin arcs, audio lines, typographic covers, and simple editorial geometry.
-- Cover text may use a display serif as an exception.
-- Keep covers visually flatter and more printed than glossy.
-- Real uploaded artwork is allowed to contain broader colors; the surrounding DigiStream UI must still preserve its own palette and hierarchy.
-
----
-
-# 18. Charts and analytics
-
-Analytics should feel like DigiStream, not a third-party dashboard.
-
-Rules:
-
-- Primary series: dusty pink.
-- Secondary series: charcoal or pale pink.
-- Success/health series: muted green.
-- Warning series: amber only where semantically warranted.
-- Grid lines: light warm gray.
-- Labels: mono.
-- Cards: cream with dark border.
-- Avoid blue default chart palettes.
-- Avoid rainbow dashboards.
-- Prefer direct labels and simple line/bar charts.
-- Reduce hard shadows on nested mini-chart cards when the page is already dense.
-- Never invent analytics to fill an empty reference state.
-- When a metric does not exist, omit it or explain availability honestly rather than displaying fake zeroes.
-
----
-
-# 19. Density hierarchy
-
-Hard shadow is a hierarchy tool, not mandatory decoration on every object.
+Adapt Beautiful UI's Loading State and Task Rows patterns.
 
 Use:
 
-- **Major shadow:** page hero card, modal, major form, major content group.
-- **Control shadow:** primary buttons, selected tiles, segmented controls.
-- **Small shadow:** important compact card.
-- **No shadow:** internal table rows, secondary metadata cells, separators.
+- skeleton for content whose structure is known;
+- inline spinner/state for short indeterminate action;
+- elapsed time only when useful;
+- determinate percentage only when real progress exists;
+- step list when work has meaningful real stages;
+- recovery action when failure is actionable.
 
-This rule is especially important for Broadcast Studio, Recordings, Backstage, Live Chat, Team/Admin, and Analytics screens.
+Never:
 
-When a dense screen feels noisy, reduce nested elevation before changing the palette, radius, or typography system.
-
----
-
-# 20. Responsive behavior
-
-## Mobile first
-
-- Side padding: 20–24px.
-- Stack two-column cards vertically.
-- Preserve typography scale; do not shrink body copy below readable sizes.
-- Full-width primary actions when appropriate.
-- Tables become stacked rows or horizontally scroll inside a bordered surface only when a stacked transformation would destroy meaning.
-- Secondary actions may collapse into overflow menus.
-- Bottom navigation remains visible for application contexts unless a focused live operation intentionally replaces it.
-- Respect safe areas and virtual keyboard behavior.
-
-## Tablet
-
-- 2-column grids allowed.
-- 28–32px page padding.
-- Major cards may share rows when each remains readable.
-- Do not simply stretch mobile cards to huge widths.
-
-## Desktop
-
-- Max content width: approximately 1180–1240px for most editorial/application pages unless an operational Studio genuinely needs more.
-- Center the main content region.
-- 40–48px horizontal padding.
-- Do not enlarge everything to fill a wide monitor.
-- Preserve generous negative space.
-- Use 2–3 column metric grids only where content benefits.
-
-## Short-height landscape
-
-Operational controls, modals, and live critical actions must remain reachable without excessive vertical travel. Use progressive disclosure and sticky critical actions where appropriate rather than shrinking touch targets.
+- fabricate percentages;
+- fabricate completion stages;
+- show success before authoritative confirmation;
+- make loading change button width and shift nearby layout;
+- animate a scheduled waiting state as though work is actively progressing.
 
 ---
 
-# 21. Motion and interaction
+## 12. Confirmations and destructive actions
 
-DigiStream motion should feel mechanical and deliberate.
+Use a clear approval/confirmation pattern for consequential actions.
 
-Recommended:
+Required content:
 
-- Button press: 100–140ms.
-- Hover: small shadow/translation response only; avoid floating-card animation.
-- Modal enter: 150–180ms fade + 4px translate.
-- Tab switch: 120–160ms.
-- Live pulse: subtle opacity pulse only when truly live.
-- Reconnecting: simple rotating/dotted indicator with text.
+- consequence-specific title;
+- short factual explanation;
+- safe/cancel action;
+- explicit consequential action label.
 
-Avoid:
+Examples:
 
-- Springy cards.
-- Excessive hover scaling.
-- Glass blur.
-- Parallax.
-- Constant decorative motion.
-- Fake progress percentages.
-- Success animation before real operation confirmation.
+- `End broadcast` rather than `Confirm`;
+- `Delete recording` rather than `Continue`;
+- `Suspend user` rather than `Yes`.
 
-Respect `prefers-reduced-motion` as a complete usable state, not an afterthought.
+Server authorization remains mandatory regardless of UI confirmation.
 
 ---
 
-# 22. Accessibility
+## 13. Overview constitution
 
-Non-negotiable:
+Creator Overview answers:
 
-- Body text target: 16px minimum.
-- Touch targets: at least 44×44px.
-- Focus indicators must be visible and pink/ink based.
-- Do not encode status using color alone.
-- Dusty pink text on pale pink must be checked for contrast; use darker `--ds-pink-700` when necessary.
-- Secondary gray text must stay dark enough for readability.
-- Form errors require text.
-- Icon-only buttons require accessible labels.
-- Audio state controls need accessible names such as `Pause live audio`, `Mute microphone`, `Open listener preview`.
-- Long names, URLs, and user-generated content must wrap safely.
-- Dialogs/sheets must manage focus, Back/Escape, scroll lock, and restoration.
-- Motion must respect reduced-motion preference.
-- Visual fidelity is never a reason to lower contrast or reduce touch-target size.
+1. What is happening now?
+2. What should I do next?
+3. What is blocked or recovering?
 
----
+Preferred order:
 
-# 23. Content and voice
+1. page header;
+2. one primary contextual action;
+3. live/recovering/current broadcast state;
+4. next scheduled/draft item;
+5. compact task/readiness rows when useful;
+6. recent records as rows;
+7. analytics insight only when trustworthy.
 
-DigiStream UI copy should be concise, human, and operational.
-
-### Headings
-
-Human and direct:
-
-- `Good morning, Emmanuel`
-- `Set up your creator workspace`
-- `You're almost live`
-- `Listen live`
-- `Your audience is waiting`
-
-### System labels
-
-Technical and mono:
-
-- `LIVE NOW`
-- `CURRENT CHANNEL`
-- `PROCESSING`
-- `LAST 7 DAYS`
-- `MICROPHONE`
-- `PLAYBACK HEALTH`
-
-### Actions
-
-Use verbs:
-
-- `Go live`
-- `Open studio`
-- `Continue setup`
-- `Request to speak`
-- `Publish replay`
-- `Save changes`
-
-Avoid vague actions such as `Proceed`, `Okay`, or `Submit` when a more meaningful verb exists.
-
-Do not expose unnecessary provider/internal terminology to ordinary users.
+Overview must not become a gallery of generic KPI cards or impossible actions.
 
 ---
 
-# 24. Screen-template rules
+## 14. Studio constitution
 
-## Auth / onboarding
+Studio is operational software.
 
-- Centered or clearly framed brand.
-- One major bordered form card or choice group.
-- Heavy black H1.
-- Mono supporting copy.
-- Pink primary CTA.
-- Large vertical breathing room.
-- Progress/step language must match real onboarding state.
+Primary hierarchy:
 
-## Creator dashboard
+- selected organization/channel/broadcast identity;
+- microphone/device state;
+- private contribution state;
+- public delivery state;
+- live state/duration when real;
+- one critical primary action;
+- bounded recovery;
+- secondary diagnostics.
 
-- H1 + short status line.
-- One or two major cards first.
-- Metrics after the primary task/state.
-- Quick actions only when useful and authorized.
-- Recent content in bordered list rows.
-- One obvious contextual primary action.
+Operational rules:
 
-## Settings
-
-- Page title + mono description.
-- Group controls inside major bordered cards.
-- Section headings clearly separated.
-- Destructive account actions isolated.
-- Save actions reflect real dirty/loading/success/error state.
-
-## Studio / backstage
-
-- Live state visible at top when genuinely live.
-- Broadcast identity grouped in one major card.
-- Operational controls prioritized over analytics.
-- Dense status cards may omit large shadows.
-- End-broadcast action visually separated.
-- Private contribution and public delivery readiness remain distinct.
-
-## Listener
-
-- Broadcast artwork/identity first.
-- Listening control prominent.
-- Chat/call-in secondary.
-- Sign-in prompt appears only where needed.
-- Request-to-speak explains what will happen.
-- Player continuity should be preserved while safe secondary surfaces open.
-
-## Analytics
-
-- Explain timeframe and source.
-- Show only trustworthy metrics.
-- Use restrained chart colors.
-- Prefer readable summaries over decorative data density.
+- critical controls remain stable in position;
+- live UI becomes calmer, not more decorative;
+- technical details are progressively disclosed;
+- reconnecting states show what is healthy versus degraded;
+- end-broadcast action is protected from accidental activation;
+- mobile short-height layouts preserve access to the critical control and current state.
 
 ---
 
-# 25. Component ownership
+## 15. Chat / Studio Lobby / guests
 
-Implement reusable components rather than screenshot-specific markup.
+Human communication UI should be compact and readable.
 
-Minimum shared component set:
-
-```text
-AppShell
-PublicHeader
-ListenerHeader
-CreatorHeader
-CreatorBottomNav
-ListenerBottomNav
-PageHeading
-Card
-CompactRow
-IconTile
-Button
-Input
-Textarea
-Select
-Tabs
-StatusBadge
-MetricCard
-BroadcastCard
-BroadcastArtwork
-PlayerControls
-AudioWaveform
-Modal
-BottomSheet
-Toast
-EmptyState
-UserAvatar
-ProfileMenu
-WorkspaceSwitcher
-Table
-ProgressBar
-ChartCard
-```
-
-Every new screen should be assembled from the shared system before creating a new one-off component.
-
-A lightweight orchestrator may coordinate existing surfaces, but it must not become a duplicate state machine or second API implementation.
+- messages use clear sender/body/time hierarchy;
+- moderation actions are secondary until needed;
+- composer remains visible with keyboard open;
+- message list does not use one oversized card per message;
+- AI reasoning UI is not used for normal human chat;
+- guest readiness/status belongs in compact rows;
+- role/capability rules remain API-backed.
 
 ---
 
-# 26. AI/Codex/Claude implementation contract
+## 16. Analytics
 
-Use the approved DigiStream 50-screen reference pack for screen intent and this Constitution for visual rules.
+Analytics is shown only when trustworthy data exists.
 
-## DO
+Use Beautiful UI-style Insight Cards for information that supports a decision.
 
-- use the warm cream dotted background;
-- use dusty pink as the brand accent;
-- use heavy near-black grotesk headings;
-- use monospace/typewriter labels, metadata and controls;
-- use square cards, inputs and buttons;
-- use 1px dark borders;
-- use hard down-right black shadows with zero blur;
-- preserve generous vertical spacing;
-- preserve the correct Public / Listener / Creator shell;
-- reuse shared components and tokens;
-- use semantic green/amber/rose only for states;
-- keep broadcast artwork inside the approved restrained palette when DigiStream controls the artwork;
-- preserve real backend state and authorization;
-- compare implementation against the exact numbered reference before declaring completion.
+Every metric requires:
 
-## DO NOT
+- source;
+- time range;
+- unit;
+- handling for unavailable/partial data;
+- consistent comparison basis if a percentage change is displayed.
 
-- introduce blue as a brand color;
-- use the old blue/white DigiStream reference styling;
-- use old dark-theme styling as the current visual target;
-- use 12–24px rounded cards;
-- use soft blurred shadows;
-- use glassmorphism;
-- use Inter everywhere;
-- introduce arbitrary gradients;
-- change bottom navigation labels screen by screen;
-- create new colors for each status;
-- copy screenshot inconsistencies into reusable components;
-- create one-off CSS values when a design token exists;
-- fake metrics, health, listener counts, readiness, recording state, or replay state;
-- duplicate an existing product page merely to match a reference.
+Do not invent zeroes, trends, confidence, retention or listener counts.
 
-When a screenshot conflicts with the Constitution:
-
-- follow the screenshot for content/composition intent;
-- follow the Constitution for typography, color, borders, spacing, component shape, shadow, navigation presentation, and reusable behavior.
-
-When either conflicts with product truth:
-
-- follow backend/API/product truth and adapt the visual presentation without fabricating state.
+Avoid decorative KPI grids with no action value.
 
 ---
 
-# 27. Production CSS token starter
+## 17. Search and command interface
 
-```css
-:root {
-  --ds-bg: #F7F3EE;
-  --ds-surface: #FFFDF9;
-  --ds-surface-warm: #F2ECE6;
+A command search may provide quick navigation and authorized resource lookup.
 
-  --ds-ink: #1F2025;
-  --ds-ink-soft: #4D4A4B;
-  --ds-muted: #6B6464;
-  --ds-line-soft: #D8D0CA;
-  --ds-grid-dot: #DDD6D1;
+Rules:
 
-  --ds-pink-50: #F8ECEB;
-  --ds-pink-100: #F0D2D1;
-  --ds-pink-300: #E7B6B6;
-  --ds-pink-500: #D58F97;
-  --ds-pink-700: #B84E5F;
-
-  --ds-success: #8DBA98;
-  --ds-warning: #C99A61;
-  --ds-danger: #B84E5F;
-  --ds-charcoal-panel: #202126;
-
-  --ds-border: 1px solid var(--ds-ink);
-  --ds-border-soft: 1px solid var(--ds-line-soft);
-
-  --ds-shadow-major: 6px 7px 0 var(--ds-ink);
-  --ds-shadow-control: 4px 5px 0 var(--ds-ink);
-  --ds-shadow-small: 3px 3px 0 var(--ds-ink);
-
-  --ds-font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
-
-  --ds-space-1: 4px;
-  --ds-space-2: 8px;
-  --ds-space-3: 12px;
-  --ds-space-4: 16px;
-  --ds-space-5: 20px;
-  --ds-space-6: 24px;
-  --ds-space-8: 32px;
-  --ds-space-10: 40px;
-  --ds-space-12: 48px;
-  --ds-space-16: 64px;
-  --ds-space-20: 80px;
-  --ds-space-24: 96px;
-}
-```
+- keyboard complete;
+- accessible focus movement;
+- live filtering;
+- understandable empty state;
+- authorized results only;
+- no duplicate route/business logic;
+- recent/recommended actions must be safe for the current role and state.
 
 ---
 
-# 28. Merge-review checklist
+## 18. Motion
 
-A screen should not be approved until the answer to every applicable item is **yes**.
+Follow `PREMIUM_INTERACTION_MOTION_AND_PRODUCT_POLISH.md` for full motion authority.
 
-- Does the page use the cream dotted canvas where expected?
-- Is dusty pink the primary brand accent?
-- Are headings heavy, near-black and grotesk?
-- Are system labels/metadata mono?
-- Are cards/controls square?
-- Are major shadows hard, black, offset down/right, and blur-free?
-- Is the page using the correct Public, Listener, or Creator shell?
-- Are navigation labels stable for that shell?
-- Are colors coming from shared tokens?
-- Are semantic colors used semantically?
-- Is the vertical spacing generous and deliberate?
-- Have nested/dense cards avoided unnecessary shadow noise?
-- Are touch targets at least 44px?
-- Are focus, error, status and live states accessible?
-- Is there any accidental blue/white legacy styling? If yes, reject.
-- Is there any accidental old dark-theme styling? If yes, reject unless it is an intentional media panel.
-- Is there any generic rounded SaaS styling? If yes, reject.
-- Is displayed data evidence-backed?
-- Was the relevant numbered reference image opened and compared?
-- Was an existing flow/component reused where responsibility already existed?
-- Does the screen visually belong beside the approved 50 references without explanation?
+Constitution-level rules:
+
+- motion explains state or continuity;
+- controls acknowledge input immediately;
+- success waits for real confirmation;
+- transitions are short and restrained;
+- reduced motion is fully usable;
+- no continuous decorative particles, parallax, glow, shimmer or blur;
+- skeleton shimmer, if used, must be subtle and disabled/reduced appropriately;
+- live/reconnecting movement must reflect real state.
 
 ---
 
-# 29. Source-of-truth hierarchy
+## 19. Responsive and accessibility requirements
 
-Use this order when making UI implementation decisions:
+Every shared component and changed surface must be validated at applicable matrix points:
 
-1. **Security, privacy, authorization, lifecycle and real backend/API truth.**
-2. **DigiStream UI Constitution** — current reusable visual rules and implementation behavior.
-3. **Approved final 50-screen DigiStream reference pack** — screen structure, composition, visual intent and state coverage.
-4. **DigiStream AI Implementation Guardrails** — required implementation process for coding agents.
-5. **Existing product/interaction documents** — behavior and responsibility, except where their old visual-theme guidance is explicitly superseded here.
-6. **Existing implementation** — reuse responsibilities and preserve compatibility while realigning presentation.
-7. **Legacy screenshots/reference packs** — content archaeology only; never current visual authority.
+- small Android portrait;
+- large phone portrait;
+- short-height landscape;
+- desktop;
+- Android desktop-site simulation when required by CI;
+- 200% zoom where current acceptance tests cover it.
+
+Required behavior:
+
+- no ordinary horizontal overflow;
+- readable text without forced shrinking;
+- 44px-class touch targets where appropriate;
+- visible keyboard focus;
+- keyboard/touch/mouse parity;
+- correct focus trap and restoration for overlays;
+- Escape and browser/Android Back close the correct layer;
+- virtual keyboard does not hide essential input/action UI;
+- semantic labels and headings;
+- status meaning survives without color;
+- reduced motion works.
 
 ---
 
-# 30. Final design principle
+## 20. Anti-patterns
 
-DigiStream should feel **purpose-built**, not templated.
+A UI change fails design review if it introduces or restores any of these without explicit product approval:
 
-The product is warm without becoming soft, technical without becoming cold, editorial without becoming decorative, and bold without becoming chaotic.
+- mandatory cream dotted application canvas;
+- heavy dusty-pink page wash;
+- hard black offset shadows across ordinary surfaces;
+- oversized card grids for list data;
+- 20px+ radius everywhere;
+- glassmorphism;
+- gradient-heavy primary UI;
+- neon glow;
+- fake metrics;
+- fake progress percentages;
+- generic `Are you sure?` destructive copy;
+- giant empty-state illustrations that push the next action below the fold;
+- duplicate page titles;
+- multiple generic Studio buttons for the same destination;
+- feature-local status colors that contradict semantic tokens;
+- AI thinking/prompt/model UI without an actual AI feature;
+- page-local one-off components that duplicate the design system;
+- visually enabled actions that are actually disabled;
+- disabled-looking primary actions that are actually enabled.
 
-If a new UI decision makes the product look more like a generic SaaS dashboard, the implementation has probably drifted away from the approved direction.
+---
+
+## 21. Implementation protocol
+
+Before changing a screen:
+
+1. identify product responsibility and current API/domain owner;
+2. read the required agent/product docs;
+3. read `BEAUTIFUL_UI_ADAPTATION_STANDARD.md`;
+4. inspect existing shared primitives;
+5. inspect the relevant 50-screen reference for content/flow intent only;
+6. choose the correct reusable pattern;
+7. define desktop + mobile behavior;
+8. define loading/empty/error/unauthorized/recovery states;
+9. implement without duplicating business logic;
+10. run type, unit, build and responsive tests;
+11. compare changed copy against acceptance contracts;
+12. update documentation/tests only when an intentional authority change occurred.
+
+Do not weaken a product or accessibility contract merely because a new visual implementation fails an old test. Determine whether the test protects product truth, copy, accessibility, lifecycle behavior, or obsolete visual styling before changing it.
+
+---
+
+## 22. Definition of visually complete
+
+A surface is visually complete only when:
+
+- it follows this Constitution;
+- it uses the correct real product state;
+- it uses shared primitives;
+- its repeated data density is appropriate;
+- it has one clear primary action;
+- mobile and desktop behavior are complete;
+- loading/empty/error/recovery states are styled coherently;
+- accessibility interactions work;
+- relevant tests pass;
+- it does not depend on obsolete cream-poster visual rules;
+- it feels like the same DigiStream system as adjacent surfaces.
