@@ -1,0 +1,45 @@
+# DigiStream Cline repository rules
+
+For all work, read root `AGENTS.md` first.
+
+For any frontend/UI/UX/design-system work, mandatory read order:
+
+1. `apps/web/AGENTS.md`
+2. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`
+3. `docs/design/BEAUTIFUL_UI_ADAPTATION_STANDARD.md`
+4. `docs/design/DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`
+5. `docs/design/DESIGN_TOKENS.md`
+6. `docs/design/REFERENCE_INDEX.md`
+7. relevant product/lifecycle/quality docs referenced by root `AGENTS.md`
+8. existing implementation/tests
+
+External UI reference: `https://beautiful-ui-five.vercel.app/`
+
+## Mandatory visual rule
+
+Preserve DigiStream's warm cream dotted application canvas. Build clean white/warm-white/neutral operational surfaces on top. Keep dusty pink as the primary brand accent. Use restrained lavender/sky/mint/amber/peach supporting tints only with intentional mapping. Keep live/success/warning/danger/info semantic colours fixed to real product meaning.
+
+Adapt Beautiful UI patterns where they fit real responsibilities:
+
+- Sidebar Nav -> creator workspace navigation
+- Search -> authorized command/resource search
+- Task Rows -> readiness/progress/recovery
+- Filter/Records Tables -> Broadcasts, Recordings, admin/team/session records
+- Loading State -> real async waits
+- Approval Card -> consequential actions
+- Chat -> Studio Lobby/live human communication
+- Context Cards -> selected-resource context
+- Insight Cards -> trustworthy analytics only
+- Recommendation Card -> evidence-backed operational guidance only
+- Tool Chips -> secondary diagnostics
+- Selection Actions -> real supported bulk actions only
+
+Do not copy Beautiful UI's AI Thinking/model picker/prompt/reasoning UI unless DigiStream gains an explicit real AI feature.
+
+Do not remove the cream dotted identity to create generic SaaS UI. Do not make every component a giant cream/pink card with heavy shadow either.
+
+Reuse current routes/components/APIs. Search `apps/web/src/design-system/` before creating a new primitive. Never invent metrics, listener counts, progress, permissions, lifecycle state, recordings, replay availability, media readiness or success.
+
+Before changing product copy, search tests/docs for protected language. Preserve distinctions such as `Studio Lobby`, private contribution vs public delivery, scheduled vs live, and completed broadcast vs recording/replay ready.
+
+All changed UI must preserve responsive/accessibility behavior and relevant tests. A redesign is not permission to weaken product, lifecycle or accessibility acceptance coverage.
