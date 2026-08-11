@@ -580,6 +580,7 @@
   background: var(--ds-surface-1);
   box-shadow: var(--ds-shadow-dialog);
 }
+.studio-confirmation{border:1px solid var(--ds-ink);border-radius:0;background:var(--ds-surface);box-shadow:var(--ds-shadow-major)}.studio-confirmation .ds-status{margin-bottom:8px}.studio-confirmation-actions .ds-button{min-height:52px}
 
 .studio-confirmation h3 {
   margin: 0;
