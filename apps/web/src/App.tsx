@@ -49,6 +49,7 @@ import { ListenerCallInPanel } from './features/listening/ListenerCallInPanel';
 import { ListenerDiscoveryPage } from './features/listening/ListenerDiscoveryPage';
 import { ListenerLibraryPage } from './features/listening/ListenerLibraryPage';
 import { PublicChannelPage } from './features/listening/PublicChannelPage';
+import { PublicCreatorProfilePage } from './features/listening/PublicCreatorProfilePage';
 import { ReplayDiscoveryPage } from './features/listening/ReplayDiscoveryPage';
 import { ReplayListeningPage } from './features/listening/ReplayListeningPage';
 import { parseListenerRoute } from './features/listening/listener-route';
@@ -787,6 +788,7 @@ function CreatorApplication() {
 }
 
 export function App() {
+  if (window.location.pathname === '/creator-profile') return <PublicCreatorProfilePage />;
   if (window.location.pathname === '/forgot-password') return <ForgotPasswordPage />;
   if (window.location.pathname === '/reset-password') return <ResetPasswordPage />;
   if (window.location.pathname === '/verify-email') return <VerifyEmailPage />;
