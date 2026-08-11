@@ -127,6 +127,43 @@ export function StatusBadge({
   );
 }
 
+/** Compact, truthful work item. Domain code supplies the actual state and action. */
+export function TaskRow({
+  action,
+  children,
+  icon,
+  status,
+  title,
+  tone = 'neutral',
+}: {
+  action?: ReactNode;
+  children?: ReactNode;
+  icon?: IconName;
+  status?: ReactNode;
+  title: ReactNode;
+  tone?: 'neutral' | 'lavender' | 'sky' | 'mint' | 'amber' | 'peach';
+}) {
+  return (
+    <article className={`ds-task-row ds-task-row-${tone}`}>
+      {icon ? <span className="ds-task-row-icon" aria-hidden="true"><Icon name={icon} /></span> : null}
+      <div className="ds-task-row-copy"><strong>{title}</strong>{children ? <span>{children}</span> : null}</div>
+      {status ? <div className="ds-task-row-status">{status}</div> : null}
+      {action ? <div className="ds-task-row-action">{action}</div> : null}
+    </article>
+  );
+}
+
+/** Supporting resource facts, deliberately separate from lifecycle ownership. */
+export function ContextCard({
+  children,
+  title,
+}: {
+  children: ReactNode;
+  title: ReactNode;
+}) {
+  return <section className="ds-context-card"><h3>{title}</h3><div>{children}</div></section>;
+}
+
 export function AudioLevelMeter({
   clipping = false,
   decibels,

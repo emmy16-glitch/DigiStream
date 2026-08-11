@@ -51,7 +51,7 @@
   min-height: var(--ds-input-min-height);
   padding: 0 16px;
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   color: var(--ds-ink);
   background: var(--ds-surface);
   box-shadow: none;
@@ -103,9 +103,9 @@
   min-width: 0;
   padding: var(--ds-space-6);
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-card);
   background: var(--ds-surface);
-  box-shadow: var(--ds-shadow-major);
+  box-shadow: var(--ds-shadow-small);
 }
 
 .ds-card-compact {
@@ -124,7 +124,7 @@
   place-items: center;
   flex: 0 0 44px;
   border: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   color: var(--ds-ink);
   background: var(--ds-pink-100);
   box-shadow: var(--ds-shadow-small);
@@ -149,7 +149,7 @@
   flex: 0 0 auto;
   border: 0;
   border-right: var(--ds-border);
-  border-radius: 0;
+  border-radius: var(--ds-radius-control);
   color: var(--ds-muted);
   background: transparent;
   font-size: var(--ds-text-sm);

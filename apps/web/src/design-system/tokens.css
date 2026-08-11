@@ -15,6 +15,16 @@
   --ds-pink-300: #E7B6B6;
   --ds-pink-500: #D58F97;
   --ds-pink-700: #B84E5F;
+  --ds-lavender-50: #F1EEFA;
+  --ds-lavender-300: #C9C1E7;
+  --ds-sky-50: #EAF4FA;
+  --ds-sky-300: #A9D0E4;
+  --ds-mint-50: #EAF5EF;
+  --ds-mint-300: #A8D1B7;
+  --ds-amber-50: #FBF1DF;
+  --ds-amber-300: #E7C58D;
+  --ds-peach-50: #FCEBE4;
+  --ds-peach-300: #EDB9A8;
   --ds-charcoal-panel: #202126;
 
   --ds-canvas: var(--ds-bg);
@@ -24,9 +34,9 @@
   --ds-surface-hover: var(--ds-pink-100);
 
   --ds-border-subtle: var(--ds-line-soft);
-  --ds-border-default: var(--ds-ink);
+  --ds-border-default: var(--ds-line-soft);
   --ds-border-strong: var(--ds-ink);
-  --ds-border: 1px solid var(--ds-ink);
+  --ds-border: 1px solid var(--ds-line-soft);
   --ds-border-soft: 1px solid var(--ds-line-soft);
 
   --ds-text-primary: var(--ds-ink);
@@ -50,9 +60,9 @@
   --ds-danger: var(--ds-pink-700);
   --ds-danger-foreground: #8D3140;
   --ds-danger-soft: #F8E5E7;
-  --ds-info: var(--ds-pink-700);
-  --ds-info-foreground: var(--ds-pink-700);
-  --ds-info-soft: var(--ds-pink-50);
+  --ds-info: #54849D;
+  --ds-info-foreground: #315D75;
+  --ds-info-soft: var(--ds-sky-50);
 
   --ds-focus-ring: var(--ds-pink-700);
   --ds-overlay: rgba(31, 32, 37, 0.38);
@@ -90,18 +100,18 @@
   --ds-space-12: 3rem;
   --ds-space-16: 4rem;
 
-  --ds-radius-card: 0px;
-  --ds-radius-control: 0px;
-  --ds-radius-status: 2px;
-  --ds-radius-sm: 0px;
-  --ds-radius-md: 0px;
-  --ds-radius-lg: 0px;
-  --ds-radius-xl: 0px;
+  --ds-radius-card: 8px;
+  --ds-radius-control: 7px;
+  --ds-radius-status: 999px;
+  --ds-radius-sm: 4px;
+  --ds-radius-md: 8px;
+  --ds-radius-lg: 10px;
+  --ds-radius-xl: 12px;
   --ds-radius-pill: 999px;
 
-  --ds-shadow-major: 6px 7px 0 var(--ds-ink);
-  --ds-shadow-control: 4px 5px 0 var(--ds-ink);
-  --ds-shadow-small: 3px 3px 0 var(--ds-ink);
+  --ds-shadow-major: 0 8px 24px rgba(31, 32, 37, .08);
+  --ds-shadow-control: 0 2px 5px rgba(31, 32, 37, .10);
+  --ds-shadow-small: 0 1px 2px rgba(31, 32, 37, .08);
   --ds-shadow-card: var(--ds-shadow-major);
   --ds-shadow-dialog: var(--ds-shadow-major);
   --ds-glow-live: none;
