@@ -61,7 +61,7 @@ import { creatorSetupState } from './features/onboarding/creator-setup-state';
 import { CreatorOverviewPage } from './features/onboarding/CreatorOverviewPage';
 import { creatorOverviewDerivation } from './features/onboarding/overview-state';
 import { CreatorRecordingsPage } from './features/recordings/CreatorRecordingsPage';
-import { ActiveSessionsPage, NotificationsPage, OrganisationSettingsPage, ProfileSettingsPage, TeamInvitationsPage } from './features/account/ProfileSettingsPage';
+import { AcceptInvitationPage, ActiveSessionsPage, NotificationsPage, OrganisationSettingsPage, ProfileSettingsPage, TeamInvitationsPage } from './features/account/ProfileSettingsPage';
 import { ApiClientError, apiRequest, jsonBody } from './lib/api-client';
 
 type CreatorPage =
@@ -775,6 +775,7 @@ function CreatorApplication() {
   if (window.location.pathname === '/account/notifications') return <NotificationsPage />;
   if (window.location.pathname === '/organisation/settings') return <OrganisationSettingsPage />;
   if (window.location.pathname === '/organisation/team') return <TeamInvitationsPage />;
+  if (window.location.pathname === '/invite') return <AcceptInvitationPage />;
 
   return (
     <CreatorDashboard
