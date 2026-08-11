@@ -509,3 +509,5 @@
     transition-duration: 0.01ms !important;
   }
 }
+/* Screen 37: processing and replay availability remain API-backed states. */
+.creator-recordings-page .recordings-reference-list,.creator-recordings-page .recordings-reference-item{border-radius:0}.creator-recordings-page .recordings-reference-item{border-color:var(--ds-ink)}

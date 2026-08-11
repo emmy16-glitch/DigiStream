@@ -580,6 +580,9 @@
   background: var(--ds-surface-1);
   box-shadow: var(--ds-shadow-dialog);
 }
+.studio-confirmation{border:1px solid var(--ds-ink);border-radius:0;background:var(--ds-surface);box-shadow:var(--ds-shadow-major)}.studio-confirmation .ds-status{margin-bottom:8px}.studio-confirmation-actions .ds-button{min-height:52px}
+/* Screen 36: operational state remains calm; only verified health gets semantic green. */
+.creator-broadcast-studio .studio-panel,.creator-broadcast-studio .studio-readiness-item{border-radius:0}.creator-broadcast-studio .studio-panel{box-shadow:var(--ds-shadow-small)}
 
 .studio-confirmation h3 {
   margin: 0;
@@ -798,3 +801,5 @@
     transition-duration: .01ms;
   }
 }
+/* Screen 39: reconnecting is a warning state, never presented as healthy delivery. */
+.creator-broadcast-studio [data-phase="reconnecting"],.creator-broadcast-studio .studio-delivery-recovery{border-color:var(--ds-warning);background:var(--ds-warning-soft)}

@@ -165,18 +165,6 @@ export function CreatorChatWorkspace() {
 
   return (
     <section className="creator-chat-workspace" aria-labelledby="creator-chat-title">
-      <header className="creator-chat-page-header">
-        <div>
-          <span className="creator-chat-kicker">Audience interaction</span>
-          <h2 id="creator-chat-title">Chat</h2>
-          <p>For broadcast · External conversation · Stored before live delivery</p>
-        </div>
-        <div className="creator-chat-trust-note">
-          <Icon name="chat" size={18} />
-          <span>Real broadcast messages only</span>
-        </div>
-      </header>
-
       {error ? <div className="creator-chat-error" role="alert">{error}</div> : null}
 
       {checkingSession ? (
@@ -235,22 +223,15 @@ export function CreatorChatWorkspace() {
                 <small>{user.email}</small>
               </div>
 
-              <label>
+              {organisations.length > 1 ? <label>
                 Organisation
-                <select
-                  onChange={(event) => setOrganisationId(event.target.value)}
-                  value={organisationId}
-                >
+                <select onChange={(event) => setOrganisationId(event.target.value)} value={organisationId}>
                   <option value="">Select organisation</option>
-                  {organisations.map((organisation) => (
-                    <option key={organisation.id} value={organisation.id}>
-                      {organisation.name} · {organisation.role}
-                    </option>
-                  ))}
+                  {organisations.map((organisation) => <option key={organisation.id} value={organisation.id}>{organisation.name} · {organisation.role}</option>)}
                 </select>
-              </label>
+              </label> : null}
 
-              <label>
+              {channels.length > 1 ? <label>
                 Channel
                 <select
                   disabled={!organisationId}
@@ -264,7 +245,7 @@ export function CreatorChatWorkspace() {
                     </option>
                   ))}
                 </select>
-              </label>
+              </label> : null}
 
               <label>
                 Broadcast

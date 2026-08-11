@@ -6,6 +6,7 @@ import {
   type FormEvent,
 } from 'react';
 import type { AuthUser, AuthUserResponse } from '@digistream/contracts';
+import { BrandLockup } from '../design-system/components';
 import { ApiClientError, apiRequest, jsonBody } from '../lib/api-client';
 import { GoogleIdentityButton } from './GoogleIdentityButton';
 
@@ -49,18 +50,6 @@ export function creatorReturnPath(
   }
 }
 
-function EchooMark({ withName = false }: { withName?: boolean }) {
-  return (
-    <span className="echoo-lockup" aria-label={withName ? 'Echoo' : undefined}>
-      <span className="echoo-mark" aria-hidden="true">
-        <span className="echoo-mark-dot echoo-mark-dot-primary" />
-        <span className="echoo-mark-dot echoo-mark-dot-secondary" />
-      </span>
-      {withName ? <span className="echoo-wordmark">Echoo</span> : null}
-    </span>
-  );
-}
-
 function AuthHeroArtwork() {
   return (
     <svg
@@ -71,59 +60,59 @@ function AuthHeroArtwork() {
     >
       <defs>
         <linearGradient id="authHeroBg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#38251f" />
-          <stop offset="0.48" stopColor="#756356" />
-          <stop offset="1" stopColor="#172638" />
+          <stop offset="0" stopColor="#f8eceb" />
+          <stop offset="0.58" stopColor="#f0d2d1" />
+          <stop offset="1" stopColor="#e7b6b6" />
         </linearGradient>
         <linearGradient id="authShirt" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#d9efff" />
-          <stop offset="1" stopColor="#91b9dc" />
+          <stop offset="0" stopColor="#f8eceb" />
+          <stop offset="1" stopColor="#e7b6b6" />
         </linearGradient>
         <radialGradient id="authFace" cx="45%" cy="35%" r="70%">
-          <stop offset="0" stopColor="#925e49" />
-          <stop offset="1" stopColor="#4c2c25" />
+          <stop offset="0" stopColor="#9a6651" />
+          <stop offset="1" stopColor="#4d2d26" />
         </radialGradient>
         <filter id="authSoft" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="10" />
+          <feGaussianBlur stdDeviation="12" />
         </filter>
       </defs>
       <rect width="760" height="760" fill="url(#authHeroBg)" />
-      <g opacity="0.24" filter="url(#authSoft)">
-        <circle cx="120" cy="130" r="86" fill="#e1a461" />
-        <circle cx="640" cy="120" r="92" fill="#f2bd7a" />
-        <circle cx="650" cy="620" r="130" fill="#244e7a" />
+      <g opacity="0.7" filter="url(#authSoft)">
+        <circle cx="120" cy="150" r="112" fill="#f8eceb" />
+        <circle cx="645" cy="120" r="100" fill="#fdf6f4" />
+        <circle cx="650" cy="620" r="150" fill="#d58f97" />
       </g>
       <g opacity="0.55">
-        <rect x="38" y="62" width="240" height="26" rx="13" fill="#151414" />
-        <rect x="54" y="104" width="184" height="18" rx="9" fill="#c58b56" />
-        <rect x="474" y="66" width="220" height="22" rx="11" fill="#151414" />
-        <rect x="492" y="106" width="170" height="16" rx="8" fill="#d1a26f" />
+        <rect x="38" y="62" width="240" height="26" rx="13" fill="#1f2025" />
+        <rect x="54" y="104" width="184" height="18" rx="9" fill="#e7b6b6" />
+        <rect x="474" y="66" width="220" height="22" rx="11" fill="#1f2025" />
+        <rect x="492" y="106" width="170" height="16" rx="8" fill="#e7b6b6" />
       </g>
       <path d="M150 760c25-157 115-241 253-241 139 0 230 84 258 241Z" fill="url(#authShirt)" />
       <ellipse cx="365" cy="345" rx="126" ry="153" fill="url(#authFace)" />
-      <path d="M251 330c8-104 50-171 127-171 75 0 121 56 128 139-36-48-95-74-174-59-34 7-61 37-81 91Z" fill="#1b1717" />
-      <path d="M244 310c-30 18-44 58-32 99 7 26 24 44 46 52" fill="none" stroke="#172b43" strokeWidth="28" strokeLinecap="round" />
-      <path d="M496 301c32 18 47 60 34 102-8 27-25 46-49 54" fill="none" stroke="#172b43" strokeWidth="28" strokeLinecap="round" />
-      <path d="M236 307c22-89 73-139 139-139 72 0 124 50 143 137" fill="none" stroke="#243f60" strokeWidth="26" strokeLinecap="round" />
-      <g fill="none" stroke="#161a24" strokeWidth="11">
+      <path d="M251 330c8-104 50-171 127-171 75 0 121 56 128 139-36-48-95-74-174-59-34 7-61 37-81 91Z" fill="#1f2025" />
+      <path d="M244 310c-30 18-44 58-32 99 7 26 24 44 46 52" fill="none" stroke="#1f2025" strokeWidth="28" strokeLinecap="round" />
+      <path d="M496 301c32 18 47 60 34 102-8 27-25 46-49 54" fill="none" stroke="#1f2025" strokeWidth="28" strokeLinecap="round" />
+      <path d="M236 307c22-89 73-139 139-139 72 0 124 50 143 137" fill="none" stroke="#3d3f47" strokeWidth="26" strokeLinecap="round" />
+      <g fill="none" stroke="#1f2025" strokeWidth="11">
         <rect x="267" y="326" width="88" height="55" rx="25" />
         <rect x="382" y="326" width="88" height="55" rx="25" />
         <path d="M355 349h27" />
       </g>
-      <circle cx="311" cy="352" r="12" fill="#e8f2fb" opacity="0.62" />
-      <circle cx="427" cy="352" r="12" fill="#e8f2fb" opacity="0.62" />
+      <circle cx="311" cy="352" r="12" fill="#f8eceb" opacity="0.72" />
+      <circle cx="427" cy="352" r="12" fill="#f8eceb" opacity="0.72" />
       <path d="M335 429c27 21 66 21 93-3" fill="none" stroke="#f1c3af" strokeWidth="12" strokeLinecap="round" />
       <path d="M363 375c-9 28-14 43-13 52 11 8 25 10 40 5" fill="none" stroke="#3c211e" strokeWidth="9" strokeLinecap="round" />
       <g transform="translate(515 417) rotate(-8)">
-        <rect x="0" y="0" width="98" height="178" rx="48" fill="#111a26" />
-        <rect x="17" y="20" width="64" height="104" rx="32" fill="#243a53" />
-        <g stroke="#7390aa" strokeWidth="5" opacity="0.8">
+        <rect x="0" y="0" width="98" height="178" rx="48" fill="#1f2025" />
+        <rect x="17" y="20" width="64" height="104" rx="32" fill="#3d3f47" />
+        <g stroke="#75757c" strokeWidth="5" opacity="0.8">
           <path d="M27 42h44M23 61h52M22 80h54M25 99h48" />
         </g>
-        <path d="M49 178v92M-10 268h120" stroke="#121923" strokeWidth="18" strokeLinecap="round" />
+        <path d="M49 178v92M-10 268h120" stroke="#1f2025" strokeWidth="18" strokeLinecap="round" />
       </g>
-      <path d="M515 491c-67 9-111 6-156-10" fill="none" stroke="#243140" strokeWidth="16" strokeLinecap="round" />
-      <rect x="0" y="0" width="760" height="760" fill="none" stroke="rgba(255,255,255,.22)" strokeWidth="2" />
+      <path d="M515 491c-67 9-111 6-156-10" fill="none" stroke="#3d3f47" strokeWidth="16" strokeLinecap="round" />
+      <rect x="0" y="0" width="760" height="760" fill="none" stroke="rgba(31,32,37,0.45)" strokeWidth="2" />
     </svg>
   );
 }
@@ -295,7 +284,7 @@ export function AuthScreen({
         <section className="auth-mobile-card auth-choice-card" aria-labelledby="auth-heading">
           <div className="auth-choice-hero">
             <AuthHeroArtwork />
-            <div className="auth-hero-brand"><EchooMark withName /></div>
+            <div className="auth-hero-brand"><BrandLockup /></div>
           </div>
           <div className="auth-choice-content">
             <h1 id="auth-heading">Create an account</h1>
@@ -338,14 +327,8 @@ export function AuthScreen({
         className={`auth-mobile-card auth-form-card ${view === 'login' ? 'auth-login-card' : ''}`}
         aria-labelledby="auth-heading"
       >
-        {view === 'register-form' ? (
-          <button className="auth-corner-switch" onClick={() => changeView('login')} type="button">
-            Sign in
-          </button>
-        ) : null}
-
         <a className="auth-logo-link" href="/" aria-label="Echoo home">
-          <EchooMark />
+          <BrandLockup />
         </a>
 
         {view === 'register-form' ? (
@@ -420,7 +403,12 @@ export function AuthScreen({
 
           {error ? <div className="auth-error" role="alert">{error}</div> : null}
 
-          <button className="auth-primary-button" disabled={busy} type="submit">
+          <button
+            aria-busy={busy || undefined}
+            className="auth-primary-button"
+            disabled={busy}
+            type="submit"
+          >
             {busy ? 'Please wait…' : view === 'register-form' ? 'Create account' : 'Login'}
           </button>
         </form>

@@ -520,9 +520,7 @@ export function CreatorBroadcastsPage({
     <div className="creator-broadcasts-page echoo-broadcasts-page">
       <header className="echoo-broadcasts-hero">
         <div>
-          <span className="echoo-broadcasts-eyebrow">{organisation.name}</span>
-          <h2>Manage broadcasts</h2>
-          <p>Create, schedule and manage broadcasts for your selected channel.</p>
+          <p>{organisation.name} · create, schedule and manage broadcasts for the selected channel.</p>
         </div>
         {canCreateBroadcast && !firstBroadcastSetup && !showBroadcastForm ? (
           <Button onClick={openBroadcastForm} variant="primary">
@@ -625,7 +623,7 @@ export function CreatorBroadcastsPage({
               </select>
             </label>
             <label className="creator-form-wide">
-              Description
+              Description (optional)
               <textarea
                 maxLength={2000}
                 onChange={(event) => setChannelForm((current) => ({
@@ -641,7 +639,7 @@ export function CreatorBroadcastsPage({
               {!firstChannelSetup ? (
                 <Button onClick={() => setShowChannelForm(false)}>Cancel</Button>
               ) : null}
-              <Button loading={creatingChannel} type="submit" variant="primary">
+              <Button icon="broadcast" loading={creatingChannel} type="submit" variant="primary">
                 {firstChannelSetup && canApproveChannel
                   ? 'Create and activate channel'
                   : 'Create channel'}
@@ -746,6 +744,7 @@ export function CreatorBroadcastsPage({
                   <div className="creator-form-actions" aria-label="First broadcast choices" role="group">
                     <Button
                       aria-pressed={firstBroadcastChoice === 'go-live'}
+                      icon="broadcast"
                       onClick={() => {
                         setFirstBroadcastChoice('go-live');
                         setBroadcastForm((current) => ({ ...current, scheduledStartAt: '' }));
@@ -756,6 +755,7 @@ export function CreatorBroadcastsPage({
                     </Button>
                     <Button
                       aria-pressed={firstBroadcastChoice === 'schedule'}
+                      icon="calendar"
                       onClick={() => setFirstBroadcastChoice('schedule')}
                       variant={firstBroadcastChoice === 'schedule' ? 'primary' : 'secondary'}
                     >
@@ -763,6 +763,7 @@ export function CreatorBroadcastsPage({
                     </Button>
                     <Button
                       aria-pressed={firstBroadcastChoice === 'finish-later'}
+                      icon="recording"
                       onClick={() => {
                         setFirstBroadcastChoice('finish-later');
                         setBroadcastForm(emptyBroadcastForm);
@@ -855,12 +856,13 @@ export function CreatorBroadcastsPage({
                     <Button onClick={() => setShowBroadcastForm(false)}>Cancel</Button>
                   ) : null}
                   {firstBroadcastSetup && firstBroadcastChoice === 'finish-later' ? (
-                    <Button onClick={finishFirstBroadcastLater} type="button" variant="primary">
+                    <Button icon="recording" onClick={finishFirstBroadcastLater} type="button" variant="primary">
                       Finish setup later
                     </Button>
                   ) : (
                     <Button
                       disabled={firstBroadcastSetup && !firstBroadcastChoice}
+                      icon="broadcast"
                       loading={creatingBroadcast}
                       type="submit"
                       variant="primary"

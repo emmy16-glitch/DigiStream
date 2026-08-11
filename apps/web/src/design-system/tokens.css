@@ -1,47 +1,64 @@
 :root {
   color-scheme: light;
 
-  /* Echoo light foundation */
-  --ds-canvas: #eff5fd;
-  --ds-surface-1: #ffffff;
-  --ds-surface-2: #f8fbff;
-  --ds-surface-3: #edf3fb;
-  --ds-surface-hover: #e6eef9;
+  /* Constitution foundation. Legacy aliases below intentionally resolve here. */
+  --ds-bg: #F7F3EE;
+  --ds-surface: #FFFDF9;
+  --ds-surface-warm: #F2ECE6;
+  --ds-ink: #1F2025;
+  --ds-ink-soft: #4D4A4B;
+  --ds-muted: #6B6464;
+  --ds-line-soft: #D8D0CA;
+  --ds-grid-dot: #DDD6D1;
+  --ds-pink-50: #F8ECEB;
+  --ds-pink-100: #F0D2D1;
+  --ds-pink-300: #E7B6B6;
+  --ds-pink-500: #D58F97;
+  --ds-pink-700: #B84E5F;
+  --ds-charcoal-panel: #202126;
 
-  --ds-border-subtle: #dce6f2;
-  --ds-border-default: #c9d7e8;
-  --ds-border-strong: #9fb2ca;
+  --ds-canvas: var(--ds-bg);
+  --ds-surface-1: var(--ds-surface);
+  --ds-surface-2: var(--ds-surface-warm);
+  --ds-surface-3: var(--ds-pink-50);
+  --ds-surface-hover: var(--ds-pink-100);
 
-  --ds-text-primary: #071a36;
-  --ds-text-secondary: #44536a;
-  --ds-text-muted: #6c7c92;
-  --ds-text-disabled: #98a6b8;
+  --ds-border-subtle: var(--ds-line-soft);
+  --ds-border-default: var(--ds-ink);
+  --ds-border-strong: var(--ds-ink);
+  --ds-border: 1px solid var(--ds-ink);
+  --ds-border-soft: 1px solid var(--ds-line-soft);
 
-  --ds-accent: #1f4e8c;
-  --ds-accent-hover: #285ea8;
-  --ds-accent-active: #173a68;
-  --ds-accent-soft: rgba(31, 78, 140, 0.10);
-  --ds-accent-border: rgba(31, 78, 140, 0.28);
-  --ds-brand-secondary: #9ab0ca;
+  --ds-text-primary: var(--ds-ink);
+  --ds-text-secondary: var(--ds-ink-soft);
+  --ds-text-muted: var(--ds-muted);
+  --ds-text-disabled: #948B89;
 
-  --ds-success: #24875a;
-  --ds-success-foreground: #1f6d49;
-  --ds-success-soft: rgba(36, 135, 90, 0.10);
-  --ds-warning: #a66612;
-  --ds-warning-foreground: #83500d;
-  --ds-warning-soft: rgba(166, 102, 18, 0.11);
-  --ds-danger: #c73f4a;
-  --ds-danger-foreground: #a9343d;
-  --ds-danger-soft: rgba(199, 63, 74, 0.10);
-  --ds-info: #2f6fb3;
-  --ds-info-foreground: #245d99;
-  --ds-info-soft: rgba(47, 111, 179, 0.10);
+  --ds-accent: var(--ds-pink-300);
+  --ds-accent-hover: var(--ds-pink-100);
+  --ds-accent-active: var(--ds-pink-700);
+  --ds-accent-soft: var(--ds-pink-50);
+  --ds-accent-border: var(--ds-pink-500);
+  --ds-brand-secondary: var(--ds-pink-500);
 
-  --ds-focus-ring: #2f6fb3;
-  --ds-overlay: rgba(7, 26, 54, 0.55);
+  --ds-success: #8DBA98;
+  --ds-success-foreground: #356F47;
+  --ds-success-soft: #E8F1E9;
+  --ds-warning: #C99A61;
+  --ds-warning-foreground: #765021;
+  --ds-warning-soft: #F7ECDD;
+  --ds-danger: var(--ds-pink-700);
+  --ds-danger-foreground: #8D3140;
+  --ds-danger-soft: #F8E5E7;
+  --ds-info: var(--ds-pink-700);
+  --ds-info-foreground: var(--ds-pink-700);
+  --ds-info-soft: var(--ds-pink-50);
 
-  --ds-font-sans: Inter, ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ds-focus-ring: var(--ds-pink-700);
+  --ds-overlay: rgba(31, 32, 37, 0.38);
+
+  --ds-font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --ds-font-sans: var(--ds-font-display);
   --ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 
   --ds-text-xs: 0.75rem;
@@ -73,15 +90,21 @@
   --ds-space-12: 3rem;
   --ds-space-16: 4rem;
 
-  --ds-radius-sm: 0.5rem;
-  --ds-radius-md: 0.75rem;
-  --ds-radius-lg: 1rem;
-  --ds-radius-xl: 1.25rem;
+  --ds-radius-card: 0px;
+  --ds-radius-control: 0px;
+  --ds-radius-status: 2px;
+  --ds-radius-sm: 0px;
+  --ds-radius-md: 0px;
+  --ds-radius-lg: 0px;
+  --ds-radius-xl: 0px;
   --ds-radius-pill: 999px;
 
-  --ds-shadow-card: 0 12px 32px rgba(30, 64, 105, 0.10);
-  --ds-shadow-dialog: 0 28px 80px rgba(30, 64, 105, 0.18);
-  --ds-glow-live: 0 0 24px rgba(31, 78, 140, 0.16);
+  --ds-shadow-major: 6px 7px 0 var(--ds-ink);
+  --ds-shadow-control: 4px 5px 0 var(--ds-ink);
+  --ds-shadow-small: 3px 3px 0 var(--ds-ink);
+  --ds-shadow-card: var(--ds-shadow-major);
+  --ds-shadow-dialog: var(--ds-shadow-major);
+  --ds-glow-live: none;
 
   /* Semantic motion foundation. Keep interaction motion short and purposeful. */
   --ds-motion-instant: 100ms;
@@ -98,8 +121,9 @@
   --ds-duration-slow: 320ms;
 
   --ds-sidebar-width: 228px;
-  --ds-page-max: 1600px;
-  --ds-control-min-height: 44px;
+  --ds-page-max: 1240px;
+  --ds-control-min-height: 48px;
+  --ds-input-min-height: 52px;
 
   /* Compatibility aliases while feature-specific CSS migrates to --ds-* tokens. */
   --bg: var(--ds-canvas);

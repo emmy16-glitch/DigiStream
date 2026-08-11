@@ -209,3 +209,5 @@
     font-size: clamp(1.65rem, 4vw, 2.25rem);
   }
 }
+/* Screen 48: the discovery app remains compact on a phone without hiding honest empty states. */
+@media(max-width:640px){.listener-discovery-page .listener-discovery-grid{grid-template-columns:1fr}.listener-discovery-page{padding-bottom:calc(96px + env(safe-area-inset-bottom))}}

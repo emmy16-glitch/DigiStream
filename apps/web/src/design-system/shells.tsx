@@ -1,7 +1,8 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { BrandLockup } from './components';
 import { visibleCreatorNavigation } from './creator-navigation-visibility';
 import { Icon, type IconName } from './Icon';
+import { useModalHistoryDismiss } from '../lib/use-modal-history-dismiss';
 import './listener-trust.css';
 
 export type CreatorNavigationItem = {
@@ -51,12 +52,35 @@ export function CreatorShell({
   const primaryMobileNavigation = visibleNavigation.slice(0, 4);
   const secondaryMobileNavigation = visibleNavigation.slice(4);
   const mainContentRef = useRef<HTMLElement>(null);
-  const mobileMoreRef = useRef<HTMLDetailsElement>(null);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const previousActiveLabel = useRef(activeLabel);
   const canSwitchWorkspace =
     workspaceOptions.length > 1 && Boolean(workspaceId) && Boolean(onWorkspaceChange);
   const visibleActiveLabel = creatorFacingLabel(activeLabel);
   const visibleTitle = creatorFacingLabel(title);
+  const closeMobileMore = useCallback(() => setMobileMoreOpen(false), []);
+  const dismissMobileMore = useModalHistoryDismiss({
+    active: mobileMoreOpen,
+    onDismiss: closeMobileMore,
+    stateKey: 'creator-mobile-more',
+  });
+
+  useEffect(() => {
+    if (!mobileMoreOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') dismissMobileMore();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>('.ds-creator-mobile-more-menu header button')?.focus();
+    });
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [dismissMobileMore, mobileMoreOpen]);
 
   useEffect(() => {
     if (previousActiveLabel.current === activeLabel) return;
@@ -187,12 +211,14 @@ export function CreatorShell({
           );
         })}
         {secondaryMobileNavigation.length > 0 ? (
-          <details className="ds-creator-mobile-more" ref={mobileMoreRef}>
-            <summary aria-label="More creator destinations">
+          <div className="ds-creator-mobile-more">
+            <button aria-expanded={mobileMoreOpen} aria-haspopup="dialog" onClick={() => setMobileMoreOpen(true)} type="button">
               <Icon name="menu" />
               <span>More</span>
-            </summary>
-            <div className="ds-creator-mobile-more-menu">
+            </button>
+            {mobileMoreOpen ? <div className="ds-creator-mobile-more-backdrop" onMouseDown={dismissMobileMore} role="presentation">
+            <section aria-label="More creator destinations" aria-modal="true" className="ds-creator-mobile-more-menu" onMouseDown={(event) => event.stopPropagation()} role="dialog">
+              <header><strong>More</strong><button aria-label="Close more menu" onClick={dismissMobileMore} type="button"><Icon name="close" /></button></header>
               {secondaryMobileNavigation.map((item) => {
                 const active = item.label === activeLabel;
                 return (
@@ -202,7 +228,7 @@ export function CreatorShell({
                     key={item.label}
                     onClick={() => {
                       item.onSelect();
-                      if (mobileMoreRef.current) mobileMoreRef.current.open = false;
+                      closeMobileMore();
                     }}
                     type="button"
                   >
@@ -211,8 +237,8 @@ export function CreatorShell({
                   </button>
                 );
               })}
-            </div>
-          </details>
+            </section></div> : null}
+          </div>
         ) : null}
       </nav>
     </div>

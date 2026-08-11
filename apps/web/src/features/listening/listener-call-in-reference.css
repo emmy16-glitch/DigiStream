@@ -212,3 +212,5 @@
     transition-duration: 0.01ms !important;
   }
 }
+/* Screen 41: request-to-speak remains visibly pending until the host admits it. */
+.listener-call-in-panel,.listener-call-in-sheet{border-radius:0;border-color:var(--ds-ink);box-shadow:var(--ds-shadow-major)}.listener-call-in-panel [aria-busy="true"]{min-width:0}

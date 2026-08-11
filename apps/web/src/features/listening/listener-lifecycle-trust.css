@@ -164,3 +164,5 @@
     align-items: start;
   }
 }
+/* Screen 40: scheduled broadcasts use exact server schedule, with no live pulse. */
+.listener-broadcast-page[data-lifecycle="scheduled"] .listener-live-indicator{animation:none;background:var(--ds-pink-50);color:var(--ds-ink)}

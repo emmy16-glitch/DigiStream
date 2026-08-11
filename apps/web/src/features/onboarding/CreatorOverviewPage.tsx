@@ -172,11 +172,6 @@ export function CreatorOverviewPage({
   }
 
   const quickActions = [
-    {
-      icon: 'broadcast' as const,
-      label: overview.canOpenStudio ? 'Open Studio' : 'Broadcasts',
-      onClick: overview.canOpenStudio ? onOpenStudio : onOpenBroadcasts,
-    },
     ...(overview.canOpenBackstage
       ? [{ icon: 'audience' as const, label: 'Studio Lobby', onClick: openContextualStudioLobby }]
       : []),
@@ -189,7 +184,6 @@ export function CreatorOverviewPage({
     <div className="echoo-overview-page">
       <header className="echoo-overview-hero">
         <div>
-          <span className="echoo-overview-eyebrow">{organisation.name}</span>
           <h2>{greeting()}, {firstName}</h2>
           <p>Here’s what’s happening with your broadcasts.</p>
         </div>
@@ -258,7 +252,7 @@ export function CreatorOverviewPage({
         </article>
       </section>
 
-      <section className="echoo-overview-section" aria-labelledby="echoo-quick-actions-title">
+      {quickActions.length > 0 ? <section className="echoo-overview-section echoo-overview-utilities" aria-labelledby="echoo-quick-actions-title">
         <header className="echoo-overview-section-heading">
           <h3 id="echoo-quick-actions-title">Quick actions</h3>
         </header>
@@ -273,7 +267,7 @@ export function CreatorOverviewPage({
             Listener app
           </LinkButton>
         </div>
-      </section>
+      </section> : null}
 
       <section className="echoo-overview-section" aria-labelledby="echoo-recent-broadcasts-title">
         <header className="echoo-overview-section-heading">

@@ -1,12 +1,12 @@
 :root {
-  --echoo-onboarding-panel: #ffffff;
-  --echoo-onboarding-soft: #f5f9ff;
-  --echoo-onboarding-line: #d9e5f3;
-  --echoo-onboarding-blue: #0d5be8;
-  --echoo-onboarding-blue-soft: #eaf2ff;
-  --echoo-onboarding-navy: #10233f;
-  --echoo-onboarding-copy: #5d6f86;
-  --echoo-onboarding-shadow: 0 24px 70px rgba(47, 78, 119, .12);
+  --echoo-onboarding-panel: var(--ds-surface);
+  --echoo-onboarding-soft: var(--ds-pink-50);
+  --echoo-onboarding-line: var(--ds-line-soft);
+  --echoo-onboarding-blue: var(--ds-pink-500);
+  --echoo-onboarding-blue-soft: var(--ds-pink-50);
+  --echoo-onboarding-navy: var(--ds-ink);
+  --echoo-onboarding-copy: var(--ds-ink-soft);
+  --echoo-onboarding-shadow: var(--ds-shadow-major);
 }
 
 /*
@@ -22,9 +22,9 @@
   --ds-creator-top-clearance: 84px;
   min-height: 100dvh;
   padding-left: 0;
-  background:
-    radial-gradient(circle at 88% 12%, rgba(13, 91, 232, .08), transparent 26%),
-    linear-gradient(180deg, #f4f8fd 0%, #edf4fc 100%);
+  background-color: var(--ds-bg);
+  background-image: radial-gradient(circle, rgba(31, 32, 37, 0.1) 1px, transparent 1.1px);
+  background-size: 20px 20px;
 }
 
 .ds-creator-shell:has(#creator-intent-title) .ds-creator-sidebar,
@@ -75,7 +75,6 @@
 }
 
 .ds-creator-shell:has(#creator-intent-title) .ds-page-heading,
-.ds-creator-shell:has(#creator-intent-title) .ds-creator-account-summary,
 .ds-creator-shell:has(#workspace-onboarding-title) .ds-page-heading,
 .ds-creator-shell:has(#workspace-onboarding-title) .ds-creator-account-summary,
 .ds-creator-shell:has(.creator-broadcasts-page:not(:has(.channel-strip)) #create-channel-title) .ds-page-heading,
@@ -83,6 +82,10 @@
 .ds-creator-shell:has([aria-label='First broadcast choices']) .ds-page-heading,
 .ds-creator-shell:has([aria-label='First broadcast choices']) .ds-creator-account-summary {
   display: none;
+}
+
+.ds-creator-shell:has(#creator-intent-title) .ds-creator-account-summary {
+  display: grid;
 }
 
 .ds-creator-shell:has(#creator-intent-title) .ds-topbar-actions > :not(:last-child),
@@ -111,147 +114,210 @@
 
 /* Intent choice */
 .workspace-onboarding:has(#creator-intent-title) {
-  width: min(100%, 820px);
-  min-height: 520px;
-  margin: clamp(20px, 5vh, 58px) auto 0;
-  padding: clamp(34px, 6vw, 64px);
+  width: min(100%, 1000px);
+  min-height: 620px;
+  margin: clamp(30px, 7vh, 92px) auto 0;
+  padding: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-content: center;
-  justify-items: center;
-  gap: clamp(28px, 5vw, 46px);
-  border: 1px solid var(--echoo-onboarding-line);
-  border-radius: 34px;
-  background: var(--echoo-onboarding-panel);
-  box-shadow: var(--echoo-onboarding-shadow);
-  text-align: center;
+  justify-items: start;
+  gap: clamp(38px, 5vw, 56px);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
 }
 
 .workspace-onboarding:has(#creator-intent-title) > div:first-child {
-  max-width: 610px;
+  max-width: 650px;
   display: grid;
-  justify-items: center;
-  gap: 14px;
+  justify-items: start;
+  gap: 20px;
 }
 
 .workspace-onboarding:has(#creator-intent-title) #creator-intent-title {
-  max-width: 620px;
+  max-width: 650px;
   color: var(--echoo-onboarding-navy);
-  font-size: clamp(2.2rem, 5vw, 3.6rem);
-  line-height: .98;
+  font-size: clamp(2.8rem, 6vw, 4.7rem);
+  line-height: .94;
   letter-spacing: -.055em;
 }
 
 .workspace-onboarding:has(#creator-intent-title) p {
-  max-width: 520px;
+  max-width: 540px;
   color: var(--echoo-onboarding-copy);
-  font-size: 1rem;
+  font-family: var(--ds-font-mono);
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  line-height: 1.7;
 }
 
 .workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: clamp(18px, 3vw, 40px);
 }
 
-.workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button {
-  width: 100%;
-  min-height: 118px;
-  padding: 22px;
-  justify-content: flex-start;
-  gap: 14px;
-  border-radius: 22px;
+.creator-intent-option {
+  min-width: 0;
+  min-height: 390px;
+  padding: clamp(24px, 3vw, 34px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: var(--ds-border);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-major);
+}
+
+.creator-intent-option-icon {
+  width: 62px;
+  height: 62px;
+  margin-bottom: 42px;
+  display: grid;
+  place-items: center;
+  border: var(--ds-border);
+  color: var(--ds-pink-700);
+  background: var(--ds-pink-50);
+}
+
+.creator-intent-option-icon .ds-icon {
+  --ds-icon-size: 32px;
+}
+
+.creator-intent-option h3 {
+  margin: 0;
+  color: var(--ds-ink);
+  font-family: var(--ds-font-display);
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: -.04em;
+}
+
+.creator-intent-option p {
+  min-height: 84px;
+  margin: 28px 0 24px;
+  padding-top: 24px;
+  border-top: 1px dashed var(--ds-line-soft);
+}
+
+.creator-intent-option .creator-intent-option-action {
+  min-height: 58px;
+  margin-top: auto;
+  justify-content: center;
+  color: var(--ds-pink-700);
+  background: var(--ds-pink-50);
   font-size: 1rem;
-  text-align: left;
-  white-space: normal;
+  letter-spacing: .05em;
+  text-transform: uppercase;
 }
 
-.workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button .ds-icon {
-  --ds-icon-size: 28px;
-}
-
-.workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button-primary {
-  border-color: var(--echoo-onboarding-blue);
-  background: var(--echoo-onboarding-blue);
-  box-shadow: 0 16px 34px rgba(13, 91, 232, .2);
-}
-
-.workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button-secondary {
-  color: var(--echoo-onboarding-navy);
-  border-color: var(--echoo-onboarding-line);
-  background: var(--echoo-onboarding-soft);
-  box-shadow: none;
+.creator-intent-option .creator-intent-option-action:hover:not(:disabled):not([aria-disabled='true']):not([aria-busy='true']) {
+  color: var(--ds-ink);
+  background: var(--ds-pink-100);
 }
 
 /* Organisation — setup step 1 */
 .workspace-onboarding:has(#workspace-onboarding-title) {
-  width: min(100%, 980px);
-  margin: clamp(12px, 4vh, 46px) auto 0;
-  padding: clamp(28px, 5vw, 52px);
+  width: min(100%, 760px);
+  margin: clamp(30px, 7vh, 92px) auto 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: minmax(240px, .78fr) minmax(0, 1.22fr);
-  gap: clamp(30px, 5vw, 58px);
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(34px, 5vw, 48px);
   align-items: start;
-  border: 1px solid var(--echoo-onboarding-line);
-  border-radius: 34px;
-  background: var(--echoo-onboarding-panel);
-  box-shadow: var(--echoo-onboarding-shadow);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) > div:first-child {
   display: grid;
   justify-items: start;
-  gap: 14px;
+  gap: 20px;
+}
+
+.workspace-onboarding:has(#workspace-onboarding-title) .ds-status {
+  min-height: 42px;
+  padding: 8px 16px;
+  border-color: var(--ds-ink);
+  box-shadow: var(--ds-shadow-small);
+  color: var(--ds-ink);
+  background: var(--ds-pink-50);
+  font-size: 1rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.workspace-onboarding:has(#workspace-onboarding-title) .ds-status .ds-icon {
+  display: none;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) #workspace-onboarding-title {
   color: var(--echoo-onboarding-navy);
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1;
+  max-width: 700px;
+  font-size: clamp(2.8rem, 6vw, 4.7rem);
+  line-height: .94;
   letter-spacing: -.05em;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) p {
   color: var(--echoo-onboarding-copy);
+  font-family: var(--ds-font-mono);
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  line-height: 1.7;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) form {
-  padding: clamp(20px, 3vw, 30px);
-  border: 1px solid #e3ebf5;
-  border-radius: 24px;
-  background: #fbfdff;
+  padding: clamp(28px, 4vw, 44px);
+  gap: 28px;
+  border: var(--ds-border);
+  border-radius: 0;
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-major);
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) label {
-  color: #41546e;
+  color: var(--ds-ink);
+  font-family: var(--ds-font-mono);
+  font-size: .9rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) input {
-  min-height: 54px;
-  border-color: #ccd9e9;
-  border-radius: 14px;
+  min-height: 64px;
+  padding-inline: 18px;
+  border-color: var(--ds-ink);
+  border-radius: 0;
   color: var(--echoo-onboarding-navy);
-  background: #ffffff;
+  background: var(--ds-surface);
+  font-family: var(--ds-font-mono);
+  font-size: 1.1rem;
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) input:focus-visible {
-  outline: 3px solid rgba(13, 91, 232, .18);
-  outline-offset: 1px;
+  outline: 2px solid var(--ds-focus-ring);
+  outline-offset: 2px;
   border-color: var(--echoo-onboarding-blue);
 }
 
 .workspace-onboarding:has(#workspace-onboarding-title) form > .ds-button:last-child {
   width: 100%;
-  min-height: 52px;
-  margin-top: 4px;
-  border-radius: 14px;
+  min-height: 62px;
+  margin-top: 8px;
+  border-radius: 0;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 /* Existing first-channel form — setup step 2 */
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) {
-  width: min(100%, 980px);
-  margin: clamp(12px, 4vh, 46px) auto 0;
+  width: min(100%, 860px);
+  margin: clamp(30px, 7vh, 92px) auto 0;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-broadcasts-intro {
@@ -259,54 +325,94 @@
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-card {
-  padding: clamp(28px, 5vw, 52px);
-  grid-template-columns: minmax(240px, .78fr) minmax(0, 1.22fr);
-  gap: clamp(30px, 5vw, 58px);
-  border-color: var(--echoo-onboarding-line);
-  border-radius: 34px;
-  background: var(--echoo-onboarding-panel);
-  box-shadow: var(--echoo-onboarding-shadow);
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(34px, 5vw, 48px);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-copy {
-  gap: 14px;
+  gap: 20px;
+}
+
+.creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-copy .ds-status {
+  min-height: 42px;
+  padding: 8px 16px;
+  border-color: var(--ds-ink);
+  box-shadow: var(--ds-shadow-small);
+  color: var(--ds-ink);
+  background: var(--ds-pink-50);
+  font-size: 1rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-copy .ds-status .ds-icon {
+  display: none;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) #create-channel-title {
   color: var(--echoo-onboarding-navy);
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1;
+  font-size: clamp(2.8rem, 6vw, 4.7rem);
+  line-height: .94;
   letter-spacing: -.05em;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-copy p {
   color: var(--echoo-onboarding-copy);
+  font-family: var(--ds-font-mono);
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  line-height: 1.7;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-grid {
-  padding: clamp(20px, 3vw, 30px);
-  border: 1px solid #e3ebf5;
-  border-radius: 24px;
-  background: #fbfdff;
+  padding: clamp(28px, 4vw, 44px);
+  gap: 28px;
+  border: var(--ds-border);
+  border-radius: 0;
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-major);
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-grid :is(input, select, textarea) {
-  border-color: #ccd9e9;
-  border-radius: 14px;
+  min-height: 64px;
+  border-color: var(--ds-ink);
+  border-radius: 0;
   color: var(--echoo-onboarding-navy);
-  background: #ffffff;
+  background: var(--ds-surface);
+  font-family: var(--ds-font-mono);
+  font-size: 1.05rem;
+}
+
+.creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-grid textarea {
+  min-height: 124px;
+}
+
+.creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-grid label {
+  color: var(--ds-ink);
+  font-family: var(--ds-font-mono);
+  font-size: .9rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 
 .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-actions .ds-button-primary {
-  min-height: 52px;
-  min-width: 220px;
-  border-radius: 14px;
+  min-height: 62px;
+  min-width: 0;
+  border-radius: 0;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 /* Existing first-broadcast decision — setup step 3 */
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) {
-  width: min(100%, 1040px);
-  margin: clamp(8px, 3vh, 32px) auto 0;
+  width: min(100%, 900px);
+  margin: clamp(30px, 7vh, 92px) auto 0;
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-broadcasts-intro {
@@ -315,14 +421,13 @@
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) .channel-strip,
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-card {
-  border-color: var(--echoo-onboarding-line);
-  background: var(--echoo-onboarding-panel);
-  box-shadow: 0 18px 50px rgba(47, 78, 119, .09);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) .channel-strip {
-  padding: 20px 24px;
-  border-radius: 22px;
+  display: none;
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) .channel-summary {
@@ -332,21 +437,44 @@
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-card {
-  padding: clamp(28px, 5vw, 48px);
-  grid-template-columns: minmax(250px, .72fr) minmax(0, 1.28fr);
-  gap: clamp(28px, 5vw, 54px);
-  border-radius: 30px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(34px, 5vw, 48px);
+}
+
+.creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-copy {
+  gap: 20px;
+}
+
+.creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-copy .ds-status {
+  min-height: 42px;
+  padding: 8px 16px;
+  border-color: var(--ds-ink);
+  box-shadow: var(--ds-shadow-small);
+  color: var(--ds-ink);
+  background: var(--ds-pink-50);
+  font-size: 1rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-copy .ds-status .ds-icon {
+  display: none;
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) #create-broadcast-title {
   color: var(--echoo-onboarding-navy);
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1;
+  font-size: clamp(2.8rem, 6vw, 4.7rem);
+  line-height: .94;
   letter-spacing: -.05em;
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-copy p {
   color: var(--echoo-onboarding-copy);
+  font-family: var(--ds-font-mono);
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+  line-height: 1.7;
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) [aria-label='First broadcast choices'] {
@@ -354,50 +482,73 @@
   margin-top: 8px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 18px;
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) [aria-label='First broadcast choices'] .ds-button {
   width: 100%;
-  min-height: 84px;
-  padding: 14px;
-  border-radius: 18px;
+  min-height: 132px;
+  padding: 20px;
+  justify-content: flex-start;
+  border-radius: 0;
   white-space: normal;
+  font-size: 1rem;
   line-height: 1.3;
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) [aria-label='First broadcast choices'] .ds-button-secondary {
-  color: var(--echoo-onboarding-navy);
-  border-color: var(--echoo-onboarding-line);
-  background: var(--echoo-onboarding-soft);
-  box-shadow: none;
+  color: var(--ds-ink);
+  border-color: var(--ds-ink);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-control);
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) [aria-label='First broadcast choices'] .ds-button[aria-pressed='true'] {
-  color: #ffffff;
+  color: var(--ds-ink);
   border-color: var(--echoo-onboarding-blue);
   background: var(--echoo-onboarding-blue);
-  box-shadow: 0 12px 26px rgba(13, 91, 232, .18);
+  box-shadow: var(--ds-shadow-control);
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-grid {
   align-content: start;
-  padding: clamp(18px, 3vw, 26px);
-  border: 1px solid #e3ebf5;
-  border-radius: 22px;
-  background: #fbfdff;
+  padding: clamp(28px, 4vw, 44px);
+  gap: 28px;
+  border: var(--ds-border);
+  border-radius: 0;
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-major);
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-grid :is(input, select, textarea) {
-  border-color: #ccd9e9;
-  border-radius: 14px;
+  min-height: 64px;
+  border-color: var(--ds-ink);
+  border-radius: 0;
   color: var(--echoo-onboarding-navy);
-  background: #ffffff;
+  background: var(--ds-surface);
+  font-family: var(--ds-font-mono);
+  font-size: 1.05rem;
+}
+
+.creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-grid textarea {
+  min-height: 124px;
+}
+
+.creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-grid label {
+  color: var(--ds-ink);
+  font-family: var(--ds-font-mono);
+  font-size: .9rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-actions.creator-form-wide .ds-button {
-  min-height: 52px;
-  border-radius: 14px;
+  min-height: 62px;
+  border-radius: 0;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 .creator-broadcasts-page:has([aria-label='First broadcast choices']) > .ds-state-empty {
@@ -468,13 +619,13 @@
   .creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-card {
     margin-top: 8px;
     padding: 24px 18px;
-    border-radius: 26px;
+    border-radius: 0;
   }
 
   .workspace-onboarding:has(#creator-intent-title) {
     min-height: auto;
     align-content: start;
-    gap: 28px;
+    gap: 36px;
     text-align: left;
   }
 
@@ -483,20 +634,32 @@
   }
 
   .workspace-onboarding:has(#creator-intent-title) #creator-intent-title {
-    font-size: clamp(1.85rem, 9vw, 2.5rem);
+    font-size: clamp(2.55rem, 13vw, 3.5rem);
   }
 
   .workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button {
-    min-height: 68px;
-    border-radius: 18px;
+  .creator-intent-option {
+    min-height: 340px;
+    padding: 24px;
+  }
+
+  .creator-intent-option-icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 30px;
+  }
+
+  .creator-intent-option p {
+    min-height: 0;
+    margin-top: 22px;
+    padding-top: 20px;
   }
 
   .workspace-onboarding:has(#workspace-onboarding-title) {
-    gap: 24px;
+    gap: 32px;
   }
 
   .workspace-onboarding:has(#workspace-onboarding-title) #workspace-onboarding-title,
@@ -509,12 +672,12 @@
   .creator-broadcasts-page:not(:has(.channel-strip)):has(#create-channel-title) .creator-form-grid,
   .creator-broadcasts-page:has([aria-label='First broadcast choices']) .creator-form-grid {
     padding: 16px;
-    border-radius: 18px;
+    border-radius: 0;
   }
 
   .creator-broadcasts-page:has([aria-label='First broadcast choices']) .channel-strip {
     padding: 16px;
-    border-radius: 18px;
+    border-radius: 0;
   }
 
   .creator-broadcasts-page:has([aria-label='First broadcast choices']) [aria-label='First broadcast choices'] {
@@ -548,8 +711,12 @@
     padding-block: 24px;
   }
 
-  .workspace-onboarding:has(#creator-intent-title) .workspace-welcome-actions .ds-button {
-    min-height: 72px;
+  .creator-intent-option {
+    min-height: 280px;
+  }
+
+  .creator-intent-option-icon {
+    margin-bottom: 22px;
   }
 }
 

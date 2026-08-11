@@ -513,3 +513,5 @@
   .listener-status-dot { animation: none !important; }
   .listener-discovery-card { transition: none; }
 }
+/* Screen 47: audio transport reflects only real player state. */
+.listener-player-controls .ds-button{border-radius:0}.listener-player-controls .ds-button[aria-busy="true"]{min-width:0}

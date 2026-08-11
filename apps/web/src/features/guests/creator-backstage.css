@@ -391,6 +391,7 @@
       max(var(--ds-space-4), env(safe-area-inset-left));
   }
   .backstage-header p { display: none; }
+  .backstage-header h2 { font-size: var(--ds-text-xl); }
   .backstage-alert,
   .backstage-loading {
     margin-inline:
@@ -406,7 +407,9 @@
   .backstage-invite-form { grid-template-columns: 1fr; }
   .backstage-user,
   .backstage-selection-note { grid-column: auto; }
-  .backstage-panel { padding: var(--ds-space-4); }
+  .backstage-panel { padding: var(--ds-space-3); border-radius: var(--ds-radius-lg); }
+  .backstage-panel > header { margin-bottom: var(--ds-space-3); }
+  .backstage-empty { min-height: 120px; padding: var(--ds-space-4); }
   .backstage-row { display: grid; }
   .backstage-row-actions { justify-content: flex-start; }
   .backstage-row-actions button { flex: 1 1 140px; }
@@ -453,3 +456,5 @@
     transition: none !important;
   }
 }
+/* Screen 35: keep live call-in work grouped by real invitation and admission state. */
+.creator-backstage-workspace{background:var(--ds-bg)}.backstage-panel,.backstage-invitation-row,.backstage-call-in-row{border-radius:0;border-color:var(--ds-ink)}.backstage-panel{box-shadow:var(--ds-shadow-major)}
