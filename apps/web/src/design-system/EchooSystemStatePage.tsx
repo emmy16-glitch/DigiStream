@@ -62,11 +62,11 @@ export function EchooSystemStatePage({
   const content = (
     <section className="echoo-system-card" aria-labelledby="echoo-system-title">
       <header className="echoo-system-brand-row">
-        <span className="echoo-system-mark" aria-label="Echoo">
+        <span className="echoo-system-mark" aria-label="DigiStream">
           <i />
           <i />
         </span>
-        <span>Echoo</span>
+        <span>DigiStream</span>
       </header>
 
       <div className="echoo-system-content" role={kind === 'loading' ? 'status' : undefined}>

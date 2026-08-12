@@ -17,6 +17,7 @@ import type {
 } from '@digistream/contracts';
 import {
   Button,
+  ContextCard,
   IconButton,
   LinkButton,
   StatePanel,
@@ -43,6 +44,7 @@ import {
   type StudioFailureStage,
 } from './studio-diagnostics';
 import {
+  browserMediaEndpointProblem,
   loadLiveKitClient,
   type LiveKitLocalAudioTrack,
   type LiveKitRemoteTrack,
@@ -785,6 +787,10 @@ export function CreatorBroadcastStudio({
           body: jsonBody({ participantRole: 'host' }),
         },
       );
+      const endpointProblem = browserMediaEndpointProblem(contribution.credential.url);
+      if (endpointProblem) {
+        throw new ApiClientError(503, 'MEDIA_ENDPOINT_UNREACHABLE', endpointProblem);
+      }
       joinStage = 'livekit-module';
       const sdk = await loadLiveKitClient();
       const room = new sdk.Room({
@@ -1427,15 +1433,12 @@ export function CreatorBroadcastStudio({
               ) : null}
 
               {selectedBroadcast ? (
-                <article className="studio-selected-broadcast">
-                  <div>
-                    <span>Selected broadcast</span>
-                    <strong>{selectedBroadcast.title}</strong>
-                  </div>
+                <ContextCard className="studio-selected-broadcast" title="Selected broadcast">
+                  <strong>{selectedBroadcast.title}</strong>
                   <StatusBadge tone={broadcastStatusTone(selectedBroadcast.status)}>
                     {formatStatus(selectedBroadcast.status)}
                   </StatusBadge>
-                </article>
+                </ContextCard>
               ) : null}
             </aside>
 

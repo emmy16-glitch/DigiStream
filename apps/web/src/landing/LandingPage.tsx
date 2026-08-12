@@ -56,13 +56,13 @@ function LandingCreatorArtwork() {
     >
       <defs>
         <linearGradient id="landingHeroBg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#f7fbff" />
-          <stop offset="0.58" stopColor="#e7f1fd" />
-          <stop offset="1" stopColor="#d8e7f8" />
+          <stop offset="0" stopColor="#f8eceb" />
+          <stop offset="0.58" stopColor="#f0d2d1" />
+          <stop offset="1" stopColor="#e7b6b6" />
         </linearGradient>
         <linearGradient id="landingShirt" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#f7fbff" />
-          <stop offset="1" stopColor="#bdd9f2" />
+          <stop offset="0" stopColor="#f8eceb" />
+          <stop offset="1" stopColor="#e7b6b6" />
         </linearGradient>
         <radialGradient id="landingFace" cx="45%" cy="35%" r="70%">
           <stop offset="0" stopColor="#9a6651" />
@@ -75,41 +75,41 @@ function LandingCreatorArtwork() {
 
       <rect width="760" height="760" fill="url(#landingHeroBg)" />
       <g opacity="0.7" filter="url(#landingSoft)">
-        <circle cx="102" cy="150" r="116" fill="#d8e8fb" />
-        <circle cx="655" cy="110" r="104" fill="#eef5fd" />
-        <circle cx="655" cy="624" r="154" fill="#c6dcf4" />
+        <circle cx="102" cy="150" r="116" fill="#f8eceb" />
+        <circle cx="655" cy="110" r="104" fill="#fdf6f4" />
+        <circle cx="655" cy="624" r="154" fill="#d58f97" />
       </g>
 
       <path d="M120 760c33-165 127-249 278-249 145 0 240 84 274 249Z" fill="url(#landingShirt)" />
       <ellipse cx="365" cy="345" rx="126" ry="153" fill="url(#landingFace)" />
-      <path d="M251 330c8-104 50-171 127-171 75 0 121 56 128 139-36-48-95-74-174-59-34 7-61 37-81 91Z" fill="#171719" />
+      <path d="M251 330c8-104 50-171 127-171 75 0 121 56 128 139-36-48-95-74-174-59-34 7-61 37-81 91Z" fill="#1f2025" />
 
-      <path d="M244 310c-30 18-44 58-32 99 7 26 24 44 46 52" fill="none" stroke="#0d1f39" strokeWidth="28" strokeLinecap="round" />
-      <path d="M496 301c32 18 47 60 34 102-8 27-25 46-49 54" fill="none" stroke="#0d1f39" strokeWidth="28" strokeLinecap="round" />
-      <path d="M236 307c22-89 73-139 139-139 72 0 124 50 143 137" fill="none" stroke="#183b68" strokeWidth="26" strokeLinecap="round" />
+      <path d="M244 310c-30 18-44 58-32 99 7 26 24 44 46 52" fill="none" stroke="#1f2025" strokeWidth="28" strokeLinecap="round" />
+      <path d="M496 301c32 18 47 60 34 102-8 27-25 46-49 54" fill="none" stroke="#1f2025" strokeWidth="28" strokeLinecap="round" />
+      <path d="M236 307c22-89 73-139 139-139 72 0 124 50 143 137" fill="none" stroke="#3d3f47" strokeWidth="26" strokeLinecap="round" />
 
-      <g fill="none" stroke="#111a2d" strokeWidth="11">
+      <g fill="none" stroke="#1f2025" strokeWidth="11">
         <rect x="267" y="326" width="88" height="55" rx="25" />
         <rect x="382" y="326" width="88" height="55" rx="25" />
         <path d="M355 349h27" />
       </g>
-      <circle cx="311" cy="352" r="12" fill="#edf6ff" opacity="0.64" />
-      <circle cx="427" cy="352" r="12" fill="#edf6ff" opacity="0.64" />
+      <circle cx="311" cy="352" r="12" fill="#f8eceb" opacity="0.64" />
+      <circle cx="427" cy="352" r="12" fill="#f8eceb" opacity="0.64" />
       <path d="M335 429c27 21 66 21 93-3" fill="none" stroke="#f2c7b5" strokeWidth="12" strokeLinecap="round" />
       <path d="M363 375c-9 28-14 43-13 52 11 8 25 10 40 5" fill="none" stroke="#3c211e" strokeWidth="9" strokeLinecap="round" />
 
       <g transform="translate(514 417) rotate(-8)">
-        <rect x="0" y="0" width="98" height="178" rx="48" fill="#0b1524" />
-        <rect x="17" y="20" width="64" height="104" rx="32" fill="#223958" />
-        <g stroke="#7893b1" strokeWidth="5" opacity="0.8">
+        <rect x="0" y="0" width="98" height="178" rx="48" fill="#1f2025" />
+        <rect x="17" y="20" width="64" height="104" rx="32" fill="#3d3f47" />
+        <g stroke="#d58f97" strokeWidth="5" opacity="0.85">
           <path d="M27 42h44M23 61h52M22 80h54M25 99h48" />
         </g>
-        <path d="M49 178v92M-10 268h120" stroke="#0b1524" strokeWidth="18" strokeLinecap="round" />
+        <path d="M49 178v92M-10 268h120" stroke="#1f2025" strokeWidth="18" strokeLinecap="round" />
       </g>
-      <path d="M515 491c-67 9-111 6-156-10" fill="none" stroke="#1d304b" strokeWidth="16" strokeLinecap="round" />
+      <path d="M515 491c-67 9-111 6-156-10" fill="none" stroke="#3d3f47" strokeWidth="16" strokeLinecap="round" />
 
-      <circle cx="674" cy="116" r="44" fill="#dbeafb" opacity="0.92" />
-      <circle cx="102" cy="595" r="62" fill="#eef5fd" opacity="0.88" />
+      <circle cx="674" cy="116" r="44" fill="#e7b6b6" opacity="0.92" />
+      <circle cx="102" cy="595" r="62" fill="#f8eceb" opacity="0.88" />
     </svg>
   );
 }
@@ -123,7 +123,7 @@ export function LandingPage() {
 
       <div className="landing-frame">
         <header className="landing-header">
-          <a className="landing-brand" href="/" aria-label="Echoo home">
+          <a className="landing-brand" href="/" aria-label="DigiStream home">
             <BrandLockup />
           </a>
 
@@ -166,7 +166,7 @@ export function LandingPage() {
                 </a>
               </div>
 
-              <div className="landing-trust-block" aria-label="Echoo community">
+              <div className="landing-trust-block" aria-label="DigiStream community">
                 <span>Built for creators and communities</span>
                 <div className="landing-trust-row" aria-hidden="true">
                   <span className="landing-avatar landing-avatar-one" />
@@ -183,7 +183,7 @@ export function LandingPage() {
             </div>
           </section>
 
-          <section className="landing-feature-grid" id="features" aria-label="Echoo features">
+          <section className="landing-feature-grid" id="features" aria-label="DigiStream features">
             {features.map((feature) => (
               <article className="landing-feature-card" key={feature.title}>
                 <span className="landing-feature-icon" aria-hidden="true">
@@ -225,16 +225,29 @@ export function LandingPage() {
       </section>
 
       <footer className="landing-footer" id="about">
-        <div>
+        <div className="landing-footer-brand">
           <BrandLockup />
           <p>Live audio for creators, churches and communities.</p>
         </div>
-        <nav aria-label="Footer navigation">
-          <span title="A production privacy notice will be published before launch">Privacy</span>
-          <span title="Production terms will be published before launch">Terms</span>
-          <a href="/listen">Discover</a>
-          <a href="/login">Sign in</a>
-        </nav>
+
+        <div className="landing-footer-groups" aria-label="Footer navigation">
+          <nav className="landing-footer-group" aria-label="Product">
+            <strong>Product</strong>
+            <a href="/listen">Discover</a>
+            <a href="/login">Sign in</a>
+          </nav>
+
+          <nav className="landing-footer-group" aria-label="Company">
+            <strong>Company</strong>
+            <a href="/about">About</a>
+          </nav>
+
+          <div className="landing-footer-group" aria-label="Legal">
+            <strong>Legal</strong>
+            <span title="A production privacy notice will be published before launch">Privacy</span>
+            <span title="Production terms will be published before launch">Terms</span>
+          </div>
+        </div>
       </footer>
     </div>
   );

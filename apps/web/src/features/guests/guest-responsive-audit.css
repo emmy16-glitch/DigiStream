@@ -78,7 +78,7 @@
 
   .guest-card {
     padding: .8rem;
-    border-radius: 1.1rem;
+    border-radius: var(--ds-radius-card);
   }
 
   .guest-conversation-card {

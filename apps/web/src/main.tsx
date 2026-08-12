@@ -13,6 +13,7 @@ import { resolveInitialRoute } from './routing/initial-route';
 import './design-system/tokens.css';
 import './design-system/base.css';
 import './design-system/components.css';
+import './design-system/primitives.css';
 import './design-system/control-state-consistency.css';
 import './design-system/content-resilience.css';
 import './design-system/feedback.css';
@@ -33,7 +34,10 @@ import './design-system/manual-review-fixes.css';
 import './design-system/semantic-feedback-contrast.css';
 import './landing/landing-page.css';
 import './landing/landing-entry-responsive.css';
+import './landing/about-page.css';
 import './features/guests/echoo-backstage.css';
+import './features/account/account-pages.css';
+import './features/listening/public-creator-profile.css';
 import './design-system/phase9-flow-resilience.css';
 import './features/listening/listener-responsive-audit.css';
 import './features/guests/guest-responsive-audit.css';
@@ -43,7 +47,7 @@ import './design-system/motion-polish.css';
 const root = document.getElementById('root');
 
 if (!root) {
-  throw new Error('Echoo root element was not found');
+  throw new Error('DigiStream root element was not found');
 }
 
 const route = resolveInitialRoute(window.location.pathname);
@@ -53,7 +57,7 @@ if (route.replaceHistory) {
 }
 
 function isKnownApplicationPath(pathname: string): boolean {
-  if (pathname === '/login' || pathname === '/signup' || pathname === '/admin') return true;
+  if (pathname === '/about' || pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password' || pathname === '/reset-password' || pathname === '/verify-email' || pathname === '/creator-profile' || pathname === '/admin' || pathname === '/account/profile' || pathname === '/account/sessions' || pathname === '/account/notifications' || pathname === '/organisation/settings' || pathname === '/organisation/team' || pathname === '/invite' || pathname === '/channel/settings') return true;
   if (pathname === '/creator' || pathname.startsWith('/creator/')) return true;
   return Boolean(parseGuestRoute(pathname) || parseListenerRoute(pathname));
 }

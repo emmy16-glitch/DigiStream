@@ -463,10 +463,10 @@ export function BroadcastChat({
   return (
     <section className={`broadcast-chat broadcast-chat-${variant}`}>
       <header className="broadcast-chat-header">
-        <div>
+        {variant !== 'creator' ? <div>
           <span className="broadcast-chat-eyebrow">Live conversation</span>
           <h2>Broadcast chat</h2>
-        </div>
+        </div> : null}
         <div className="broadcast-chat-state">
           <span className={`broadcast-chat-dot ${historyState === 'ready' ? realtimeState : 'offline'}`} />
           <strong>{statusLabel(broadcastStatus, historyState)}</strong>

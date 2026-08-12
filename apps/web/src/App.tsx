@@ -21,12 +21,14 @@ import type {
   PlatformStatus,
 } from '@digistream/contracts';
 import { AuthScreen } from './auth/AuthScreen';
+import { AboutPage } from './landing/AboutPage';
 import {
   Button,
   LinkButton,
   StatePanel,
   StatusBadge,
 } from './design-system/components';
+import { Icon } from './design-system/Icon';
 import {
   CreatorShell,
   ListenerShell,
@@ -46,6 +48,9 @@ import { parseGuestRoute } from './features/guests/guest-route';
 import { ListenerBroadcastPage } from './features/listening/ListenerBroadcastPage';
 import { ListenerCallInPanel } from './features/listening/ListenerCallInPanel';
 import { ListenerDiscoveryPage } from './features/listening/ListenerDiscoveryPage';
+import { ListenerLibraryPage } from './features/listening/ListenerLibraryPage';
+import { PublicChannelPage } from './features/listening/PublicChannelPage';
+import { PublicCreatorProfilePage } from './features/listening/PublicCreatorProfilePage';
 import { ReplayDiscoveryPage } from './features/listening/ReplayDiscoveryPage';
 import { ReplayListeningPage } from './features/listening/ReplayListeningPage';
 import { parseListenerRoute } from './features/listening/listener-route';
@@ -58,6 +63,7 @@ import { creatorSetupState } from './features/onboarding/creator-setup-state';
 import { CreatorOverviewPage } from './features/onboarding/CreatorOverviewPage';
 import { creatorOverviewDerivation } from './features/onboarding/overview-state';
 import { CreatorRecordingsPage } from './features/recordings/CreatorRecordingsPage';
+import { AcceptInvitationPage, ActiveSessionsPage, ChannelSettingsPage, ForgotPasswordPage, NotificationsPage, OrganisationSettingsPage, ProfileSettingsPage, ResetPasswordPage, TeamInvitationsPage, VerifyEmailPage } from './features/account/ProfileSettingsPage';
 import { ApiClientError, apiRequest, jsonBody } from './lib/api-client';
 
 type CreatorPage =
@@ -127,17 +133,30 @@ function CreatorIntentChoice({ onBroadcast }: { onBroadcast(): void }) {
   return (
     <section className="workspace-onboarding" aria-labelledby="creator-intent-title">
       <div>
-        <StatusBadge tone="info">Choose how to continue</StatusBadge>
         <h2 id="creator-intent-title">What would you like to do?</h2>
-        <p>Choose whether you want to listen or create a broadcast.</p>
+        <p>Choose how you want to continue. You can switch later.</p>
       </div>
       <div className="workspace-welcome-actions">
-        <Button icon="broadcast" onClick={onBroadcast} variant="primary">
-          Broadcast audio
-        </Button>
-        <LinkButton href="/listen" icon="headphones">
-          Listen to broadcasts
-        </LinkButton>
+        <article className="creator-intent-option">
+          <span className="creator-intent-option-icon" aria-hidden="true">
+            <Icon name="broadcast" />
+          </span>
+          <h3>Broadcast audio</h3>
+          <p>Create and manage broadcasts for your audience.</p>
+          <Button className="creator-intent-option-action" fullWidth icon="arrow-right" onClick={onBroadcast} variant="primary">
+            Continue
+          </Button>
+        </article>
+        <article className="creator-intent-option">
+          <span className="creator-intent-option-icon" aria-hidden="true">
+            <Icon name="headphones" />
+          </span>
+          <h3>Listen to broadcasts</h3>
+          <p>Discover and listen to live audio.</p>
+          <LinkButton className="creator-intent-option-action" fullWidth href="/listen" icon="arrow-right" variant="primary">
+            Continue
+          </LinkButton>
+        </article>
       </div>
     </section>
   );
@@ -251,7 +270,7 @@ function OrganisationSetup({
         {submissionError ? (
           <div className="workspace-inline-error" role="alert">{submissionError}</div>
         ) : null}
-        <Button loading={busy} type="submit" variant="primary">
+        <Button icon="broadcast" loading={busy} type="submit" variant="primary">
           Continue to channel setup
         </Button>
       </form>
@@ -525,6 +544,9 @@ function CreatorDashboard({
       >
         Listen
       </LinkButton>
+      <LinkButton aria-label="Open profile settings" href="/account/profile" icon="user" title="Profile settings" variant="ghost">
+        Profile
+      </LinkButton>
       <Button
         aria-label={`Sign out ${user.displayName}`}
         icon="user"
@@ -620,13 +642,10 @@ function CreatorDashboard({
       </StatePanel>
     ) : (
       <>
-        <PageIntro title="Studio Lobby and call-ins">
-          Review listener requests, create guest invitations, admit waiting participants and manage who can join the live conversation.
-        </PageIntro>
-        <section className="workspace-action-card">
+        <section className="workspace-action-card workspace-lobby-state">
           <div>
             <StatusBadge tone="info">Guest and call-in moderation</StatusBadge>
-            <h2>{lobbyEligible ? `Open ${lobbyBroadcast?.title ?? 'the broadcast'} Lobby` : 'Studio Lobby is not available yet'}</h2>
+            <h2>{lobbyEligible ? lobbyBroadcast?.title ?? 'Studio Lobby is ready' : 'Studio Lobby is not available yet'}</h2>
             <p>
               {lobbyEligible
                 ? `${lobbyBroadcast?.title ?? 'The selected broadcast'} is ${lobbyBroadcast?.status}. Review real call-ins, invited guests and connected participants.`
@@ -645,11 +664,6 @@ function CreatorDashboard({
             </Button>
           )}
         </section>
-        <StatePanel compact kind="empty" title={lobbyEligible ? `${lobbyBroadcast?.title} is eligible` : 'No eligible broadcast selected'}>
-          {lobbyEligible
-            ? 'The Lobby will recheck this broadcast before loading guest and participant controls.'
-            : 'Lobby controls remain unavailable until the backend reports an eligible lifecycle state.'}
-        </StatePanel>
       </>
     );
   } else if (activeNav === 'Chat') {
@@ -761,6 +775,14 @@ function CreatorApplication() {
     );
   }
 
+  if (window.location.pathname === '/account/profile') return <ProfileSettingsPage />;
+  if (window.location.pathname === '/account/sessions') return <ActiveSessionsPage />;
+  if (window.location.pathname === '/account/notifications') return <NotificationsPage />;
+  if (window.location.pathname === '/organisation/settings') return <OrganisationSettingsPage />;
+  if (window.location.pathname === '/organisation/team') return <TeamInvitationsPage />;
+  if (window.location.pathname === '/invite') return <AcceptInvitationPage />;
+  if (window.location.pathname === '/channel/settings') return <ChannelSettingsPage />;
+
   return (
     <CreatorDashboard
       onSignedOut={() => setUser(null)}
@@ -770,6 +792,11 @@ function CreatorApplication() {
 }
 
 export function App() {
+  if (window.location.pathname === '/about') return <AboutPage />;
+  if (window.location.pathname === '/creator-profile') return <PublicCreatorProfilePage />;
+  if (window.location.pathname === '/forgot-password') return <ForgotPasswordPage />;
+  if (window.location.pathname === '/reset-password') return <ResetPasswordPage />;
+  if (window.location.pathname === '/verify-email') return <VerifyEmailPage />;
   const guestRoute = parseGuestRoute(window.location.pathname);
   if (guestRoute) return <GuestJoinPage route={guestRoute} />;
 
@@ -787,6 +814,12 @@ export function App() {
         <ReplayDiscoveryPage />
       </ListenerShell>
     );
+  }
+  if (listenerRoute?.kind === 'library') {
+    return <ListenerShell current="discover"><ListenerLibraryPage /></ListenerShell>;
+  }
+  if (listenerRoute?.kind === 'channel') {
+    return <ListenerShell current="discover"><PublicChannelPage route={listenerRoute} /></ListenerShell>;
   }
   if (
     listenerRoute?.kind === 'public-replay' ||

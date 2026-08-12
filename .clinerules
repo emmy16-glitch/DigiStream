@@ -1,0 +1,32 @@
+# DigiStream Cline rules
+
+Read root `AGENTS.md` first.
+
+For every frontend/UI/UX/design-system task, read in order:
+
+1. `docs/design/DIGISTREAM_UI_V2_COMPLETE_SPEC.md`
+2. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`
+3. `docs/design/BEAUTIFUL_UI_ADAPTATION_STANDARD.md`
+4. `docs/design/DESIGN_TOKENS.md`
+5. `docs/design/DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`
+6. `apps/web/AGENTS.md`
+7. relevant reference screens for composition/journey intent
+
+Current visual target:
+
+- cream dotted DigiStream canvas;
+- white/warm-white operational surfaces;
+- dusty-pink primary brand accent;
+- restrained supporting lavender/sky/mint/amber/peach tints;
+- Beautiful UI-quality compact rows/tables/search/task/loading/approval/chat/context/insight patterns;
+- modern sans-serif ordinary UI;
+- mono only for technical metadata/diagnostics;
+- DigiStream user-visible branding.
+
+Never restore legacy dark/emerald, blue/white, square-everything, hard-shadow-everywhere, mono-button/typewriter or giant-card rules.
+
+Do not perform broad mechanical regex/perl/sed visual rewrites. Reconcile shared primitives, then migrate feature surfaces deliberately.
+
+Reuse existing routes/APIs/business logic. Never fabricate product state, analytics, readiness, recordings, listener counts, permissions or success.
+
+Do not declare UI V2 complete after foundation/token changes. Follow the completion gates in `DIGISTREAM_UI_V2_COMPLETE_SPEC.md`.

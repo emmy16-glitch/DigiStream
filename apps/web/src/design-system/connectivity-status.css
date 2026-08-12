@@ -7,14 +7,15 @@
   margin-inline: auto;
   box-sizing: border-box;
   padding: 0.75rem 1rem;
-  border: 1px solid currentColor;
-  border-radius: 0.75rem;
-  background: var(--echoo-surface, #ffffff);
-  color: var(--echoo-text, #172018);
-  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 18%);
+  border: var(--ds-border);
+  border-radius: var(--ds-radius-control);
+  background: var(--ds-surface);
+  color: var(--ds-ink);
+  box-shadow: var(--ds-shadow-control);
+  font-family: var(--ds-font-sans);
   font-size: 0.9375rem;
   line-height: 1.4;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .echoo-connectivity-status--restored {
@@ -22,26 +23,40 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  border-color: var(--ds-success-foreground);
+  background: var(--ds-success-soft);
+}
+
+.echoo-connectivity-status--restored > span {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .echoo-connectivity-status--restored button {
-  min-width: 44px;
+  min-width: max-content;
   min-height: 44px;
-  padding-inline: 0.75rem;
-  border: 1px solid currentColor;
-  border-radius: 0.5rem;
-  color: inherit;
-  background: transparent;
-  font: inherit;
+  flex: 0 0 auto;
+  padding-inline: 0.875rem;
+  border: var(--ds-border);
+  border-radius: var(--ds-radius-control);
+  color: var(--ds-ink);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-small);
+  font-family: var(--ds-font-sans);
   font-weight: 700;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.echoo-connectivity-status--restored button:active {
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 .echoo-connectivity-status--offline {
-  border-color: var(--echoo-danger, #a32929);
-}
-
-.echoo-connectivity-status--restored {
-  border-color: var(--echoo-success, #267a43);
+  border-color: var(--ds-danger);
+  background: var(--ds-danger-soft);
 }
 
 @media (max-height: 480px) {
@@ -53,12 +68,23 @@
 
 @media (max-width: 480px) {
   .echoo-connectivity-status--restored {
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 0.75rem;
+  }
+
+  .echoo-connectivity-status--restored button {
+    justify-self: start;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .echoo-connectivity-status {
     scroll-behavior: auto;
+  }
+
+  .echoo-connectivity-status--restored button:active {
+    transform: none;
   }
 }

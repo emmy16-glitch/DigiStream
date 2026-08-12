@@ -4,13 +4,11 @@
   height: 44px;
 }
 
-.auth-corner-switch {
-  min-height: 44px;
-}
-
 .auth-logo-link {
   min-width: 44px;
   min-height: 44px;
   display: grid;
   place-items: center;
 }
+/* Screen 46: returning listeners receive the same focused square sign-in surface. */
+.auth-screen .auth-form{border-radius: var(--ds-radius-control);box-shadow:var(--ds-shadow-major)}

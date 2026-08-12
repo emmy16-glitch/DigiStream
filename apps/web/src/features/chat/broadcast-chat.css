@@ -94,14 +94,14 @@
   margin: 0 0 0.75rem;
   padding: 0.65rem 0.8rem;
   border: 1px solid var(--border, #2c302d);
-  border-radius: 0.85rem 0.85rem 0.85rem 0.25rem;
+  border-radius: var(--ds-radius-card) var(--ds-radius-card) var(--ds-radius-card) var(--ds-radius-sm);
   background: var(--card-elevated, #202321);
 }
 
 .broadcast-chat-message.own {
   margin-left: auto;
   border-color: rgb(22 184 120 / 42%);
-  border-radius: 0.85rem 0.85rem 0.25rem 0.85rem;
+  border-radius: var(--ds-radius-card) var(--ds-radius-card) var(--ds-radius-sm) var(--ds-radius-card);
   background: rgb(22 184 120 / 12%);
 }
 
@@ -169,7 +169,7 @@
   margin: 0.75rem 1rem 0;
   padding: 0.7rem 0.8rem;
   border: 1px solid rgb(244 63 94 / 38%);
-  border-radius: 0.7rem;
+  border-radius: var(--ds-radius-card);
   background: rgb(244 63 94 / 10%);
   color: #fecdd3;
   font-size: 0.82rem;
@@ -190,7 +190,7 @@
 .broadcast-chat-login input {
   box-sizing: border-box;
   border: 1px solid var(--border, #2c302d);
-  border-radius: 0.7rem;
+  border-radius: var(--ds-radius-card);
   background: var(--sidebar-bg, #090a0a);
   color: var(--text-primary, #fff);
   font: inherit;
@@ -223,7 +223,7 @@
 .broadcast-chat-composer button,
 .broadcast-chat-login button {
   border: 0;
-  border-radius: 0.7rem;
+  border-radius: var(--ds-radius-card);
   background: var(--primary, #16b878);
   color: #03150e;
   padding: 0.65rem 1rem;
@@ -278,7 +278,7 @@
 
   .broadcast-chat {
     min-height: 25rem;
-    border-radius: 0.85rem;
+    border-radius: var(--ds-radius-card);
   }
 
   .broadcast-chat-header,

@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { PublicReplay, PublicReplayListResponse } from '@digistream/contracts';
 import { StatePanel, StatusBadge } from '../../design-system/components';
 import { Icon } from '../../design-system/Icon';
 import { ApiClientError, apiRequest } from '../../lib/api-client';
 import { publicReplayPath } from './listener-route';
-import './replay-listening.css';
+import './replay-library-reference.css';
 
 function formatDate(value: string | null): string {
   if (!value) return 'Publication time unavailable';
@@ -85,6 +85,7 @@ export function ReplayDiscoveryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [offline, setOffline] = useState(false);
+  const [query, setQuery] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -104,12 +105,29 @@ export function ReplayDiscoveryPage() {
 
   useEffect(() => { void load(); }, [load]);
 
+  const visibleReplays = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return replays;
+    return replays.filter((replay) => [
+      replay.title,
+      replay.description ?? '',
+      replay.channel.name,
+      replay.channel.category ?? '',
+      replay.organisation.name,
+    ].join(' ').toLowerCase().includes(normalized));
+  }, [query, replays]);
+
   return (
     <div className="replay-discovery-page">
       <section className="replay-discovery-hero">
         <span className="listener-kicker">Listen again</span>
-        <h1>Replay completed broadcasts.</h1>
-        <p>Choose a published recording and continue listening at your own pace.</p>
+        <h1>Replay library</h1>
+        <p>Replay completed broadcasts. Choose a published recording and continue listening at your own pace.</p>
+        <label className="replay-library-search">
+          <span className="sr-only">Search replays</span>
+          <Icon aria-hidden="true" name="search" size={24} />
+          <input onChange={(event) => setQuery(event.target.value)} placeholder="Search replays…" type="search" value={query} />
+        </label>
       </section>
 
       <section className="replay-discovery-section" aria-labelledby="published-replays-title">
@@ -118,7 +136,7 @@ export function ReplayDiscoveryPage() {
             <span className="listener-kicker">Replay library</span>
             <h2 id="published-replays-title">Published recordings</h2>
           </div>
-          <span>{replays.length} replay{replays.length === 1 ? '' : 's'}</span>
+          <span>{visibleReplays.length} replay{visibleReplays.length === 1 ? '' : 's'}</span>
         </header>
 
         {error ? (
@@ -144,8 +162,14 @@ export function ReplayDiscoveryPage() {
           </StatePanel>
         ) : null}
 
+        {!loading && !error && replays.length > 0 && visibleReplays.length === 0 ? (
+          <StatePanel kind="empty" title="No matching replays">
+            Try a different search term.
+          </StatePanel>
+        ) : null}
+
         <div className="replay-discovery-grid">
-          {replays.map((replay) => (
+          {visibleReplays.map((replay) => (
             <ReplayCard key={replay.recordingId} replay={replay} />
           ))}
         </div>

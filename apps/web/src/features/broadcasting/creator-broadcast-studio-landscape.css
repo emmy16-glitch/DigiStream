@@ -10,7 +10,7 @@
     height: 100dvh;
     max-height: 100dvh;
     border: 0;
-    border-radius: 0;
+    border-radius: var(--ds-radius-control);
     box-shadow: none;
   }
 

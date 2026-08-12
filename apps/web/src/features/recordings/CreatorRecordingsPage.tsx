@@ -399,7 +399,6 @@ export function CreatorRecordingsPage({
     <div className="creator-recordings-page">
       <header className="recordings-reference-header">
         <div>
-          <h2>Recordings</h2>
           <p>Your completed broadcasts.</p>
         </div>
         <Button onClick={() => void loadWorkspace()} variant="ghost">

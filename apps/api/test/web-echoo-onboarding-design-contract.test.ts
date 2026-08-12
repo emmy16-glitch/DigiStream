@@ -12,20 +12,24 @@ const onboardingCssUrl = new URL(
   '../../web/src/features/onboarding/echoo-onboarding.css',
   import.meta.url,
 );
+const baseCssUrl = new URL('../../web/src/design-system/base.css', import.meta.url);
 
-test('Echoo onboarding stylesheet is loaded after shared application styles', async () => {
+test('DigiStream onboarding stylesheet is loaded after shared application styles', async () => {
   const main = await readFile(mainUrl, 'utf8');
 
   assert.match(main, /import '\.\/styles\.css';[\s\S]*import '\.\/features\/onboarding\/echoo-onboarding\.css';/);
-  assert.match(main, /Echoo root element was not found/);
+  assert.match(main, /DigiStream root element was not found/);
 });
 
 test('focused onboarding reuses the existing intent and organisation flow', async () => {
   const app = await readFile(appUrl, 'utf8');
 
   assert.match(app, /id="creator-intent-title">What would you like to do\?/);
-  assert.match(app, />\s*Broadcast audio\s*<\/Button>/);
-  assert.match(app, /href="\/listen"[\s\S]*Listen to broadcasts/);
+  assert.match(app, /className="creator-intent-option"/);
+  assert.match(app, />\s*Broadcast audio\s*<\/h3>/);
+  assert.match(app, />\s*Listen to broadcasts\s*<\/h3>/);
+  assert.match(app, /href="\/listen"[\s\S]*>\s*Continue\s*<\/LinkButton>/);
+  assert.match(app, /Create and manage broadcasts for your audience\./);
   assert.match(app, /Step 1 of 3/);
   assert.match(app, /Set up your creator workspace/);
   assert.match(app, /Continue to channel setup/);
@@ -49,18 +53,24 @@ test('focused onboarding keeps the existing first-channel and first-broadcast de
   assert.match(broadcasts, /aria-pressed=\{firstBroadcastChoice === 'finish-later'\}/);
 });
 
-test('Echoo onboarding presentation suppresses normal navigation only during setup states', async () => {
-  const css = await readFile(onboardingCssUrl, 'utf8');
+test('DigiStream onboarding presentation is compact and suppresses normal navigation only during setup states', async () => {
+  const [css, baseCss] = await Promise.all([
+    readFile(onboardingCssUrl, 'utf8'),
+    readFile(baseCssUrl, 'utf8'),
+  ]);
 
   assert.match(css, /:has\(#creator-intent-title\)/);
   assert.match(css, /:has\(#workspace-onboarding-title\)/);
   assert.match(css, /:has\(\[aria-label='First broadcast choices'\]\)/);
   assert.match(css, /\.ds-creator-mobile-nav[\s\S]*display:\s*none/);
   assert.match(css, /\.ds-creator-navigation[\s\S]*display:\s*none/);
-  assert.match(css, /--echoo-onboarding-blue:\s*#0d5be8/);
-  assert.match(css, /--echoo-onboarding-navy:\s*#10233f/);
-  assert.match(css, /min-height:\s*118px/);
+  assert.match(css, /--echoo-onboarding-blue:\s*var\(--ds-pink-500\)/);
+  assert.match(css, /--echoo-onboarding-navy:\s*var\(--ds-text-primary\)/);
+  assert.match(css, /\.creator-intent-option\{/);
+  assert.match(css, /border:\s*1px solid var\(--ds-border-subtle\)/);
+  assert.match(css, /font:\s*750 clamp\([^;]+var\(--ds-font-sans\)/);
   assert.match(css, /safe-area-inset-bottom/);
-  assert.match(css, /@media \(max-width:\s*640px\)/);
-  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+  assert.match(css, /@media\(max-width:\s*700px\)/);
+  assert.doesNotMatch(css, /font[^;]*var\(--ds-font-mono\)/);
+  assert.match(baseCss, /prefers-reduced-motion:\s*reduce/);
 });

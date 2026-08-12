@@ -40,6 +40,7 @@ import {
 import './listener-playback.css';
 import './listener-lifecycle-trust.css';
 import './listener-resilience.css';
+import './listener-live-reference.css';
 
 type PlaybackResponse = {
   playback: {

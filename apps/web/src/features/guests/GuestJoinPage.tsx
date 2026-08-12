@@ -15,6 +15,7 @@ import {
 } from '../broadcasting/livekit-client';
 import type { GuestRoute } from './guest-route';
 import './guest-join.css';
+import './guest-join-reference.css';
 
 type GuestSession = {
   invitationId: string;

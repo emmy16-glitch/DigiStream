@@ -65,6 +65,21 @@ export type LiveKitModule = {
 
 let modulePromise: Promise<LiveKitModule> | null = null;
 
+/** Validates only browser reachability; credentials and lifecycle stay server-authoritative. */
+export function browserMediaEndpointProblem(endpoint: string): string | null {
+  let url: URL;
+  try { url = new URL(endpoint); } catch { return 'The Studio media endpoint returned by the server is invalid.'; }
+  if (!['ws:', 'wss:'].includes(url.protocol)) return 'The Studio media endpoint must use a WebSocket address.';
+  const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+  if (window.location.protocol === 'https:' && url.protocol !== 'wss:') {
+    return 'Private Studio needs a public wss:// LiveKit address when this page is opened over HTTPS.';
+  }
+  if (window.location.protocol === 'https:' && loopback) {
+    return 'Private Studio is configured with a loopback media address that this phone cannot reach.';
+  }
+  return null;
+}
+
 export function loadLiveKitClient(): Promise<LiveKitModule> {
   if (!modulePromise) {
     const moduleUrl =

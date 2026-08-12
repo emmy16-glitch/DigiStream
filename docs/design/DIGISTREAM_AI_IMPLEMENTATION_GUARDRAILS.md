@@ -1,296 +1,214 @@
 # DigiStream AI Implementation Guardrails
 
-This file is written for Codex, Claude Code, coding agents, and human implementers. It exists to stop visual drift while the approved 50-screen DigiStream redesign is implemented.
+This file governs Codex, Claude Code, Cline, Copilot and other implementation agents working on DigiStream UI.
 
-## 1. Read-before-edit contract
+## 1. Mandatory read order
 
-For any change that touches frontend layout, CSS, design-system primitives, navigation presentation, authentication UI, creator UI, listener UI, Studio, Backstage, Recordings, analytics, settings, modals, forms, or responsive behavior, read these sources before editing:
+Before frontend/UI/UX/design-system work, read:
 
-1. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`
-2. `docs/design/REFERENCE_INDEX.md`
-3. the exact reference image(s) for the screen being changed in `docs/design/reference/screens/`
-4. `apps/web/AGENTS.md`
-5. product-truth and lifecycle documents referenced by root `AGENTS.md`
-6. existing implementation and tests
+1. `DIGISTREAM_UI_V2_COMPLETE_SPEC.md`
+2. `DIGISTREAM_UI_CONSTITUTION.md`
+3. `BEAUTIFUL_UI_ADAPTATION_STANDARD.md`
+4. `DESIGN_TOKENS.md`
+5. `REFERENCE_INDEX.md`
+6. relevant numbered reference screens for composition/journey intent
+7. `apps/web/AGENTS.md`
+8. product-truth/lifecycle/reliability docs from root `AGENTS.md`
+9. current implementation and tests
 
-Do not begin implementation from memory after scanning one image.
+Do not implement from memory after glancing at one screenshot.
 
-## 2. Two authorities: visual truth and product truth
+## 2. Product truth versus presentation
 
-The approved reference images are authoritative for:
+Presentation authority never overrides:
 
-- composition and hierarchy;
-- the cream dotted canvas;
-- dusty-pink visual language;
-- square geometry;
-- hard black offset shadows;
-- typographic contrast between heavy grotesk and mono/typewriter text;
-- spacing rhythm;
-- card density;
-- control shape;
-- overall personality.
-
-The backend/API/product documents and current validated domain logic are authoritative for:
-
-- permissions and roles;
+- authorization;
 - tenant isolation;
 - lifecycle transitions;
-- whether a metric exists;
-- whether a user may perform an action;
-- whether a broadcast is scheduled, live, reconnecting, ended, failed, or completed;
-- recording/replay availability;
 - media readiness;
-- error handling and recovery.
+- recording/replay availability;
+- privacy/security;
+- real analytics/data availability;
+- accessibility/reliability.
 
-Never fabricate product state to make a screenshot appear more exact.
+A visually accurate lie is still a bug.
 
-## 3. Absolute visual prohibitions
+## 3. Current visual signature
 
-A change fails design review if it introduces any of the following without explicit written approval:
+Required:
 
-- blue as the general brand/accent color;
-- the original blue/white DigiStream visual system;
-- the previous near-black/emerald design as the general application theme;
-- generic gray SaaS dashboard backgrounds;
-- 12px–24px rounded cards;
-- pill-shaped primary navigation;
-- blurred drop shadows for primary surfaces;
-- glassmorphism or frosted panels;
+- warm cream/off-white dotted canvas;
+- white/warm-white operational surfaces;
+- dusty-pink primary brand accent;
+- near-black text;
+- restrained lavender/sky/mint/amber/peach supporting tints;
+- modern readable sans-serif ordinary UI;
+- mono only for technical metadata/diagnostics;
+- 6–10px ordinary operational radius;
+- subtle borders/dividers;
+- restrained shadow;
+- compact Beautiful UI-quality rows/tables/search/task/loading/approval/chat/context/insight patterns;
+- DigiStream user-visible branding.
+
+## 4. Absolute visual prohibitions
+
+Do not introduce or restore:
+
+- legacy dark/emerald default theme;
+- generic blue/white SaaS;
+- square cards/controls everywhere;
+- hard black offset shadows everywhere;
+- monospace/typewriter buttons, nav labels, forms, normal paragraphs, marketing copy or footer links;
+- giant repeated cream/pink cards;
+- 20–28px radius everywhere;
+- glassmorphism/frosted panels;
 - gradient-heavy primary UI;
-- Inter used as the only product font;
-- arbitrary colors for each chart/status;
-- decorative neon glows;
-- Material-UI-looking default components;
-- a different bottom-navigation vocabulary on every screen;
-- one-off CSS values when an existing design token should be used.
+- neon/glow decoration;
+- AI Thinking/model/prompt/reasoning UI in normal product surfaces;
+- arbitrary feature-local colours where shared tokens exist.
 
-## 4. Required visual signature
+## 5. Branding guardrail
 
-Every ordinary DigiStream application screen must preserve the recognizable signature:
+Visible product name is **DigiStream**.
 
-- warm cream/off-white base;
-- subtle repeating dot grid;
-- near-black ink;
-- dusty pink primary accent;
-- strong black grotesk display hierarchy;
-- mono/typewriter labels, metadata, controls, and system text;
-- square cards and controls;
-- thin visible borders;
-- zero-blur hard shadows offset down/right;
-- deliberate negative space;
-- restrained semantic green/amber/rose.
+Remove stale visible `Echoo` branding from landing, auth, footer, headers, system states and product copy. Internal compatibility names may remain temporarily if changing them creates unrelated risk.
 
-A screen should still look like DigiStream with the logo removed.
-
-## 5. Screenshot implementation protocol
-
-Before implementing a screen:
-
-1. Locate the exact numbered reference image.
-2. Open it and inspect the whole page, not only the target component.
-3. List the shared components visible in it.
-4. Reuse existing product components where their responsibility is already correct.
-5. Map screenshot colors, spacing, type, borders, and shadows to Constitution tokens.
-6. Identify screenshot data that is illustrative only.
-7. Replace illustrative data with real API-backed state.
-8. Implement desktop/mobile behavior from system rules, not by hardcoding screenshot dimensions.
-9. Add loading, empty, error, unauthorized, offline, long-content, and recovery states in the same visual language.
-10. Compare the finished screen against the reference at the same viewport.
-11. Fix obvious drift before requesting review.
+Do not keep obsolete Echoo branding only because a stale test asserts it. Reconcile the test with the current product contract when appropriate.
 
 ## 6. Component-first rule
 
-Do not reproduce the 50 references by creating 50 isolated CSS files full of copied pixel values.
+Do not recreate each screen as isolated CSS.
 
-Implement and reuse shared primitives for:
+Shared ownership must cover applicable equivalents of:
 
-- shells and headers;
-- bottom navigation;
-- page headings;
-- cards and compact rows;
-- buttons;
-- fields and selectors;
-- icon tiles;
-- status badges;
-- metric cards;
-- broadcast artwork containers;
-- tabs and filters;
-- modals and sheets;
-- tables;
-- charts;
-- empty/loading/error states.
+- buttons/icon buttons;
+- status badges/dots;
+- page/section headers;
+- sidebar/nav items;
+- mobile navigation;
+- workspace/account switcher;
+- search/command search;
+- filter tabs;
+- data table/responsive record row;
+- task row/list;
+- loading/empty/error/offline/unauthorized states;
+- approval/confirmation;
+- context card;
+- insight card;
+- message row/composer;
+- modal/sheet behavior;
+- selection actions when real.
 
-If three screens use nearly the same visual pattern, that pattern should normally become or reuse a shared component.
+If three surfaces use the same visual responsibility, reuse or build a shared primitive instead of copy/paste.
 
-Do not create a second page, second modal, second Studio, second Broadcasts implementation, or duplicate API flow merely because a screenshot appears different from the current component. Realign the existing responsibility.
+## 7. Beautiful UI adaptation rule
 
-## 7. Fidelity hierarchy
+Borrow Beautiful UI's density, alignment and component grammar where they map to real DigiStream responsibilities.
 
-When deciding what to match most closely, use this order:
+Do not copy AI-specific patterns or clone the site.
 
-1. overall shell and page composition;
-2. typography hierarchy;
-3. spacing rhythm;
-4. component geometry;
-5. cream/pink/ink palette;
-6. hard-shadow treatment;
-7. icon sizing/alignment;
-8. fine decorative details.
+The 50-screen references remain useful for screen responsibility, journey, content grouping and relative hierarchy. They do not override current typography, component density, radius, shadow, table/row, landing/footer or shared-system rules.
 
-Do not spend time reproducing a decorative line while the typography, spacing, or card geometry is visibly wrong.
+## 8. Landing-page guardrail
 
-## 8. Dense-screen exception
+The landing page must follow the explicit section contract in `DIGISTREAM_UI_V2_COMPLETE_SPEC.md`.
 
-Studio, Backstage, Recordings, Live Chat, Team/Admin, and analytics screens may become visually noisy if every nested element receives a large hard shadow.
+Reject implementations that contain:
 
-Use the Constitution hierarchy:
+- poster-scale mobile headline that consumes nearly the whole first viewport;
+- giant vertical feature-card stacks;
+- tall numbered cards for a simple three-step flow;
+- random/misaligned footer links;
+- visible Echoo branding;
+- mono/typewriter CTAs or footer links.
 
-- major surfaces: major shadow;
-- primary/selected controls: control shadow;
-- compact important tiles: small shadow;
-- nested rows, internal cells, table rows, and low-priority metadata: border only.
+## 9. Typography guardrail
 
-Do not abandon the system; reduce elevation intelligently.
+Ordinary UI uses modern sans-serif.
 
-## 9. Responsive rule
+Mono is restricted to technical content. Do not style ordinary controls as a terminal/typewriter interface.
 
-The reference images are targets, not fixed canvases.
+## 10. Responsive guardrail
 
-Implementation must work at:
+Every affected major surface must work at:
 
-- small Android portrait;
-- large Android/iPhone portrait;
+- ~360px Android portrait;
+- 390–430px phone portrait;
 - short-height landscape;
-- tablet;
-- desktop;
-- Android desktop-site simulation where current tests require it.
+- desktop Chromium;
+- Android desktop-site simulation where tested;
+- 200% zoom-equivalent cases where tested;
+- virtual keyboard open;
+- long text/names/URLs.
 
-Never solve responsiveness by shrinking text until it becomes unreadable.
-Never allow horizontal overflow for ordinary app content.
-Use progressive disclosure for dense operational details.
-Preserve safe-area and virtual-keyboard behavior.
+Do not solve responsiveness by shrinking text into unreadability.
 
-## 10. Navigation rule
+No ordinary horizontal page overflow.
 
-Do not infer navigation independently on each page.
+## 11. Offline/error guardrail
 
-Public shell:
+Connectivity-banner actions such as `Dismiss` or `Retry` must never collapse into vertical letters.
 
-- Discover
-- Replays
-- Sign in
+Blocking error/offline pages should normally use a compact centered content width and one recovery action rather than a giant empty poster panel.
 
-Listener shell:
+## 12. State integrity
 
-- Home
-- Discover
-- Replays
-- My Library
-- More
+Never show fake:
 
-Creator shell:
+- listener counts;
+- analytics;
+- duration;
+- health/readiness;
+- progress percentages;
+- recording/replay availability;
+- permissions;
+- successful uploads/operations;
+- public delivery inferred only from microphone/private contribution.
 
-- Home
-- Broadcasts
-- Lobby
-- Chat
-- More
+## 13. Anti-duplication
 
-Existing product architecture may use internal route names that differ. Preserve route compatibility while presenting consistent user-facing vocabulary.
+Do not create a second:
 
-## 11. State integrity
+- creator dashboard;
+- onboarding app;
+- Broadcasts page;
+- Studio;
+- Backstage/Lobby;
+- Recordings workspace;
+- auth flow;
+- component library;
+- client-side lifecycle owner.
 
-Never show:
+Realign current responsible components and APIs.
 
-- fake listener numbers;
-- fake analytics;
-- fake health percentages;
-- fake duration;
-- replay buttons for nonexistent artifacts;
-- green readiness without evidence;
-- live styling for scheduled content;
-- active controls that the current user is not authorized to use;
-- fake successful uploads;
-- fake recording availability;
-- fake public delivery merely because a private microphone connection exists.
+## 14. No blind bulk rewrites
 
-A visually accurate lie is a product bug.
+Do not use broad regex/perl/sed replacements across dozens of frontend files for colours, radii, shadows, typography, spacing or geometry.
 
-## 12. Accessibility gate
+Migrate shared tokens/primitives first, then feature surfaces deliberately. Inspect output and tests after each meaningful surface group.
 
-Before considering a UI slice complete:
+## 15. Test discipline
 
-- text and controls meet practical contrast requirements;
-- focus-visible is obvious;
-- mouse/touch/keyboard states exist;
-- 44px minimum touch targets are preserved;
-- color is never the only status signal;
-- long names and translated/expanded copy do not break layouts;
-- reduced motion remains usable;
-- dialogs/sheets restore focus and respect Back/Escape behavior;
-- audio controls have accessible names;
-- disabled and loading states remain understandable.
+Do not delete, skip or weaken tests merely to make the redesign pass.
 
-## 13. Do not redesign while implementing
+When an old test genuinely conflicts with an intentional new authoritative contract:
 
-The 50-screen pack already establishes the direction. Implementation is not permission to “improve” it into a different aesthetic.
+1. confirm the contract in current docs;
+2. update implementation and test together;
+3. explain the intentional contract change;
+4. preserve lifecycle, authorization, accessibility and responsive coverage.
 
-If an agent believes a different visual solution is necessary, it must first document:
+## 16. Completion discipline
 
-- what problem exists in the approved reference;
-- why the Constitution cannot solve it;
-- the proposed deviation;
-- accessibility/product impact;
-- affected shared components;
-- whether the deviation should become a new system rule or remain screen-specific.
+Do not stop after:
 
-Without explicit approval, stay inside the approved language.
+- planning;
+- token changes;
+- radius/shadow changes;
+- two shared components;
+- one screen;
+- one phase.
 
-## 14. Existing legacy documents
+Continue until the applicable completion gates in `DIGISTREAM_UI_V2_COMPLETE_SPEC.md` are satisfied or a genuine external blocker exists.
 
-Some older repository documents and existing CSS were written around an earlier dark/emerald or Echoo-influenced visual direction. Those files remain useful where they describe product behavior, accessibility, reliability, authorization, lifecycle, media handling, or component responsibility.
-
-They are **not** visual authority when they conflict with:
-
-- `DIGISTREAM_UI_CONSTITUTION.md`;
-- `DESIGN_TOKENS.md`;
-- the approved 50-screen reference pack.
-
-Do not perform a mechanical global replacement of legacy CSS without understanding affected surfaces. Migrate visual primitives deliberately through the shared design system.
-
-## 15. PR description requirement
-
-Every UI/design PR should include a short section similar to:
-
-```text
-Design references: 01, 02, 03
-Constitution sections: 2, 4, 6, 13
-Existing surfaces reused: CreatorShell, BroadcastCard, Studio readiness panel
-Deliberate deviations: none
-Truth sources: organisation/channel/broadcast APIs
-Responsive evidence: Android portrait, short landscape, desktop
-Accessibility checks: focus, keyboard, touch targets, contrast, reduced motion
-```
-
-## 16. Visual completion checklist
-
-Before closing a frontend PR, answer YES to all applicable items:
-
-- I opened the relevant reference image(s).
-- I read the UI Constitution.
-- I used the cream dotted canvas where required.
-- I used dusty pink, not legacy blue/green, for brand emphasis.
-- Heading hierarchy uses the heavy grotesk voice.
-- Metadata/labels use the mono voice.
-- Cards/controls remain square.
-- Shadows are hard, black, down/right, and blur-free.
-- Navigation matches the correct shell.
-- Real backend state drives actions/statuses.
-- I did not duplicate an existing flow/component.
-- Loading/empty/error/unauthorized states match the same design language.
-- Mobile and desktop were both checked.
-- No horizontal overflow was introduced.
-- Accessibility states were checked.
-- I compared the result against the reference before declaring completion.
-
-If any answer is NO, the work is not visually complete.
+A UI V2 report must clearly distinguish implemented/tested work from documented-but-not-implemented work.
