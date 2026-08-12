@@ -153,7 +153,7 @@ export function CreatorAnalyticsPage({ organisation }: { organisation: Organisat
               <InsightCard detail="Measured playback sessions with no signed-in user attached. This is session count, not unique anonymous reach." icon="audience" label="Anonymous sessions" tone="amber" value={analytics.playback.anonymousSessions.toLocaleString()} />
             </div>
             <details className="creator-analytics-advanced">
-              <summary>Playback health details</summary>
+              <summary>Playback health and advanced analytics</summary>
               <dl>
                 <div><dt>Signed-in playback sessions</dt><dd>{analytics.playback.signedInSessions.toLocaleString()}</dd></div>
                 <div><dt>Buffering events</dt><dd>{analytics.playback.bufferingEvents.toLocaleString()}</dd></div>
