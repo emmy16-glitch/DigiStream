@@ -1,62 +1,72 @@
 # DigiStream UI Foundation Implementation
 
-This implementation turns the approved product design bible into shared web primitives without pretending that unimplemented metrics or product areas already exist.
+This document describes the shared web foundation implementation direction. It is subordinate to `DIGISTREAM_UI_V2_COMPLETE_SPEC.md`.
 
-## Included in the foundation slice
+Read with:
 
-- token-driven dark theme under `--ds-*` CSS custom properties;
-- accessible global focus, reduced-motion and skip-link behaviour;
-- central button, link-button and icon-button components;
-- status badges that combine a symbol and text with colour;
-- reusable loading, empty, error, offline and unauthorized state panels;
-- reusable DigiStream brand lockup;
-- responsive creator workspace shell;
-- responsive listener shell;
-- mobile creator bottom navigation and tablet compact rail;
-- listener discovery migration to shared status and state components;
-- creator dashboard migration away from illustrative metrics and sample broadcasts.
+- `DIGISTREAM_UI_CONSTITUTION.md`;
+- `BEAUTIFUL_UI_ADAPTATION_STANDARD.md`;
+- `DESIGN_TOKENS.md`;
+- `DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`.
 
-## Migration progress
+## Target
 
-- [x] Shared tokens, primitives and application shells.
-- [x] Creator overview and listener discovery.
-- [x] Broadcast Studio and active live-control surfaces.
-- [ ] Guest waiting room and backstage workspace.
-- [ ] Listener player, call-in and public chat composition.
-- [ ] Forms, dialogs, tables and remaining confirmation flows.
-- [ ] Real visual regression tests at mobile, tablet and desktop widths.
-- [ ] Measured WCAG 2.2 AA contrast verification in rendered browsers.
+> cream dotted DigiStream shell + clean white/warm-white operational surfaces + dusty-pink brand anchor + restrained supporting tints + modern sans-serif ordinary UI + Beautiful UI-quality compact shared components.
 
-The Broadcast Studio migration is documented in `BROADCAST_STUDIO_UI_MIGRATION.md`.
+The target is not dark/emerald, generic blue/white, square-everything, hard-shadow-everywhere, mono/typewriter ordinary UI or an all-cream poster system.
+
+## Required foundation
+
+- centralized `--ds-*` semantic tokens;
+- cream dotted application canvas;
+- white/warm-white/neutral surface hierarchy;
+- dusty-pink brand tokens;
+- lavender/sky/mint/amber/peach supporting accents;
+- fixed semantic live/success/warning/danger/info treatment;
+- Manrope/current approved modern sans ordinary UI;
+- IBM Plex Mono technical-only;
+- accessible focus and reduced motion;
+- shared buttons/fields/status primitives;
+- shared state panels;
+- responsive creator/listener shells;
+- compact navigation;
+- record/table patterns;
+- search/command foundation;
+- task/readiness rows;
+- confirmation/approval;
+- context panels;
+- trustworthy insight cards;
+- shared modal/sheet behavior.
+
+## Branding
+
+Visible product branding is DigiStream. Do not render Echoo in shared BrandLockup/system-state components.
+
+Internal compatibility identifiers may remain temporarily if changing them is unrelated/high-risk.
 
 ## Deliberate boundaries
 
-This remains an incremental visual migration rather than a full rewrite.
+This is an incremental migration, not a rewrite of lifecycle/media/authorization architecture.
 
-The guest waiting room, backstage, chat, call-in and player internals retain their current feature CSS until dedicated migration pull requests. They inherit global tokens and accessibility defaults immediately, while later slices will replace their one-off components deliberately.
+Reuse existing domain code and APIs.
 
-The centralized icon adapter is transitional and prevents scattered symbols across new foundation code. A future dependency-reviewed icon package or repository-owned SVG set can replace its internal glyph map without changing component APIs.
+Do not perform broad regex/perl/sed visual replacements. Move touched surfaces toward shared tokens/primitives deliberately.
 
-## Data honesty changes
+## Data honesty
 
-The previous dashboard displayed sample upcoming broadcasts and concrete counts. Those values were design placeholders rather than API data. The foundation renders unavailable or empty states until authenticated organisation, recording and analytics data exists.
-
-Every later migration must continue this rule: display real backend data, a clearly labelled estimate, or an unavailable state—never an illustrative production value.
+Every surface displays real API/backend/browser/media evidence or an honest unavailable/empty state. Never use illustrative production values merely to match a reference/demo.
 
 ## Responsive contract
 
-- Desktop: persistent creator sidebar and full listener header.
-- Tablet: compact creator rail and wrapped listener navigation.
-- Mobile: creator bottom navigation, compact page header and horizontally safe listener navigation.
-- Minimum control height: 44 px.
-- Warnings and primary live controls must remain outside collapsed secondary panels.
+- desktop: compact creator navigation and bounded content width;
+- mobile: validated mobile navigation and compact headers;
+- short-height landscape: critical controls reachable;
+- touch targets practical;
+- virtual keyboard does not hide active input/CTA;
+- browser/Android Back closes correct transient layer.
 
-## Pull-request review evidence
+## Completion
 
-Every later UI migration must include:
+Foundation work is only Phase 1. It is not the whole UI V2 migration.
 
-- the approved reference screen used;
-- mobile, tablet and desktop screenshots;
-- loading, empty and failure evidence;
-- keyboard and focus behaviour;
-- confirmation that each displayed value is real, estimated or unavailable.
+After foundation, continue through the component/screen phases in `DIGISTREAM_VISUAL_MIGRATION_PLAN.md` and the completion gates in `DIGISTREAM_UI_V2_COMPLETE_SPEC.md`.
