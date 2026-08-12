@@ -1,7 +1,6 @@
 :root {
   color-scheme: light;
 
-  /* Constitution foundation. Legacy aliases below intentionally resolve here. */
   --ds-bg: #F7F3EE;
   --ds-surface: #FFFDF9;
   --ds-surface-warm: #F2ECE6;
@@ -31,6 +30,7 @@
   --ds-surface-1: var(--ds-surface);
   --ds-surface-2: var(--ds-surface-warm);
   --ds-surface-3: var(--ds-pink-50);
+  --ds-surface-neutral: var(--ds-surface-1);
   --ds-surface-hover: var(--ds-pink-100);
 
   --ds-border-subtle: var(--ds-line-soft);
@@ -67,10 +67,11 @@
   --ds-focus-ring: var(--ds-pink-700);
   --ds-overlay: rgba(31, 32, 37, 0.38);
 
-  /* UI V2: ordinary product UI is modern sans; mono is technical-only. */
-  --ds-font-sans: "Manrope", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Ordinary product typography is the platform-native modern sans. This avoids
+     a missing webfont changing DigiStream's voice from device to device. */
+  --ds-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --ds-font-display: var(--ds-font-sans);
-  --ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
   --ds-text-xs: 0.75rem;
   --ds-text-sm: 0.875rem;
@@ -117,7 +118,6 @@
   --ds-shadow-dialog: var(--ds-shadow-major);
   --ds-glow-live: none;
 
-  /* Semantic motion foundation. Keep interaction motion short and purposeful. */
   --ds-motion-instant: 100ms;
   --ds-motion-control: 160ms;
   --ds-motion-surface: 200ms;
@@ -125,18 +125,15 @@
   --ds-motion-workspace: 320ms;
   --ds-motion-status: 220ms;
   --ds-ease-standard: cubic-bezier(0.2, 0, 0, 1);
-
-  /* Preserve legacy feature timings until each surface is explicitly audited. */
   --ds-duration-fast: 120ms;
   --ds-duration-normal: 200ms;
   --ds-duration-slow: 320ms;
 
-  --ds-sidebar-width: 228px;
+  --ds-sidebar-width: 244px;
   --ds-page-max: 1240px;
-  --ds-control-min-height: 48px;
-  --ds-input-min-height: 52px;
+  --ds-control-min-height: 44px;
+  --ds-input-min-height: 44px;
 
-  /* Compatibility aliases while feature-specific CSS migrates to --ds-* tokens. */
   --bg: var(--ds-canvas);
   --sidebar: var(--ds-surface-1);
   --surface: var(--ds-surface-2);
