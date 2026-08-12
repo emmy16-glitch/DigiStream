@@ -1,52 +1,74 @@
 # DigiStream Design Source of Truth
 
-This directory contains the authoritative visual-design contract for the current DigiStream web product.
+This directory contains the current reusable visual-design contract for DigiStream.
 
 ## Mandatory read order for UI work
 
-1. [`DIGISTREAM_UI_CONSTITUTION.md`](DIGISTREAM_UI_CONSTITUTION.md)
-2. [`DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`](DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md)
-3. [`REFERENCE_INDEX.md`](REFERENCE_INDEX.md)
-4. the exact numbered approved image in `reference/screens/`
-5. [`DESIGN_TOKENS.md`](DESIGN_TOKENS.md)
-6. [`DIGISTREAM_VISUAL_MIGRATION_PLAN.md`](DIGISTREAM_VISUAL_MIGRATION_PLAN.md) when migrating an existing surface
-7. [`DESIGN_REVIEW_CHECKLIST.md`](DESIGN_REVIEW_CHECKLIST.md) before review/merge
-8. product/lifecycle/quality documents referenced by root `AGENTS.md`
+1. [`DIGISTREAM_UI_V2_COMPLETE_SPEC.md`](DIGISTREAM_UI_V2_COMPLETE_SPEC.md)
+2. [`DIGISTREAM_UI_CONSTITUTION.md`](DIGISTREAM_UI_CONSTITUTION.md)
+3. [`BEAUTIFUL_UI_ADAPTATION_STANDARD.md`](BEAUTIFUL_UI_ADAPTATION_STANDARD.md)
+4. [`DESIGN_TOKENS.md`](DESIGN_TOKENS.md)
+5. [`DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`](DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md)
+6. [`REFERENCE_INDEX.md`](REFERENCE_INDEX.md)
+7. the relevant numbered screen in `reference/screens/` for composition/journey intent
+8. [`DIGISTREAM_VISUAL_MIGRATION_PLAN.md`](DIGISTREAM_VISUAL_MIGRATION_PLAN.md)
+9. [`DESIGN_REVIEW_CHECKLIST.md`](DESIGN_REVIEW_CHECKLIST.md)
+10. product/lifecycle/reliability docs referenced by root `AGENTS.md`
 
-A CSS token starter is also available at [`digistream-design-tokens.css`](digistream-design-tokens.css). It is documentation/reference material until deliberately integrated into the existing shared design system.
+External Beautiful UI reference:
+
+`https://beautiful-ui-five.vercel.app/`
+
+Beautiful UI is an interface-grammar reference, not a theme or product specification.
+
+## Current visual direction
+
+**Keep DigiStream's warm cream dotted application canvas; use clean white/warm-white/neutral operational surfaces; keep dusty pink as the principal brand accent; use restrained supporting lavender/sky/mint/amber/peach tints; use modern sans-serif ordinary UI; reserve mono for technical metadata; and adapt Beautiful UI's compact navigation, rows/tables, search, task, loading, approval, chat, context and insight patterns where they fit real product responsibilities.**
+
+## Current branding
+
+Visible product branding is **DigiStream**.
+
+`Echoo` is not current visible branding. Internal compatibility names may remain temporarily when safe migration requires it.
+
+## Explicitly obsolete visual rules
+
+Do not use legacy instructions that require:
+
+- dark/emerald default theme;
+- generic blue/white UI;
+- square cards/controls everywhere;
+- hard black offset shadows everywhere;
+- monospace/typewriter buttons/nav/forms/marketing/footer;
+- giant cream/pink card stacks;
+- 20–28px radius everywhere.
+
+`DIGISTREAM_PRODUCT_DESIGN_BIBLE.md` is retained only as a legacy marker and is not current visual authority.
 
 ## Source-of-truth split
 
-**Visual truth:** the UI Constitution plus the approved final 50-screen DigiStream reference pack.
+### Product truth
 
-**Product truth:** backend/API state, authorization, lifecycle, reliability, accessibility, privacy, media readiness, and product architecture documented elsewhere in the repository.
+Backend/API state, authorization, tenant isolation, lifecycle, privacy, reliability, media readiness, recording/replay availability and accessibility remain authoritative.
 
-A reference image may never justify fake metrics, impossible actions, authorization bypasses, duplicate flows, invented product data, or inaccurate live/readiness states.
+### Reusable visual truth
 
-## Current visual identity
+`DIGISTREAM_UI_V2_COMPLETE_SPEC.md` + the current Constitution/Beautiful UI/tokens define reusable presentation.
 
-DigiStream uses:
+### Screen/journey reference
 
-- warm cream dotted backgrounds;
-- dusty-pink accents;
-- near-black grotesk headings;
-- readable sans-serif product copy with mono/typewriter reserved for technical metadata and diagnostics;
-- restrained 6–10px cards, inputs, tabs, and controls;
-- thin soft borders with stronger focus/emphasis boundaries;
-- restrained elevation, with hard-offset shadow limited to rare brand moments;
-- compact operational spacing with deliberate hierarchy;
-- restrained semantic green, amber, and rose only when state requires them.
+The 50-screen pack informs:
 
-The legacy blue/white DigiStream styling, previous Echoo visual references, and previous dark/emerald visual styling are **not** the current visual target.
+- screen responsibility;
+- journey intent;
+- information grouping;
+- relative hierarchy;
+- examples of what belongs together.
 
-## Existing documents
-
-`DIGISTREAM_PRODUCT_DESIGN_BIBLE.md` remains useful for product intent, screen responsibilities, real-state requirements, accessibility, and interaction behavior. Any old color/theme/shape guidance inside that document is superseded by `DIGISTREAM_UI_CONSTITUTION.md`.
-
-`DESIGN_TOKENS.md` is the normalized production token contract and must remain aligned with the Constitution.
+It does not override the current typography, landing/footer, table/row, component-density, radius, shadow or branding rules.
 
 ## Design change process
 
-A material change to navigation presentation, visual identity, shared component geometry, status language, or screen hierarchy must update these documents in the same pull request.
+A material change to navigation, typography, cream-canvas identity, branding, palette, shared component geometry, lifecycle/status language, landing/footer composition, table behavior, loading/progress treatment or accessibility interaction must update the relevant current design documents in the same work.
 
-UI pull requests should identify the reference screen numbers used and disclose any deliberate deviation.
+Before declaring a UI migration complete, use `DESIGN_REVIEW_CHECKLIST.md` and the completion gates in `DIGISTREAM_UI_V2_COMPLETE_SPEC.md`.
