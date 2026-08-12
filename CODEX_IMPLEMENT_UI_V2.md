@@ -1,171 +1,180 @@
-# Codex Master Task — Implement DigiStream UI V2 End to End
+# Codex Master Task — Complete DigiStream UI V2 End to End
 
 Status: **ACTIVE IMPLEMENTATION TASK**
 
-This file exists so a coding agent can execute the complete DigiStream UI migration in one continuous task without repeatedly asking the user what to do next.
+This is an implementation task, not a planning/audit-only task.
 
-## 0. Execution mode
+## 0. Execution rule
 
-This is **not** a planning-only task.
+When told to execute this file, Codex must:
 
-When instructed to execute this file, Codex must:
+1. inspect current branch, status, recent commits and existing implementation;
+2. read the current authority chain;
+3. preserve valid work already completed;
+4. implement every remaining applicable UI V2 requirement;
+5. run and fix typecheck/build/tests/responsive acceptance;
+6. continue automatically through all incomplete phases;
+7. stop only when completion gates pass or a genuine external blocker exists.
 
-1. read the repository instructions and authoritative design/product documents;
-2. inspect the current implementation and current PR branch;
-3. implement the required UI system and migrate the existing product surfaces;
-4. run tests, typechecks, builds, and responsive acceptance throughout the work;
-5. fix regressions caused by the migration;
-6. continue through every implementation phase in this file without stopping after a plan, audit, first screen, or first component;
-7. stop only when the defined completion gates pass or a genuine external blocker exists that cannot be solved inside the repository.
+Do not ask for confirmation between phases.
 
-Do not ask for confirmation between phases. Use judgment within the repository contracts.
+Do not restart from scratch merely because the branch contains recovery/WIP commits.
 
-A single Codex task may use multiple internal implementation phases and commits. "Implement everything at once" means **one continuous autonomous engineering task**, not one unsafe unreviewable code dump.
+Do not reset or discard existing valid implementation work.
 
-## 1. Branch and scope
+## 1. Mandatory read order
 
-Repository: `emmy16-glitch/DigiStream`
-
-Active UI branch / PR head:
-
-```text
-ui/digistream-screens-21-50
-```
-
-Existing pull request: **#188 — Complete DigiStream 50-screen UI redesign**.
-
-Work on the current checked-out implementation branch. Do not create a parallel DigiStream application, a second creator dashboard, a second Studio, a second Broadcasts page, or duplicate business logic merely to achieve visual fidelity.
-
-Before editing, inspect `git status`, current branch, current head, and recent changes. Preserve unrelated valid work already on the branch.
-
-## 2. Mandatory read order before editing UI
-
-Read these in order:
+Before editing frontend code, read:
 
 1. root `AGENTS.md`;
 2. `apps/web/AGENTS.md`;
-3. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`;
-4. `docs/design/BEAUTIFUL_UI_ADAPTATION_STANDARD.md`;
-5. `docs/design/DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`;
+3. `docs/design/DIGISTREAM_UI_V2_COMPLETE_SPEC.md`;
+4. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`;
+5. `docs/design/BEAUTIFUL_UI_ADAPTATION_STANDARD.md`;
 6. `docs/design/DESIGN_TOKENS.md`;
-7. `docs/design/REFERENCE_INDEX.md`;
-8. `docs/design/DIGISTREAM_VISUAL_MIGRATION_PLAN.md`;
-9. `docs/design/DESIGN_REVIEW_CHECKLIST.md`;
-10. root product/lifecycle/reliability documents referenced by `AGENTS.md`;
-11. feature-specific documentation and tests for the area being changed.
+7. `docs/design/DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`;
+8. `docs/design/REFERENCE_INDEX.md`;
+9. `docs/design/DIGISTREAM_VISUAL_MIGRATION_PLAN.md`;
+10. `docs/design/DESIGN_REVIEW_CHECKLIST.md`;
+11. relevant product/lifecycle/reliability docs;
+12. feature-specific docs/tests for each area changed.
 
-If an older document describes the obsolete dark/emerald system or treats the old cream-poster treatment as universally mandatory, the current UI Constitution + Beautiful UI adaptation standard control reusable presentation. Product truth, lifecycle, authorization, media readiness, privacy, and accessibility always remain authoritative.
+`DIGISTREAM_PRODUCT_DESIGN_BIBLE.md` is legacy/superseded and is not current visual authority.
 
-## 3. External Beautiful UI reference
+## 2. External Beautiful UI reference
 
-Reference URL:
+Reference:
 
-```text
-https://beautiful-ui-five.vercel.app/
-```
+`https://beautiful-ui-five.vercel.app/`
 
-If internet access is available, inspect the reference directly for interaction rhythm, density, hierarchy, table/row patterns, loading states, approval patterns, search, sidebar, chat, context cards, and insight cards.
+Use it for component grammar, information density, navigation, rows/tables, loading, approval, search, chat, context and insight patterns.
 
-If internet access is unavailable, **do not block**. `docs/design/BEAUTIFUL_UI_ADAPTATION_STANDARD.md` is the repository-owned canonical adaptation contract and contains the required mapping.
+Do not clone the site or copy source without verified license/provenance.
 
-Do not copy source code from the external site unless its license and provenance are explicitly verified. Recreate patterns using DigiStream-owned components and styles.
+Do not add its AI-specific Thinking/model/prompt/reasoning UI to normal DigiStream product surfaces.
 
-## 4. Target visual system — non-negotiable hybrid rule
+## 3. Final target
 
-DigiStream must retain its own identity while gaining Beautiful UI's product discipline.
-
-Required hierarchy:
+The complete visual system is:
 
 ```text
-warm cream dotted DigiStream application canvas
-    -> white / warm-white / subtle neutral operational surfaces
-        -> dusty pink as principal DigiStream brand accent
+warm cream dotted DigiStream canvas
+    -> white / warm-white / neutral operational surfaces
+        -> dusty-pink principal brand accent
         -> restrained lavender / sky / mint / amber / peach supporting tints
-        -> fixed evidence-backed semantic live/success/warning/error/info colours
+        -> truthful semantic live / success / warning / danger / info
+        -> modern sans-serif ordinary UI
+        -> compact Beautiful UI-quality component hierarchy
 ```
 
-### Keep
+User-visible branding is **DigiStream**.
 
-- warm cream/off-white application background;
-- subtle DigiStream dot grid on ordinary application canvas;
-- near-black readable text;
-- dusty pink as the principal brand accent;
-- bold hierarchy and strong product personality;
-- selected brand moments that may still use stronger borders or rare hard-offset elevation;
-- semantic state colours tied to real state.
+## 4. Obsolete rules — never restore
 
-### Improve using Beautiful UI discipline
+Do not implement:
 
-- cleaner white/warm-white surfaces;
-- compact information density;
-- thinner/internal borders;
-- restrained nested elevation;
-- calmer selected states;
-- smaller status indicators;
-- structured rows/tables instead of huge repeated cards;
-- concise labels and secondary text;
-- one dominant action per state;
-- clearer loading, approval, filter, search, and chat patterns;
-- deliberate supporting colour variation without turning the product into a rainbow.
+- dark/emerald default application theme;
+- generic blue/white SaaS;
+- square cards/controls everywhere;
+- hard black offset shadows everywhere;
+- monospace/typewriter buttons/nav/forms/marketing/footer;
+- giant all-cream/all-pink card stacks;
+- 20–28px radius everywhere;
+- AI-agent interface styling in ordinary product screens.
 
-### Never do
+## 5. Typography — fix this explicitly
 
-- remove the cream dotted DigiStream canvas and replace it with generic gray SaaS;
-- make every surface cream/pink;
-- make every nested component a giant hard-shadow card;
-- use large rounded 16–24px SaaS cards everywhere;
-- use glassmorphism, neon glow, glossy gradients, or random blur;
-- use supporting lavender/sky/mint/amber/peach colours as invented lifecycle meaning;
-- show fake metrics, fake readiness, fake progress, fake listener counts, or fake analytics;
-- use AI Thinking/model/prompt/reasoning UI in ordinary DigiStream product surfaces.
+Normal product UI uses the modern sans-serif contract from the Complete Spec/Constitution.
 
-## 5. Shared component system to implement/reconcile first
+Preferred family: Manrope with documented fallbacks.
 
-Inventory `apps/web/src/design-system/` and existing feature-local patterns before adding anything.
+Mono/IBM Plex Mono is technical-only.
 
-Create, consolidate, or realign shared primitives where appropriate. Reuse existing correct primitives rather than renaming them unnecessarily.
+Remove ordinary mono/typewriter styling from:
 
-The target reusable grammar should cover the responsibilities of:
+- buttons;
+- nav labels;
+- form labels;
+- card titles;
+- normal paragraphs;
+- landing page;
+- error/empty states;
+- footer links.
 
-- `Button` / `LinkButton` / `IconButton`;
-- `StatusBadge` / `StatusDot`;
-- `PageHeader` / `SectionHeader`;
-- creator `Sidebar` / mobile navigation;
+Do not leave the landing hero or CTA looking like a terminal/typewriter interface.
+
+## 6. Branding sweep
+
+Visible branding must say DigiStream.
+
+Audit and fix visible `Echoo` strings in:
+
+- BrandLockup;
+- landing page;
+- footer;
+- auth/onboarding;
+- system/offline/error states;
+- creator/listener shells;
+- product copy/tests where obsolete branding is protected.
+
+Internal legacy class/file names may remain when renaming them is unrelated/high-risk, but visible UI must not say Echoo.
+
+## 7. Do not waste time redoing foundation
+
+First inspect what previous Codex work already implemented.
+
+If cream/dot tokens, supporting colours, radius, basic buttons, TaskRow or ContextCard already exist and are correct, **do not spend another run repeatedly tuning them**.
+
+Prioritize missing structural component families and actual screen migration.
+
+Changing colours/radius/shadows is not completion.
+
+## 8. Shared component system — must be complete
+
+Inventory `apps/web/src/design-system/` and reconcile existing components.
+
+Before declaring UI V2 complete, applicable shared ownership must exist for equivalents of:
+
+- Button / LinkButton / IconButton;
+- StatusBadge / StatusDot;
+- PageHeader / SectionHeader;
+- Sidebar / NavSection / NavItem;
+- mobile creator navigation;
 - workspace/account switcher;
-- `CommandSearch` / accessible search field;
-- `TaskRow` / `TaskList`;
-- `DataTable` / responsive compact record rows;
-- `FilterTabs` / filter controls;
-- `LoadingState` / determinate and indeterminate progress;
-- `ApprovalCard` / confirmation dialog/sheet;
-- `ContextCard` / key-value resource context;
-- `InsightCard` for trustworthy analytics only;
-- `EmptyState`, `ErrorState`, `OfflineState`, `UnauthorizedState`;
-- `ChatMessageRow` / chat composer where existing product responsibilities support it;
-- form controls;
-- modal/sheet primitives with shared focus, Back/Escape, keyboard and scroll-lock behavior.
+- SearchField / CommandSearch;
+- FilterTabs;
+- DataTable / ResponsiveRecordRow;
+- TaskRow / TaskList;
+- LoadingState;
+- EmptyState / ErrorState / OfflineState / UnauthorizedState;
+- ApprovalCard / confirmation dialog/sheet;
+- ContextCard;
+- InsightCard;
+- MessageRow / Composer;
+- SelectionBar where real;
+- Modal/Sheet focus/Back/Escape/scroll-lock primitives.
 
-Do not introduce a second component library if the existing DigiStream design system can own the pattern.
+Reuse existing equivalents before adding duplicates.
 
-## 6. Implementation phases — execute all in this task
+## 9. Implementation priority — execute all remaining phases
 
-### Phase A — baseline, tests, and visual foundation
+### Phase A — audit current recovery implementation
 
-1. Run/inspect the existing test and build commands before broad edits.
-2. Inspect current failures on PR #188, especially product-language and responsive acceptance failures.
-3. Do not weaken tests merely because the redesign changed copy or layout.
-4. Fix real regressions while preserving valid product contracts.
-5. Reconcile design tokens and shared CSS with the hybrid rule.
-6. Ensure the cream dotted canvas remains the app foundation.
-7. Add supporting tint tokens only through the shared design system.
-8. Establish restrained border/radius/elevation rules.
-9. Remove obsolete application-wide styling rules only after confirming they are no longer needed.
+- inspect git diff/commits against pre-recovery baseline;
+- identify which shared primitives are actually implemented;
+- identify which screens only received token/CSS tweaks;
+- identify modified tests and ensure they were not weakened;
+- identify visible Echoo branding;
+- identify ordinary mono/typewriter UI;
+- identify giant-card layouts still present.
 
-### Phase B — creator shell and navigation
+Do not stop after this audit.
 
-Implement/reconcile the Beautiful UI-inspired navigation system using existing routes and real permissions.
+### Phase B — creator shell/sidebar/navigation
 
-Desktop creator hierarchy should support, where actually available:
+Implement a real compact Beautiful UI-quality desktop sidebar using existing routes/permissions.
+
+Where capabilities exist, organize around real groups such as:
 
 ```text
 WORKSPACE
@@ -173,9 +182,9 @@ Overview
 Broadcasts
 Studio
 Recordings
-Analytics   # only when real/trustworthy and product docs allow
+Analytics
 
-AUDIENCE
+AUDIENCE / PRODUCTION
 Studio Lobby
 Chat
 Guests
@@ -185,301 +194,232 @@ Account
 Settings
 ```
 
-Do not add fake destinations. Preserve validated mobile navigation rather than squeezing the desktop sidebar onto mobile.
-
 Requirements:
 
-- stable compact navigation rows;
-- accessible active state;
-- workspace/account context;
-- counts only from real authorized data;
-- keyboard navigation and focus-visible;
-- no duplicate product navigation.
+- compact rows;
+- subtle selected state;
+- real workspace/account context;
+- truthful counts only;
+- modern sans typography;
+- validated mobile navigation instead of squeezed desktop sidebar.
 
-### Phase C — Creator Overview
+### Phase C — Overview
 
-Rebuild/reconcile Overview as a state-aware next-action dashboard, not a card gallery.
+Make Overview a state-aware next-action dashboard, not a card gallery.
 
-Hierarchy:
+Use:
 
-1. concise header;
-2. one API-backed primary action;
-3. current/next broadcast state;
-4. Task Rows for real work/readiness/recovery;
-5. recent broadcasts/recordings in compact rows;
-6. Insights only if real analytics exist;
-7. secondary actions with lower visual weight.
-
-Preserve required product language tested by the repository, including exact accepted terminology such as `Studio Lobby` where tests/product contracts require it.
+- concise header;
+- one state-aware primary action;
+- current/next context;
+- real Task Rows;
+- recent broadcasts/recordings as compact rows;
+- insights only when trustworthy.
 
 ### Phase D — Broadcasts
 
-Migrate repeated broadcast records from oversized cards to Beautiful UI-inspired Filter Table / compact responsive rows where appropriate.
+Implement real FilterTabs + record-oriented desktop layout + responsive mobile records.
 
-Support real filters such as actual available lifecycle groups.
+Use lifecycle-specific row actions.
 
-Rows must expose lifecycle-specific actions rather than duplicated generic Studio buttons.
+Remove giant repeated broadcast cards where comparison matters.
 
-Mobile must transform into compact stacked rows; ordinary use must not require horizontal desktop-table scrolling.
+### Phase E — Recordings
 
-### Phase E — Studio / readiness / live / reconnecting
+Implement searchable/filterable record-oriented layout with real processing/replay state and responsive rows.
 
-Studio is operational software.
+### Phase F — Studio
 
-Use Task Rows and compact Context Cards for:
+Use calm operational surfaces and compact readiness/context rows for:
 
-- microphone readiness;
-- private contribution readiness;
-- public listener delivery readiness;
-- current broadcast context;
-- connecting/loading/recovery states;
-- recording state when real.
+- selected org/channel/broadcast;
+- microphone;
+- private Studio contribution;
+- public listener delivery;
+- live/reconnecting;
+- recording when real.
 
-Rules:
+Critical controls remain stable/reachable.
 
-- microphone activity never means listeners can hear audio;
-- private contribution never implies public delivery;
-- Go Live success waits for authoritative confirmation;
-- reconnecting is visibly distinct and evidence-backed;
-- live UI becomes calmer, not more animated;
-- critical controls remain reachable on small Android portrait and short landscape;
-- diagnostics are progressively disclosed.
+No fake percentages or implied public delivery.
 
-### Phase F — Studio Lobby / Backstage / Guests / Chat
+### Phase G — Studio Lobby / Backstage / Guests / Chat
 
-Adapt Beautiful UI Chat and Context Card density to the existing human communication workflows.
+Implement compact participant/message hierarchy, role-aware actions, keyboard-safe composer and context panels.
 
-Requirements:
-
-- compact participant rows;
-- clear Ready / muted / invited / on-stage states backed by real data;
-- readable human chat hierarchy;
-- composer remains reachable above virtual keyboard;
-- moderation actions remain role-aware;
-- playback/Studio audio is not unnecessarily interrupted by opening communication panels;
-- do not add AI reply/reasoning UI.
-
-### Phase G — Recordings and replay management
-
-Use searchable/filterable Records Table / compact responsive rows.
-
-Show only real:
-
-- title;
-- source broadcast/channel;
-- duration when known;
-- processing/publish/replay state;
-- dates/times;
-- allowed contextual actions.
-
-Do not show fake duration or replay readiness.
+No AI reasoning/model UI.
 
 ### Phase H — Analytics
 
-Only expose analytics that have trustworthy data sources and are permitted by product documentation.
+Use Insight Cards only for trustworthy source/scope/time-range metrics. Hide/unavailable if not trustworthy.
 
-Use Beautiful UI-inspired Insight Cards for decision-useful metrics rather than decorative KPI boxes.
+### Phase I — Account / Settings / Team / Admin
 
-Possible metrics only when real:
+Replace giant card stacks with structured sections/rows/tables. Use explicit Approval/Confirmation for consequential actions.
 
-- peak listeners;
-- average listening duration;
-- replay plays;
-- audience retention;
-- broadcast-to-broadcast comparison.
+### Phase J — Auth / onboarding
 
-Every metric needs a source and time range. Omit unavailable metrics rather than displaying fake zeroes.
+Use modern sans typography, compact forms, one primary action, DigiStream branding and correct keyboard/error behavior.
 
-### Phase I — Search / command access
+### Phase K — Landing page — explicit correction required
 
-Where architecture supports it without inventing routes or duplicating business logic, implement or prepare an accessible command/search pattern for authorized resources/actions.
+The current card-heavy landing layout is not acceptable completion.
 
-Potential real actions:
+Implement the contract in `DIGISTREAM_UI_V2_COMPLETE_SPEC.md`:
 
-- create broadcast;
-- open current Studio;
-- find broadcast;
-- find recording;
-- switch workspace;
-- open settings.
+1. compact responsive header;
+2. controlled hero;
+3. hero headline roughly 42–48px on common mobile widths, not nearly full-viewport poster scale;
+4. concise body copy;
+5. clear primary/secondary CTA;
+6. one purposeful visual/proof element;
+7. compact capability rows/tiles instead of four huge stacked cards;
+8. compact three-step journey instead of tall numbered poster cards;
+9. meaningful supporting sections only;
+10. one final CTA;
+11. grouped responsive footer;
+12. footer uses DigiStream branding and clear Product/Company/Legal grouping;
+13. no randomly floating links;
+14. no mono/typewriter CTA/footer typography.
 
-`Ctrl/Cmd + K` is optional only if implemented accessibly and consistently. Do not expose private resources through search.
+### Phase L — Listener/public/guest surfaces
 
-### Phase J — settings/admin/account
+Apply modern typography and compact hierarchy without forcing creator-dashboard layout. Preserve playback-first behavior and truthful live/scheduled/replay state.
 
-Replace unnecessary giant-card stacks with clear sections, compact rows, tables, and contextual confirmation.
+### Phase M — loading/offline/error states
 
-Use Approval Card / confirmation patterns for consequential actions such as:
+Fix shared system states.
 
-- ending a broadcast;
-- deleting a recording;
-- removing a participant/member;
-- suspending an account;
-- revoking a session;
-- destructive workspace/admin operations.
+Mandatory regression fix:
 
-Confirmation copy must state the actual consequence, not only `Are you sure?`.
+- connectivity banner buttons such as `Dismiss`/`Retry` must never collapse into vertical letters;
+- mobile layout deliberately stacks message/action when necessary;
+- blocking state content uses compact centered width instead of giant empty poster layout where appropriate.
 
-### Phase K — authentication/onboarding/listener surfaces
+### Phase N — Search / CommandSearch
 
-Apply the hybrid visual system and Beautiful UI discipline to remaining product surfaces without rewriting their business logic.
+Where real architecture supports it, add accessible authorized command/resource search for real actions/resources such as create broadcast, current Studio, broadcast/recording lookup, workspace switching and settings.
 
-Preserve:
+### Phase O — final reconciliation
 
-- onboarding flow contracts;
-- listener-first routing where applicable;
-- authentication recovery/error states;
-- listener playback hierarchy;
-- real live/scheduled/replay distinction;
-- responsive behavior;
-- accessibility.
+Search the frontend/tests for:
 
-Do not force every listener/public screen into creator-dashboard layout.
+- visible Echoo branding;
+- old dark/emerald assumptions;
+- generic blue branding;
+- ordinary mono/typewriter UI;
+- giant repeated cards;
+- hard shadows;
+- excessive radius;
+- duplicate actions/navigation;
+- horizontal overflow;
+- stale tests protecting obsolete presentation.
 
-### Phase L — full reconciliation
+Fix deliberately. Do not mechanically replace everything.
 
-Search the frontend for:
+## 10. No blind bulk visual rewrites
 
-- obsolete dark/emerald visual assumptions;
-- obsolete generic blue/white styling;
-- application-wide giant hard-shadow card patterns;
-- duplicated one-off cards where compact rows/tables now own the responsibility;
-- arbitrary feature-local colours;
-- excessive radii;
-- generic AI-looking UI;
-- duplicate navigation/actions;
-- stale `Echoo` product-language strings where they are truly obsolete **but do not rename strings that tests/product contracts intentionally preserve without checking their authority**;
-- horizontal overflow and excessive mobile vertical travel.
+Do not run broad `perl`, `sed` or regex replacements across dozens of files to normalize radius, shadows, colours, spacing or typography.
 
-Remove obsolete code only when safe.
+Shared tokens/primitives first, then deliberate surface migration.
 
-## 7. Colour assignment rules
+## 11. Product truth
 
-Use supporting tints intentionally.
+Never fabricate:
 
-Suggested roles, not lifecycle meanings:
+- listener counts;
+- analytics;
+- duration;
+- lifecycle state;
+- readiness;
+- progress percentages;
+- recording/replay availability;
+- permissions;
+- success.
 
-- dusty pink: principal brand emphasis, selected state, primary brand action;
-- lavender: secondary grouping/context/personalization;
-- sky: informational grouping/filter/search context;
-- mint: calm secondary context only, unless the semantic success token is specifically required;
-- amber/peach: warm emphasis/grouping only, unless the semantic warning token is specifically required.
+Scheduled is not live. Microphone is not private contribution. Private contribution is not public delivery. Completed broadcast is not automatically recording-ready.
 
-Semantic state colours remain independent:
+## 12. Test discipline
 
-- Live: repository-defined live treatment;
-- Success/healthy/ready: semantic success;
-- Warning/reconnecting/degraded: semantic warning;
-- Error/failed/destructive: semantic danger;
-- Info: semantic info.
+Audit every test modified by previous recovery work.
 
-A decorative tint must never silently communicate a lifecycle state.
+Do not weaken tests merely to make the redesign pass.
 
-## 8. Responsive acceptance — mandatory
+When an old test genuinely conflicts with the new authoritative contract:
 
-Test affected surfaces across at least the repository's supported matrix:
+- verify the current doc contract;
+- update implementation + test together;
+- preserve lifecycle/authorization/accessibility/responsive intent;
+- document the intentional change.
 
-- desktop Chromium;
-- Android Chrome portrait;
-- Android desktop-site simulation where tests require it;
+## 13. Responsive acceptance
+
+Check affected surfaces at minimum for:
+
+- ~360px Android portrait;
+- 390–430px phone portrait;
 - short-height landscape;
-- 200% zoom-equivalent narrow/accessible cases where existing tests require them;
-- virtual keyboard open/closed for forms/chat;
-- long names/text/URLs/slugs;
-- browser/Android Back;
-- refresh/session recovery.
+- desktop Chromium;
+- Android desktop-site simulation where covered;
+- 200% zoom-equivalent cases where covered;
+- virtual keyboard open;
+- long text/names/URLs;
+- Back/Escape/focus restoration;
+- no ordinary horizontal overflow.
 
-Rules:
+## 14. Validation
 
-- no ordinary horizontal page overflow;
-- 44px minimum effective touch targets where required;
-- fixed/sticky controls reserve content clearance;
-- tables transform intelligently on mobile;
-- focus remains visible;
-- overlays trap and restore focus correctly;
-- Back/Escape closes the correct top layer;
-- reduced motion remains functional.
-
-## 9. Testing and CI contract
-
-Do not declare completion after screenshots look good.
-
-Run the repository-prescribed checks from `AGENTS.md` and package scripts. At minimum, cover:
+Run applicable repository checks including:
 
 - typecheck;
-- API/unit tests;
-- production web build;
-- Node 22 test/build path;
-- Node 24 test/build path;
-- responsive Playwright suite;
-- relevant infrastructure/static validation when touched.
+- unit/API tests;
+- production build;
+- Node 22;
+- Node 24;
+- responsive Playwright;
+- desktop Chromium;
+- Android Chrome;
+- Android desktop-site cases;
+- short-height landscape;
+- accessibility-sensitive tests.
 
-Current PR #188 previously had failures in Node 22/24 and responsive Playwright. Treat them as work to resolve, not reasons to disable tests.
+Fix implementation failures instead of hiding them.
 
-Do not:
+## 15. Checkpoint discipline
 
-- delete failing acceptance tests simply because the design changed;
-- loosen assertions without determining whether the product contract changed;
-- skip a failing project/browser to get green CI;
-- bypass accessibility/product-language/lifecycle checks.
+Because long mobile/Termux Codex sessions may exit unexpectedly, create and push meaningful checkpoint commits during long implementation work.
 
-When a test is genuinely obsolete because an authoritative v2 design/product contract intentionally changed, update the test and the corresponding documentation together, and make the reason explicit.
+Do not leave hours of valid work only in the working tree when a coherent implementation checkpoint exists.
 
-## 10. Completion definition
+Do not commit obviously broken half-edits solely for frequency; checkpoint after coherent groups and report their status honestly.
 
-This Codex task is complete only when:
+## 16. Completion definition
 
-- the hybrid cream-dotted + Beautiful UI system is implemented in the actual frontend, not only documented;
-- shared primitives own repeated patterns;
-- Creator shell/navigation is coherent;
-- Overview is state-aware and compact;
-- Broadcasts and Recordings use appropriate filterable/record-oriented layouts;
-- Studio readiness/live/recovery is clear and truthful;
-- Studio Lobby/Chat/Guests use compact human-communication patterns;
-- settings/admin use structured rows/tables and safe confirmations;
-- analytics is either trustworthy and integrated or honestly unavailable/hidden;
-- authentication/onboarding/listener surfaces remain coherent with the hybrid system;
-- old conflicting visual code is reconciled;
-- responsive and accessibility acceptance passes;
-- required Node 22/24 checks pass;
-- production build passes;
-- no known required CI failure remains caused by this migration;
-- documentation is reconciled with the final implementation.
+Do not declare UI V2 complete until all applicable gates in `docs/design/DIGISTREAM_UI_V2_COMPLETE_SPEC.md` and `DESIGN_REVIEW_CHECKLIST.md` pass.
 
-## 11. Agent behavior during execution
+In particular, completion requires:
 
-Do not stop to say only:
+- DigiStream branding reconciled;
+- modern sans ordinary UI;
+- landing/footer corrected;
+- creator sidebar/navigation implemented;
+- Broadcasts/Recordings record-oriented layouts;
+- Studio truthful compact hierarchy;
+- Lobby/Backstage/Guests/Chat compact communication patterns;
+- missing shared Beautiful UI component families implemented where applicable;
+- error/offline responsiveness fixed;
+- responsive/accessibility acceptance;
+- required CI green.
 
-- "I created a plan";
-- "I updated the design system";
-- "Phase 1 is complete";
-- "here is what I would do next";
-- "the remaining screens can be implemented later".
+At the end report:
 
-Continue implementing the next phase automatically.
+1. shared primitives implemented/changed;
+2. screens/surfaces migrated;
+3. stale branding removed;
+4. typography changes;
+5. landing/footer changes;
+6. tests executed and exact results;
+7. any genuine remaining blocker;
+8. final git status and commits.
 
-If a command fails, diagnose and fix it. If a test exposes a real regression, fix the implementation. If a shared component causes widespread failures, correct the shared component rather than adding dozens of local hacks.
-
-Only stop early for a real blocker such as missing credentials, unavailable external infrastructure that is strictly required for the task, an authorization boundary that cannot be exercised locally, or a repository corruption/conflict that cannot be resolved safely.
-
-When blocked, report:
-
-1. exactly what is blocked;
-2. what was already completed;
-3. the exact command/error/evidence;
-4. the smallest user action needed to unblock it.
-
-## 12. Final report required from Codex
-
-At the end, provide a concise engineering report containing:
-
-- major UI/system changes implemented;
-- shared components added/changed;
-- surfaces migrated;
-- old conflicting patterns removed;
-- tests/builds run and their results;
-- any deliberate test/document changes and why;
-- remaining real blockers, if any;
-- current git status and commit(s).
-
-Do not claim the work is complete if required checks are still failing.
+Do not merge PR #188 automatically unless the user explicitly instructs it and required checks are green.
