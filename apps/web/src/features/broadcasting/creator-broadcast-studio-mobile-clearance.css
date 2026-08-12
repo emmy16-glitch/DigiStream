@@ -1,36 +1,36 @@
 @media (max-width: 640px) {
   .creator-studio {
-    scroll-padding-top: calc(76px + env(safe-area-inset-top));
-    scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom));
+    scroll-padding-top: calc(64px + env(safe-area-inset-top));
+    scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom));
   }
 
   .studio-workspace {
-    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+    padding-bottom: calc(82px + env(safe-area-inset-bottom));
   }
 
   .studio-workspace :is(h3, p, button, input, select, textarea, [role="alert"], [tabindex]) {
-    scroll-margin-top: calc(76px + env(safe-area-inset-top));
-    scroll-margin-bottom: calc(112px + env(safe-area-inset-bottom));
+    scroll-margin-top: calc(64px + env(safe-area-inset-top));
+    scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom));
   }
 
   .studio-primary-actions {
-    bottom: env(safe-area-inset-bottom);
-    padding-bottom: calc(var(--ds-space-4) + env(safe-area-inset-bottom));
+    bottom: 0;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
   }
 }
 
 @media (orientation: landscape) and (max-height: 620px) {
   .creator-studio {
-    scroll-padding-top: calc(68px + env(safe-area-inset-top));
-    scroll-padding-bottom: calc(28px + env(safe-area-inset-bottom));
+    scroll-padding-top: calc(58px + env(safe-area-inset-top));
+    scroll-padding-bottom: calc(20px + env(safe-area-inset-bottom));
   }
 
   .studio-workspace {
-    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
   }
 
   .studio-workspace :is(h3, p, button, input, select, textarea, [role="alert"], [tabindex]) {
-    scroll-margin-top: calc(68px + env(safe-area-inset-top));
-    scroll-margin-bottom: calc(28px + env(safe-area-inset-bottom));
+    scroll-margin-top: calc(58px + env(safe-area-inset-top));
+    scroll-margin-bottom: calc(20px + env(safe-area-inset-bottom));
   }
 }
