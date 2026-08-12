@@ -123,7 +123,7 @@ export function LandingPage() {
 
       <div className="landing-frame">
         <header className="landing-header">
-          <a className="landing-brand" href="/" aria-label="Echoo home">
+          <a className="landing-brand" href="/" aria-label="DigiStream home">
             <BrandLockup />
           </a>
 
@@ -166,7 +166,7 @@ export function LandingPage() {
                 </a>
               </div>
 
-              <div className="landing-trust-block" aria-label="Echoo community">
+              <div className="landing-trust-block" aria-label="DigiStream community">
                 <span>Built for creators and communities</span>
                 <div className="landing-trust-row" aria-hidden="true">
                   <span className="landing-avatar landing-avatar-one" />
@@ -183,7 +183,7 @@ export function LandingPage() {
             </div>
           </section>
 
-          <section className="landing-feature-grid" id="features" aria-label="Echoo features">
+          <section className="landing-feature-grid" id="features" aria-label="DigiStream features">
             {features.map((feature) => (
               <article className="landing-feature-card" key={feature.title}>
                 <span className="landing-feature-icon" aria-hidden="true">
