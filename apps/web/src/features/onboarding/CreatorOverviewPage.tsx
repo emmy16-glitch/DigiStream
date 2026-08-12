@@ -206,7 +206,7 @@ export function CreatorOverviewPage({
                 <strong>{currentBroadcast.title}</strong>
                 <span>{channelName(channels, currentBroadcast)}</span>
                 {liveBroadcast?.liveStartedAt ? <small>Started {formatTime(liveBroadcast.liveStartedAt)}</small> : null}
-                {recoveringBroadcast ? <small>Echoo is recovering the public delivery path.</small> : null}
+                {recoveringBroadcast ? <small>Public delivery is reconnecting.</small> : null}
               </div>
               <Button onClick={onOpenStudio} variant="secondary">
                 Open Studio
