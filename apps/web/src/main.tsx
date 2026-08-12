@@ -47,7 +47,7 @@ import './design-system/motion-polish.css';
 const root = document.getElementById('root');
 
 if (!root) {
-  throw new Error('Echoo root element was not found');
+  throw new Error('DigiStream root element was not found');
 }
 
 const route = resolveInitialRoute(window.location.pathname);
