@@ -38,6 +38,8 @@ External Beautiful UI reference:
 
 Beautiful UI is a component/density/interaction reference, not a product to clone.
 
+**Legacy visual wording inside older product/behavior documents is historical presentation language only.** Phrases such as `Echoo light`, legacy dark/emerald styling, screenshot-era square/hard-shadow language, or old font terminology do not override the UI V2 presentation authority above. Those documents remain authoritative for the product behavior, lifecycle, reliability or flow they define; `DIGISTREAM_UI_V2_COMPLETE_SPEC.md` controls current reusable presentation.
+
 ## 3. Final visual direction
 
 The active DigiStream visual system is:
