@@ -1,23 +1,30 @@
 # Claude instructions for DigiStream
 
-Read root `AGENTS.md` first; it remains authoritative for product truth, lifecycle behavior, reliability, security, authorization, anti-duplication rules, and programme sequencing. Then read `.agents/README.md`.
+Read root `AGENTS.md` first.
 
-## Mandatory UI/design authority
+For any frontend/UI/UX/design-system work, read in this order:
 
-Before any work involving frontend UI, UX, styling, responsive behavior, navigation presentation, component design, authentication screens, creator surfaces, listener surfaces, Studio, Backstage, Recordings, analytics, settings, modals, or visual polish, also read:
+1. `docs/design/DIGISTREAM_UI_V2_COMPLETE_SPEC.md`
+2. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`
+3. `docs/design/BEAUTIFUL_UI_ADAPTATION_STANDARD.md`
+4. `docs/design/DESIGN_TOKENS.md`
+5. `docs/design/DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`
+6. `docs/design/REFERENCE_INDEX.md`
+7. the relevant numbered reference screen(s) for composition/journey intent
+8. `apps/web/AGENTS.md`
 
-1. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`
-2. `docs/design/DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`
-3. `docs/design/reference/REFERENCE_INDEX.md`
-4. the exact approved reference image(s) under `docs/design/reference/screens/`
-5. `apps/web/AGENTS.md`
+The current visual direction is the **cream-dotted DigiStream + Beautiful UI-quality hybrid**. Do not restore legacy dark/emerald, blue/white, square-everything, hard-shadow-everywhere, mono-button or giant-card rules.
 
-The **approved final 50-screen DigiStream reference pack** is the current visual source of truth. It supersedes old Echoo visual references, the legacy blue/white DigiStream interface, and earlier dark-theme visual direction for presentation decisions.
+User-visible branding is **DigiStream**, not Echoo.
 
-Do not interpret that as permission to fake data or bypass product architecture. Backend authorization, truthful lifecycle/media state, accessibility, real API state, and root `AGENTS.md` product requirements remain mandatory.
+Normal UI typography is modern sans-serif; mono is technical-only.
 
-For design, UI, UX, animation, navigation or visual-polish work, use the relevant repo-level adapter in `.agents/skills/` where useful. Exact upstream revisions are pinned in `.agents/sources.lock.json`; run `npm run skills:sync` only when the full upstream playbook or supporting files are needed.
+The 50-screen pack is not sole reusable styling authority. It informs screen responsibility, journey, content grouping and relative hierarchy. The current UI V2 Complete Specification controls reusable presentation.
 
-Design skills are advisory. They do not override the DigiStream UI Constitution, the approved 50-screen reference pack, current code responsibilities, authorization, tenant isolation, truthful lifecycle/media state, accessibility requirements, or DigiStream architecture.
+Reuse existing routes/components/APIs. Do not duplicate Studio, Broadcasts, Recordings, Lobby/Backstage, onboarding or business logic for visual fidelity.
 
-If you have not opened the relevant reference image before changing a screen, you are not ready to implement that screen.
+Never fabricate data, lifecycle state, media readiness, analytics, listener counts, progress, recording/replay availability, permissions or success.
+
+Do not perform broad mechanical regex/perl/sed visual rewrites. Migrate shared primitives and product surfaces deliberately.
+
+Do not declare UI V2 complete after token/foundation work. Continue until the shared component families and major surfaces in `DIGISTREAM_UI_V2_COMPLETE_SPEC.md` are implemented, responsive, accessible and validated.
