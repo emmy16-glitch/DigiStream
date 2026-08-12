@@ -53,12 +53,16 @@ export function CreatorShell({
   const primaryMobileNavigation = visibleNavigation.slice(0, 4);
   const secondaryMobileNavigation = visibleNavigation.slice(4);
   const mainContentRef = useRef<HTMLElement>(null);
+  const mobileMoreRef = useRef<HTMLDialogElement>(null);
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [commandQuery, setCommandQuery] = useState('');
   const previousActiveLabel = useRef(activeLabel);
   const canSwitchWorkspace = workspaceOptions.length > 1 && Boolean(workspaceId) && Boolean(onWorkspaceChange);
-  const closeMobileMore = useCallback(() => setMobileMoreOpen(false), []);
+  const closeMobileMore = useCallback(() => {
+    if (mobileMoreRef.current?.open) mobileMoreRef.current.open = false;
+    setMobileMoreOpen(false);
+  }, []);
   const closeCommand = useCallback(() => { setCommandOpen(false); setCommandQuery(''); }, []);
   const dismissMobileMore = useModalHistoryDismiss({ active: mobileMoreOpen, onDismiss: closeMobileMore, stateKey: 'creator-mobile-more' });
   const dismissCommand = useModalHistoryDismiss({ active: commandOpen, onDismiss: closeCommand, stateKey: 'creator-command-search' });
@@ -203,11 +207,11 @@ export function CreatorShell({
             <button aria-expanded={mobileMoreOpen} aria-haspopup="dialog" onClick={() => setMobileMoreOpen(true)} type="button"><Icon name="menu" /><span>More</span></button>
             {mobileMoreOpen ? (
               <div className="ds-creator-mobile-more-backdrop" onMouseDown={dismissMobileMore} role="presentation">
-                <section aria-label="More creator destinations" aria-modal="true" className="ds-creator-mobile-more-menu" onMouseDown={(event) => event.stopPropagation()} role="dialog">
+                <dialog aria-label="More creator destinations" aria-modal="true" className="ds-creator-mobile-more-menu" onMouseDown={(event) => event.stopPropagation()} open ref={mobileMoreRef}>
                   <header><strong>More</strong><button aria-label="Close more menu" onClick={dismissMobileMore} type="button"><Icon name="close" /></button></header>
                   <button onClick={() => { closeMobileMore(); setCommandOpen(true); }} type="button"><Icon name="search" /><span>Search</span></button>
                   {secondaryMobileNavigation.map((item) => <button aria-current={item.label === activeLabel ? 'page' : undefined} className={item.label === activeLabel ? 'active' : ''} key={item.label} onClick={() => { item.onSelect(); closeMobileMore(); }} type="button"><Icon name={item.icon} /><span>{creatorFacingLabel(item.label)}</span></button>)}
-                </section>
+                </dialog>
               </div>
             ) : null}
           </div>
