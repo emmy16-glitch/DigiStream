@@ -67,8 +67,9 @@
   --ds-focus-ring: var(--ds-pink-700);
   --ds-overlay: rgba(31, 32, 37, 0.38);
 
-  --ds-font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --ds-font-sans: var(--ds-font-display);
+  /* UI V2: ordinary product UI is modern sans; mono is technical-only. */
+  --ds-font-sans: "Manrope", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --ds-font-display: var(--ds-font-sans);
   --ds-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 
   --ds-text-xs: 0.75rem;
