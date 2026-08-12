@@ -308,7 +308,7 @@ export function BrandLockup({ compact = false }: { compact?: boolean }) {
         <i className="ds-brand-petal ds-brand-petal-primary" />
         <i className="ds-brand-petal ds-brand-petal-secondary" />
       </span>
-      <span className="ds-brand-wordmark">Echoo</span>
+      <span className="ds-brand-wordmark">DigiStream</span>
     </span>
   );
 }
