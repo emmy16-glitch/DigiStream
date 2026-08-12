@@ -4,34 +4,47 @@ This directory is DigiStream's repo-level, agent-neutral design skill registry.
 
 ## Authority and precedence
 
-The skills in this directory are advisory implementation aids. They never override:
+Design skills are advisory implementation aids. They never override:
 
-1. the root `AGENTS.md` for product truth, reliability, lifecycle, security, authorization, architecture, and programme sequencing;
-2. `docs/design/DIGISTREAM_UI_CONSTITUTION.md` for current visual-system rules;
-3. `docs/design/DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md` for UI-agent implementation behavior;
-4. the approved final 50-screen DigiStream reference pack indexed by `docs/design/REFERENCE_INDEX.md` for screen composition and visual intent;
-5. current executable code, migrations, contracts, routes and tests where they represent existing responsibility and real product behavior.
+1. root `AGENTS.md` for product truth, security, reliability, lifecycle, authorization and architecture;
+2. `docs/design/DIGISTREAM_UI_V2_COMPLETE_SPEC.md` for complete current presentation rules;
+3. `docs/design/DIGISTREAM_UI_CONSTITUTION.md`;
+4. `docs/design/BEAUTIFUL_UI_ADAPTATION_STANDARD.md`;
+5. `docs/design/DESIGN_TOKENS.md`;
+6. `docs/design/DIGISTREAM_AI_IMPLEMENTATION_GUARDRAILS.md`;
+7. the numbered reference pack for screen responsibility/journey/composition intent;
+8. current code/contracts/routes/tests for real product responsibility.
 
-The old Echoo references, old blue/white DigiStream styling, and previous dark/emerald visual direction are not the current visual target when they conflict with the UI Constitution and approved 50-screen pack.
+The old dark/emerald system, old blue/white styling, square-everything rules, hard-shadow-everywhere rules, mono-button/typewriter UI and stale Echoo branding are not current visual authority.
 
-Never use a design skill or screenshot to invent APIs, routes, metrics, listener counts, readiness, recordings, replay availability, authorization, lifecycle state or success. Preserve tenant isolation, backend authority, truthful state and the existing React/Fastify/PostgreSQL/LiveKit/Egress/OME/WebSocket architecture.
+## Current visual target
 
-## Required UI workflow
+The final system is:
 
-Before using any design skill on a DigiStream screen:
+> cream dotted DigiStream canvas + white/warm-white operational surfaces + dusty-pink brand anchor + restrained supporting tints + Beautiful UI-quality compact component grammar + modern readable sans-serif typography.
 
-1. open the relevant numbered reference image under `docs/design/reference/screens/`;
-2. read the relevant Constitution sections;
-3. identify the existing route/component responsibility;
+User-visible branding is DigiStream.
+
+## Required workflow
+
+Before using a design skill on a screen:
+
+1. read the complete UI V2 specification;
+2. identify the existing responsible route/component/API;
+3. inspect the relevant reference screen for composition/journey intent;
 4. use the skill only to improve implementation quality inside those constraints;
-5. compare the result to the reference and run the design review checklist.
+5. preserve product truth and anti-duplication rules;
+6. compare the implementation against responsive and accessibility requirements;
+7. run the design review checklist/tests.
+
+Do not use a skill to invent APIs, routes, permissions, metrics, lifecycle state, recordings, replay availability, media readiness or success.
 
 ## Installed skill adapters
 
 - `ui-ux-pro-max` — broad UI/UX structure, accessibility, interaction, responsive and design-system guidance.
-- `taste-skill` — anti-slop visual guidance only where its upstream scope fits; it explicitly does not cover dashboards, data tables or multi-step product UI.
+- `taste-skill` — anti-slop visual guidance only where its scope fits.
 - `impeccable` — product UI critique, audit, accessibility, responsive and final-polish playbooks.
-- `emil-design-eng` — Emil Kowalski's component craft, interaction feedback and animation-decision guidance.
+- `emil-design-eng` — component craft, interaction feedback and animation-decision guidance.
 
 The local `SKILL.md` files are stable DigiStream adapters. Exact upstream revisions and source paths are pinned in `.agents/sources.lock.json`.
 
@@ -43,6 +56,4 @@ Run:
 npm run skills:sync
 ```
 
-This checks out the exact pinned revisions and copies only the declared source paths into `.agents/vendor/`. The vendor directory is intentionally gitignored so upstream repositories do not become noisy product source.
-
-Run `npm run skills:verify` to validate the registry. The dedicated design-skill workflow additionally materializes every pinned upstream source so a stale or invalid path cannot silently pass CI.
+Run `npm run skills:verify` to validate the registry.
