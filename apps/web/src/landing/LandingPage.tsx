@@ -225,16 +225,29 @@ export function LandingPage() {
       </section>
 
       <footer className="landing-footer" id="about">
-        <div>
+        <div className="landing-footer-brand">
           <BrandLockup />
           <p>Live audio for creators, churches and communities.</p>
         </div>
-        <nav aria-label="Footer navigation">
-          <span title="A production privacy notice will be published before launch">Privacy</span>
-          <span title="Production terms will be published before launch">Terms</span>
-          <a href="/listen">Discover</a>
-          <a href="/login">Sign in</a>
-        </nav>
+
+        <div className="landing-footer-groups" aria-label="Footer navigation">
+          <nav className="landing-footer-group" aria-label="Product">
+            <strong>Product</strong>
+            <a href="/listen">Discover</a>
+            <a href="/login">Sign in</a>
+          </nav>
+
+          <nav className="landing-footer-group" aria-label="Company">
+            <strong>Company</strong>
+            <a href="/about">About</a>
+          </nav>
+
+          <div className="landing-footer-group" aria-label="Legal">
+            <strong>Legal</strong>
+            <span title="A production privacy notice will be published before launch">Privacy</span>
+            <span title="Production terms will be published before launch">Terms</span>
+          </div>
+        </div>
       </footer>
     </div>
   );
