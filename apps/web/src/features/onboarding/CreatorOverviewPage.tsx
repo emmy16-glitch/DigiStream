@@ -151,7 +151,7 @@ export function CreatorOverviewPage({
     <div className="echoo-overview-page">
       <PageHeader
         actions={<Button onClick={primaryAction.onClick} variant="primary">{primaryAction.label}</Button>}
-        description={<>{organisation.name} · Here&apos;s what&apos;s happening with your broadcasts.</>}
+        description={<>{organisation.name} · Here’s what’s happening with your broadcasts.</>}
         eyebrow="Creator overview"
         title={`${greeting()}, ${firstName}`}
       />
